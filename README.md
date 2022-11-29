@@ -1,5 +1,7 @@
 # Diffusion Toolkit
 
+![image](https://user-images.githubusercontent.com/1910659/204549767-66d34405-0291-4d6a-95dd-e6c99eca434c.png)
+
 THIS IS IN BETA
 
 With the growing popularity and relative ease of use of Stable Diffusion, many users will generate hundreds to thousands of images with no real way to catalog them.
