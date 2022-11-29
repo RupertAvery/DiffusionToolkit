@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Icons\copy-32.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
+    <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
+    <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Icons\copy-32.png" />
+  </ItemGroup>
+
+</Project>

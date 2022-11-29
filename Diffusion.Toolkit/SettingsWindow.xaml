@@ -1,0 +1,51 @@
+﻿<Window x:Class="Diffusion.Toolkit.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Diffusion.Toolkit"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance local:SettingsModel, IsDesignTimeCreatable = True}"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="NoResize"
+        Title="Settings" Height="450" Width="600">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <StackPanel Grid.Row="0">
+                <Label>Diffusion Folders (Recursive)</Label>
+                <Grid Height="200">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <ListBox ItemsSource="{Binding ImagePaths}" SelectedIndex="{Binding SelectedIndex}" Grid.RowSpan="2" Margin="0,0,10,0"></ListBox>
+                    <StackPanel Grid.Column="1">
+                        <Button Click="AddFolder_OnClick" Margin="0,0,0,10">Add Folder</Button>
+                        <Button Click="RemoveFolder_OnClick">Remove Folder</Button>
+                    </StackPanel>
+
+                </Grid>
+                <Label>Model Root</Label>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Text="{Binding ModelRootPath}" Margin="0,0,10,0"></TextBox>
+                    <Button Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
+
+                </Grid>
+            </StackPanel>
+           
+        </Grid>
+        <Grid Grid.Row="1">
+            <Button Click="Close_OnClick">Close</Button>
+        </Grid>
+    </Grid>
+</Window>
