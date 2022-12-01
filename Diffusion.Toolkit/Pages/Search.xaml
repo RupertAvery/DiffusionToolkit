@@ -6,11 +6,28 @@
       xmlns:local="clr-namespace:Diffusion.Toolkit.Pages"
       xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
       xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
+      xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
       mc:Ignorable="d" 
       d:DataContext="{d:DesignInstance models:SearchModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="615" d:DesignWidth="800"
-      Title="Page1">
-
+      Title="Search">
+    <Page.Resources>
+        <ResourceDictionary>
+            <classes:BoolToVisibilityConverter x:Key="boolToVis"></classes:BoolToVisibilityConverter>
+        </ResourceDictionary>
+        <!--<DataTemplate DataType="{x:Type toolkit:ImageEntry}">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Image Source="{Binding Thumbnail}" Height="128" Width="128" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />
+                <TextBlock Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" MaxWidth="128"/>
+            </StackPanel>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding Path=(toolkit:MyScrollViewer.IsInViewport), RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}"
+                         Value="True">
+                    <Setter  TargetName="Thumbnail" Property="Source" Value="{Binding Thumbnail}" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>-->
+    </Page.Resources>
     <Grid Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="30"/>
@@ -36,11 +53,12 @@
                       ShowsPreview="True"
                       Width="3"
         />
-        <Grid Grid.Row="1" Grid.Column="0" >
+        <Grid Grid.Row="1" Grid.Column="0" Background="White">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="30"></RowDefinition>
             </Grid.RowDefinitions>
+            <Label Visibility="{Binding IsEmpty, Converter={StaticResource boolToVis}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="20" FontWeight="DemiBold" Foreground="DarkGray">No items found</Label>
             <ListView Margin="2" Padding="10" ItemsSource="{Binding Images, NotifyOnTargetUpdated=True}"
                       TargetUpdated="FrameworkElement_OnTargetUpdated"
                       SelectedItem="{Binding SelectedImageEntry}" 
@@ -55,18 +73,23 @@
                         </toolkit:MyScrollViewer>
                     </ControlTemplate>
                 </ListView.Template>
-                <!--<ItemsControl.ItemsPanel>
+                <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel Orientation="Horizontal" />
                     </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>-->
+                </ItemsControl.ItemsPanel>
                 <ListView.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate  DataType="{x:Type toolkit:ImageEntry}">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                            <!--<toolkit:VirtualImage Path="{Binding FileParameters.Path}" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />-->
-                            <!--<toolkit:VirtualImage Source="{Binding Thumbnail}" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />-->
-                            <Image Source="{Binding Thumbnail}" Height="128" Width="128" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />
-                            <TextBlock Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" MaxWidth="128"/>
+
+                            <!--<toolkit:VirtualImage Path="{Binding FileParameters.Path}" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />
+                            <toolkit:VirtualImage Source="{Binding Thumbnail}" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />-->
+                            <Border CornerRadius="5" BorderBrush="LightGray" BorderThickness="2" Height="128" Width="128">
+                                <toolkit:Thumbnail Source="{Binding Thumbnail, IsAsync = True }" Height="128" Width="128" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
+                                <!--<Image Source="{Binding Thumbnail, IsAsync = True }" Height="128" Width="128" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />-->
+                            </Border>
+
+                            <!--<TextBlock Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" MaxWidth="128"/>-->
                         </StackPanel>
                         <!--<DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding Path=(toolkit:MyScrollViewer.IsInViewport), RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"
@@ -182,3 +205,4 @@
         </Grid>
     </Grid>
 </Page>
+ 

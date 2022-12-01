@@ -1,7 +1,6 @@
-﻿using System.Linq;
-using System.Windows.Media.Imaging;
+﻿using System.Windows.Media.Imaging;
 using Diffusion.IO;
-using static System.Net.WebRequestMethods;
+using Diffusion.Toolkit.Thumbnails;
 
 namespace Diffusion.Toolkit;
 
@@ -23,7 +22,14 @@ public class ImageEntry : BaseNotify
         {
             if (_thumbnail == null)
             {
-                _ = ThumbnailLoader.Instance.Queue(FileParameters, (d) =>
+                var job = new ThumbnailJob()
+                {
+                    Path = FileParameters.Path, 
+                    Height = FileParameters.Height,
+                    Width = FileParameters.Width
+                };
+
+                _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
                 {
                     _thumbnail = d;
                     OnPropertyChanged();

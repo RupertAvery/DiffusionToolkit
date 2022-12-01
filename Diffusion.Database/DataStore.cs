@@ -7,7 +7,7 @@ public class DataStore
     public string DatabasePath { get; }
     public bool RescanRequired { get; set; }
 
-    private SQLiteConnection OpenConnection()
+    public SQLiteConnection OpenConnection()
     {
         return new SQLiteConnection(DatabasePath);
     }
@@ -60,12 +60,64 @@ public class DataStore
 
     }
 
+
+    public void AddImage(SQLiteConnection connection, Image image)
+    {
+        connection.Insert(image);
+    }
+
+
     public void AddImage(Image image)
     {
         using var db = OpenConnection();
         db.Insert(image);
         db.Close();
     }
+
+    public void Close(SQLiteConnection connection)
+    {
+        connection.Close();
+    }
+
+    public void AddImages(IEnumerable<Image> images)
+    {
+        using var db = OpenConnection();
+
+        db.BeginTransaction();
+
+        var query =
+            "INSERT INTO Image (Path, Prompt, NegativePrompt, Steps, Sampler, CFGScale, Seed, Width, Height, ModelHash, BatchSize, BatchPos, CreatedDate) VALUES " +
+            "                  (@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate)";
+
+        var command = db.CreateCommand(query);
+
+        var nonProps = new[]
+            { "CustomTags", "Rating", "Favorite", "ForDeletion" };
+
+        var properties = typeof(Image).GetProperties().Where(p => !nonProps.Contains(p.Name)).ToList();
+
+        foreach (var image in images)
+        {
+            foreach (var property in properties)
+            {
+                command.Bind($"@{property.Name}", property.GetValue(image));
+            }
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            //command.Bind("@Path, @Prompt, @NegativePrompt, @Steps, @Sampler, @CFGScale, @Seed, @Width, @Height, @ModelHash, @BatchSize, @BatchPos, @CreatedDate");
+            command.ExecuteNonQuery();
+        }
+
+        db.Commit();
+    }
+
 
     public void RebuildIndexes()
     {
@@ -103,11 +155,27 @@ public class DataStore
         return count;
     }
 
-    public IEnumerable<Image> Search(string prompt)
+    public int Count(string prompt)
     {
         using var db = OpenConnection();
 
-        var images = db.Query<Image>("SELECT * FROM Image WHERE Prompt LIKE ?", $"%{prompt}%");
+        var count = db.ExecuteScalar<int>("SELECT COUNT(*) FROM Image WHERE Prompt LIKE ?", $"%{prompt}%");
+
+        db.Close();
+
+        return count;
+    }
+
+    public IEnumerable<Image> Search(string prompt, int pageSize, int offset)
+    {
+        using var db = OpenConnection();
+
+        //SELECT foo, bar, baz, quux FROM table
+        //WHERE oid NOT IN(SELECT oid FROM table
+        //ORDER BY title ASC LIMIT 50 )
+        //ORDER BY title ASC LIMIT 10
+
+        var images = db.Query<Image>("SELECT * FROM Image WHERE Prompt LIKE ? LIMIT ? OFFSET ?", $"%{prompt}%", pageSize, offset);
 
         foreach (var image in images)
         {

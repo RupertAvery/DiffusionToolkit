@@ -25,4 +25,8 @@
     <Resource Include="Icons\copy-32.png" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Images\" />
+  </ItemGroup>
+
 </Project>

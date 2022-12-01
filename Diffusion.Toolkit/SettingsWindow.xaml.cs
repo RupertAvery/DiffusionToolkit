@@ -1,53 +1,11 @@
 ﻿using Diffusion.Database;
-using Diffusion.IO;
 using Microsoft.WindowsAPICodePack.Dialogs;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Diffusion.Toolkit
 {
-    public class SettingsModel : BaseNotify
-    {
-        private string _modelRootPath;
-        private ObservableCollection<string> _imagePaths;
-        private int _selectedIndex;
-
-        public SettingsModel()
-        {
-            _imagePaths = new ObservableCollection<string>();
-        }
-
-        public ObservableCollection<string> ImagePaths
-        {
-            get => _imagePaths;
-            set => SetField(ref _imagePaths, value);
-        }
-
-        public int SelectedIndex
-        {
-            get => _selectedIndex;
-            set => SetField(ref _selectedIndex, value);
-        }
-
-        public string ModelRootPath
-        {
-            get => _modelRootPath;
-            set => SetField(ref _modelRootPath, value);
-        }
-    }
-
     /// <summary>
     /// Interaction logic for Window1.xaml
     /// </summary>

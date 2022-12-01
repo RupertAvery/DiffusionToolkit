@@ -4,6 +4,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Diffusion.IO;
+using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -30,7 +31,11 @@ public class SearchModel : BaseNotify
     public ObservableCollection<ImageEntry>? Images
     {
         get => _images;
-        set => SetField(ref _images, value);
+        set
+        {
+            SetField(ref _isEmpty, _images == null || _images.Count == 0, "IsEmpty");
+            SetField(ref _images, value);
+        }
     }
 
     public ImageEntry? SelectedImageEntry
@@ -137,13 +142,16 @@ public class SearchModel : BaseNotify
     private int _imageCount;
     private string _status;
     private int _page;
-
-
-    public List<FileParameters> FileParameters { get; set; }
+    private bool _isEmpty;
 
     public int Page
     {
         get => _page;
         set => SetField(ref _page, value);
+    }
+
+    public bool IsEmpty
+    {
+        get => _isEmpty;
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Diffusion.Toolkit;
+namespace Diffusion.Toolkit.Thumbnails;
 
 public class Job<T, TOut>
 {
