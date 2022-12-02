@@ -76,11 +76,11 @@ If you get some sort of database error, try deleting the file `diffusion-toolkit
 
 # Buy me a coffee
 
-I've been told, that people should be allowed to [buy me a coffee](https://www.buymeacoffee.com/rupertavery)
+I've been told that people should be allowed to [buy me a coffee](https://www.buymeacoffee.com/rupertavery)
 
 Beer works too (PayPal)
 
-* [I'm feeling generous](https://www.paypal.me/rupertavery/?locale.x=en_US)
+* [I'm feeling generous](https://www.paypal.me/rupertavery/25.00?locale.x=en_US)
 * [Buy me a 2 craft beers](https://www.paypal.me/rupertavery/10.00?locale.x=en_US)
 * [Buy me a craft beer](https://www.paypal.me/rupertavery/5.00?locale.x=en_US)
 * [Buy me a 2 local beers](https://www.paypal.me/rupertavery/3.00?locale.x=en_US)
