@@ -1,26 +1,25 @@
 # Diffusion Toolkit
 
+Diffusion Toolkit is an image viewer backed by a SQLite database with the following features:
+
+* Select and recursively scan a set of folders for PNG and JPG+TXT images 
+* Parse the metadata (prompt & parameters) into a database
+* Searched based on prompts and parameters (see [Advanced Searching](#advanced-searching))
+
+Think [Lexica.art](https://lexica.art/), but with more powerul search, on your local images.
+
+![image](https://user-images.githubusercontent.com/1910659/205200866-cac98b62-658c-4908-a188-09870d13acae.png)
+
 **NOTE:** If you want to just run the program, get the latest release from [here](https://github.com/RupertAvery/DiffusionToolkit/releases). Look for the Assets under the latest release, expand it, then grab the zip file.
 
 This is Windows only. You may be required to install .NET 6 Desktop Runtime (https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
 
-Diffusion Toolkit is an image viewer backed by a SQLite database with the following features:
-
-* Select and recursively scan a set of folders for PNG images 
-* Parse the metadata (prompt & parameters) into a database
-* Allow images to be searched based on prompts.
-
-Think [Lexica.art](https://lexica.art/), but for your local images.
-
-![image](https://user-images.githubusercontent.com/1910659/205200866-cac98b62-658c-4908-a188-09870d13acae.png)
-
 ## TODO
 
-* List Checkpoints (models) along with hashes
-* Implement HashV2
-* Manage Checkpoint metadata alongside file
-* Advanced searching
+* List Checkpoints (models) along with hashes and hash_v2
 * Snippets and prompt management
+* Manage Checkpoint metadata alongside file
+* Advanced Search UI?
 
 ## Future
 
@@ -36,6 +35,10 @@ Don't add nested folders, instead add the topmost folder. Folders will be scanne
 
 You may also add the checkpoint model root folder, but it's not used yet.
 
+You can set what file extensions to scan for. Don't include an asterisk, but do include the dot, and separate with commas e.g. `.png, .jpg`
+
+You can also set the number of images to appear on a page.
+
 The app will immediately scan your folders for images. They will be saved into a SQLite database at `%APPDATA%\DiffusionToolkit\diffusion-toolkit.db`.
 
 After a while, you will get a notice upon completion. You can now begin searching via prompt.
@@ -46,7 +49,7 @@ Double-clicking an image or pressing Enter with an image selected will launch yo
 
 # Searching
 
-Searching is performed by checking if a prompt contains the search term.  Separate search terms using a comma. Each search term is ANDed to produce the final filter. 
+Searching is performed by checking if the prompt contains the search term.  Separate search terms using a comma. Each search term is ANDed to produce the final filter. 
 
 For example:
 
@@ -72,6 +75,71 @@ Note that spaces are important.
 
 will not match the previous term.
 
+
+# Advanced Searching
+
+You can also include image generation parameters in your search query. 
+
+Add the parameters to the end of your query, e.g:
+
+```
+A man staring into a starry night sky, by Van Gogh steps: 20 cfg:12  
+```
+
+Parameters will be ANDed, meaning adding more parameters will filter out more results. 
+
+The following parameters are supported:
+
+* `steps:<number>`
+
+* `sampler:<name>` - Replace name with the sampler name, but with the spaces replaced with an underscore (_). Not case sensitive. Any future samplers will work this way automatically.
+
+  * Euler a - `euler_a`
+  * Euler - `euler`
+  * LMS - `lms`
+  * Heun - `heun`
+  * DPM2 - `dpm2`
+  * DPM2 a - `dpm2_a`
+  * DPM++ 2S a - `dpm++_2s_a`
+  * DPM++ 2M - `dpm++_2m`
+  * DPM++ SDE - `dpm++_SDE`
+  * DPM fast - `dpm_fast`
+  * DPM adaptive - `dpm_adaptive`
+  * LMS Karras - `lms_karras`
+  * DPM2 Karras - `dpm2_karras`
+  * DPM2 a Karras - `dpm2_a_karras`
+  * DPM++ 2S a Karras - `dpm++_2s_a_karras`
+  * DPM++ 2M Karras - `dpm++_2s_karras`
+  * DPM++ SDE Karras - `dpm++_sde_karras`
+  * DDIM - `ddim`
+  * PLMS - `plms`
+
+* `cfg:<number>` or `cfg_scale:<number>` or `cfg scale:<number>`
+
+* `seed:<number>`
+
+* `size:<width>x<height>` or `size:<width>:<height>` 
+  * `width` and `height` can be a number or a question mark (`?`) to match any value. e.g. `size:512x?` 
+
+* `model_hash:<hash>`
+
+## Notes
+
+* The parameters e.g. `steps:`, `sampler:` are not case sensitive. You can use `Steps:`, `Sampler:`, so you can copy it from a prompt.
+* You can have 0 or more spaces *after* the colon (`:`) and before the parameter value.
+  * e.g. `steps:20`, `steps: 20`, `steps:   20` are OK
+  * but `steps  :20`, `steps :20` are not
+
+## Multiple Values search
+
+You can search on multiple values on most parameters. The results will be ORed, meaning adding more values will add more results.
+
+* You can specify a range for seed with `seed:<start>-<end>`
+  * e.g. `seed:10000-20000`
+* You can specify mutiple values for other parameters using a pipe (`|`) 
+  * e.g. `sampler:euler_a|ddim|plms`
+  * e.g. `cfg:4.5|7|9|12`
+  * e.g. `model_hash:aabbccdd|deadbeef|12345678`
 
 
 # Troubleshooting
