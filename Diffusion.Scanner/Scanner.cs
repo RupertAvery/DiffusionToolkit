@@ -62,6 +62,16 @@ namespace Diffusion.IO
                         parameters = directories.FirstOrDefault(d => d.Name == "PNG-tEXt")?.Tags
                             .FirstOrDefault(t => t.Name == "Textual Data")?.Description;
 
+                        if (parameters == null)
+                        {
+                            var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
+
+                            if (File.Exists(parameterFile))
+                            {
+                                parameters = File.ReadAllText(parameterFile);
+                            }
+                        }
+
                         isNotPng = false;
                     }
                     else if (ext != ".png")
