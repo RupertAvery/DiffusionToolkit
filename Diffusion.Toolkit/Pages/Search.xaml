@@ -7,13 +7,15 @@
       xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
       xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
       xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
+      xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
+      xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
       mc:Ignorable="d" 
       d:DataContext="{d:DesignInstance models:SearchModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="615" d:DesignWidth="800"
       Title="Search">
     <Page.Resources>
         <ResourceDictionary>
-            <classes:BoolToVisibilityConverter x:Key="boolToVis"></classes:BoolToVisibilityConverter>
+            <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
         </ResourceDictionary>
         <!--<DataTemplate DataType="{x:Type toolkit:ImageEntry}">
             <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -59,8 +61,7 @@
                 <RowDefinition Height="30"></RowDefinition>
             </Grid.RowDefinitions>
             <Label Visibility="{Binding IsEmpty, Converter={StaticResource boolToVis}}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="20" FontWeight="DemiBold" Foreground="DarkGray">No items found</Label>
-            <ListView Margin="2" Padding="10" ItemsSource="{Binding Images, NotifyOnTargetUpdated=True}"
-                      TargetUpdated="FrameworkElement_OnTargetUpdated"
+            <ListView x:Name="ThumbnailListView" Margin="2" Padding="10" ItemsSource="{Binding Images, NotifyOnTargetUpdated=True}"
                       SelectedItem="{Binding SelectedImageEntry}" 
                       KeyDown="UIElement_OnKeyDown"
                       MouseDoubleClick="Control_OnMouseDoubleClick"
@@ -68,9 +69,9 @@
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                 <ListView.Template>
                     <ControlTemplate>
-                        <toolkit:MyScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <controls:MyScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <WrapPanel IsItemsHost="True" />
-                        </toolkit:MyScrollViewer>
+                        </controls:MyScrollViewer>
                     </ControlTemplate>
                 </ListView.Template>
                 <ItemsControl.ItemsPanel>
@@ -81,15 +82,9 @@
                 <ListView.ItemTemplate>
                     <DataTemplate  DataType="{x:Type toolkit:ImageEntry}">
                         <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-
-                            <!--<toolkit:VirtualImage Path="{Binding FileParameters.Path}" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />
-                            <toolkit:VirtualImage Source="{Binding Thumbnail}" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />-->
                             <Border CornerRadius="5" BorderBrush="LightGray" BorderThickness="2" Height="128" Width="128">
-                                <toolkit:Thumbnail Source="{Binding Thumbnail, IsAsync = True }" Height="128" Width="128" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
-                                <!--<Image Source="{Binding Thumbnail, IsAsync = True }" Height="128" Width="128" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" Stretch="UniformToFill" />-->
+                                <controls:Thumbnail Source="{Binding Thumbnail, IsAsync = True}" Height="128" Width="128" MaxWidth="128" MaxHeight="128" HorizontalAlignment="Stretch" VerticalAlignment="Top" />
                             </Border>
-
-                            <!--<TextBlock Text="{Binding FileName}" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" MaxWidth="128"/>-->
                         </StackPanel>
                         <!--<DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding Path=(toolkit:MyScrollViewer.IsInViewport), RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"
@@ -100,22 +95,45 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <Grid Grid.Row="1">
+            <Grid Grid.Row="1" Background="AliceBlue">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="30"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="50"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="PrevPage" Click="PrevPage_OnClick">Prev Page</Button>
-                <TextBox 
-                    VerticalAlignment="Stretch" 
-                    HorizontalAlignment="Stretch" 
-                    Grid.Column="1" 
-                    VerticalContentAlignment="Center"
-                    HorizontalContentAlignment="Center"
-                    Text="{Binding Page, UpdateSourceTrigger=PropertyChanged}"
-                         ></TextBox>
-                <Button x:Name="NextPage" Click="NextPage_OnClick" Grid.Column="2">Next Page</Button>
+                <Label Grid.Column="0"  
+                         VerticalAlignment="Stretch" 
+                         HorizontalAlignment="Stretch" 
+                         VerticalContentAlignment="Center"
+                         Content="{Binding Results}"
+                ></Label>
+                <Button Grid.Column="1" x:Name="PrevPage" Click="PrevPage_OnClick">&lt;&lt;</Button>
+                <TextBox Grid.Column="2"  
+                         VerticalAlignment="Stretch" 
+                         HorizontalAlignment="Stretch" 
+                         VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Center"
+                         KeyDown="Page_OnKeyDown"
+                         Text="{Binding Page, UpdateSourceTrigger=PropertyChanged}"
+                ></TextBox>
+                <Label Grid.Column="3"  
+                         VerticalAlignment="Stretch" 
+                         HorizontalAlignment="Stretch" 
+                         VerticalContentAlignment="Center"
+                         HorizontalContentAlignment="Center"
+                         Content="of"
+                ></Label>
+                <Label Grid.Column="4"  
+                       VerticalAlignment="Stretch" 
+                       HorizontalAlignment="Stretch" 
+                       VerticalContentAlignment="Center"
+                       HorizontalContentAlignment="Center"
+                       Content="{Binding Pages}"
+                ></Label>
+                <Button Grid.Column="5" x:Name="NextPage" Click="NextPage_OnClick">&gt;&gt;</Button>
             </Grid>
         </Grid>
 
@@ -198,6 +216,14 @@
                 <Button Grid.Row="1" Command="{Binding CopyParameters}">Copy Parameters</Button>
             </Grid>
         </Grid>
+        <!--<Grid Grid.Row="1" Background="AliceBlue">
+            <StackPanel>
+                <Label>Prompt</Label>
+                <Label>Negative Prompt</Label>
+                <Label>Negative Prompt</Label>
+            </StackPanel>
+
+        </Grid>-->
         <Grid Grid.Row="2" ColumnSpan="3">
             <ProgressBar Value="{Binding CurrentPosition}" Maximum="{Binding TotalFiles}"></ProgressBar>
             <ProgressBar Value="{Binding CurrentPositionScan}" Maximum="{Binding TotalFilesScan}"></ProgressBar>

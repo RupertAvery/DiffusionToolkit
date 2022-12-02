@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using Diffusion.IO;
 using static System.Net.Mime.MediaTypeNames;
 using System.Text;
+using Diffusion.Database;
 
 //Console.WriteLine("Hello, World!");
 
@@ -13,19 +14,26 @@ using System.Text;
 
 //s.Scan(path).ToList();
 
+var tokens = CSVParser.Parse("Hello there, General Kenobi,\"Pleased, to finally \" \"meet\"\" you!\", I'm sure, it's not me who's pleased");
 
-string path = "D:\\conda\\AUTOMATIC1111\\stable-diffusion-webui\\models\\Stable-diffusion";
-
-
-
-var scanner = new ModelScanner();
-var files = scanner.Scan(path);
-
-foreach (var file in files)
+foreach (var token in tokens)
 {
-
-    Console.WriteLine($"{Path.GetFileName(file.Path)}: hash:{file.Hash}, v2:{file.Hashv2}");
+    Console.WriteLine(token);
 }
+
+
+//string path = "D:\\conda\\AUTOMATIC1111\\stable-diffusion-webui\\models\\Stable-diffusion";
+
+
+
+//var scanner = new ModelScanner();
+//var files = scanner.Scan(path);
+
+//foreach (var file in files)
+//{
+
+//    Console.WriteLine($"{Path.GetFileName(file.Path)}: hash:{file.Hash}, v2:{file.Hashv2}");
+//}
 
 //import hashlib
 //    m = hashlib.sha256()

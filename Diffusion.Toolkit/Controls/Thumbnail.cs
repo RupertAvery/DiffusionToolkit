@@ -4,12 +4,12 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace Diffusion.Toolkit;
+namespace Diffusion.Toolkit.Controls;
 
 public class Thumbnail : FrameworkElement
 {
     public static readonly DependencyProperty SourceProperty =
-        DependencyProperty.Register("Source", typeof(BitmapSource), typeof(Thumbnail),
+        DependencyProperty.Register(nameof(Source), typeof(BitmapSource), typeof(Thumbnail),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
 
     public BitmapSource Source

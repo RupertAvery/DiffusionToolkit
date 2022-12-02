@@ -23,6 +23,7 @@ using Image = Diffusion.Database.Image;
 using Path = System.IO.Path;
 using static System.Net.WebRequestMethods;
 using Diffusion.Toolkit.Classes;
+using System.Reflection;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -32,11 +33,11 @@ namespace Diffusion.Toolkit.Pages
     public partial class Search : Page
     {
         private readonly SearchModel _model;
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private NavigatorService _navigatorService;
         private DataStore _dataStore;
 
         private CancellationTokenSource _thumbnailLoaderCancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _searchCancellationTokenSource = new CancellationTokenSource();
 
         public Search()
         {
@@ -60,12 +61,19 @@ namespace Diffusion.Toolkit.Pages
             this._navigatorService = navigatorService;
             this._dataStore = dataStore;
 
+            navigatorService.Host.Closed += (sender, args) =>
+            {
+                _thumbnailLoaderCancellationTokenSource.Cancel();
+                _searchCancellationTokenSource.Cancel();
+            };
+
             var total = _dataStore.GetTotal();
 
 
             _model = new SearchModel();
             _model.Status = $"{total} images in database";
-            _model.Page = 1;
+            _model.Page = 0;
+            _model.Pages = 0;
             _model.TotalFiles = 100;
             _model.TotalFilesScan = 100;
 
@@ -80,18 +88,21 @@ namespace Diffusion.Toolkit.Pages
 
         private void CopyPath(object obj)
         {
+            if (_model.SelectedImageEntry == null) return;
             var p = _model.SelectedImageEntry.FileParameters.Path;
             Clipboard.SetText(p);
         }
 
         private void CopyPrompt(object obj)
         {
+            if (_model.SelectedImageEntry == null) return;
             var p = _model.SelectedImageEntry.FileParameters.Prompt;
             Clipboard.SetText(p);
         }
 
         private void CopyNegative(object obj)
         {
+            if (_model.SelectedImageEntry == null) return;
             var p = _model.SelectedImageEntry.FileParameters.NegativePrompt;
             Clipboard.SetText(p);
         }
@@ -99,34 +110,53 @@ namespace Diffusion.Toolkit.Pages
 
         private void CopyParameters(object obj)
         {
+            if (_model.SelectedImageEntry == null) return;
+
             var p = _model.SelectedImageEntry.FileParameters.Prompt;
             var n = _model.SelectedImageEntry.FileParameters.NegativePrompt;
             var o = _model.SelectedImageEntry.FileParameters.OtherParameters;
-            var parameters = $"{p}\r\n\r\n{n}\r\n{o}";
+            var parameters = $"{p}\r\n\r\nNegative prompt: {n}\r\n{o}";
 
             Clipboard.SetText(parameters);
         }
 
-        private int _pageSize = 250;
-        private int _pages = 0;
+        private int _pageSize = 100;
 
         private void SearchImages(object obj)
         {
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource = new CancellationTokenSource();
-
-            var token = cancellationTokenSource.Token;
 
             _model.Images!.Clear();
-            var count = _dataStore.Count(_model.SearchText);
+            try
+            {
+                var count = _dataStore.Count(_model.SearchText);
 
-            _pages = count / _pageSize + (count % _pageSize > 1 ? 1 : 0);
-            _model.Page = 1;
+                if (count == 0)
+                {
+                    MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No items found",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
 
-            PrevPage.IsEnabled = false;
-            NextPage.IsEnabled = _pages > 1;
+                _model.Pages = count / _pageSize + (count % _pageSize > 1 ? 1 : 0);
+                PrevPage.IsEnabled = false;
+                NextPage.IsEnabled = _model.Pages > 1;
+                _model.Results = $"{count} results found";
 
-            Task.Run(() => LoadMatchesOnThread(cancellationTokenSource.Token));
+                setPage = true;
+                _model.Page = 1;
+                setPage = false;
+
+                ReloadMatches();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(_navigatorService.Host, e.Message, "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                throw;
+            }
+
+
 
 
             //Task.Run(async () =>
@@ -202,15 +232,15 @@ namespace Diffusion.Toolkit.Pages
             {
                 _model.SelectedImage = _model.SelectedImageEntry == null ? null : GetBitmapImage(_model.SelectedImageEntry.FileParameters.Path);
             }
-            if (e.PropertyName == nameof(SearchModel.Page))
+            else if (e.PropertyName == nameof(SearchModel.Page))
             {
                 if (setPage) return;
 
                 setPage = true;
 
-                if (_model.Page > _pages)
+                if (_model.Page > _model.Pages)
                 {
-                    _model.Page = _pages;
+                    _model.Page = _model.Pages;
                 }
                 if (_model.Page < 1)
                 {
@@ -218,14 +248,11 @@ namespace Diffusion.Toolkit.Pages
                 }
 
                 PrevPage.IsEnabled = _model.Page > 1;
-                NextPage.IsEnabled = _pages > 1;
+                NextPage.IsEnabled = _model.Pages > 1;
 
                 setPage = false;
 
-                cancellationTokenSource.Cancel();
-                cancellationTokenSource = new CancellationTokenSource();
-
-                Task.Run(() => LoadMatchesOnThread(cancellationTokenSource.Token));
+                //ReloadMatches();
             }
         }
 
@@ -324,11 +351,11 @@ namespace Diffusion.Toolkit.Pages
                         //    _model.Status = $"Scanning {_model.CurrentPositionScan} of {_model.TotalFilesScan}...";
                         //});
 
-                        if (scanned % 10 == 0)
+                        if (scanned % 51 == 0)
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                _model.CurrentPositionScan += 10;
+                                _model.CurrentPositionScan += 51;
                                 _model.Status = $"Scanning {_model.CurrentPositionScan} of {_model.TotalFilesScan}...";
                             });
                         }
@@ -341,6 +368,7 @@ namespace Diffusion.Toolkit.Pages
 
                     Dispatcher.Invoke(() =>
                     {
+                        _model.Status = $"Scanning {_model.TotalFilesScan} of {_model.TotalFilesScan}...";
                         _model.TotalFilesScan = Int32.MaxValue;
                         _model.CurrentPositionScan = 0;
                     });
@@ -348,7 +376,7 @@ namespace Diffusion.Toolkit.Pages
 
                 Dispatcher.Invoke(() =>
                 {
-                    MessageBox.Show(
+                    MessageBox.Show(_navigatorService.Host,
                         $"Files Scanned: {scanned}\r\nFiles Added: {added}",
                         "Scan Complete",
                         MessageBoxButton.OK, MessageBoxImage.Information);
@@ -359,7 +387,7 @@ namespace Diffusion.Toolkit.Pages
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
+                MessageBox.Show(_navigatorService.Host,
                     ex.Message,
                     "Scan Error",
                     MessageBoxButton.OK, MessageBoxImage.Exclamation);
@@ -399,10 +427,10 @@ namespace Diffusion.Toolkit.Pages
 
         private void PrevPage_OnClick(object sender, RoutedEventArgs e)
         {
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource = new CancellationTokenSource();
-
+            setPage = true;
             _model.Page--;
+            setPage = false;
+
             NextPage.IsEnabled = true;
 
             if (_model.Page == 1)
@@ -410,22 +438,42 @@ namespace Diffusion.Toolkit.Pages
                 PrevPage.IsEnabled = false;
             }
 
-            Task.Run(() => LoadMatchesOnThread(cancellationTokenSource.Token));
+            ReloadMatches();
+        }
+
+        private Task ReloadMatches()
+        {
+            _searchCancellationTokenSource.Cancel();
+            _searchCancellationTokenSource = new CancellationTokenSource();
+
+            return Task.Run(() => LoadMatchesOnThread(_searchCancellationTokenSource.Token), _searchCancellationTokenSource.Token)
+                .ContinueWith(t =>
+                {
+                    if (t.IsCompletedSuccessfully)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            ResetView(true);
+                        });
+                    }
+                });
+
+
         }
 
         private void NextPage_OnClick(object sender, RoutedEventArgs e)
         {
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource = new CancellationTokenSource();
-
+            setPage = true;
             _model.Page++;
+            setPage = false;
+
             PrevPage.IsEnabled = true;
-            if (_model.Page == _pages)
+            if (_model.Page == _model.Pages)
             {
                 NextPage.IsEnabled = false;
             }
-            
-            Task.Run(() => LoadMatchesOnThread(cancellationTokenSource.Token));
+
+            ReloadMatches();
         }
 
         private void LoadMatchesOnThread(CancellationToken token)
@@ -486,8 +534,8 @@ namespace Diffusion.Toolkit.Pages
                             _model.Images.Add(image);
                         }
                         _model.CurrentPosition += images.Count;
+                        images.Clear();
                     });
-                    images.Clear();
                 }
 
 
@@ -506,6 +554,8 @@ namespace Diffusion.Toolkit.Pages
                 {
                     _model.Images.Add(image);
                 }
+
+                _model.IsEmpty = _model.Images.Count == 0;
                 _model.TotalFiles = Int32.MaxValue;
                 _model.CurrentPosition = 0;
             });
@@ -564,15 +614,31 @@ namespace Diffusion.Toolkit.Pages
             _model.CurrentPosition = 0;
         }
 
-        private void FrameworkElement_OnTargetUpdated(object? sender, DataTransferEventArgs e)
+        private void Page_OnKeyDown(object sender, KeyEventArgs e)
         {
-            var listview = ((ListView)sender!);
-            if (listview.Items.Count > 0)
+            if (e.Key == Key.Enter)
             {
-                listview.ScrollIntoView(listview.Items[0]);
+                ReloadMatches();
+                e.Handled = true;
             }
+        }
 
+        private void ResetView(bool focus)
+        {
+            if (_model.Images is { Count: > 0 })
+            {
+                ThumbnailListView.ScrollIntoView(_model.Images[0]);
+                ThumbnailListView.SelectedItem = _model.Images[0];
 
+                if (focus)
+                {
+                    if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(0) is ListViewItem item)
+                    {
+                        item.Focus();
+                    }
+
+                }
+            }
         }
     }
 }

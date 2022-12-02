@@ -28,6 +28,7 @@ using static Dapper.SqlMapper;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Net.WebRequestMethods;
 using Path = System.IO.Path;
+using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit
 {
@@ -59,14 +60,16 @@ namespace Diffusion.Toolkit
         public MainWindow()
         {
             InitializeComponent();
+            
+            _navigatorService = new NavigatorService(this)
+            {
+                OnNavigate = OnNavigate
+            };
+
 
             _dataStore = new DataStore(Path.Combine(AppDataPath, "diffusion-toolkit.db"));
             _search = new Search(_navigatorService, _dataStore);
 
-            _navigatorService = new NavigatorService()
-            {
-                OnNavigate = OnNavigate
-            };
 
             _model = new MainModel();
             _model.Rescan = new RelayCommand<object>(Rescan);

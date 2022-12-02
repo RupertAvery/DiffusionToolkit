@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using System.Windows.Controls;
 
-namespace Diffusion.Toolkit;
+namespace Diffusion.Toolkit.Classes;
 
 public class NavigatorService : INavigatorService
 {
+    public Window Host { get; }
+
     private Dictionary<string, Page> _pages;
     private readonly Stack<string> _history;
     private string _currentUrl;
     public Action<Page> OnNavigate { get; set; }
 
-    public NavigatorService()
+    public NavigatorService(Window host)
     {
+        Host = host;
         _history = new Stack<string>();
     }
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Controls;
 
-namespace Diffusion.Toolkit;
+namespace Diffusion.Toolkit.Classes;
 
 public interface INavigatorService
 {

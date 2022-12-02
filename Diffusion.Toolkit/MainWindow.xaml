@@ -19,8 +19,6 @@
             </MenuItem>
             <MenuItem Header="_Edit">
                 <MenuItem Header="_Settings" Command="{Binding Settings}"/>
-            </MenuItem>
-            <MenuItem Header="_View">
                 <MenuItem Header="_Rescan Folders" Command="{Binding Rescan}"/>
             </MenuItem>
         </Menu>

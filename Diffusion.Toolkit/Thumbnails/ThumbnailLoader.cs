@@ -14,7 +14,7 @@ public class ThumbnailLoader
     private readonly Dispatcher _dispatcher;
     private static ThumbnailLoader? _instance;
     private readonly Channel<Job<ThumbnailJob, BitmapSource>> _channel = Channel.CreateUnbounded<Job<ThumbnailJob, BitmapSource>>();
-    private readonly int _degreeOfParallelism = 2;
+    private readonly int _degreeOfParallelism = 4;
 
     private ThumbnailLoader(Dispatcher dispatcher)
     {
@@ -87,53 +87,21 @@ public class ThumbnailLoader
             if (!ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path,
                     out BitmapSource? thumbnail))
             {
-                if (!ThumbnailCache.Instance.TryQueue(job.Data.Path))
+                thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height);
+                ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
+
+                _dispatcher.Invoke(() =>
                 {
-                    var s = new AutoResetEvent(false);
-
-                    var t = new Thread((o) =>
-                    {
-                        thumbnail = GetThumbnail(job.Data.Path, job.Data.Width, job.Data.Height);
-                        ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
-
-                        _dispatcher.Invoke(() =>
-                        {
-                            job.Completion(thumbnail);
-                        }, token);
-
-                        s.Set();
-                    });
-
-
-                    t.Start();
-
-                    s.WaitOne();
-
-                    ThumbnailCache.Instance.Dequeue(job.Data.Path);
-                }
-
-
-                //_ = Task.Run(() =>
-                //{
-                //    thumbnail = GetThumbnail(job.Data.Path, job.Data.Width, job.Data.Height);
-                //    ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
-
-                //    _dispatcher.Invoke(() =>
-                //    {
-                //        job.Completion(thumbnail);
-                //    });
-
-                //}, token);
+                    job.Completion(thumbnail);
+                });
             }
             else
             {
                 _dispatcher.Invoke(() =>
                 {
                     job.Completion(thumbnail);
-                }, token);
+                });
             }
-
-
         }
     }
 
@@ -141,6 +109,51 @@ public class ThumbnailLoader
     {
         await _channel.Writer.WriteAsync(new Job<ThumbnailJob, BitmapSource>() { Data = job, Completion = completion });
     }
+
+    public static Stream GenerateThumbnail(string path, int width, int height)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+        var bitmap = new BitmapImage();
+        //bitmap.UriSource = new Uri(path);
+        bitmap.BeginInit();
+
+        var size = 128;
+
+        if (width > height)
+        {
+            bitmap.DecodePixelWidth = size;
+        }
+        else
+        {
+            bitmap.DecodePixelHeight = size;
+        }
+        //bitmap.CacheOption = BitmapCacheOption.OnLoad;
+        bitmap.StreamSource = stream;
+        bitmap.EndInit();
+        bitmap.Freeze();
+
+        var encoder = new JpegBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(bitmap, null, null, null));
+
+        var ministream = new MemoryStream();
+
+        encoder.Save(ministream);
+
+        ministream.Seek(0, SeekOrigin.Begin);
+        
+        return ministream;
+    }
+
+    public static BitmapImage GetThumbnailImmediate(string path, int width, int height)
+    {
+        var bitmap = new BitmapImage();
+        bitmap.BeginInit();
+        bitmap.StreamSource = GenerateThumbnail(path, width, height);
+        bitmap.EndInit();
+        bitmap.Freeze();
+        return bitmap;
+    }
+
 
     public static BitmapImage GetThumbnail(string path, int width, int height)
     {

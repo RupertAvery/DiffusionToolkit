@@ -1,4 +1,6 @@
 ﻿using System.Linq.Expressions;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using SQLite;
 
 public static class SQLiteConnectionExtensions
@@ -32,5 +34,13 @@ public static class SQLiteConnectionExtensions
 
         return result > 0;
     }
+
+    //public static void AddRegex(this SQLiteConnection connection)
+    //{
+    //    connection.CreateFunction(
+    //        "regexp",
+    //        (string pattern, string input)
+    //            => Regex.IsMatch(input, pattern));
+    //}
 
 }

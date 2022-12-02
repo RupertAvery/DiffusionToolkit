@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using System.Reflection.PortableExecutable;
 
 namespace Diffusion.Database;
 
@@ -155,11 +156,27 @@ public class DataStore
         return count;
     }
 
+    private (string, IEnumerable<object>) BuildQuery(string prompt)
+    {
+        var tokens = CSVParser.Parse(prompt);
+
+        var conditions = new List<KeyValuePair<string, string>>();
+        foreach (var token in tokens)
+        {
+            conditions.Add(new KeyValuePair<string, string>("(Prompt LIKE ?)", $"%{token.Trim()}%"));
+        }
+
+        return (string.Join(" AND ", conditions.Select(c => c.Key)),
+            conditions.Select(c => c.Value));
+    }
+
     public int Count(string prompt)
     {
         using var db = OpenConnection();
 
-        var count = db.ExecuteScalar<int>("SELECT COUNT(*) FROM Image WHERE Prompt LIKE ?", $"%{prompt}%");
+        var q = BuildQuery(prompt);
+
+        var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
 
         db.Close();
 
@@ -175,7 +192,9 @@ public class DataStore
         //ORDER BY title ASC LIMIT 50 )
         //ORDER BY title ASC LIMIT 10
 
-        var images = db.Query<Image>("SELECT * FROM Image WHERE Prompt LIKE ? LIMIT ? OFFSET ?", $"%{prompt}%", pageSize, offset);
+        var q = BuildQuery(prompt);
+
+        var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1} LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
 
         foreach (var image in images)
         {

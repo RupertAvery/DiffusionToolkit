@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace Diffusion.Toolkit;
+namespace Diffusion.Toolkit.Classes;
 
 public class RelayCommand<T> : ICommand
 {

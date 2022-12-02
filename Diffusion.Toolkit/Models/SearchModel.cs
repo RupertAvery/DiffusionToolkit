@@ -13,7 +13,7 @@ public class SearchModel : BaseNotify
     private ObservableCollection<ImageEntry>? _images;
     private ImageEntry? _selectedImage;
     private BitmapSource? _image;
-    public object _rowLock = new object();
+    //public object _rowLock = new object();
     private int _totalFiles;
     private int _currentPosition;
     private int _totalFilesScan;
@@ -24,18 +24,15 @@ public class SearchModel : BaseNotify
     public SearchModel()
     {
         Images = new ObservableCollection<ImageEntry>();
+        IsEmpty = true;
         Status = "Ready";
-        BindingOperations.EnableCollectionSynchronization(Images, _rowLock);
+        //BindingOperations.EnableCollectionSynchronization(Images, _rowLock);
     }
 
     public ObservableCollection<ImageEntry>? Images
     {
         get => _images;
-        set
-        {
-            SetField(ref _isEmpty, _images == null || _images.Count == 0, "IsEmpty");
-            SetField(ref _images, value);
-        }
+        set => SetField(ref _images, value);
     }
 
     public ImageEntry? SelectedImageEntry
@@ -143,6 +140,9 @@ public class SearchModel : BaseNotify
     private string _status;
     private int _page;
     private bool _isEmpty;
+    private int _pages;
+    private string _results;
+
 
     public int Page
     {
@@ -153,5 +153,18 @@ public class SearchModel : BaseNotify
     public bool IsEmpty
     {
         get => _isEmpty;
+        set => SetField(ref _isEmpty, value);
+    }
+
+    public int Pages
+    {
+        get => _pages;
+        set => SetField(ref _pages, value);
+    }
+
+    public string Results
+    {
+        get => _results;
+        set => SetField(ref _results, value);
     }
 }

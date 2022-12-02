@@ -1,8 +1,10 @@
-﻿using Diffusion.Database;
+﻿using System;
+using Diffusion.Database;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit
 {
@@ -18,6 +20,11 @@ namespace Diffusion.Toolkit
         {
             InitializeComponent();
 
+        }
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            IconHelper.RemoveIcon(this);
         }
 
         public SettingsWindow(DataStore dataStore, Settings settings)  :this()
@@ -52,7 +59,7 @@ namespace Diffusion.Toolkit
         private void RemoveFolder_OnClick(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(this,
-                "Are you sure you want to remove this folder? This will also remove images in the database belonging to this folder.",
+                "Are you sure you want to remove this folder?",
                 "Remove folder", MessageBoxButton.YesNo,
                 MessageBoxImage.Question, MessageBoxResult.No);
 

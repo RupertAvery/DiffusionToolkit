@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Diffusion.Toolkit;
+namespace Diffusion.Toolkit.Controls;
 
 public sealed class MyScrollViewer : ScrollViewer
 {
