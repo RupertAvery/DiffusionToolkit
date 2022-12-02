@@ -21,16 +21,25 @@ namespace Diffusion.Common
 
         public bool TryLoad(out T? obj)
         {
-            if (File.Exists(_settingsPath))
+            try
             {
-                var json = File.ReadAllText(_settingsPath);
-                obj = JsonSerializer.Deserialize<T>(json);
-                return true;
+                if (File.Exists(_settingsPath))
+                {
+                    var json = File.ReadAllText(_settingsPath);
+                    obj = JsonSerializer.Deserialize<T>(json);
+                    return true;
+                }
+
+                obj = default(T);
+
+                return false;
             }
+            catch (Exception e)
+            {
+                obj = default(T);
 
-            obj = default(T);
-
-            return false;
+                return false;
+            }
         }
 
         public void Save(T obj)

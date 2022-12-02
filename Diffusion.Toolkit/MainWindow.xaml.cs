@@ -44,11 +44,12 @@ namespace Diffusion.Toolkit
 
             // Ugh, need to make settings more... deterministic
 
-            if (!_configuration.TryLoad(out _settings) || _settings.ImagePaths.Count == 0)
+            if (!_configuration.TryLoad(out _settings))
             {
                 this.Loaded += (sender, args) =>
                 {
                     _settings = new Settings();
+
                     var settings = new SettingsWindow(_dataStore, _settings);
                     settings.Owner = this;
                     settings.ShowDialog();
@@ -67,13 +68,16 @@ namespace Diffusion.Toolkit
                     }
                 };
             }
-
-            if (_settings.FileExtensions == null ||
-                _settings.FileExtensions.Length
-                == 0)
+            else
             {
-                _settings.FileExtensions = ".png, .jpg";
+                if (_settings.FileExtensions == null ||
+                    _settings.FileExtensions.Length
+                    == 0)
+                {
+                    _settings.FileExtensions = ".png, .jpg";
+                }
             }
+
 
             _search = new Search(_navigatorService, _dataStore, _settings);
 
