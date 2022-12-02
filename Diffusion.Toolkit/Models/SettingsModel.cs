@@ -8,6 +8,7 @@ public class SettingsModel : BaseNotify
     private ObservableCollection<string> _imagePaths;
     private int _selectedIndex;
     private string _fileExtensions;
+    private int _pageSize;
 
     public SettingsModel()
     {
@@ -36,5 +37,11 @@ public class SettingsModel : BaseNotify
     {
         get => _modelRootPath;
         set => SetField(ref _modelRootPath, value);
+    }
+
+    public int PageSize
+    {
+        get => _pageSize;
+        set => SetField(ref _pageSize, value);
     }
 }

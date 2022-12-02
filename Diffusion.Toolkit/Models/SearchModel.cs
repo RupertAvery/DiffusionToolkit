@@ -85,7 +85,7 @@ public class SearchModel : BaseNotify
     }
 
 
-    public string SearchText
+    public string? SearchText
     {
         get => _searchText;
         set => SetField(ref _searchText, value);

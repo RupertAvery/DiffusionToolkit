@@ -73,7 +73,7 @@ namespace Diffusion.Toolkit.Pages
 
 
             _model = new SearchModel();
-            _model.Status = $"{total} images in database";
+            _model.Status = $"{total:###,###,##0} images in database";
             _model.Page = 0;
             _model.Pages = 0;
             _model.TotalFiles = 100;
@@ -136,12 +136,22 @@ namespace Diffusion.Toolkit.Pages
             Clipboard.SetText(parameters);
         }
 
-        private int _pageSize = 100;
-
-        private void SearchImages(object obj)
+        public void SearchImages()
         {
+            SearchImages(null);
+        }
+
+        public void SearchImages(object obj)
+        {
+            if (!_settings.ImagePaths.Any())
+            {
+                MessageBox.Show("No image paths configured!", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
             _model.Images!.Clear();
+            
             try
             {
                 var count = _dataStore.Count(_model.SearchText);
@@ -153,91 +163,23 @@ namespace Diffusion.Toolkit.Pages
                         MessageBoxImage.Information);
                 }
 
-                _model.Pages = count / _pageSize + (count % _pageSize > 1 ? 1 : 0);
+                _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
                 PrevPage.IsEnabled = false;
                 NextPage.IsEnabled = _model.Pages > 1;
-                _model.Results = $"{count} results found";
+                _model.Results = $"{count:###,###,##0} results found";
 
                 setPage = true;
                 _model.Page = 1;
                 setPage = false;
 
-                ReloadMatches();
+                ReloadMatches((string)obj != "ManualSearch");
             }
             catch (Exception e)
             {
                 MessageBox.Show(_navigatorService.Host, e.Message, "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                throw;
             }
-
-
-
-
-            //Task.Run(async () =>
-            //{
-            //    try
-            //    {
-            //        await LoadMatchesAsync(cancellationTokenSource.Token);
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        Dispatcher.Invoke(() =>
-            //        {
-            //            MessageBox.Show(e.Message, "Error!",
-            //                MessageBoxButton.OK,
-            //                MessageBoxImage.Error);
-            //        });
-            //        throw;
-            //    }
-
-            //}, token);
-
-            //Task.Run(async () =>
-            //{
-
-            //    try
-            //    {
-            //        Dispatcher.Invoke(() =>
-            //        {
-            //            _model.Images!.Clear();
-            //        });
-
-
-
-            //        var count = _dataStore.Count(_model.SearchText);
-
-            //        _pages = count / _pageSize + (count % _pageSize > 1 ? 1 : 0);
-            //        _model.Page = 1;
-
-            //        Dispatcher.Invoke(() =>
-            //        {
-            //            PrevPage.IsEnabled = false;
-            //            NextPage.IsEnabled = _pages > 1;
-            //        });
-
-            //        await LoadMatchesAsync(cancellationTokenSource.Token);
-
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        Dispatcher.Invoke(() =>
-            //        {
-            //            MessageBox.Show(e.Message, "Error!",
-            //                MessageBoxButton.OK,
-            //                MessageBoxImage.Error);
-            //        });
-            //        throw;
-            //    }
-
-            //}, token).ContinueWith(t =>
-            //{
-            //    if (!t.IsCompletedSuccessfully)
-            //    {
-
-            //    }
-            //});
         }
 
         private bool setPage = false;
@@ -288,7 +230,7 @@ namespace Diffusion.Toolkit.Pages
 
         private bool isScanning = false;
 
-        public void Scan(IEnumerable<string> paths)
+        public void Scan()
         {
             if (isScanning)
             {
@@ -296,7 +238,7 @@ namespace Diffusion.Toolkit.Pages
             }
 
             isScanning = true;
-            Task.Run(() => ScanInternal(paths));
+            Task.Run(() => ScanInternal(_settings.ImagePaths));
         }
 
         private void ScanInternal(IEnumerable<string> paths)
@@ -400,7 +342,7 @@ namespace Diffusion.Toolkit.Pages
                     }
 
                     var total = _dataStore.GetTotal();
-                    _model.Status = $"{total} images in database";
+                    _model.Status = $"{total:###,###,##0} images in database";
                 });
             }
             catch (Exception ex)
@@ -459,7 +401,7 @@ namespace Diffusion.Toolkit.Pages
             ReloadMatches();
         }
 
-        private Task ReloadMatches()
+        private Task ReloadMatches(bool focus = true)
         {
             _searchCancellationTokenSource.Cancel();
             _searchCancellationTokenSource = new CancellationTokenSource();
@@ -471,7 +413,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            ResetView(true);
+                            ResetView(focus);
                         });
                     }
                 });
@@ -497,8 +439,8 @@ namespace Diffusion.Toolkit.Pages
         private void LoadMatchesOnThread(CancellationToken token)
         {
             var matches = _dataStore
-                .Search(_model.SearchText, _pageSize,
-                    _pageSize * (_model.Page - 1)).Select(file =>
+                .Search(_model.SearchText, _settings.PageSize,
+                    _settings.PageSize * (_model.Page - 1)).Select(file =>
                     new FileParameters()
                     {
                         Width = file.Width,
@@ -523,7 +465,7 @@ namespace Diffusion.Toolkit.Pages
 
             Dispatcher.Invoke(() =>
             {
-                _model.TotalFiles = _pageSize;
+                _model.TotalFiles = _settings.PageSize;
                 _model.CurrentPosition = 0;
             });
 
@@ -584,8 +526,8 @@ namespace Diffusion.Toolkit.Pages
         private void LoadMatches(CancellationToken token)
         {
             var matches = _dataStore
-                .Search(_model.SearchText, _pageSize,
-                    _pageSize * (_model.Page - 1)).Select(file =>
+                .Search(_model.SearchText, _settings.PageSize,
+                    _settings.PageSize * (_model.Page - 1)).Select(file =>
                     new FileParameters()
                     {
                         Width = file.Width,
@@ -607,7 +549,7 @@ namespace Diffusion.Toolkit.Pages
                     });
 
             _model.Images = new ObservableCollection<ImageEntry>();
-            _model.TotalFiles = _pageSize;
+            _model.TotalFiles = _settings.PageSize;
             _model.CurrentPosition = 0;
 
             var images = new List<ImageEntry>();

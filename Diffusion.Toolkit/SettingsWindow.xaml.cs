@@ -5,6 +5,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using Diffusion.Toolkit.Classes;
+using Diffusion.IO;
+using System.Text.RegularExpressions;
+using System.Windows.Input;
 
 namespace Diffusion.Toolkit
 {
@@ -27,22 +30,25 @@ namespace Diffusion.Toolkit
             IconHelper.RemoveIcon(this);
         }
 
-        public SettingsWindow(DataStore dataStore, Settings settings)  :this()
+        public SettingsWindow(DataStore dataStore, Settings settings) : this()
         {
             _dataStore = dataStore;
-            
+
             _model = new SettingsModel();
             _model.ImagePaths = new ObservableCollection<string>(settings.ImagePaths);
             _model.ModelRootPath = settings.ModelRootPath;
             _model.FileExtensions = settings.FileExtensions;
+            _model.PageSize = settings.PageSize;
 
             DataContext = _model;
-            
+
             Closing += (sender, args) =>
             {
+                settings.SetPristine();
                 settings.ImagePaths = _model.ImagePaths.ToList();
                 settings.ModelRootPath = _model.ModelRootPath;
                 settings.FileExtensions = _model.FileExtensions;
+                settings.PageSize = _model.PageSize;
             };
         }
 
@@ -50,7 +56,6 @@ namespace Diffusion.Toolkit
         {
             using var dialog = new CommonOpenFileDialog();
             dialog.IsFolderPicker = true;
-            dialog.ShowDialog(this);
             if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
             {
                 _model.ImagePaths.Add(dialog.FileName);
@@ -80,10 +85,16 @@ namespace Diffusion.Toolkit
         {
             using var dialog = new CommonOpenFileDialog();
             dialog.IsFolderPicker = true;
-            if(dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
             {
                 _model.ModelRootPath = dialog.FileName;
             }
+        }
+
+        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
         }
     }
 }

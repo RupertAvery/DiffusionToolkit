@@ -10,7 +10,7 @@
         ShowInTaskbar="False"
         WindowStyle="SingleBorderWindow"
         ResizeMode="NoResize"
-        Title="Settings" Height="450" Width="600">
+        Title="Settings" Height="508" Width="600">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -48,6 +48,15 @@
                     <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding ModelRootPath}" Margin="0,0,10,0"></TextBox>
                     <Button Height="26" Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
 
+                </Grid>
+                <Label>Images per Page</Label>
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider Minimum="100" Maximum="1000" Value="{Binding PageSize}" TickFrequency="50" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Orientation="Horizontal" Margin="0,0,10,0"></Slider>
+                    <Label Grid.Column="1" Height="26" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="{Binding PageSize}" Margin="0,0,10,0"></Label>
                 </Grid>
             </StackPanel>
            

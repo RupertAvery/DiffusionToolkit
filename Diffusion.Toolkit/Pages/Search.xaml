@@ -44,17 +44,11 @@
         <Grid Grid.Row="0" ColumnSpan="3" Margin="2">
             <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" VerticalContentAlignment="Center">
                 <TextBox.InputBindings>
-                    <KeyBinding Command="{Binding SearchCommand}" Key="Return" />
+                    <KeyBinding Command="{Binding SearchCommand}" Key="Return" CommandParameter="ManualSearch" />
                 </TextBox.InputBindings>
             </TextBox>
         </Grid>
-        <GridSplitter Grid.Row="1" Grid.Column="1"
-                      
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Stretch"
-                      ShowsPreview="True"
-                      Width="3"
-        />
+
         <Grid Grid.Row="1" Grid.Column="0" Background="White">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"></RowDefinition>
@@ -136,6 +130,14 @@
                 <Button Grid.Column="5" x:Name="NextPage" Click="NextPage_OnClick">&gt;&gt;</Button>
             </Grid>
         </Grid>
+
+        <GridSplitter Grid.Row="1" Grid.Column="1"
+                      
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Stretch"
+                      ShowsPreview="True"
+                      Width="3"
+        />
 
         <Grid Grid.Row="1" Grid.Column="2" Background="DarkGray">
             <Grid.RowDefinitions>

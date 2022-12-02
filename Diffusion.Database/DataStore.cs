@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using System.Data;
 using System.Reflection.PortableExecutable;
 
 namespace Diffusion.Database;
@@ -156,25 +157,18 @@ public class DataStore
         return count;
     }
 
-    private (string, IEnumerable<object>) BuildQuery(string prompt)
-    {
-        var tokens = CSVParser.Parse(prompt);
-
-        var conditions = new List<KeyValuePair<string, string>>();
-        foreach (var token in tokens)
-        {
-            conditions.Add(new KeyValuePair<string, string>("(Prompt LIKE ?)", $"%{token.Trim()}%"));
-        }
-
-        return (string.Join(" AND ", conditions.Select(c => c.Key)),
-            conditions.Select(c => c.Value));
-    }
 
     public int Count(string prompt)
     {
         using var db = OpenConnection();
 
-        var q = BuildQuery(prompt);
+        if (string.IsNullOrEmpty(prompt))
+        {
+            var allcount = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image");
+            return allcount;
+        }
+
+        var q = QueryBuilder.Parse(prompt);
 
         var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
 
@@ -187,12 +181,26 @@ public class DataStore
     {
         using var db = OpenConnection();
 
+        if (string.IsNullOrEmpty(prompt))
+        {
+            var allimages = db.Query<Image>($"SELECT * FROM Image LIMIT ? OFFSET ?", pageSize, offset);
+
+            foreach (var image in allimages)
+            {
+                yield return image;
+            }
+
+            db.Close();
+
+            yield break;
+        }
+
         //SELECT foo, bar, baz, quux FROM table
         //WHERE oid NOT IN(SELECT oid FROM table
         //ORDER BY title ASC LIMIT 50 )
         //ORDER BY title ASC LIMIT 10
 
-        var q = BuildQuery(prompt);
+        var q = QueryBuilder.Parse(prompt);
 
         var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1} LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
 
