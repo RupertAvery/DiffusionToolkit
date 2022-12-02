@@ -1,5 +1,9 @@
 # Diffusion Toolkit
 
+**NOTE:** If you want to just run the program, get the latest release from [here](https://github.com/RupertAvery/DiffusionToolkit/releases). Look for the Assets under the latest release, expand it, then grab the zip file.
+
+This is Windows only. You may be required to install .NET 6 Desktop Runtime (https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+
 Diffusion Toolkit is an image viewer backed by a SQLite database with the following features:
 
 * Select and recursively scan a set of folders for PNG images 
@@ -74,3 +78,13 @@ will not match the previous term.
 
 If you get some sort of database error, try deleting the file `diffusion-toolkit.db` in `%APPDATA%\DiffusionToolkit`
 
+# Buy me a coffee
+
+I've been told that people should be allowed to [buy me a coffee](https://www.buymeacoffee.com/rupertavery)
+
+Beer works too (PayPal)
+
+* [I'm feeling generous](https://www.paypal.me/rupertavery/25.00?locale.x=en_US)
+* [Buy me a 2 craft beers](https://www.paypal.me/rupertavery/10.00?locale.x=en_US)
+* [Buy me a craft beer](https://www.paypal.me/rupertavery/5.00?locale.x=en_US)
+* [Buy me 2 local beers](https://www.paypal.me/rupertavery/3.00?locale.x=en_US)
