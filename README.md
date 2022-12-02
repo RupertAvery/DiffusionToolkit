@@ -1,5 +1,9 @@
 # Diffusion Toolkit
 
+NOTE: Of you want to just run the program, get the latest release from [here](https://github.com/RupertAvery/DiffusionToolkit/releases). Look for the Assets under the latest release, expand it, then grab the zip file.
+
+This is Windows only. You may be required to install .NET 6 Desktop Runtime (https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+
 Diffusion Toolkit is an image viewer backed by a SQLite database with the following features:
 
 * Select and recursively scan a set of folders for PNG images 
