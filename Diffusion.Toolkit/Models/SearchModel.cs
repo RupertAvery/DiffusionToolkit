@@ -109,6 +109,12 @@ public class SearchModel : BaseNotify
         set => SetField(ref _copyPathCommand, value);
     }
 
+    public ICommand OpenInExplorerCommand
+    {
+        get => _openInExplorerCommand;
+        set => SetField(ref _openInExplorerCommand, value);
+    }
+
 
     public ICommand CopyNegativePromptCommand
     {
@@ -142,6 +148,7 @@ public class SearchModel : BaseNotify
     private bool _isEmpty;
     private int _pages;
     private string _results;
+    private ICommand _openInExplorerCommand;
 
 
     public int Page

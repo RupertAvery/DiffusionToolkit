@@ -7,6 +7,7 @@ public class SettingsModel : BaseNotify
     private string _modelRootPath;
     private ObservableCollection<string> _imagePaths;
     private int _selectedIndex;
+    private string _fileExtensions;
 
     public SettingsModel()
     {
@@ -23,6 +24,12 @@ public class SettingsModel : BaseNotify
     {
         get => _selectedIndex;
         set => SetField(ref _selectedIndex, value);
+    }
+
+    public string FileExtensions
+    {
+        get => _fileExtensions;
+        set => SetField(ref _fileExtensions, value);
     }
 
     public string ModelRootPath

@@ -34,6 +34,7 @@ namespace Diffusion.Toolkit
             _model = new SettingsModel();
             _model.ImagePaths = new ObservableCollection<string>(settings.ImagePaths);
             _model.ModelRootPath = settings.ModelRootPath;
+            _model.FileExtensions = settings.FileExtensions;
 
             DataContext = _model;
             
@@ -41,6 +42,7 @@ namespace Diffusion.Toolkit
             {
                 settings.ImagePaths = _model.ImagePaths.ToList();
                 settings.ModelRootPath = _model.ModelRootPath;
+                settings.FileExtensions = _model.FileExtensions;
             };
         }
 

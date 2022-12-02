@@ -8,14 +8,39 @@ namespace Diffusion.IO
 {
     public class Scanner
     {
-        public int Count(string path)
+        private readonly string _extensions;
+
+
+        public Scanner(string extensions)
         {
-            return Dir.GetFiles(path, "*.png", SearchOption.AllDirectories).Length;
+            _extensions = extensions;
         }
 
-        public IEnumerable<FileParameters> Scan(string path)
+        private IEnumerable<string> GetFiles(string path)
         {
-            var files = Dir.EnumerateFiles(path, "*.png", SearchOption.AllDirectories);
+            var files = Enumerable.Empty<string>();
+            foreach (var extension in _extensions.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                files = files.Concat(Dir.EnumerateFiles(path, $"*{extension}",
+                    SearchOption.AllDirectories));
+            }
+
+            return files;
+        }
+
+        public int Count(string path)
+        {
+            return GetFiles(path).Count();
+        }
+
+        public IEnumerable<FileParameters> Scan(string path, HashSet<string> ignoreFiles)
+        {
+            var files = GetFiles(path);
+
+            if (ignoreFiles != null)
+            {
+                files = files.Where(f => !ignoreFiles.Contains(f));
+            }
 
             foreach (var file in files)
             {
@@ -25,10 +50,29 @@ namespace Diffusion.IO
 
                 try
                 {
-                    IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
+                    string? parameters = null;
 
-                    var parameters = directories.FirstOrDefault(d => d.Name == "PNG-tEXt")?.Tags
-                        .FirstOrDefault(t => t.Name == "Textual Data")?.Description;
+                    var ext = Path.GetExtension(file).ToLower();
+                    bool isNotPng = true;
+
+                    if (ext == ".png")
+                    {
+                        IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
+
+                        parameters = directories.FirstOrDefault(d => d.Name == "PNG-tEXt")?.Tags
+                            .FirstOrDefault(t => t.Name == "Textual Data")?.Description;
+
+                        isNotPng = false;
+                    }
+                    else if (ext != ".png")
+                    {
+                        var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
+
+                        if (File.Exists(parameterFile))
+                        {
+                            parameters = File.ReadAllText(parameterFile);
+                        }
+                    }
 
                     if (parameters != null)
                     {
@@ -41,9 +85,15 @@ namespace Diffusion.IO
 
                         fileParameters.Parameters = parameters;
 
+                        var index = 0;
+
                         foreach (var part in parts)
                         {
-                            if (part.StartsWith(parametersKey, StringComparison.InvariantCultureIgnoreCase))
+                            if (isNotPng && index == 0)
+                            {
+                                fileParameters.Prompt = part;
+                            }
+                            else if (part.StartsWith(parametersKey, StringComparison.InvariantCultureIgnoreCase))
                             {
                                 fileParameters.Prompt = part.Substring(parametersKey.Length + 1);
                             }
@@ -90,14 +140,16 @@ namespace Diffusion.IO
                                     }
                                 }
                             }
+
+                            index++;
                         }
                     }
                 }
                 catch (Exception e)
                 {
-   
+
                 }
-               
+
 
                 yield return fileParameters;
             }

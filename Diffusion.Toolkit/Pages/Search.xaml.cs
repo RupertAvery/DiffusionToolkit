@@ -35,6 +35,7 @@ namespace Diffusion.Toolkit.Pages
         private readonly SearchModel _model;
         private NavigatorService _navigatorService;
         private DataStore _dataStore;
+        private Settings _settings;
 
         private CancellationTokenSource _thumbnailLoaderCancellationTokenSource = new CancellationTokenSource();
         private CancellationTokenSource _searchCancellationTokenSource = new CancellationTokenSource();
@@ -56,10 +57,11 @@ namespace Diffusion.Toolkit.Pages
             NextPage.IsEnabled = false;
         }
 
-        public Search(NavigatorService navigatorService, DataStore dataStore) : this()
+        public Search(NavigatorService navigatorService, DataStore dataStore, Settings settings) : this()
         {
             this._navigatorService = navigatorService;
             this._dataStore = dataStore;
+            _settings = settings;
 
             navigatorService.Host.Closed += (sender, args) =>
             {
@@ -83,7 +85,21 @@ namespace Diffusion.Toolkit.Pages
             _model.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
             _model.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
             _model.CopyParameters = new RelayCommand<object>(CopyParameters);
+            _model.OpenInExplorerCommand = new RelayCommand<object>(OpenInExplorer);
             DataContext = _model;
+        }
+
+        private void OpenInExplorer(object obj)
+        {
+            if (_model.SelectedImageEntry == null) return;
+            var p = _model.SelectedImageEntry.FileParameters.Path;
+            Process.Start("explorer.exe", $"/select,\"{p}\"");
+        }
+
+        public Settings Settings
+        {
+            get => _settings;
+            set => _settings = value;
         }
 
         private void CopyPath(object obj)
@@ -290,7 +306,10 @@ namespace Diffusion.Toolkit.Pages
                 var added = 0;
                 var scanned = 0;
 
-                var scanner = new Scanner();
+                var scanner = new Scanner(_settings.FileExtensions);
+
+                var images = _dataStore.GetImagePaths();
+                var ignoreFiles = images.ToHashSet();
 
                 foreach (var path in paths)
                 {
@@ -302,11 +321,10 @@ namespace Diffusion.Toolkit.Pages
                         _model.CurrentPositionScan = 0;
                     });
 
-                    var files = scanner.Scan(path);
 
-                    var images = _dataStore.GetImagePaths();
+                    //scanned += images.Count();
 
-                    var imgHash = images.ToHashSet();
+                    var files = scanner.Scan(path, ignoreFiles);
 
                     var newImages = new List<Image>();
 
@@ -314,42 +332,32 @@ namespace Diffusion.Toolkit.Pages
                     {
                         scanned++;
 
-                        if (!imgHash.Contains(file.Path))
+                        newImages.Add(new Image()
                         {
-                            //_model.FileParameters.Add(file);
-                            newImages.Add(new Image()
-                            {
-                                Width = file.Width,
-                                Height = file.Height,
-                                ModelHash = file.ModelHash,
-                                Path = file.Path,
-                                Steps = file.Steps,
-                                Sampler = file.Sampler,
-                                CFGScale = file.CFGScale,
-                                Seed = file.Seed,
-                                BatchPos = file.BatchPos,
-                                BatchSize = file.BatchSize,
-                                CreatedDate = File.GetCreationTime(file.Path),
-                                NegativePrompt = file.NegativePrompt,
-                                //OtherParameters = file.OtherParameters,
-                                //Parameters = file.Parameters,
-                                Prompt = file.Prompt
-                            });
+                            Width = file.Width,
+                            Height = file.Height,
+                            ModelHash = file.ModelHash,
+                            Path = file.Path,
+                            Steps = file.Steps,
+                            Sampler = file.Sampler,
+                            CFGScale = file.CFGScale,
+                            Seed = file.Seed,
+                            BatchPos = file.BatchPos,
+                            BatchSize = file.BatchSize,
+                            CreatedDate = File.GetCreationTime(file.Path),
+                            NegativePrompt = file.NegativePrompt,
+                            //OtherParameters = file.OtherParameters,
+                            //Parameters = file.Parameters,
+                            Prompt = file.Prompt
+                        });
 
-                            added++;
-                        }
+                        added++;
 
                         if (newImages.Count == 50)
                         {
                             _dataStore.AddImages(newImages);
                             newImages.Clear();
                         }
-
-                        //Dispatcher.Invoke(() =>
-                        //{
-                        //    _model.CurrentPositionScan++;
-                        //    _model.Status = $"Scanning {_model.CurrentPositionScan} of {_model.TotalFilesScan}...";
-                        //});
 
                         if (scanned % 51 == 0)
                         {
@@ -376,10 +384,20 @@ namespace Diffusion.Toolkit.Pages
 
                 Dispatcher.Invoke(() =>
                 {
-                    MessageBox.Show(_navigatorService.Host,
-                        $"Files Scanned: {scanned}\r\nFiles Added: {added}",
-                        "Scan Complete",
-                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    if (added == 0)
+                    {
+                        MessageBox.Show(_navigatorService.Host,
+                            "No new images found",
+                            "Scan Complete",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        MessageBox.Show(_navigatorService.Host,
+                            $"New images added: {added}",
+                            "Scan Complete",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
 
                     var total = _dataStore.GetTotal();
                     _model.Status = $"{total} images in database";

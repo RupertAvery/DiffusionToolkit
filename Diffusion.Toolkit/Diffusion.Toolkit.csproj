@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <None Remove="Icons\copy-32.png" />
+    <None Remove="Icons\link-32.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
 
   <ItemGroup>
     <Resource Include="Icons\copy-32.png" />
+    <Resource Include="Icons\link-32.png" />
   </ItemGroup>
 
   <ItemGroup>

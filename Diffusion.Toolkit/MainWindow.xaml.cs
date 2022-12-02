@@ -32,17 +32,6 @@ using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit
 {
-    public class Settings
-    {
-        public Settings()
-        {
-            ImagePaths = new List<string>();
-        }
-
-        public List<string> ImagePaths { get; set; }
-        public string ModelRootPath { get; set; }
-    }
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -60,7 +49,7 @@ namespace Diffusion.Toolkit
         public MainWindow()
         {
             InitializeComponent();
-            
+
             _navigatorService = new NavigatorService(this)
             {
                 OnNavigate = OnNavigate
@@ -68,11 +57,12 @@ namespace Diffusion.Toolkit
 
 
             _dataStore = new DataStore(Path.Combine(AppDataPath, "diffusion-toolkit.db"));
-            _search = new Search(_navigatorService, _dataStore);
-
 
             _model = new MainModel();
             _model.Rescan = new RelayCommand<object>(Rescan);
+
+
+            // Ugh, need to make settings more... deterministic
 
             if (!_configuration.TryLoad(out _settings) || _settings.ImagePaths.Count == 0)
             {
@@ -83,12 +73,25 @@ namespace Diffusion.Toolkit
                     settings.Owner = this;
                     settings.ShowDialog();
                     _configuration.Save(_settings);
+
+                    _search.Settings = _settings;
+
                     if (_settings.ImagePaths.Any())
                     {
                         _search.Scan(_settings.ImagePaths);
                     }
                 };
             }
+
+            if (_settings.FileExtensions == null ||
+                _settings.FileExtensions.Length
+                == 0)
+            {
+                _settings.FileExtensions = ".png, .jpg";
+            }
+
+            _search = new Search(_navigatorService, _dataStore, _settings);
+
 
             _model.Settings = new RelayCommand<object>(o =>
             {
@@ -103,9 +106,9 @@ namespace Diffusion.Toolkit
                 this.Close();
             });
 
-            
+
             DataContext = _model;
-            
+
             Loaded += OnLoaded;
 
             var pages = new Dictionary<string, Page>()
@@ -143,7 +146,7 @@ namespace Diffusion.Toolkit
 
 
 
-       
+
 
 
 

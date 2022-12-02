@@ -31,14 +31,22 @@
                     </StackPanel>
 
                 </Grid>
+                <Label>File Extensions</Label>
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions}" Margin="0,0,10,0"></TextBox>
+                </Grid>
                 <Label>Model Root</Label>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition Width="90"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Text="{Binding ModelRootPath}" Margin="0,0,10,0"></TextBox>
-                    <Button Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
+                    <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding ModelRootPath}" Margin="0,0,10,0"></TextBox>
+                    <Button Height="26" Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
 
                 </Grid>
             </StackPanel>

@@ -161,10 +161,14 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="32"/>
+                                <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
                             <Label>Path</Label>
-                            <Button Grid.Column="1"  Command="{Binding Path=DataContext.CopyPathCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=Page, AncestorLevel=1}}" Background="Transparent" BorderBrush="Transparent">
-                                <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
+                            <Button Grid.Column="1"  Command="{Binding Path=DataContext.OpenInExplorerCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=Page, AncestorLevel=1}}" Background="Transparent" BorderBrush="Transparent">
+                                <Image Source="../Icons/link-32.png" Height="16" Width="16" ToolTip="Show in Explorer"></Image>
+                            </Button>
+                            <Button Grid.Column="2"  Command="{Binding Path=DataContext.CopyPathCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=Page, AncestorLevel=1}}" Background="Transparent" BorderBrush="Transparent">
+                                <Image Source="../Icons/copy-32.png" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
                             </Button>
                         </Grid>
                         <Border BorderThickness="5" >
@@ -178,7 +182,7 @@
                             </Grid.ColumnDefinitions>
                             <Label>Prompt</Label>
                             <Button Grid.Column="1"  Command="{Binding Path=DataContext.CopyPromptCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=Page, AncestorLevel=1}}" Background="Transparent" BorderBrush="Transparent">
-                                <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
+                                <Image Source="../Icons/copy-32.png" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
                             </Button>
                         </Grid>
                         <Border BorderThickness="5" >
@@ -191,7 +195,7 @@
                             </Grid.ColumnDefinitions>
                             <Label>Negative Prompt</Label>
                             <Button Grid.Column="1"  Command="{Binding Path=DataContext.CopyNegativePromptCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=Page, AncestorLevel=1}}" Background="Transparent" BorderBrush="Transparent">
-                                <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
+                                <Image Source="../Icons/copy-32.png" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
                             </Button>
                         </Grid>
                         <Border BorderThickness="5" >
