@@ -82,15 +82,34 @@ public class Metadata
             }
         }
 
+        var propList = new List<string>();
+
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Comment:"), out tag))
         {
             var json = JsonDocument.Parse(tag.Description.Substring("Comment: ".Length));
+
             fileParameters.Steps = json.RootElement.GetProperty("steps").GetInt32();
             fileParameters.Sampler = json.RootElement.GetProperty("sampler").GetString();
             fileParameters.Seed = json.RootElement.GetProperty("seed").GetInt64();
             fileParameters.CFGScale = json.RootElement.GetProperty("scale").GetDecimal();
+
+            var properties = json.RootElement.EnumerateObject();
+
+            foreach (var property in properties)
+            {
+                if (property.Name != "uc")
+                {
+                    propList.Add($"{property.Name}: {property.Value.ToString()}");
+                }
+            }
+
+ 
             fileParameters.NegativePrompt = json.RootElement.GetProperty("uc").GetString();
         }
+
+        propList.Add($"model hash: {fileParameters.ModelHash}");
+
+        fileParameters.OtherParameters = string.Join(", ", propList);
 
         var pngIHDR = directories.FirstOrDefault(d => d.Name == "PNG-IHDR");
 
