@@ -6,22 +6,39 @@
         xmlns:local="clr-namespace:Diffusion.Toolkit"
         xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
         mc:Ignorable="d"
+        ResizeMode="CanResizeWithGrip"
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
+            <!--<RowDefinition Height="29"/>-->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+        <!--<Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>-->
         <Menu Grid.Row="0" Grid.ColumnSpan="3">
             <MenuItem Header="_File">
                 <MenuItem Header="_Close" Command="{Binding Close}"/>
             </MenuItem>
             <MenuItem Header="_Edit">
                 <MenuItem Header="_Settings" Command="{Binding Settings}"/>
-                <MenuItem Header="_Rescan Folders" Command="{Binding Rescan}"/>
+                <Separator></Separator>
+                <MenuItem Header="Rescan _Folders" Command="{Binding Rescan}"/>
+                <MenuItem Header="Rebuild _Images" Command="{Binding Rebuild}"/>
+                <Separator></Separator>
+                <MenuItem Header="_Remove Images marked for deletion" Command="{Binding RemoveMarked}"/>
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="Show Favorites" Command="{Binding ShowFavorite}"/>
+                <MenuItem Header="Show Marked for Deletion" Command="{Binding ShowMarked}"/>
             </MenuItem>
         </Menu>
+        <!--<StackPanel Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Background="AliceBlue" >
+        </StackPanel>-->
         <Frame Grid.Row="1" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
     </Grid>
 </Window>

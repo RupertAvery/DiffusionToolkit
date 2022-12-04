@@ -12,18 +12,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Diffusion.Toolkit.Thumbnails;
 using File = System.IO.File;
 using Image = Diffusion.Database.Image;
 using Path = System.IO.Path;
-using static System.Net.WebRequestMethods;
 using Diffusion.Toolkit.Classes;
-using System.Reflection;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -37,24 +32,29 @@ namespace Diffusion.Toolkit.Pages
         private DataStore _dataStore;
         private Settings _settings;
 
-        private CancellationTokenSource _thumbnailLoaderCancellationTokenSource = new CancellationTokenSource();
         private CancellationTokenSource _searchCancellationTokenSource = new CancellationTokenSource();
 
         public Search()
         {
             InitializeComponent();
 
-            ThumbnailCache.CreateInstance();
-            ThumbnailLoader.CreateInstance(Dispatcher);
-
             Task.Run(() =>
             {
-                _ = ThumbnailLoader.Instance.StartRun(
-                    _thumbnailLoaderCancellationTokenSource.Token);
+                _ = ThumbnailLoader.Instance.StartRun();
             });
 
             PrevPage.IsEnabled = false;
             NextPage.IsEnabled = false;
+        }
+
+
+        private Random r = new Random();
+        private readonly string[] _searchHints = File.ReadAllLines("hints.txt").Where(s => !string.IsNullOrEmpty(s.Trim())).ToArray();
+
+        private void GetRandomHint()
+        {
+            var randomHint = _searchHints[r.Next(_searchHints.Length)];
+            _model.SearchHint = $"Search for {randomHint}";
         }
 
         public Search(NavigatorService navigatorService, DataStore dataStore, Settings settings) : this()
@@ -65,15 +65,20 @@ namespace Diffusion.Toolkit.Pages
 
             navigatorService.Host.Closed += (sender, args) =>
             {
-                _thumbnailLoaderCancellationTokenSource.Cancel();
+                ThumbnailLoader.Instance.Flush();
+                ThumbnailLoader.Instance.Stop();
                 _searchCancellationTokenSource.Cancel();
             };
 
             var total = _dataStore.GetTotal();
 
 
+
+
             _model = new SearchModel();
+
             _model.Status = $"{total:###,###,##0} images in database";
+
             _model.Page = 0;
             _model.Pages = 0;
             _model.TotalFiles = 100;
@@ -81,19 +86,12 @@ namespace Diffusion.Toolkit.Pages
 
             _model.PropertyChanged += ModelOnPropertyChanged;
             _model.SearchCommand = new RelayCommand<object>(SearchImages);
-            _model.CopyPathCommand = new RelayCommand<object>(CopyPath);
-            _model.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
-            _model.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
-            _model.CopyParameters = new RelayCommand<object>(CopyParameters);
-            _model.OpenInExplorerCommand = new RelayCommand<object>(OpenInExplorer);
+            _model.CurrentImage.CopyPathCommand = new RelayCommand<object>(CopyPath);
+            _model.CurrentImage.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
+            _model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
+            _model.CurrentImage.CopyParameters = new RelayCommand<object>(CopyParameters);
+            _model.CurrentImage.OpenInExplorerCommand = new RelayCommand<object>(OpenInExplorer);
             DataContext = _model;
-        }
-
-        private void OpenInExplorer(object obj)
-        {
-            if (_model.SelectedImageEntry == null) return;
-            var p = _model.SelectedImageEntry.FileParameters.Path;
-            Process.Start("explorer.exe", $"/select,\"{p}\"");
         }
 
         public Settings Settings
@@ -102,35 +100,43 @@ namespace Diffusion.Toolkit.Pages
             set => _settings = value;
         }
 
+        private void OpenInExplorer(object obj)
+        {
+            if (_model.CurrentImage == null) return;
+            var p = _model.CurrentImage.Path;
+            Process.Start("explorer.exe", $"/select,\"{p}\"");
+        }
+
+
         private void CopyPath(object obj)
         {
-            if (_model.SelectedImageEntry == null) return;
-            var p = _model.SelectedImageEntry.FileParameters.Path;
+            if (_model.CurrentImage == null) return;
+            var p = _model.CurrentImage.Path;
             Clipboard.SetText(p);
         }
 
         private void CopyPrompt(object obj)
         {
-            if (_model.SelectedImageEntry == null) return;
-            var p = _model.SelectedImageEntry.FileParameters.Prompt;
+            if (_model.CurrentImage == null) return;
+            var p = _model.CurrentImage.Prompt;
             Clipboard.SetText(p);
         }
 
         private void CopyNegative(object obj)
         {
-            if (_model.SelectedImageEntry == null) return;
-            var p = _model.SelectedImageEntry.FileParameters.NegativePrompt;
+            if (_model.CurrentImage == null) return;
+            var p = _model.CurrentImage.NegativePrompt;
             Clipboard.SetText(p);
         }
 
 
         private void CopyParameters(object obj)
         {
-            if (_model.SelectedImageEntry == null) return;
+            if (_model.CurrentImage == null) return;
 
-            var p = _model.SelectedImageEntry.FileParameters.Prompt;
-            var n = _model.SelectedImageEntry.FileParameters.NegativePrompt;
-            var o = _model.SelectedImageEntry.FileParameters.OtherParameters;
+            var p = _model.CurrentImage.Prompt;
+            var n = _model.CurrentImage.NegativePrompt;
+            var o = _model.CurrentImage.OtherParameters;
             var parameters = $"{p}\r\n\r\nNegative prompt: {n}\r\n{o}";
 
             Clipboard.SetText(parameters);
@@ -151,16 +157,25 @@ namespace Diffusion.Toolkit.Pages
             }
 
             _model.Images!.Clear();
-            
+
             try
             {
+                if (_model.SearchHistory.Count + 1 > 25)
+                {
+                    _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
+                }
+
+                _model.SearchHistory.Insert(0, _model.SearchText);
+
                 var count = _dataStore.Count(_model.SearchText);
 
                 if (count == 0)
                 {
-                    MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No items found",
+                    _model.ResultStatus = "No results found";
+                    MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
+                    return;
                 }
 
                 _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
@@ -188,7 +203,24 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.PropertyName == nameof(SearchModel.SelectedImageEntry))
             {
-                _model.SelectedImage = _model.SelectedImageEntry == null ? null : GetBitmapImage(_model.SelectedImageEntry.FileParameters.Path);
+                if (_model.SelectedImageEntry != null)
+                {
+                    var parameters = Metadata.ReadFromFile(_model.SelectedImageEntry.Path);
+
+                    _model.CurrentImage.Image = _model.SelectedImageEntry == null ? null : GetBitmapImage(_model.SelectedImageEntry.Path);
+                    _model.CurrentImage.Path = parameters.Path;
+                    _model.CurrentImage.Prompt = parameters.Prompt;
+                    _model.CurrentImage.NegativePrompt = parameters.NegativePrompt;
+                    _model.CurrentImage.OtherParameters = parameters.OtherParameters;
+                    _model.CurrentImage.Favorite = _model.SelectedImageEntry.Favorite;
+                }
+            }
+            else if (e.PropertyName == nameof(SearchModel.SearchText))
+            {
+                if (string.IsNullOrEmpty(_model.SearchText))
+                {
+                    GetRandomHint();
+                }
             }
             else if (e.PropertyName == nameof(SearchModel.Page))
             {
@@ -220,10 +252,11 @@ namespace Diffusion.Toolkit.Pages
             var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
             bitmap = new BitmapImage();
             bitmap.BeginInit();
-            bitmap.CreateOptions = BitmapCreateOptions.DelayCreation;
-            bitmap.CacheOption = BitmapCacheOption.None;
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
             bitmap.StreamSource = stream;
             bitmap.EndInit();
+            stream.Close();
+            stream.Dispose();
             bitmap.Freeze();
             return bitmap;
         }
@@ -238,10 +271,21 @@ namespace Diffusion.Toolkit.Pages
             }
 
             isScanning = true;
-            Task.Run(() => ScanInternal(_settings.ImagePaths));
+            Task.Run(() => ScanInternal(_settings.ImagePaths, false));
         }
 
-        private void ScanInternal(IEnumerable<string> paths)
+        public void Rebuild()
+        {
+            if (isScanning)
+            {
+                return;
+            }
+
+            isScanning = true;
+            Task.Run(() => ScanInternal(_settings.ImagePaths, true));
+        }
+
+        private void ScanInternal(IEnumerable<string> paths, bool updateImages)
         {
             try
             {
@@ -250,8 +294,16 @@ namespace Diffusion.Toolkit.Pages
 
                 var scanner = new Scanner(_settings.FileExtensions);
 
-                var images = _dataStore.GetImagePaths();
-                var ignoreFiles = images.ToHashSet();
+                var existingImages = _dataStore.GetImagePaths().ToList();
+
+                HashSet<string> ignoreFiles = updateImages ? new HashSet<string>() : existingImages.Select(p => p.Path).ToHashSet();
+
+                var removed = existingImages.Where(img => !File.Exists(img.Path)).ToList();
+
+                if (removed.Any())
+                {
+                    _dataStore.DeleteImages(removed.Select(i => i.Id));
+                }
 
                 foreach (var path in paths)
                 {
@@ -274,30 +326,53 @@ namespace Diffusion.Toolkit.Pages
                     {
                         scanned++;
 
-                        newImages.Add(new Image()
+                        if (file != null)
                         {
-                            Width = file.Width,
-                            Height = file.Height,
-                            ModelHash = file.ModelHash,
-                            Path = file.Path,
-                            Steps = file.Steps,
-                            Sampler = file.Sampler,
-                            CFGScale = file.CFGScale,
-                            Seed = file.Seed,
-                            BatchPos = file.BatchPos,
-                            BatchSize = file.BatchSize,
-                            CreatedDate = File.GetCreationTime(file.Path),
-                            NegativePrompt = file.NegativePrompt,
-                            //OtherParameters = file.OtherParameters,
-                            //Parameters = file.Parameters,
-                            Prompt = file.Prompt
-                        });
+                            var image = new Image()
+                            {
+                                Prompt = file.Prompt,
+                                NegativePrompt = file.NegativePrompt,
+                                Path = file.Path,
+                                Width = file.Width,
+                                Height = file.Height,
+                                ModelHash = file.ModelHash,
+                                Steps = file.Steps,
+                                Sampler = file.Sampler,
+                                CFGScale = file.CFGScale,
+                                Seed = file.Seed,
+                                BatchPos = file.BatchPos,
+                                BatchSize = file.BatchSize,
+                                CreatedDate = File.GetCreationTime(file.Path),
+                                AestheticScore = file.AestheticScore,
+                                HyperNetwork = file.HyperNetwork,
+                                HyperNetworkStrength = file.HyperNetworkStrength,
+                                ClipSkip = file.ClipSkip,
+                                //CustomTags = file.CustomTags,
+                                //OtherParameters = file.OtherParameters,
+                                //Parameters = file.Parameters,
+                            };
 
-                        added++;
+                            if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
+                            {
+                                file.HyperNetworkStrength = 1;
+                            }
+
+                            newImages.Add(image);
+
+                            added++;
+
+                        }
 
                         if (newImages.Count == 50)
                         {
-                            _dataStore.AddImages(newImages);
+                            if (updateImages)
+                            {
+                                _dataStore.UpdateImagesByPath(newImages);
+                            }
+                            else
+                            {
+                                _dataStore.AddImages(newImages);
+                            }
                             newImages.Clear();
                         }
 
@@ -313,7 +388,14 @@ namespace Diffusion.Toolkit.Pages
 
                     if (newImages.Count > 0)
                     {
-                        _dataStore.AddImages(newImages);
+                        if (updateImages)
+                        {
+                            _dataStore.UpdateImagesByPath(newImages);
+                        }
+                        else
+                        {
+                            _dataStore.AddImages(newImages);
+                        }
                     }
 
                     Dispatcher.Invoke(() =>
@@ -335,9 +417,17 @@ namespace Diffusion.Toolkit.Pages
                     }
                     else
                     {
+                        var newOrOpdated = updateImages ? $"{added} images updated" : $"{added} new images added";
+
+                        var missing = removed.Count >  0 ? $"{removed.Count} missing images removed" : string.Empty;
+
+                        var messages = new[] { newOrOpdated, missing };
+
+                        var message = string.Join("\n", messages.Where(m=> !string.IsNullOrEmpty(m)));
+
                         MessageBox.Show(_navigatorService.Host,
-                            $"New images added: {added}",
-                            "Scan Complete",
+                            message,
+                            updateImages ? "Rebuild Complete" : "Scan Complete",
                             MessageBoxButton.OK, MessageBoxImage.Information);
                     }
 
@@ -367,10 +457,84 @@ namespace Diffusion.Toolkit.Pages
 
         private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
         {
+            var ratings = new[]
+            {
+                Key.D1,
+                Key.D2,
+                Key.D3,
+                Key.D4,
+                Key.D5,
+            };
+
             if (e.Key == Key.Enter)
             {
                 OpenSelected();
             }
+            else if (e.Key == Key.Delete || e.Key == Key.X)
+            {
+                if (ThumbnailListView.SelectedItems != null)
+                {
+                    foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                    {
+                        entry.ForDeletion = !entry.ForDeletion;
+                        _dataStore.SetDeleted(entry.Id, entry.ForDeletion);
+                    }
+                }
+            }
+            else if (e.Key == Key.F)
+            {
+                if (ThumbnailListView.SelectedItems != null)
+                {
+                    foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                    {
+                        entry.Favorite = !entry.Favorite;
+                        if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
+                        {
+                            _model.CurrentImage.Favorite = entry.Favorite;
+                        }
+                        _dataStore.SetFavorite(entry.Id, entry.Favorite);
+                    }
+                }
+            }
+            else if (ratings.Contains(e.Key))
+            {
+                var rating = e.Key switch
+                {
+                    Key.D1 => 1,
+                    Key.D2 => 2,
+                    Key.D3 => 3,
+                    Key.D4 => 4,
+                    Key.D5 => 5,
+                };
+
+                if (ThumbnailListView.SelectedItems != null)
+                {
+                    foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                    {
+
+                        if (entry.Rating == rating)
+                        {
+                            entry.Rating = null;
+                        }
+                        else
+                        {
+                            entry.Rating = rating;
+                        }
+                        _dataStore.SetRating(entry.Id, entry.Rating);
+                    }
+                }
+
+            }
+        }
+
+        public void SetOpacityView(bool value)
+        {
+            _model.ImageOpacity = value ? 0.35f : 1.0f;
+        }
+
+        public void SetIconVisibility(bool value)
+        {
+            _model.HideIcons = value;
         }
 
         private void OpenSelected()
@@ -380,7 +544,7 @@ namespace Diffusion.Toolkit.Pages
             if (_model.SelectedImageEntry != null)
             {
                 fileopener.StartInfo.FileName = "explorer";
-                fileopener.StartInfo.Arguments = "\"" + _model.SelectedImageEntry.FileParameters.Path + "\"";
+                fileopener.StartInfo.Arguments = "\"" + _model.SelectedImageEntry.Path + "\"";
                 fileopener.Start();
             }
         }
@@ -401,7 +565,7 @@ namespace Diffusion.Toolkit.Pages
             ReloadMatches();
         }
 
-        private Task ReloadMatches(bool focus = true)
+        public Task ReloadMatches(bool focus = true)
         {
             _searchCancellationTokenSource.Cancel();
             _searchCancellationTokenSource = new CancellationTokenSource();
@@ -417,8 +581,6 @@ namespace Diffusion.Toolkit.Pages
                         });
                     }
                 });
-
-
         }
 
         private void NextPage_OnClick(object sender, RoutedEventArgs e)
@@ -438,28 +600,11 @@ namespace Diffusion.Toolkit.Pages
 
         private void LoadMatchesOnThread(CancellationToken token)
         {
+            ThumbnailLoader.Instance.Flush();
+
             var matches = _dataStore
                 .Search(_model.SearchText, _settings.PageSize,
-                    _settings.PageSize * (_model.Page - 1)).Select(file =>
-                    new FileParameters()
-                    {
-                        Width = file.Width,
-                        Height = file.Height,
-                        ModelHash = file.ModelHash,
-                        Path = file.Path,
-                        Steps = file.Steps,
-                        Sampler = file.Sampler,
-                        CFGScale = file.CFGScale,
-                        Seed = file.Seed,
-                        BatchPos = file.BatchPos,
-                        BatchSize = file.BatchSize,
-                        //CreatedDate = File.GetCreationTime(file.Path),
-                        NegativePrompt = file.NegativePrompt,
-                        OtherParameters =
-                            $"Steps: {file.Steps}, Sampler: {file.Sampler}, CFG scale: {file.CFGScale}, Seed: {file.Seed}, Size: {file.Width}x{file.Height}, Model hash: {file.ModelHash}",
-                        //Parameters = file.Parameters,
-                        Prompt = file.Prompt
-                    });
+                    _settings.PageSize * (_model.Page - 1));
 
             var images = new List<ImageEntry>();
 
@@ -481,7 +626,11 @@ namespace Diffusion.Toolkit.Pages
 
                 images.Add(new ImageEntry()
                 {
-                    FileParameters = file,
+                    Id = file.Id,
+                    Favorite = file.Favorite,
+                    ForDeletion = file.ForDeletion,
+                    Rating = file.Rating,
+                    Path = file.Path,
                     FileName = Path.GetFileName(file.Path),
                 });
 
@@ -522,58 +671,6 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
-
-        private void LoadMatches(CancellationToken token)
-        {
-            var matches = _dataStore
-                .Search(_model.SearchText, _settings.PageSize,
-                    _settings.PageSize * (_model.Page - 1)).Select(file =>
-                    new FileParameters()
-                    {
-                        Width = file.Width,
-                        Height = file.Height,
-                        ModelHash = file.ModelHash,
-                        Path = file.Path,
-                        Steps = file.Steps,
-                        Sampler = file.Sampler,
-                        CFGScale = file.CFGScale,
-                        Seed = file.Seed,
-                        BatchPos = file.BatchPos,
-                        BatchSize = file.BatchSize,
-                        //CreatedDate = File.GetCreationTime(file.Path),
-                        NegativePrompt = file.NegativePrompt,
-                        OtherParameters =
-                            $"Steps: {file.Steps}, Sampler: {file.Sampler}, CFG scale: {file.CFGScale}, Seed: {file.Seed}, Size: {file.Width}x{file.Height}, Model hash: {file.ModelHash}",
-                        //Parameters = file.Parameters,
-                        Prompt = file.Prompt
-                    });
-
-            _model.Images = new ObservableCollection<ImageEntry>();
-            _model.TotalFiles = _settings.PageSize;
-            _model.CurrentPosition = 0;
-
-            var images = new List<ImageEntry>();
-            foreach (var file in matches)
-            {
-                if (token.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                images.Add(new ImageEntry()
-                {
-                    FileParameters = file,
-                    FileName = Path.GetFileName(file.Path),
-                });
-
-
-                _model.CurrentPosition++;
-            }
-
-            _model.TotalFiles = Int32.MaxValue;
-            _model.CurrentPosition = 0;
-        }
-
         private void Page_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -599,6 +696,18 @@ namespace Diffusion.Toolkit.Pages
 
                 }
             }
+        }
+
+        public void ShowFavorite()
+        {
+            _model.SearchText = "favorite: true";
+            SearchImages(null);
+        }
+
+        public void ShowMarked()
+        {
+            _model.SearchText = "delete: true";
+            SearchImages(null);
         }
     }
 }

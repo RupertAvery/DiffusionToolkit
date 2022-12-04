@@ -7,7 +7,6 @@ public class FileParameters
     public string? NegativePrompt { get; set; }
     public int Steps { get; set; }
     public string Sampler { get; set; }
-
     public decimal CFGScale { get; set; }
     public long Seed { get; set; }
     public int Width { get; set; }
@@ -17,4 +16,9 @@ public class FileParameters
     public int BatchPos { get; set; }
     public string OtherParameters { get; set; }
     public string Parameters { get; set; }
+    public decimal? AestheticScore { get; set; }
+    public string? HyperNetwork { get; set; }
+    public decimal? HyperNetworkStrength { get; set; }
+    public int? ClipSkip { get; set; }
+    public int? ENSD { get; set; }
 }

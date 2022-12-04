@@ -8,7 +8,35 @@ public class ImageEntry : BaseNotify
 {
     private BitmapSource? _thumbnail;
     private string? _fileName;
+    private int _id;
+    private bool _forDeletion;
+    private bool _favorite;
+    private int? _rating;
 
+    public int Id
+
+    {
+        get => _id;
+        set => SetField(ref _id, value);
+    }
+
+    public bool ForDeletion
+    {
+        get => _forDeletion;
+        set => SetField(ref _forDeletion, value);
+    }
+
+    public bool Favorite
+    {
+        get => _favorite;
+        set => SetField(ref _favorite, value);
+    }
+
+    public int? Rating
+    {
+        get => _rating;
+        set => SetField(ref _rating, value);
+    }
 
     public string? FileName
     {
@@ -24,9 +52,9 @@ public class ImageEntry : BaseNotify
             {
                 var job = new ThumbnailJob()
                 {
-                    Path = FileParameters.Path, 
-                    Height = FileParameters.Height,
-                    Width = FileParameters.Width
+                    Path = Path, 
+                    Height = Height,
+                    Width = Width
                 };
 
                 _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
@@ -40,11 +68,7 @@ public class ImageEntry : BaseNotify
         //set => SetField(ref _thumbnail, value);
     }
 
-
-    public FileParameters FileParameters { get; set; }
-
-
-
-
-
+    public int Height { get; set; }
+    public int Width { get; set; }
+    public string Path { get; set; }
 }

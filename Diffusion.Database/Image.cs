@@ -26,5 +26,10 @@ public class Image
     public int? Rating { get; set; }
     public bool Favorite { get; set; }
     public bool ForDeletion { get; set; }
+    public decimal? AestheticScore { get; set; }
+    public string? HyperNetwork { get; set; }
+    public decimal? HyperNetworkStrength { get; set; }
+    public int? ClipSkip { get; set; }
+    public int? ENSD { get; set; }
 
 }

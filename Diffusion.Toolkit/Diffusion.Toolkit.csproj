@@ -8,8 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Icons\blue-heart-32.png" />
     <None Remove="Icons\copy-32.png" />
     <None Remove="Icons\link-32.png" />
+    <None Remove="Icons\x-mark-16.png" />
+    <None Remove="Icons\x-mark-32.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,11 +27,23 @@
 
   <ItemGroup>
     <Resource Include="Icons\copy-32.png" />
+    <Resource Include="Icons\blue-heart-32.png" />
     <Resource Include="Icons\link-32.png" />
+    <Resource Include="Icons\x-mark-16.png" />
+    <Resource Include="Icons\x-mark-32.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="hints.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="samplers.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

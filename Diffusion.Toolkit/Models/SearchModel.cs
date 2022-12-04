@@ -1,10 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows.Data;
+using System.Linq;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using Diffusion.IO;
-using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -12,7 +9,6 @@ public class SearchModel : BaseNotify
 {
     private ObservableCollection<ImageEntry>? _images;
     private ImageEntry? _selectedImage;
-    private BitmapSource? _image;
     //public object _rowLock = new object();
     private int _totalFiles;
     private int _currentPosition;
@@ -21,11 +17,30 @@ public class SearchModel : BaseNotify
     private ICommand _searchCommand;
     private string _searchText;
 
+    private int _imageCount;
+    private string _status;
+    private int _page;
+    private bool _isEmpty;
+    private int _pages;
+    private string _results;
+    private string _resultStatus;
+    private string _searchHint;
+    private ImageViewModel? _currentImage;
+    private float _imageOpacity;
+    private bool _hideIcons;
+    private ObservableCollection<string?> _searchHistory;
+
+
     public SearchModel()
     {
-        Images = new ObservableCollection<ImageEntry>();
-        IsEmpty = true;
-        Status = "Ready";
+        _images = new ObservableCollection<ImageEntry>();
+        _searchHistory = new ObservableCollection<string>();
+        _currentImage = new ImageViewModel();
+        _imageOpacity = 1;
+        _isEmpty = true;
+        _status = "Ready";
+        _resultStatus = "Type anything to begin";
+        _searchHint = "Search for the answer to the the question of life, the universe, and everything";
         //BindingOperations.EnableCollectionSynchronization(Images, _rowLock);
     }
 
@@ -35,18 +50,19 @@ public class SearchModel : BaseNotify
         set => SetField(ref _images, value);
     }
 
+    public ImageViewModel? CurrentImage
+    {
+        get => _currentImage;
+        set => SetField(ref _currentImage, value);
+    }
+
+
     public ImageEntry? SelectedImageEntry
     {
         get => _selectedImage;
         set => SetField(ref _selectedImage, value);
     }
 
-
-    public BitmapSource? SelectedImage
-    {
-        get => _image;
-        set => SetField(ref _image, value);
-    }
 
     public string Status
     {
@@ -83,12 +99,26 @@ public class SearchModel : BaseNotify
         get => _totalFilesScan;
         set => SetField(ref _totalFilesScan, value);
     }
-
-
+    
     public string? SearchText
     {
         get => _searchText;
         set => SetField(ref _searchText, value);
+    }
+
+    public ObservableCollection<string?> SearchHistory
+    {
+        get => _searchHistory;
+        set
+        {
+            SetField(ref _searchHistory, value);
+            OnPropertyChanged("ReverseSearchHistory");
+        }
+    }
+
+    public IEnumerable<string?> ReverseSearchHistory
+    {
+        get => _searchHistory.Reverse();
     }
 
     public ICommand SearchCommand
@@ -96,61 +126,7 @@ public class SearchModel : BaseNotify
         get => _searchCommand;
         set => SetField(ref _searchCommand, value);
     }
-
-    public ICommand CopyPromptCommand
-    {
-        get => _copyPromptCommand;
-        set => SetField(ref _copyPromptCommand, value);
-    }
-
-    public ICommand CopyPathCommand
-    {
-        get => _copyPathCommand;
-        set => SetField(ref _copyPathCommand, value);
-    }
-
-    public ICommand OpenInExplorerCommand
-    {
-        get => _openInExplorerCommand;
-        set => SetField(ref _openInExplorerCommand, value);
-    }
-
-
-    public ICommand CopyNegativePromptCommand
-    {
-        get => _copyNegativePromptCommand;
-        set => SetField(ref _copyNegativePromptCommand, value);
-    }
-
-
-    public ICommand CopyOthersCommand
-    {
-        get => _copyOthersCommand;
-        set => SetField(ref _copyOthersCommand, value);
-    }
-
-
-    public ICommand CopyParameters
-    {
-        get => _copyParameters;
-        set => SetField(ref _copyParameters, value);
-    }
-
-
-    private ICommand _copyOthersCommand;
-    private ICommand _copyNegativePromptCommand;
-    private ICommand _copyPathCommand;
-    private ICommand _copyPromptCommand;
-    private ICommand _copyParameters;
-    private int _imageCount;
-    private string _status;
-    private int _page;
-    private bool _isEmpty;
-    private int _pages;
-    private string _results;
-    private ICommand _openInExplorerCommand;
-
-
+    
     public int Page
     {
         get => _page;
@@ -174,4 +150,29 @@ public class SearchModel : BaseNotify
         get => _results;
         set => SetField(ref _results, value);
     }
+
+    public string ResultStatus
+    {
+        get => _resultStatus;
+        set => SetField(ref _resultStatus, value);
+    }
+
+    public string SearchHint
+    {
+        get => _searchHint;
+        set => SetField(ref _searchHint, value);
+    }
+
+    public float ImageOpacity
+    {
+        get => _imageOpacity;
+        set => SetField(ref _imageOpacity, value);
+    }
+
+    public bool HideIcons
+    {
+        get => _hideIcons;
+        set => SetField(ref _hideIcons, value);
+    }
+
 }

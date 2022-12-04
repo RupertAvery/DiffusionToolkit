@@ -16,6 +16,8 @@ public class ThumbnailLoader
     private readonly Channel<Job<ThumbnailJob, BitmapSource>> _channel = Channel.CreateUnbounded<Job<ThumbnailJob, BitmapSource>>();
     private readonly int _degreeOfParallelism = 4;
 
+    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
     private ThumbnailLoader(Dispatcher dispatcher)
     {
         _dispatcher = dispatcher;
@@ -30,16 +32,17 @@ public class ThumbnailLoader
 
     public void Stop()
     {
+        cancellationTokenSource.Cancel();
         _channel.Writer.Complete();
     }
 
-    public Task Start(CancellationToken token)
+    public Task Start()
     {
         var consumers = new List<Task>();
 
         for (var i = 0; i < _degreeOfParallelism; i++)
         {
-            consumers.Add(ProcessTaskAsync(token));
+            consumers.Add(ProcessTaskAsync(cancellationTokenSource.Token));
         }
 
         //_channel.Writer.Complete();
@@ -47,13 +50,13 @@ public class ThumbnailLoader
         return Task.WhenAll(consumers);
     }
 
-    public Task StartRun(CancellationToken token)
+    public Task StartRun()
     {
         var consumers = new List<Task>();
 
         for (var i = 0; i < _degreeOfParallelism; i++)
         {
-            consumers.Add(Task.Run(async () => await ProcessTaskAsync(token), token));
+            consumers.Add(Task.Run(async () => await ProcessTaskAsync(cancellationTokenSource.Token)));
         }
 
         //_channel.Writer.Complete();
@@ -74,6 +77,13 @@ public class ThumbnailLoader
 
     //    return Task.WhenAll(consumers);
     //}
+
+    public void Flush()
+    {
+        _ = _channel.Reader.ReadAllAsync();
+        //cancellationTokenSource.Cancel();
+        //cancellationTokenSource = new CancellationTokenSource();
+    }
 
 
     private async Task ProcessTaskAsync(CancellationToken token)
@@ -112,36 +122,41 @@ public class ThumbnailLoader
 
     public static Stream GenerateThumbnail(string path, int width, int height)
     {
-        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
-        var bitmap = new BitmapImage();
-        //bitmap.UriSource = new Uri(path);
-        bitmap.BeginInit();
-
-        var size = 128;
-
-        if (width > height)
+        if (File.Exists(path))
         {
-            bitmap.DecodePixelWidth = size;
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            var bitmap = new BitmapImage();
+            //bitmap.UriSource = new Uri(path);
+            bitmap.BeginInit();
+
+            var size = 128;
+
+            if (width > height)
+            {
+                bitmap.DecodePixelWidth = size;
+            }
+            else
+            {
+                bitmap.DecodePixelHeight = size;
+            }
+            //bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.StreamSource = stream;
+            bitmap.EndInit();
+            bitmap.Freeze();
+
+            var encoder = new JpegBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(bitmap, null, null, null));
+
+            var ministream = new MemoryStream();
+
+            encoder.Save(ministream);
+
+            ministream.Seek(0, SeekOrigin.Begin);
+
+            return ministream;
         }
-        else
-        {
-            bitmap.DecodePixelHeight = size;
-        }
-        //bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.StreamSource = stream;
-        bitmap.EndInit();
-        bitmap.Freeze();
 
-        var encoder = new JpegBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(bitmap, null, null, null));
-
-        var ministream = new MemoryStream();
-
-        encoder.Save(ministream);
-
-        ministream.Seek(0, SeekOrigin.Begin);
-        
-        return ministream;
+        return null;
     }
 
     public static BitmapImage GetThumbnailImmediate(string path, int width, int height)
@@ -158,7 +173,7 @@ public class ThumbnailLoader
     public static BitmapImage GetThumbnail(string path, int width, int height)
     {
         BitmapImage bitmap = null;
-        var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
         bitmap = new BitmapImage();
         //bitmap.UriSource = new Uri(path);
         bitmap.BeginInit();
