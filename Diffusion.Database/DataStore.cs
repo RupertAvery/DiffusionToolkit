@@ -142,8 +142,16 @@ public class DataStore
 
         db.BeginTransaction();
 
-        var nonProps = new string[] { nameof(Image.Id) }; /*            { "CustomTags", "Rating", "Favorite", "ForDeletion" } */;
-        var properties = typeof(Image).GetProperties().Where(p => !nonProps.Contains(p.Name)).ToList();
+        var exclude = new string[]
+        {
+            nameof(Image.Id), 
+            nameof(Image.CustomTags), 
+            nameof(Image.Rating), 
+            nameof(Image.Favorite), 
+            nameof(Image.ForDeletion)
+        }; 
+
+        var properties = typeof(Image).GetProperties().Where(p => !exclude.Contains(p.Name)).ToList();
 
         var query = "UPDATE Image SET ";
         var setList = new List<string>();

@@ -347,9 +347,6 @@ namespace Diffusion.Toolkit.Pages
                                 HyperNetwork = file.HyperNetwork,
                                 HyperNetworkStrength = file.HyperNetworkStrength,
                                 ClipSkip = file.ClipSkip,
-                                //CustomTags = file.CustomTags,
-                                //OtherParameters = file.OtherParameters,
-                                //Parameters = file.Parameters,
                             };
 
                             if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)

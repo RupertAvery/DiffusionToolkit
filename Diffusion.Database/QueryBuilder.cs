@@ -289,7 +289,7 @@ public static class QueryBuilder
                 }
             }
 
-            prompt = prompt.Replace(prompt.Substring(start, current), string.Empty);
+            prompt = prompt.Replace(prompt.Substring(start, current - start), string.Empty);
 
             var orConditions = new List<KeyValuePair<string, object>>();
 

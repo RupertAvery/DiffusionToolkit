@@ -22,10 +22,16 @@ public class Image
     //public string OtherParameters { get; set; }
     //public string Parameters { get; set; }
     public DateTime CreatedDate { get; set; }
+
+    
+    // These columns shouldn't be overwritten when batch updating 
+    // Consider moving these out?
     public string? CustomTags { get; set; }
     public int? Rating { get; set; }
     public bool Favorite { get; set; }
     public bool ForDeletion { get; set; }
+
+
     public decimal? AestheticScore { get; set; }
     public string? HyperNetwork { get; set; }
     public decimal? HyperNetworkStrength { get; set; }
