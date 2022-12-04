@@ -113,6 +113,7 @@
                                         Opacity="{Binding Path=ForDeletion, Converter={StaticResource BoolToOpacity}}"
                                         Height="128" Width="128" 
                                         MaxWidth="128" MaxHeight="128" 
+                                        MouseMove="UIElement_OnMouseMove"
                                         HorizontalAlignment="Stretch" VerticalAlignment="Top" />
                                     <Image Height="32" Width="32" Source="../Icons/x-mark-32.png" Visibility="{Binding ForDeletion, Converter={StaticResource boolToVis}}"/>
                                 </Grid>

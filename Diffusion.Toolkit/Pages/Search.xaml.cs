@@ -19,6 +19,7 @@ using File = System.IO.File;
 using Image = Diffusion.Database.Image;
 using Path = System.IO.Path;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -705,6 +706,19 @@ namespace Diffusion.Toolkit.Pages
         {
             _model.SearchText = "delete: true";
             SearchImages(null);
+        }
+
+        private void UIElement_OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var source = (Thumbnail)sender;
+                var path = ((ImageEntry)source.DataContext).Path;
+
+                DataObject dataObject = new DataObject();
+                dataObject.SetData(DataFormats.FileDrop, new[] { path });
+                DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Copy);
+            }
         }
     }
 }
