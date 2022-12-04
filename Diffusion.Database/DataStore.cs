@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using System.Collections.Generic;
 using System.Data;
 using System.Reflection.PortableExecutable;
 using static System.Net.Mime.MediaTypeNames;
@@ -32,7 +33,11 @@ public class DataStore
 
         using var db = OpenConnection();
 
-        db.CreateTable<Folder>();
+
+        db.CreateTable<ImageList>();
+        db.CreateTable<ImageListItem>();
+        db.CreateIndex<ImageListItem>(image => image.ListId);
+
         //db.CreateTable<File>();
         db.CreateTable<Image>();
 
@@ -215,6 +220,110 @@ public class DataStore
         db.Commit();
     }
 
+    public IEnumerable<ImageList> GetLists()
+    {
+        var db = OpenConnection();
+
+        var lists = db.Query<ImageList>("SELECT * FROM ImageList");
+
+        db.Close();
+
+        return lists;
+    }
+
+    public ImageList CreateList(ImageList imageList)
+    {
+        var db = OpenConnection();
+
+        var query = "INSERT INTO ImageList (Name) VALUES (@Name)";
+
+        var command = db.CreateCommand(query);
+
+        command.Bind("@Name", imageList.Name);
+
+        command.ExecuteNonQuery();
+
+        var sql = "select last_insert_rowid();";
+
+        command = db.CreateCommand(sql);
+
+        imageList.Id = command.ExecuteScalar<int>();
+
+        return imageList;
+    }
+
+    public void RemoveList(int id)
+    {
+        var db = OpenConnection();
+
+        var query = "DELETE FROM ImageListItem WHERE ListId = @Id";
+
+        var command = db.CreateCommand(query);
+
+        command.Bind("@Id", id);
+
+        query = "DELETE FROM List WHERE Id = @Id";
+
+        command = db.CreateCommand(query);
+
+        command.Bind("@Id", id);
+
+        command.ExecuteNonQuery();
+    }
+
+    public void AddImagesToList(int listId, IEnumerable<int> imageId)
+    {
+        var db = OpenConnection();
+
+        db.BeginTransaction();
+
+        var query = "INSERT INTO ImageListItem (ListId, ImageId) VALUES (@ListId, @ImageId)";
+
+        var command = db.CreateCommand(query);
+
+        foreach (var id in imageId)
+        {
+            command.Bind("@ListId", listId);
+            command.Bind("@ImageId", id);
+            command.ExecuteNonQuery();
+        }
+
+        db.Commit();
+    }
+
+    public void RemoveImagesFromList(int listId, IEnumerable<int> imageId)
+    {
+        var db = OpenConnection();
+
+        db.BeginTransaction();
+
+        var query = "DELETE FROM ImageListItem WHERE ListId = @ListId AND ImageId = @ImageId";
+
+        var command = db.CreateCommand(query);
+
+        foreach (var id in imageId)
+        {
+            command.Bind("@ListId", listId);
+            command.Bind("@ImageId", id);
+            command.ExecuteNonQuery();
+        }
+
+        db.Commit();
+    }
+
+    public IEnumerable<Image> GetListImages(int listId, int pageSize, int offset)
+    {
+        using var db = OpenConnection();
+
+        var images = db.Query<Image>($"SELECT * FROM Image i INNER JOIN ImageListItem il ON i.Id = il.ImageId WHERE il.ListId = ? CreatedDate DESC LIMIT ? OFFSET ?", listId, pageSize, offset );
+
+        foreach (var image in images)
+        {
+            yield return image;
+        }
+
+        db.Close();
+    }
 
     public void RebuildIndexes()
     {
@@ -307,38 +416,38 @@ public class DataStore
         db.Close();
     }
 
-    public bool FolderExists(string path)
-    {
-        string sql = @"select count(*) from Folder where Path = @path";
+    //public bool FolderExists(string path)
+    //{
+    //    string sql = @"select count(*) from Folder where Path = @path";
 
-        using var db = OpenConnection();
-        var cmd = db.CreateCommand("");
-        cmd.CommandText = sql;
-        cmd.Bind("@path", path);
-        var count = cmd.ExecuteScalar<int>();
-        db.Close();
-        return count > 0;
-    }
+    //    using var db = OpenConnection();
+    //    var cmd = db.CreateCommand("");
+    //    cmd.CommandText = sql;
+    //    cmd.Bind("@path", path);
+    //    var count = cmd.ExecuteScalar<int>();
+    //    db.Close();
+    //    return count > 0;
+    //}
 
-    public Folder AddFolder(Folder folder)
-    {
-        string sql = @"insert into Folder (Path) values (@path); select last_insert_rowid();";
+    //public Folder AddFolder(Folder folder)
+    //{
+    //    string sql = @"insert into Folder (Path) values (@path); select last_insert_rowid();";
 
-        using var db = OpenConnection();
-        var cmd = db.CreateCommand("");
-        cmd.CommandText = sql;
-        cmd.Bind("@path", folder.Path);
-        cmd.ExecuteNonQuery();
+    //    using var db = OpenConnection();
+    //    var cmd = db.CreateCommand("");
+    //    cmd.CommandText = sql;
+    //    cmd.Bind("@path", folder.Path);
+    //    cmd.ExecuteNonQuery();
 
-        sql = "select last_insert_rowid();";
+    //    sql = "select last_insert_rowid();";
 
-        cmd = db.CreateCommand(sql);
-        folder.Id = cmd.ExecuteScalar<int>();
+    //    cmd = db.CreateCommand(sql);
+    //    folder.Id = cmd.ExecuteScalar<int>();
 
-        db.Close();
+    //    db.Close();
 
-        return folder;
-    }
+    //    return folder;
+    //}
 
     //        public void RemoveFolder(int folderId)
     //        {
