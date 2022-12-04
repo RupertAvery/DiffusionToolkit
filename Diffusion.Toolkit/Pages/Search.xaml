@@ -114,7 +114,25 @@
                                         Height="128" Width="128" 
                                         MaxWidth="128" MaxHeight="128" 
                                         MouseMove="UIElement_OnMouseMove"
-                                        HorizontalAlignment="Stretch" VerticalAlignment="Top" />
+                                        HorizontalAlignment="Stretch" VerticalAlignment="Top">
+
+                                        <controls:Thumbnail.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Copy prompt" />
+                                                <MenuItem Header="Copy negative prompt" />
+                                                <MenuItem Header="Copy all parameters" />
+                                                <Separator />
+                                                <MenuItem Header="Show in explorer" />
+                                                <Separator />
+                                                <MenuItem Header="Add to List" />
+                                                <MenuItem Header="Remove from List" />
+                                                <Separator />
+                                                <MenuItem Header="Mark for deletion" />
+                                                <MenuItem Header="Delete immediately" />
+                                            </ContextMenu>
+                                        </controls:Thumbnail.ContextMenu>
+
+                                    </controls:Thumbnail>
                                     <Image Height="32" Width="32" Source="../Icons/x-mark-32.png" Visibility="{Binding ForDeletion, Converter={StaticResource boolToVis}}"/>
                                 </Grid>
                             </Border>
