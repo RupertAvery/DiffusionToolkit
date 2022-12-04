@@ -17,6 +17,7 @@ public class ImageViewModel : BaseNotify
     private string _otherParameters;
     private BitmapSource? _image;
     private bool _favorite;
+    private string _modelName;
 
     public BitmapSource? Image
     {
@@ -46,6 +47,13 @@ public class ImageViewModel : BaseNotify
     {
         get => _otherParameters;
         set => SetField(ref _otherParameters, value);
+    }
+
+
+    public string ModelName
+    {
+        get => _modelName;
+        set => SetField(ref _modelName, value);
     }
 
 

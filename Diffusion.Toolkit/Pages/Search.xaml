@@ -268,14 +268,14 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
-                            <Label>Others</Label>
+                            <Label FontWeight="SemiBold">Model Name</Label>
                             <!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
                             </Button>-->
                         </Grid>
 
                         <Border BorderThickness="5" >
-                            <TextBox IsReadOnly="True" Text="{Binding OtherParameters}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
+                            <TextBox Padding="5" BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" Text="{Binding ModelName}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
                         </Border>
 
                     </StackPanel>

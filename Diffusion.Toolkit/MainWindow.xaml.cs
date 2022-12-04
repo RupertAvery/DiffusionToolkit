@@ -55,11 +55,6 @@ namespace Diffusion.Toolkit
             this.Loaded += OnLoaded;
 
 
-            _settings = new Settings();
-            _search = new Search(_navigatorService, _dataStore, _settings);
-
-            _model.ShowFavorite = new RelayCommand<object>((o) => _search.ShowFavorite());
-            _model.ShowMarked = new RelayCommand<object>((o) => _search.ShowMarked());
 
             _model.Settings = new RelayCommand<object>(ShowSettings);
 
@@ -71,16 +66,6 @@ namespace Diffusion.Toolkit
 
             DataContext = _model;
 
-            var pages = new Dictionary<string, Page>()
-            {
-                { "search", _search },
-                //{ "config", _configPage},
-                //{ "setup", new SetupPage(_navigatorService) },
-            };
-
-            _navigatorService.SetPages(pages);
-
-            _navigatorService.Goto("search");
 
         }
 
@@ -142,7 +127,6 @@ namespace Diffusion.Toolkit
 
                 ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
 
-                _search.Settings = _settings;
 
                 if (_settings.ImagePaths.Any())
                 {
@@ -160,8 +144,24 @@ namespace Diffusion.Toolkit
                     _settings.FileExtensions = ".png, .jpg";
                 }
 
-                _search.Settings = _settings;
             }
+
+            _search = new Search(_navigatorService, _dataStore, _settings);
+
+            _model.ShowFavorite = new RelayCommand<object>((o) => _search.ShowFavorite());
+            _model.ShowMarked = new RelayCommand<object>((o) => _search.ShowMarked());
+
+            var pages = new Dictionary<string, Page>()
+            {
+                { "search", _search },
+                //{ "config", _configPage},
+                //{ "setup", new SetupPage(_navigatorService) },
+            };
+
+            _navigatorService.SetPages(pages);
+
+            _navigatorService.Goto("search");
+
 
         }
 
@@ -181,6 +181,11 @@ namespace Diffusion.Toolkit
                 {
                     ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
                     _search.SearchImages();
+                }
+
+                if (_settings.IsPropertyDirty(nameof(Settings.ModelRootPath)))
+                {
+                    _search.LoadModels();
                 }
 
                 _settings.SetPristine();

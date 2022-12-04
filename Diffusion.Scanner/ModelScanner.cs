@@ -5,7 +5,7 @@ namespace Diffusion.IO;
 
 public class ModelScanner
 {
-    public IEnumerable<Model> Scan(string path)
+    public static IEnumerable<Model> Scan(string path)
     {
         var files = Directory.EnumerateFiles(path, "*.ckpt", SearchOption.AllDirectories);
 
@@ -37,6 +37,7 @@ public class ModelScanner
 
             yield return new Model() { 
                 Path = file, 
+                Filename = Path.GetFileName(file),
                 Hash = Convert.ToHexString(hash).ToLower().Substring(0, 8),
                 Hashv2 = $"{crc32Sum:x8}"
             };
