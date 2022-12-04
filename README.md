@@ -6,7 +6,10 @@ Diffusion Toolkit is an image viewer backed by a SQLite database with the follow
 * Parse the metadata (prompt & parameters) into a database
 * Supports A1111 and NovelAI PNGInfo formats
 * Supports aesthetic score and hypernetwork search
-* Searched based on prompts and parameters (see [Advanced Searching](#advanced-searching))
+* Search based on prompts and parameters, even file creation date (see [Advanced Searching](#advanced-searching))
+* Drag and drop from Diffusion Toolkit to A1111 or NovelAI PNGInfo, or any app for folder to copy the image to the drop target.
+* Quickly and easily mark files for later deletion
+* Tag images as Favorite
 
 Think [Lexica.art](https://lexica.art/), but with more powerul search, on your local images.
 
