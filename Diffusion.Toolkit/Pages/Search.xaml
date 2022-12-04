@@ -143,7 +143,7 @@
                          VerticalContentAlignment="Center"
                          Content="{Binding Results}"
                 ></Label>
-                <Button Grid.Column="1" x:Name="PrevPage" Click="PrevPage_OnClick">&lt;&lt;</Button>
+                <Button BorderBrush="Transparent" Background="AliceBlue" Grid.Column="1" x:Name="PrevPage" Click="PrevPage_OnClick">&lt;&lt;</Button>
                 <TextBox Grid.Column="2"  
                          VerticalAlignment="Stretch" 
                          HorizontalAlignment="Stretch" 
@@ -166,7 +166,7 @@
                        HorizontalContentAlignment="Center"
                        Content="{Binding Pages}"
                 ></Label>
-                <Button Grid.Column="5" x:Name="NextPage" Click="NextPage_OnClick">&gt;&gt;</Button>
+                <Button BorderBrush="Transparent" Background="AliceBlue" Grid.Column="5" x:Name="NextPage" Click="NextPage_OnClick">&gt;&gt;</Button>
             </Grid>
         </Grid>
 
@@ -210,7 +210,7 @@
                                 <ColumnDefinition Width="32"/>
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
-                            <Label>Path</Label>
+                            <Label FontWeight="SemiBold">Path</Label>
                             <Button Grid.Column="1"  Command="{Binding OpenInExplorerCommand}" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/link-32.png" Height="16" Width="16" ToolTip="Show in Explorer"></Image>
                             </Button>
@@ -219,7 +219,7 @@
                             </Button>
                         </Grid>
                         <Border BorderThickness="5" >
-                            <TextBox IsReadOnly="True" Text="{Binding Path=Path}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
+                            <TextBox Padding="5" BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" Text="{Binding Path=Path}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
                         </Border>
 
                         <Grid>
@@ -227,27 +227,42 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
-                            <Label>Prompt</Label>
+                            <Label FontWeight="SemiBold">Prompt</Label>
                             <Button Grid.Column="1"  Command="{Binding CopyPromptCommand}" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
                             </Button>
                         </Grid>
                         <Border BorderThickness="5" >
-                            <TextBox IsReadOnly="True" Text="{Binding Prompt}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
+                            <TextBox Padding="5" BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" Text="{Binding Prompt}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
                         </Border>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
-                            <Label>Negative Prompt</Label>
+                            <Label FontWeight="SemiBold">Negative Prompt</Label>
                             <Button Grid.Column="1"  Command="{Binding CopyNegativePromptCommand}" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
                             </Button>
                         </Grid>
                         <Border BorderThickness="5" >
-                            <TextBox IsReadOnly="True" Text="{Binding NegativePrompt}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
+                            <TextBox Padding="5" BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" Text="{Binding NegativePrompt}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
                         </Border>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="32"/>
+                            </Grid.ColumnDefinitions>
+                            <Label FontWeight="SemiBold">Others</Label>
+                            <!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
+                                <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
+                            </Button>-->
+                        </Grid>
+
+                        <Border BorderThickness="5" >
+                            <TextBox Padding="5" BorderBrush="Transparent" Background="Transparent" IsReadOnly="True" Text="{Binding OtherParameters}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
+                        </Border>
+
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -262,9 +277,10 @@
                         <Border BorderThickness="5" >
                             <TextBox IsReadOnly="True" Text="{Binding OtherParameters}" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"></TextBox>
                         </Border>
+
                     </StackPanel>
                 </ScrollViewer>
-                <Button Grid.Row="1" Command="{Binding CopyParameters}">Copy Parameters</Button>
+                <Button BorderBrush="Transparent" Background="AliceBlue" Grid.Row="1" Command="{Binding CopyParameters}">Copy Parameters</Button>
             </Grid>
         </Grid>
         <Grid Grid.Row="2" ColumnSpan="3">

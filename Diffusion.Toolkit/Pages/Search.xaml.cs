@@ -20,6 +20,7 @@ using Image = Diffusion.Database.Image;
 using Path = System.IO.Path;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Controls;
+using Model = Diffusion.IO.Model;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -33,6 +34,8 @@ namespace Diffusion.Toolkit.Pages
         private DataStore _dataStore;
         private Settings _settings;
 
+        private List<Model> _modelLookup;
+
         private CancellationTokenSource _searchCancellationTokenSource = new CancellationTokenSource();
 
         public Search()
@@ -43,6 +46,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 _ = ThumbnailLoader.Instance.StartRun();
             });
+
 
             PrevPage.IsEnabled = false;
             NextPage.IsEnabled = false;
@@ -70,6 +74,8 @@ namespace Diffusion.Toolkit.Pages
                 ThumbnailLoader.Instance.Stop();
                 _searchCancellationTokenSource.Cancel();
             };
+
+            LoadModels();
 
             var total = _dataStore.GetTotal();
 
@@ -214,6 +220,17 @@ namespace Diffusion.Toolkit.Pages
                     _model.CurrentImage.NegativePrompt = parameters.NegativePrompt;
                     _model.CurrentImage.OtherParameters = parameters.OtherParameters;
                     _model.CurrentImage.Favorite = _model.SelectedImageEntry.Favorite;
+
+                    var model = _modelLookup.FirstOrDefault(m => String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase));
+
+                    if (model != null)
+                    {
+                        _model.CurrentImage.ModelName = model.Filename;
+                    }
+                    else
+                    {
+                        _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
+                    }
                 }
             }
             else if (e.PropertyName == nameof(SearchModel.SearchText))
@@ -417,11 +434,11 @@ namespace Diffusion.Toolkit.Pages
                     {
                         var newOrOpdated = updateImages ? $"{added} images updated" : $"{added} new images added";
 
-                        var missing = removed.Count >  0 ? $"{removed.Count} missing images removed" : string.Empty;
+                        var missing = removed.Count > 0 ? $"{removed.Count} missing images removed" : string.Empty;
 
                         var messages = new[] { newOrOpdated, missing };
 
-                        var message = string.Join("\n", messages.Where(m=> !string.IsNullOrEmpty(m)));
+                        var message = string.Join("\n", messages.Where(m => !string.IsNullOrEmpty(m)));
 
                         MessageBox.Show(_navigatorService.Host,
                             message,
@@ -718,6 +735,14 @@ namespace Diffusion.Toolkit.Pages
                 DataObject dataObject = new DataObject();
                 dataObject.SetData(DataFormats.FileDrop, new[] { path });
                 DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Copy);
+            }
+        }
+
+        public void LoadModels()
+        {
+            if (_settings.ModelRootPath != null && Directory.Exists(_settings.ModelRootPath))
+            {
+                _modelLookup = ModelScanner.Scan(_settings.ModelRootPath).ToList();
             }
         }
     }
