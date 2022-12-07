@@ -34,9 +34,9 @@ public class DataStore
         using var db = OpenConnection();
 
 
-        db.CreateTable<ImageList>();
-        db.CreateTable<ImageListItem>();
-        db.CreateIndex<ImageListItem>(image => image.ListId);
+        db.CreateTable<Album>();
+        db.CreateTable<AlbumImage>();
+        db.CreateIndex<AlbumImage>(image => image.AlbumId);
 
         //db.CreateTable<File>();
         db.CreateTable<Image>();
@@ -220,22 +220,22 @@ public class DataStore
         db.Commit();
     }
 
-    public IEnumerable<ImageList> GetLists()
+    public IEnumerable<Album> GetAlbums()
     {
         var db = OpenConnection();
 
-        var lists = db.Query<ImageList>("SELECT * FROM ImageList");
+        var lists = db.Query<Album>($"SELECT * FROM {nameof(Album)}");
 
         db.Close();
 
         return lists;
     }
 
-    public ImageList CreateList(ImageList imageList)
+    public Album CreateAlbum(Album imageList)
     {
         var db = OpenConnection();
 
-        var query = "INSERT INTO ImageList (Name) VALUES (@Name)";
+        var query = $"INSERT INTO {nameof(Album)} (Name) VALUES (@Name)";
 
         var command = db.CreateCommand(query);
 
@@ -252,17 +252,17 @@ public class DataStore
         return imageList;
     }
 
-    public void RemoveList(int id)
+    public void RemoveAlbum(int id)
     {
         var db = OpenConnection();
 
-        var query = "DELETE FROM ImageListItem WHERE ListId = @Id";
+        var query = $"DELETE FROM {nameof(AlbumImage)} WHERE AlbumId = @Id";
 
         var command = db.CreateCommand(query);
 
         command.Bind("@Id", id);
 
-        query = "DELETE FROM List WHERE Id = @Id";
+        query = $"DELETE FROM {nameof(Album)} WHERE Id = @Id";
 
         command = db.CreateCommand(query);
 
@@ -271,19 +271,19 @@ public class DataStore
         command.ExecuteNonQuery();
     }
 
-    public void AddImagesToList(int listId, IEnumerable<int> imageId)
+    public void AddImagesToAlbum(int albumId, IEnumerable<int> imageId)
     {
         var db = OpenConnection();
 
         db.BeginTransaction();
 
-        var query = "INSERT INTO ImageListItem (ListId, ImageId) VALUES (@ListId, @ImageId)";
+        var query = $"INSERT INTO {nameof(AlbumImage)} (AlbumId, ImageId) VALUES (@AlbumId, @ImageId)";
 
         var command = db.CreateCommand(query);
 
         foreach (var id in imageId)
         {
-            command.Bind("@ListId", listId);
+            command.Bind("@AlbumId", albumId);
             command.Bind("@ImageId", id);
             command.ExecuteNonQuery();
         }
@@ -291,19 +291,19 @@ public class DataStore
         db.Commit();
     }
 
-    public void RemoveImagesFromList(int listId, IEnumerable<int> imageId)
+    public void RemoveImagesFromAlbum(int albumId, IEnumerable<int> imageId)
     {
         var db = OpenConnection();
 
         db.BeginTransaction();
 
-        var query = "DELETE FROM ImageListItem WHERE ListId = @ListId AND ImageId = @ImageId";
+        var query = $"DELETE FROM {nameof(AlbumImage)}  WHERE AlbumId = @AlbumId AND ImageId = @ImageId";
 
         var command = db.CreateCommand(query);
 
         foreach (var id in imageId)
         {
-            command.Bind("@ListId", listId);
+            command.Bind("@AlbumId", albumId);
             command.Bind("@ImageId", id);
             command.ExecuteNonQuery();
         }
@@ -311,11 +311,11 @@ public class DataStore
         db.Commit();
     }
 
-    public IEnumerable<Image> GetListImages(int listId, int pageSize, int offset)
+    public IEnumerable<Image> GetAlbumImages(int albumId, int pageSize, int offset)
     {
         using var db = OpenConnection();
 
-        var images = db.Query<Image>($"SELECT * FROM Image i INNER JOIN ImageListItem il ON i.Id = il.ImageId WHERE il.ListId = ? CreatedDate DESC LIMIT ? OFFSET ?", listId, pageSize, offset );
+        var images = db.Query<Image>($"SELECT * FROM {nameof(Image)} i INNER JOIN {nameof(AlbumImage)} ai ON i.Id = ai.ImageId WHERE ai.AlbumId = ? ORDER BY CreatedDate DESC LIMIT ? OFFSET ?", albumId, pageSize, offset );
 
         foreach (var image in images)
         {

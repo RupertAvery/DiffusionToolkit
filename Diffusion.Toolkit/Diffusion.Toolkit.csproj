@@ -5,17 +5,35 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>diffusion-toolkit.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Icons\blue-heart-32.png" />
     <None Remove="Icons\copy-32.png" />
+    <None Remove="Icons\favorite-32.png" />
+    <None Remove="Icons\filter-32.png" />
+    <None Remove="Icons\icons8-blue-heart-48.png" />
     <None Remove="Icons\link-32.png" />
+    <None Remove="Icons\models-32.png" />
+    <None Remove="Icons\rebuild-32.png" />
+    <None Remove="Icons\scan-folder-32.png" />
+    <None Remove="Icons\search-32.png" />
+    <None Remove="Icons\settings-32.png" />
+    <None Remove="Icons\star-32.png" />
+    <None Remove="Icons\trash-32.png" />
     <None Remove="Icons\x-mark-16.png" />
     <None Remove="Icons\x-mark-32.png" />
+    <None Remove="Images\diffusion-toolkit.png" />
+    <None Remove="Images\thumbnail.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="diffusion-toolkit.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MdXaml" Version="1.16.2" />
     <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
   </ItemGroup>
 
@@ -28,13 +46,26 @@
   <ItemGroup>
     <Resource Include="Icons\copy-32.png" />
     <Resource Include="Icons\blue-heart-32.png" />
+    <Resource Include="Icons\favorite-32.png" />
+    <Resource Include="Icons\filter-32.png" />
+    <Resource Include="Icons\icons8-blue-heart-48.png" />
+    <Resource Include="Icons\rebuild-32.png" />
+    <Resource Include="Icons\scan-folder-32.png" />
+    <Resource Include="Icons\search-32.png" />
     <Resource Include="Icons\link-32.png" />
+    <Resource Include="Icons\models-32.png" />
+    <Resource Include="Icons\settings-32.png" />
+    <Resource Include="Icons\star-32.png" />
+    <Resource Include="Icons\trash-32.png" />
     <Resource Include="Icons\x-mark-16.png" />
     <Resource Include="Icons\x-mark-32.png" />
+    <Resource Include="Images\thumbnail.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Images\" />
+    <Compile Update="TipsWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -44,6 +75,16 @@
     <None Update="samplers.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Tips.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="TipsWindow.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
 
 </Project>

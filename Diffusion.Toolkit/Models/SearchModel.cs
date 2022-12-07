@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Diffusion.Toolkit.Models;
@@ -12,13 +13,11 @@ public class SearchModel : BaseNotify
     //public object _rowLock = new object();
     private int _totalFiles;
     private int _currentPosition;
-    private int _totalFilesScan;
-    private int _currentPositionScan;
+
     private ICommand _searchCommand;
     private string _searchText;
 
     private int _imageCount;
-    private string _status;
     private int _page;
     private bool _isEmpty;
     private int _pages;
@@ -30,6 +29,17 @@ public class SearchModel : BaseNotify
     private bool _hideIcons;
     private ObservableCollection<string?> _searchHistory;
 
+    private ICommand _prevPage;
+    private ICommand _nextPage;
+    private ICommand _firstPage;
+    private ICommand _lastPage;
+    private ICommand _refresh;
+    private ICommand _focusSearch;
+    private bool _nextEnabled;
+    private bool _prevPageEnabled;
+    private bool _firstPageEnabled;
+    private bool _lastPageEnabled;
+    private string _modeName;
 
     public SearchModel()
     {
@@ -38,10 +48,8 @@ public class SearchModel : BaseNotify
         _currentImage = new ImageViewModel();
         _imageOpacity = 1;
         _isEmpty = true;
-        _status = "Ready";
         _resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
-        //BindingOperations.EnableCollectionSynchronization(Images, _rowLock);
     }
 
     public ObservableCollection<ImageEntry>? Images
@@ -64,18 +72,6 @@ public class SearchModel : BaseNotify
     }
 
 
-    public string Status
-    {
-        get => _status;
-        set => SetField(ref _status, value);
-    }
-
-    public int ImageCount
-    {
-        get => _imageCount;
-        set => SetField(ref _imageCount, value);
-    }
-
     public int CurrentPosition
     {
         get => _currentPosition;
@@ -88,18 +84,6 @@ public class SearchModel : BaseNotify
         set => SetField(ref _totalFiles, value);
     }
 
-    public int CurrentPositionScan
-    {
-        get => _currentPositionScan;
-        set => SetField(ref _currentPositionScan, value);
-    }
-
-    public int TotalFilesScan
-    {
-        get => _totalFilesScan;
-        set => SetField(ref _totalFilesScan, value);
-    }
-    
     public string? SearchText
     {
         get => _searchText;
@@ -116,21 +100,63 @@ public class SearchModel : BaseNotify
         }
     }
 
-    public IEnumerable<string?> ReverseSearchHistory
-    {
-        get => _searchHistory.Reverse();
-    }
-
     public ICommand SearchCommand
     {
         get => _searchCommand;
         set => SetField(ref _searchCommand, value);
     }
-    
+
+    public bool NextPageEnabled
+    {
+        get => _nextEnabled;
+        private set => SetField(ref _nextEnabled, value);
+    }
+
+    public bool PrevPageEnabled
+    {
+        get => _prevPageEnabled;
+        private set => SetField(ref _prevPageEnabled, value);
+    }
+
+    public bool FirstPageEnabled
+    {
+        get => _firstPageEnabled;
+        private set => SetField(ref _firstPageEnabled, value);
+    }
+
+    public bool LastPageEnabled
+    {
+        get => _lastPageEnabled;
+        private set => SetField(ref _lastPageEnabled, value);
+    }
+
+
     public int Page
     {
         get => _page;
-        set => SetField(ref _page, value);
+        set
+        {
+            if (value > _pages)
+            {
+                value = _pages;
+            }
+
+            if (_pages == 0)
+            {
+                value = 0;
+            }
+            else if (value < 1)
+            {
+                value = 1;
+            }
+
+            PrevPageEnabled = value > 1;
+            NextPageEnabled = value < _pages;
+            FirstPageEnabled = value > 1;
+            LastPageEnabled = value < _pages;
+
+            SetField(ref _page, value);
+        }
     }
 
     public bool IsEmpty
@@ -175,4 +201,45 @@ public class SearchModel : BaseNotify
         set => SetField(ref _hideIcons, value);
     }
 
+    public ICommand PrevPage
+    {
+        get => _prevPage;
+        set => SetField(ref _prevPage, value);
+    }
+
+    public ICommand NextPage
+    {
+        get => _nextPage;
+        set => SetField(ref _nextPage, value);
+    }
+
+    public ICommand FirstPage
+    {
+        get => _firstPage;
+        set => SetField(ref _firstPage, value);
+    }
+
+    public ICommand LastPage
+    {
+        get => _lastPage;
+        set => SetField(ref _lastPage, value);
+    }
+
+    public ICommand Refresh
+    {
+        get => _refresh;
+        set => SetField(ref _refresh, value);
+    }
+
+    public ICommand FocusSearch
+    {
+        get => _focusSearch;
+        set => SetField(ref _focusSearch, value);
+    }
+
+    public string ModeName
+    {
+        get => _modeName;
+        set => SetField(ref _modeName, value);
+    }
 }

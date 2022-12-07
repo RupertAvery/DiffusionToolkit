@@ -58,6 +58,22 @@ namespace Diffusion.Toolkit
             dialog.IsFolderPicker = true;
             if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
             {
+                if (_model.ImagePaths.Any(d => dialog.FileName.StartsWith(d)))
+                {
+                    MessageBox.Show(this,
+                        "The selected folder is already on the path of one of the included folders",
+                        "Add folder", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+                else if (_model.ImagePaths.Any(d => d.StartsWith(dialog.FileName)))
+                {
+                    MessageBox.Show(this,
+                        "One of the included folders is on the path of the selected folder! It is recommended that you remove it.",
+                        "Add folder", MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                }
+
                 _model.ImagePaths.Add(dialog.FileName);
             }
 
@@ -66,7 +82,7 @@ namespace Diffusion.Toolkit
         private void RemoveFolder_OnClick(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(this,
-                "Are you sure you want to remove this folder?",
+                "Are you sure you want to remove this folder? This will prevent you from scanning new images in this folder. Images in the database will not be affected.",
                 "Remove folder", MessageBoxButton.YesNo,
                 MessageBoxImage.Question, MessageBoxResult.No);
 

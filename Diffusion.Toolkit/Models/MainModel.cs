@@ -17,6 +17,20 @@ public class MainModel : BaseNotify
     private ICommand _showFavorite;
     private ICommand _showMarked;
     private ICommand _showLastQuery;
+    private ICommand _showModels;
+    private ICommand _showSearch;
+    private int _totalFilesScan;
+    private int _currentPositionScan;
+    private string _status;
+    private bool _isScanning;
+    private ICommand _cancelScan;
+    private ICommand _about;
+    private ICommand _help;
+
+    public MainModel()
+    {
+        _status = "Ready";
+    }
 
     public Page Page
     {
@@ -83,5 +97,58 @@ public class MainModel : BaseNotify
     {
         get => _showLastQuery;
         set => SetField(ref _showLastQuery, value);
+    }
+
+    public ICommand ShowModels
+    {
+        get => _showModels;
+        set => SetField(ref _showModels, value);
+    }
+
+    public ICommand ShowSearch
+    {
+        get => _showSearch;
+        set => SetField(ref _showSearch, value);
+    }
+
+    public string Status
+    {
+        get => _status;
+        set => SetField(ref _status, value);
+    }
+    public bool IsScanning
+    {
+        get => _isScanning;
+        set => SetField(ref _isScanning, value);
+    }
+
+    public int CurrentPositionScan
+    {
+        get => _currentPositionScan;
+        set => SetField(ref _currentPositionScan, value);
+    }
+
+    public int TotalFilesScan
+    {
+        get => _totalFilesScan;
+        set => SetField(ref _totalFilesScan, value);
+    }
+    
+    public ICommand CancelScan
+    {
+        get => _cancelScan;
+        set => SetField(ref _cancelScan, value);
+    }
+
+    public ICommand About
+    {
+        get => _about;
+        set => SetField(ref _about, value);
+    }
+
+    public ICommand Help
+    {
+        get => _help;
+        set => SetField(ref _help, value);
     }
 }

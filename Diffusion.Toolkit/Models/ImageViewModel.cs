@@ -18,6 +18,9 @@ public class ImageViewModel : BaseNotify
     private BitmapSource? _image;
     private bool _favorite;
     private string _modelName;
+    private string _date;
+    private int? _rating;
+    private ICommand _showInThumbnails;
 
     public BitmapSource? Image
     {
@@ -56,6 +59,12 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _modelName, value);
     }
 
+
+    public string Date
+    {
+        get => _date;
+        set => SetField(ref _date, value);
+    }
 
     public ICommand CopyPromptCommand
     {
@@ -100,5 +109,17 @@ public class ImageViewModel : BaseNotify
     {
         get => _favorite;
         set => SetField(ref _favorite, value);
+    }
+
+    public int? Rating
+    {
+        get => _rating;
+        set => SetField(ref _rating, value);
+    }
+
+    public ICommand ShowInThumbnails
+    {
+        get => _showInThumbnails;
+        set => SetField(ref _showInThumbnails, value);
     }
 }

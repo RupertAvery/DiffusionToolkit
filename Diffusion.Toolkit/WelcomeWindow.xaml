@@ -1,0 +1,96 @@
+﻿<Window x:Class="Diffusion.Toolkit.WelcomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Diffusion.Toolkit"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance local:WelcomeModel, IsDesignTimeCreatable=True}"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="NoResize"
+        Title="Welcome" Height="465" Width="584">
+    <Grid Margin="10,10,10,0">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <RichTextBox IsReadOnly="True" IsDocumentEnabled="True"  >
+            <FlowDocument>
+                <Paragraph>
+                    <Run FontSize="20">Welcome to Diffusion Toolkit</Run>
+                </Paragraph>
+                <Table>
+                    <Table.Columns>
+                        <TableColumn  Width="140"/>
+                        <TableColumn />
+                    </Table.Columns>
+                    <TableRowGroup>
+                        <TableRow>
+                            <TableCell>
+                                <Paragraph>
+                                    <Image Source="Images/thumbnail.png" Width="128" Height="128"></Image>
+                                </Paragraph>
+                            </TableCell>
+                            <TableCell>
+                                <Paragraph>
+                                    <Bold>Diffusion Toolkit</Bold>
+                                    <Run>is an image viewer with support for reading metadata stored with AI-generated images by tools such as AUTOMATIC1111 and NovelAI.</Run>
+                                </Paragraph>
+                                <Paragraph>
+                                </Paragraph>
+                                <Paragraph>
+                                    <Run>Diffusion Toolkit stores this metadata in a local SQLite database and lets you search through your images using the prompt, seed, hash and other parameters in any combination, including the path of the file and the date it was generated, using a simple querying language.</Run>
+                                </Paragraph>
+
+                            </TableCell>
+                        </TableRow>
+                    </TableRowGroup>
+
+                </Table>
+                <Paragraph>
+                    <Run>Features include:</Run>
+                </Paragraph>
+                <List>
+                    <ListItem>
+                        <Paragraph>
+                            <Run>Support for AUTOMATIC1111 and NovelAI metadata formats</Run>
+                        </Paragraph>
+                    </ListItem>
+                    <ListItem>
+                        <Paragraph>
+                            <Run>Support for .PNG and .JPG+.TXT files</Run>
+                        </Paragraph>
+                    </ListItem>
+                    <ListItem>
+                        <Paragraph>
+                            <Run>A custom query language to search using image generation parameters</Run>
+                        </Paragraph>
+                    </ListItem>
+                    <ListItem>
+                        <Paragraph>
+                            <Run>Support for dragging from the thumbnail view to any app. Drag and drop a thumbnail into the PNGInfo tab of a WebUI, or into an Explorer folder to copy the selected images.</Run>
+                        </Paragraph>
+                    </ListItem>
+                    <ListItem>
+                        <Paragraph>
+                            <Run>Tagging images quickly for later deletion</Run>
+                        </Paragraph>
+                    </ListItem>
+                </List>
+                <Paragraph>
+                    See
+                    <Bold>Help > Tips</Bold> for information about keyboard shortcuts and querying.
+                </Paragraph>
+                <Paragraph>
+                    Check for updates at
+                    <Hyperlink RequestNavigate="HyperLink_OnRequestNavigate" NavigateUri="https://github.com/RupertAvery/DiffusionToolkit/releases">https://github.com/RupertAvery/DiffusionToolkit/releases</Hyperlink>
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+        <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <CheckBox IsChecked="{Binding DontShowWelcomeOnStartup}">Don't show on startup</CheckBox>
+        </Grid>
+    </Grid>
+</Window>

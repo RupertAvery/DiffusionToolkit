@@ -1,4 +1,5 @@
-﻿using System.Windows.Media.Imaging;
+﻿using System;
+using System.Windows.Media.Imaging;
 using Diffusion.IO;
 using Diffusion.Toolkit.Thumbnails;
 
@@ -12,6 +13,12 @@ public class ImageEntry : BaseNotify
     private bool _forDeletion;
     private bool _favorite;
     private int? _rating;
+    private long _requestId;
+
+    public ImageEntry(long requestId)
+    {
+        _requestId = requestId;
+    }
 
     public int Id
 
@@ -52,6 +59,7 @@ public class ImageEntry : BaseNotify
             {
                 var job = new ThumbnailJob()
                 {
+                    RequestId = _requestId,
                     Path = Path, 
                     Height = Height,
                     Width = Width
@@ -71,4 +79,5 @@ public class ImageEntry : BaseNotify
     public int Height { get; set; }
     public int Width { get; set; }
     public string Path { get; set; }
+    public DateTime CreatedDate { get; set; }
 }

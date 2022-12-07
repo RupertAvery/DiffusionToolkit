@@ -37,7 +37,7 @@ public class ModelScanner
 
             yield return new Model() { 
                 Path = file, 
-                Filename = Path.GetFileName(file),
+                Filename = Path.GetFileNameWithoutExtension(file),
                 Hash = Convert.ToHexString(hash).ToLower().Substring(0, 8),
                 Hashv2 = $"{crc32Sum:x8}"
             };

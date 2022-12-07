@@ -12,7 +12,7 @@ namespace Diffusion.Database
         public DateTime ScannedDate { get; set; }
     }
 
-    public class ImageList
+    public class Album
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
@@ -20,11 +20,11 @@ namespace Diffusion.Database
         public int Order { get; set; }
     }
 
-    public class ImageListItem
+    public class AlbumImage
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
-        public int ListId { get; set; }
+        public int AlbumId { get; set; }
         public int ImageId { get; set; }
     }
 

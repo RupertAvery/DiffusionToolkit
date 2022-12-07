@@ -5,15 +5,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Diffusion.Toolkit"
         xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
+        xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
         mc:Ignorable="d"
         ResizeMode="CanResizeWithGrip"
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         Title="Diffusion Toolkit" Height="450" Width="800">
+    <Window.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVisCol"></converters:InverseBoolToVisibilityCollapsedConverter>
+            <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
+            <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
+            <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
+            <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
+            <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
+        </ResourceDictionary>
+    </Window.Resources>
+
     <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
-            <!--<RowDefinition Height="29"/>-->
+            <RowDefinition Height="48"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="28"/>
         </Grid.RowDefinitions>
         <!--<Grid.ColumnDefinitions>
             <ColumnDefinition Width="100"/>
@@ -26,19 +39,62 @@
             </MenuItem>
             <MenuItem Header="_Edit">
                 <MenuItem Header="_Settings" Command="{Binding Settings}"/>
-                <Separator></Separator>
+                <!--<Separator></Separator>
                 <MenuItem Header="Rescan _Folders" Command="{Binding Rescan}"/>
-                <MenuItem Header="Rebuild _Images" Command="{Binding Rebuild}"/>
+                <MenuItem Header="Rebuild _Images" Command="{Binding Rebuild}"/>-->
                 <Separator></Separator>
-                <MenuItem Header="_Remove Images marked for deletion" Command="{Binding RemoveMarked}"/>
+                <MenuItem Header="_Empty recycle bin" Command="{Binding RemoveMarked}"/>
             </MenuItem>
-            <MenuItem Header="_View">
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Command="{Binding About}"/>
+                <MenuItem Header="_Tips" Command="{Binding Help}"/>
+            </MenuItem>
+            <!--<MenuItem Header="_View">
+                <MenuItem Header="Search" Command="{Binding ShowSearch}"/>
+                <MenuItem Header="Models" Command="{Binding ShowModels}"/>
+                <Separator></Separator>
                 <MenuItem Header="Show Favorites" Command="{Binding ShowFavorite}"/>
                 <MenuItem Header="Show Marked for Deletion" Command="{Binding ShowMarked}"/>
-            </MenuItem>
+            </MenuItem>-->
         </Menu>
+        <ToolBar Grid.Row="1">
+            <Button Command="{Binding ShowSearch}">
+                <Image Width="32" Height="32" Source="Icons/search-32.png" ToolTip="Search"></Image>
+            </Button>
+            <Button Command="{Binding ShowFavorite}">
+                <Image Width="32" Height="32" Source="Icons/favorite-32.png" ToolTip="Favorites"></Image>
+            </Button>
+            <Button  Command="{Binding ShowMarked}">
+                <Image Width="32" Height="32" Source="Icons/trash-32.png" ToolTip="Recycle bin"></Image>
+            </Button>
+            <Separator></Separator>
+            <Button Command="{Binding Rescan}">
+                <Image Width="32" Height="32" Source="Icons/scan-folder-32.png" ToolTip="Rescan Folders"></Image>
+            </Button>
+            <Button Command="{Binding Rebuild}">
+                <Image Width="32" Height="32" Source="Icons/rebuild-32.png" ToolTip="Rebuild Images"></Image>
+            </Button>
+            <Separator></Separator>
+            <Button Command="{Binding ShowModels}">
+                <Image Width="32" Height="32" Source="Icons/models-32.png" ToolTip="Models"></Image>
+            </Button>
+            <Separator></Separator>
+            <Button Command="{Binding Settings}">
+                <Image Width="32" Height="32" Source="Icons/settings-32.png" ToolTip="Settings"></Image>
+            </Button>
+        </ToolBar>
         <!--<StackPanel Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Background="AliceBlue" >
         </StackPanel>-->
-        <Frame Grid.Row="1" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
+        <Frame Grid.Row="2" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
+        <Grid Grid.Row="3" ColumnSpan="3">
+            <!--<ProgressBar Value="{Binding CurrentPosition}" Maximum="{Binding TotalFiles}"></ProgressBar>-->
+            <DockPanel HorizontalAlignment="Stretch">
+                <Button DockPanel.Dock="Right"  Width="50" Visibility="{Binding IsScanning, Converter={StaticResource boolToVisCol}}" Command="{Binding CancelScan}">Cancel</Button>
+                <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
+                    <ProgressBar Value="{Binding CurrentPositionScan}" Maximum="{Binding TotalFilesScan}" HorizontalAlignment="Stretch"></ProgressBar>
+                    <Label Content="{Binding Status}"></Label>
+                </Grid>
+            </DockPanel>
+        </Grid>
     </Grid>
 </Window>

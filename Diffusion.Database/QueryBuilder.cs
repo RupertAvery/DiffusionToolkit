@@ -13,7 +13,7 @@ public static class QueryBuilder
     public static readonly Regex DateFormatRegex = new Regex("\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
 
-    private static readonly Regex PathRegex = new Regex("\\bpath:\\s*(\\S)+|\"([^\"]+)\"\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex PathRegex = new Regex("\\bpath:\\s*(?:(?<criteria>starts with|contains|ends with)\\s+)?(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex DateRegex = new Regex("\\bdate:\\s*(?:(?<prep1>between|before|since|from)\\s+)?(?<date1>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})(?:\\s+(?<prep2>and|up to|to)\\s+(?<date2>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex SeedRegex = new Regex("\\bseed:\\s*(?<start>\\d+)(?:\\s*-\\s*(?<end>\\S+))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -31,6 +31,7 @@ public static class QueryBuilder
     private static readonly Regex HypernetRegex = new Regex("\\bhypernet:\\s*(\\S+)(?:\\s*\\|\\s*(\\S+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex HypernetStrRegex = new Regex("\\bhypernet strength:\\s*(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+(?:\\.\\d+)?)\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private static readonly Regex RatingRegex = new Regex("\\brating:\\s*(?:(?<value>none)|(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+))\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex ForeDeletionRegex = new Regex("\\b(?:for deletion|delete|to delete):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex FavoriteRegex = new Regex("\\b(?:favorite|fave):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -40,6 +41,7 @@ public static class QueryBuilder
     {
         var conditions = new List<KeyValuePair<string, object>>();
 
+        ParsePath(ref prompt, conditions);
         ParseDate(ref prompt, conditions);
         ParseSeed(ref prompt, conditions);
         ParseSteps(ref prompt, conditions);
@@ -48,6 +50,7 @@ public static class QueryBuilder
         ParseCFG(ref prompt, conditions);
         ParseSize(ref prompt, conditions);
         ParseAestheticScore(ref prompt, conditions);
+        ParseRating(ref prompt, conditions);
         ParseHypernet(ref prompt, conditions);
         ParseHypernetStrength(ref prompt, conditions);
         ParseFavorite(ref prompt, conditions);
@@ -63,23 +66,57 @@ public static class QueryBuilder
                     IEnumerable<object> orConditions => orConditions.Select(o => o),
                     _ => new[] { c.Value }
                 };
-            }));
+            }).Where(o => o != null));
+    }
+
+    private static void ParsePath(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        var match = PathRegex.Match(prompt);
+        if (match.Success)
+        {
+            prompt = PathRegex.Replace(prompt, String.Empty);
+
+            var value = match.Groups["value"].Value;
+            if (match.Groups["criteria"].Success)
+            {
+                if (value.Any(t => t is '*' or '?'))
+                {
+                    throw new Exception("Invalid path. Do not use *, ? if criteria 'starts with', 'contains', or 'ends with' is specified");
+                }
+
+                switch (match.Groups["criteria"].Value.ToLower())
+                {
+                    case "starts with":
+                        value = $"{value}**";
+                        break;
+                    case "contains":
+                        value = $"**{value}**";
+                        break;
+                    case "ends with":
+                        value = $"**{value}";
+                        break;
+                }
+            }
+
+            conditions.Add(new KeyValuePair<string, object>("(Path GLOB ?)", value));
+
+        }
     }
 
     private static void ParseForDeletion(ref string prompt, List<KeyValuePair<string, object>> conditions)
     {
-        var hypernetMatch = ForeDeletionRegex.Match(prompt);
-        if (hypernetMatch.Success)
+        var match = ForeDeletionRegex.Match(prompt);
+        if (match.Success)
         {
             prompt = ForeDeletionRegex.Replace(prompt, String.Empty);
 
             var value = true;
 
-            if (hypernetMatch.Groups["value"].Success)
+            if (match.Groups["value"].Success)
             {
-                value = hypernetMatch.Groups["value"].Value.ToLower() == "true";
+                value = match.Groups["value"].Value.ToLower() == "true";
             }
-            
+
             conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", value));
 
         }
@@ -87,16 +124,16 @@ public static class QueryBuilder
 
     private static void ParseFavorite(ref string prompt, List<KeyValuePair<string, object>> conditions)
     {
-        var hypernetMatch = FavoriteRegex.Match(prompt);
-        if (hypernetMatch.Success)
+        var match = FavoriteRegex.Match(prompt);
+        if (match.Success)
         {
             prompt = FavoriteRegex.Replace(prompt, String.Empty);
 
             var value = true;
 
-            if (hypernetMatch.Groups["value"].Success)
+            if (match.Groups["value"].Success)
             {
-                value = hypernetMatch.Groups["value"].Value.ToLower() == "true";
+                value = match.Groups["value"].Value.ToLower() == "true";
             }
 
             conditions.Add(new KeyValuePair<string, object>("(Favorite = ?)", value));
@@ -106,17 +143,17 @@ public static class QueryBuilder
 
     private static void ParseHypernet(ref string prompt, List<KeyValuePair<string, object>> conditions)
     {
-        var hypernetMatch = HypernetRegex.Match(prompt);
-        if (hypernetMatch.Success)
+        var match = HypernetRegex.Match(prompt);
+        if (match.Success)
         {
             prompt = HypernetRegex.Replace(prompt, String.Empty);
             var orConditions = new List<KeyValuePair<string, object>>();
 
-            for (var i = 1; i < hypernetMatch.Groups.Count; i++)
+            for (var i = 1; i < match.Groups.Count; i++)
             {
-                if (hypernetMatch.Groups[i].Value.Length > 0)
+                if (match.Groups[i].Value.Length > 0)
                 {
-                    orConditions.Add(new KeyValuePair<string, object>("(HyperNetwork = ?)", hypernetMatch.Groups[i].Value));
+                    orConditions.Add(new KeyValuePair<string, object>("(HyperNetwork = ?)", match.Groups[i].Value));
                 }
             }
 
@@ -167,6 +204,34 @@ public static class QueryBuilder
         }
     }
 
+
+    private static void ParseRating(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        var match = RatingRegex.Match(prompt);
+        if (match.Success)
+        {
+            prompt = RatingRegex.Replace(prompt, String.Empty);
+
+            var oper = "=";
+
+            if (match.Groups["operator"].Success)
+            {
+                oper = match.Groups["operator"].Value;
+            }
+
+            var value = match.Groups["value"].Value;
+
+            if (value.ToLower() == "none")
+            {
+                conditions.Add(new KeyValuePair<string, object>($"(Rating IS NULL)", null));
+            }
+            else
+            {
+                conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)", int.Parse(value)));
+            }
+
+        }
+    }
 
 
 
