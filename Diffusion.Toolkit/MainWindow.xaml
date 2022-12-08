@@ -21,7 +21,7 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <Grid >
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
             <RowDefinition Height="48"/>
@@ -59,28 +59,28 @@
         </Menu>
         <ToolBar Grid.Row="1">
             <Button Command="{Binding ShowSearch}">
-                <Image Width="32" Height="32" Source="Icons/search-32.png" ToolTip="Search"></Image>
+                <Image Width="32" Height="32" Source="{DynamicResource SearchIcon}" ToolTip="Search"></Image>
             </Button>
             <Button Command="{Binding ShowFavorite}">
-                <Image Width="32" Height="32" Source="Icons/favorite-32.png" ToolTip="Favorites"></Image>
+                <Image Width="32" Height="32" Source="{DynamicResource FavoriteIcon}" ToolTip="Favorites"></Image>
             </Button>
             <Button  Command="{Binding ShowMarked}">
-                <Image Width="32" Height="32" Source="Icons/trash-32.png" ToolTip="Recycle bin"></Image>
+                <Image Width="32" Height="32" Source="{DynamicResource TrashIcon}" ToolTip="Recycle bin"></Image>
             </Button>
             <Separator></Separator>
             <Button Command="{Binding Rescan}">
-                <Image Width="32" Height="32" Source="Icons/scan-folder-32.png" ToolTip="Rescan Folders"></Image>
+                <Image Width="32" Height="32" Source="{DynamicResource ScanFolderIcon}" ToolTip="Rescan Folders"></Image>
             </Button>
             <Button Command="{Binding Rebuild}">
-                <Image Width="32" Height="32" Source="Icons/rebuild-32.png" ToolTip="Rebuild Images"></Image>
+                <Image Width="32" Height="32" Source="{DynamicResource RebuildIcon}" ToolTip="Rebuild Images"></Image>
             </Button>
             <Separator></Separator>
             <Button Command="{Binding ShowModels}">
-                <Image Width="32" Height="32" Source="Icons/models-32.png" ToolTip="Models"></Image>
+                <Image Width="32" Height="32" Source="{DynamicResource ModelsIcon}" ToolTip="Models"></Image>
             </Button>
             <Separator></Separator>
             <Button Command="{Binding Settings}">
-                <Image Width="32" Height="32" Source="Icons/settings-32.png" ToolTip="Settings"></Image>
+                <Image Width="32" Height="32" Source="{DynamicResource SettingsIcon}" ToolTip="Settings"></Image>
             </Button>
         </ToolBar>
         <!--<StackPanel Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Background="AliceBlue" >

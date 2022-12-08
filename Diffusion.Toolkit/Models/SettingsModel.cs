@@ -9,6 +9,7 @@ public class SettingsModel : BaseNotify
     private int _selectedIndex;
     private string _fileExtensions;
     private int _pageSize;
+    private string _theme;
 
     public SettingsModel()
     {
@@ -43,5 +44,11 @@ public class SettingsModel : BaseNotify
     {
         get => _pageSize;
         set => SetField(ref _pageSize, value);
+    }
+
+    public string Theme
+    {
+        get => _theme;
+        set => SetField(ref _theme, value);
     }
 }

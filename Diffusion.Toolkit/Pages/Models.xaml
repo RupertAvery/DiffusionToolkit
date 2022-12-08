@@ -6,7 +6,6 @@
       xmlns:local="clr-namespace:Diffusion.Toolkit.Pages"
       mc:Ignorable="d" 
       d:DataContext="{d:DesignInstance local:ModelsModel, IsDesignTimeCreatable = True}"
-      Background="AliceBlue"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Models">
 
@@ -22,19 +21,20 @@
         </ListBox>
         <Grid Grid.Column="1" Margin="10">
             <Grid.RowDefinitions>
-                <RowDefinition Height="45"/>
-                <RowDefinition Height="30"/>
-                <RowDefinition Height="30"/>
+                <RowDefinition Height="48"/>
+                <RowDefinition Height="36"/>
+                <RowDefinition Height="*"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Label FontWeight="Bold" FontSize="20" Content="{Binding SelectedModel.Filename}" Margin="0,0,0,5"></Label>
-            <Label Grid.Row="1" Content="{Binding SelectedModel.Path}" Margin="0,0,0,5"></Label>
+            <Label FontWeight="Bold" FontSize="24" Content="{Binding SelectedModel.Filename}" Margin="0,0,0,5"></Label>
+            <Label Grid.Row="1" FontSize="14" Content="{Binding SelectedModel.Path}" Margin="0,0,0,5"></Label>
             <Grid Grid.Row="2">
-                <RichTextBox IsReadOnly="True" BorderBrush="Transparent" Background="Transparent">
+                <RichTextBox FontSize="14" IsReadOnly="True" Foreground="{StaticResource ForegroundBrush}" Background="{DynamicResource PreviewBackgroundBrush}" BorderBrush="Transparent">
                     <FlowDocument>
                         <Paragraph>
                             <Bold>Hash:</Bold>
                             <Run Text="{Binding SelectedModel.Hash, Mode=OneWay}"></Run>
+                            <LineBreak/>
                             <Bold>Hash v2:</Bold>
                             <Run Text="{Binding SelectedModel.Hashv2, Mode=OneWay}"></Run>
                         </Paragraph>

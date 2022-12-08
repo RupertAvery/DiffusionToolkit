@@ -1,11 +1,90 @@
 # Table of Contents
 
+* [Getting Started](#getting-started)
+* [Updating your images](#updating-your-images)
+  * [Rescan Folders](#rescan-folders)
+  * [Rebuild Images](#rebuild-images)
+* [Navigation](#navigation)
 * [Searching](#searching)
 * [Advanced Searching](#advanced-searching)
 
+# Getting Started
+
+On first load, you should be asked to add your image folders.
+
+![image](https://user-images.githubusercontent.com/1910659/205201001-de9cfd43-554a-447c-bba4-36f674eb0c54.png)
+
+Don't add nested folders, instead add the topmost folder. Folders will be scanned recusively.
+
+You may also add the checkpoint model root folder. This will allow the app to display the checkpoint filename based on model hash when previewing an image.
+
+You can set what file extensions to scan for. Don't include an asterisk, but do include the dot, and separate with commas e.g. `.png, .jpg`.
+
+You can also set the number of images to appear on a page.
+
+Settings will be save on exit.
+
+When prompted, the app will immediately scan your folders for images. All parsed information will be saved into a SQLite database at `%APPDATA%\DiffusionToolkit\diffusion-toolkit.db`.
+
+You will get a notice upon completion. You can now begin searching via prompt. 
+
+Pressing Enter with an empty search bar will list all images.
+
+# Updating your images
+
+## Rescan Folders
+
+If you generate new images in your target folders, or add or remove images from them, you should click the **Rescan Folders** button to update your database with the latest changes.
+
+It is not advised to move images outside Diffustion Toolkit, especially if you have favorited or rated them, as you will lost this information when you rescan.
+
+## Rebuild Images
+
+**Rebuild Images** is intended for use when a new version of the application is released that supports new searchable parameters that need to be re-scanned from existing images.
+
+Running this should not affect any existing favorites or ratings.
+
+# Navigation
+
+The Search view is the default on startup.  Here you can enter your prompt, and press Enter to intitate the search. Matching images will be displayed in the thumbnail view. By default, results will be limited to 100 per page. This can be changed in settings.
+
+Use the buttons at the bottom of the page to move between pages. The keyboard shortcuts are:
+
+* First Page - Alt + Home
+* Previous Page - Alt + Page Up 
+* Next Page - Alt + Page Down
+* Last Page - Alt + End
+* F6 - Focus on search bar
+
+Double-clicking an image or pressing Enter with an image selected will launch your default image viewer.
+
+**NOTE:** You can drag an image from the thumbnail to another app, such as the PNGInfo tab in a WebUI to transfer the metadata, or to an explorer folder to copy the image to the target folder
+
+On the right is the Preview Pane, where the image preview and metadata are displayed.  In the meta data are buttons to Copy the metadata to the clipboard. There is a button on the Path section that will let you show the image in explorer.
+
+# Favorites
+
+When inside the thumbnail viewer, press F to toggle Favorite on the selected image.  A blue heart will indicate that the image has been tagged as Favorite. This will also be indicated in the preview pane.
+
+If you click on the Favorites Icon in the toolbar, you will be presented with all images tagged as Favorite.  When in the Favorite View, toggling an image Favorite off will cause the image to be removed from the list and it will not be displayed the next time you visit the Favorite View.
+
+# Rating
+
+When inside the thumbnail viewer, press 1-5 to set the Rating on the selected image.  A number of yellow stars in the preview pane will indicate the rating of the image.  Press the same number again to remove the rating.
+
+You can use the Rating search parameter to filter images by rating. See [Advanced Searching](#advanced-searching) for more information.
+
+# Deleting
+
+When inside the thumbnail viewer, press F to toggle For Deletion on the selected image.  The thumbnail will become transparent, indicating that the image has been tagged as For Deletion.
+
+If you click on the Recycle Bin Icon in the toolbar, you will be presented with all images tagged as For Deletion.  When in the Recycle Bin View, toggling an image delete off will cause the image to be removed from the list and it will not be displayed the next time you visit the Recycle Bin View.
+
+To permanently remove all images marked For Deletion, click Edit > Empty Recycle Bin.
+
 # Searching
 
-Searching is performed by checking if the prompt contains the search term.  Separate search terms using a comma. Each search term is ANDed to produce the final filter. 
+Separate search terms using a comma. Each search term is ANDed to produce the final filter. 
 
 For example:
 
@@ -13,7 +92,12 @@ For example:
 A man staring into a starry night sky, by Van Gogh
 ```
 
-will match prompts that contain both `A man staring into a starry night sky` AND `by Van Gogh` in any order or position.
+This contains two search terms.
+
+* `A man staring into a starry night sky` 
+* `by Van Gogh` 
+
+The above query will match prompts that contain both `A man staring into a starry night sky` AND `by Van Gogh` in any order or position.
 
 If you want to match an exact term that contains a comma, place the term in double quotes:
 
@@ -21,15 +105,15 @@ If you want to match an exact term that contains a comma, place the term in doub
 "A man staring into a starry night sky, by Van Gogh"
 ```
 
-will match prompts that contain ONLY `A man staring into a starry night sky, by Van Gogh` in that exact wording.
+The above query will match prompts that contain ONLY `A man staring into a starry night sky, by Van Gogh` in that exact wording.
 
-Note that spaces are important.
+Note that spaces are important. The following query
 
 ```
 "A man staring into a starry night sky , by Van Gogh"
 ```
 
-will not match the previous term.
+is not the same as the previous term.
 
 
 # Advanced Searching
@@ -44,7 +128,7 @@ A man staring into a starry night sky, by Van Gogh steps: 20 cfg:12
 
 Parameters will be ANDed, meaning adding more parameters will filter out more results. 
 
-The following parameters are supported:
+## Supported parameters
 
 * `steps:<number>`, `steps:<start>-<end>`
 
@@ -92,6 +176,12 @@ The following parameters are supported:
 
 * `hypernet strength: [<|>|<=|>=|<>] <number>`
 
+* `rating: [<|>|<=|>=|<>] <number>`
+
+* `favorite: [true|false]`
+
+* `delete: [true|false]` - Filters by files marked for deletion
+
 * `date:`
 
   Allows you to search by the file's created date
@@ -109,6 +199,21 @@ The following parameters are supported:
   * `XX-XX-XXXX` dates will be parsed using your computer's date format, i.e. 
 `MM-DD-YYYY` for US and similar regions, `DD-MM-YYYY` for European regions.
 
+ * `path:` You can use GLOBs, or criteria 
+   * Globs:
+     * `path: D:\diffusion\images**`      
+     * `path: **img2img**`      
+   * Criteria:
+     * `path: starts with D:\diffusion\images`      
+     * `path: contains img2img`      
+    
+    If your path constains spaces, wrap you path in double quotes.
+   * Globs:
+     * `path: "D:\My pics\images**"`      
+     * `path: "**funny cats**"`      
+   * Criteria:
+     * `path: starts with "D:\My pics\images"`      
+     * `path: contains "funny cats"`      
 
 
 ## Notes

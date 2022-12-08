@@ -56,7 +56,7 @@ namespace Diffusion.Toolkit.Pages
 
         private ModeSettings _currentModeSettings;
 
-        private List<Model> _modelLookup;
+        private List<Model> _modelLookup = new List<Model>();
 
         public Search()
         {
@@ -268,45 +268,52 @@ namespace Diffusion.Toolkit.Pages
                 return;
             }
 
-            _model.Images!.Clear();
 
             try
             {
-                if (!string.IsNullOrEmpty(_model.SearchText))
+                Dispatcher.Invoke(() =>
                 {
-                    if (_model.SearchHistory.Count == 0 ||  (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != _model.SearchText))
+                    _model.Images!.Clear();
+
+                    if (!string.IsNullOrEmpty(_model.SearchText))
                     {
-                        if (_model.SearchHistory.Count + 1 > 25)
+                        if (_model.SearchHistory.Count == 0 || (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != _model.SearchText))
                         {
-                            _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
+                            if (_model.SearchHistory.Count + 1 > 25)
+                            {
+                                _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
+                            }
+                            _model.SearchHistory.Insert(0, _model.SearchText);
+
+                            _currentModeSettings.History = _model.SearchHistory.ToList();
                         }
-                        _model.SearchHistory.Insert(0, _model.SearchText);
-
-                        _currentModeSettings.History = _model.SearchHistory.ToList();
                     }
-                }
 
-                _currentModeSettings.LastQuery = _model.SearchText;
+                    _currentModeSettings.LastQuery = _model.SearchText;
 
-                // need a better way to do this... property?
-                var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
+                    // need a better way to do this... property?
+                    var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
 
-                var count = _dataStore.Count(query);
+                    var count = _dataStore.Count(query);
 
-                _model.IsEmpty = count == 0;
+                    _model.IsEmpty = count == 0;
 
-                if (_model.IsEmpty)
-                {
-                    _model.ResultStatus = "No results found";
-                    MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                    return;
-                }
+                    _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
+                    _model.Results = $"{count:###,###,##0} results found";
 
-                _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
-                _model.Page = 1;
-                _model.Results = $"{count:###,###,##0} results found";
+                    if (_model.IsEmpty)
+                    {
+                        _model.Page = 0;
+                        _model.ResultStatus = "No results found";
+                        //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
+                        //    MessageBoxButton.OK,
+                        //    MessageBoxImage.Information);
+                        return;
+                    }
+                    _model.Page = 1;
+                });
+
+
 
                 ReloadMatches((string)obj != "ManualSearch");
             }

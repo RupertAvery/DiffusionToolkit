@@ -1,0 +1,662 @@
+﻿
+    <ResourceDictionary  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                         xmlns:system="clr-namespace:System;assembly=System.Runtime">
+
+    <SolidColorBrush x:Key="ControlBackgroundBrush" Color="{DynamicResource ControlBackground}"/>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{DynamicResource Background}"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{DynamicResource Splitter}"/>
+    <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource Splitter}"/>
+    <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource Foreground}"/>
+    <SolidColorBrush x:Key="DisabledForegroundBrush" Color="{DynamicResource DisabledForeground}"/>
+    <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="{DynamicResource DisabledBackground}"/>
+    <SolidColorBrush x:Key="PreviewBackgroundBrush" Color="{DynamicResource PreviewBackground}"/>
+
+    
+
+    <Style TargetType="Grid">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+    </Style>
+
+    <Style x:Key="Preview" TargetType="Grid">
+        <Setter Property="Background" Value="{DynamicResource PreviewBackgroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="Menu">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="BorderBrush" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="BorderThickness" Value="1"></Setter>
+        <Setter Property="BorderBrush" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+        <Style.Triggers>
+            <Trigger Property="IsHighlighted" Value="True">
+                <Setter Property="Background"  Value="{DynamicResource HighlightBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <Style TargetType="Separator">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="BorderThickness" Value="1"></Setter>
+        <Setter Property="BorderBrush" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="ToolBar">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="BorderBrush" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="ListView">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBrush}"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="ListViewItem">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBrush}"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="ListBox">
+        <Setter Property="Background" Value="{DynamicResource ControlBackgroundBrush}"></Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBrush}"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="ListBoxItem">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="BorderBrush" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+   
+
+    <Style TargetType="ProgressBar">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource ControlBackgroundBrush}"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+    <Style TargetType="TextBlock">
+        <Setter Property="Background" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+    </Style>
+
+
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+        <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Button}">
+                    <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource SecondaryBrush}" BorderThickness="1">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="GridSplitter">
+        <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"></Setter>
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type Button}}"
+           TargetType="Button"
+           x:Key="BorderlessButton">
+        <Setter Property="BorderBrush" Value="Transparent"/>
+    </Style>
+
+    <!--A Style that extends the previous TextBlock Style with an x:Key of TitleText-->
+    <Style BasedOn="{StaticResource {x:Type Label}}"
+               TargetType="Label"
+               x:Key="TitleText">
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontWeight" Value="DemiBold"/>
+        <Setter Property="Foreground" Value="DarkGray">
+        </Setter>
+    </Style>
+
+    <ControlTemplate x:Key="ComboBoxToggleButton" TargetType="{x:Type ToggleButton}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="20" />
+            </Grid.ColumnDefinitions>
+            <Border
+                  x:Name="Border" 
+                  Grid.ColumnSpan="2"
+                  CornerRadius="0"
+                  Background="{DynamicResource ControlBackgroundBrush}"
+                  BorderBrush="#FF97A0A5"
+                  BorderThickness="1" />
+            <Border 
+                  Grid.Column="0"
+                  CornerRadius="0" 
+                  Margin="1" 
+                  Background="{DynamicResource ControlBackgroundBrush}" 
+                  BorderBrush="#FF97A0A5"
+                  BorderThickness="0,0,1,0" />
+            <Path 
+                  x:Name="Arrow"
+                  Grid.Column="1"     
+                  Fill="{DynamicResource ForegroundBrush}"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Data="M0,0 L0,2 L4,6 L8,2 L8,0 L4,4 z"
+                />
+        </Grid>
+        <!--<ControlTemplate.Triggers>
+            <Trigger Property="ToggleButton.IsMouseOver" Value="true">
+                <Setter TargetName="Border" Property="Background" Value="#808080" />
+            </Trigger>
+            <Trigger Property="ToggleButton.IsChecked" Value="true">
+                <Setter TargetName="Border" Property="Background" Value="#E0E0E0" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="Border" Property="Background" Value="#EEEEEE" />
+                <Setter TargetName="Border" Property="BorderBrush" Value="#AAAAAA" />
+                <Setter Property="Foreground" Value="#888888"/>
+                <Setter TargetName="Arrow" Property="Fill" Value="#888888" />
+            </Trigger>
+        </ControlTemplate.Triggers>-->
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="ComboBoxTextBox" TargetType="{x:Type TextBox}">
+        <Border x:Name="PART_ContentHost" Focusable="False" Background="{TemplateBinding Background}" />
+    </ControlTemplate>
+
+    <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}">
+        <Setter Property="SnapsToDevicePixels" Value="true"/>
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
+        <Setter Property="MinWidth" Value="120"/>
+        <Setter Property="MinHeight" Value="20"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBox}">
+                    <Grid>
+                        <ToggleButton 
+                            Name="ToggleButton" 
+                            Template="{StaticResource ComboBoxToggleButton}" 
+                            Grid.Column="2" 
+                            Focusable="false"
+                            IsChecked="{Binding Path=IsDropDownOpen,Mode=TwoWay,RelativeSource={RelativeSource TemplatedParent}}"
+                            ClickMode="Press">
+                        </ToggleButton>
+                        <ContentPresenter Name="ContentSite" IsHitTestVisible="False"  Content="{TemplateBinding SelectionBoxItem}"
+                            ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                            ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                            Margin="3,3,23,3"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left" />
+                        <TextBox x:Name="PART_EditableTextBox"
+                            Style="{x:Null}" 
+                            Template="{StaticResource ComboBoxTextBox}" 
+                            HorizontalAlignment="Left" 
+                            VerticalAlignment="Center" 
+                            Margin="3,3,23,3"
+                            Focusable="True" 
+                            Background="{DynamicResource ControlBackgroundBrush}"
+                            Foreground="{DynamicResource ForegroundBrush}"
+                            Visibility="Hidden"
+                            IsReadOnly="{TemplateBinding IsReadOnly}"/>
+                        <Popup 
+                            Name="Popup"
+                            Placement="Bottom"
+                            IsOpen="{TemplateBinding IsDropDownOpen}"
+                            AllowsTransparency="True" 
+                            Focusable="False"
+                            PopupAnimation="Slide">
+
+                            <Grid Name="DropDown"
+                              SnapsToDevicePixels="True"                
+                              MinWidth="{TemplateBinding ActualWidth}"
+                              MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                <Border 
+                                x:Name="DropDownBorder"
+                                Background="{DynamicResource ControlBackgroundBrush}"
+                                BorderThickness="1"
+                                BorderBrush="#888888"/>
+                                <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                    <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained" />
+                                </ScrollViewer>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="false">
+                            <Setter TargetName="DropDownBorder" Property="MinHeight" Value="95"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="#888888"/>
+                        </Trigger>
+                        <Trigger Property="IsGrouping" Value="true">
+                            <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
+                        </Trigger>
+                        <Trigger SourceName="Popup" Property="Popup.AllowsTransparency" Value="true">
+                            <Setter TargetName="DropDownBorder" Property="CornerRadius" Value="0"/>
+                            <Setter TargetName="DropDownBorder" Property="Margin" Value="0,2,0,0"/>
+                        </Trigger>
+                        <Trigger Property="IsEditable"  Value="true">
+                            <Setter Property="IsTabStop" Value="false"/>
+                            <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+        </Style.Triggers>
+    </Style>
+
+    <!-- SimpleStyles: ComboBoxItem -->
+    <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}">
+        <Setter Property="SnapsToDevicePixels" Value="true"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                    <Border Name="Border"
+                              Padding="2"
+                              SnapsToDevicePixels="true">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="true">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="#888888"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="{x:Type Slider}" TargetType="{x:Type Slider}">
+        <Setter Property="SnapsToDevicePixels" Value="true"/>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Slider">
+                    <Border BorderThickness="{TemplateBinding Border.BorderThickness}" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}" Name="border" SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" MinHeight="{TemplateBinding FrameworkElement.MinHeight}" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TickBar Fill="{TemplateBinding TextElement.Foreground}" Placement="Top" Name="TopTick" Height="4" Margin="0,0,0,2" Visibility="Collapsed" Grid.Row="0" />
+                            <TickBar Fill="{TemplateBinding TextElement.Foreground}" Placement="Bottom" Name="BottomTick" Height="4" Margin="0,2,0,0" Visibility="Collapsed" Grid.Row="2" />
+                            <Border BorderThickness="1,1,1,1" BorderBrush="#FFD6D6D6" Background="#FFE7EAEA" Name="TrackBackground" Height="4" Margin="5,0,5,0" VerticalAlignment="Center" Grid.Row="1">
+                                <Canvas Margin="-6,-1,-6,-1">
+                                    <Rectangle Fill="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" Name="PART_SelectionRange" Height="4" Visibility="Hidden" />
+                                </Canvas>
+                            </Border>
+                            <Track Name="PART_Track" Grid.Row="1">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton>
+                                        <RepeatButton.Command>
+                                            <RoutedCommand />
+                                        </RepeatButton.Command>
+                                        <RepeatButton.Style>
+                                            <Style TargetType="RepeatButton">
+                                                <Style.Resources>
+                                                    <ResourceDictionary />
+                                                </Style.Resources>
+                                                <Setter Property="FrameworkElement.OverridesDefaultStyle">
+                                                    <Setter.Value>
+                                                        <system:Boolean>True</system:Boolean>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Panel.Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="UIElement.Focusable">
+                                                    <Setter.Value>
+                                                        False
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="KeyboardNavigation.IsTabStop">
+                                                    <Setter.Value>
+                                                        False
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Control.Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="RepeatButton">
+                                                            <Rectangle Fill="{TemplateBinding Panel.Background}" Width="{TemplateBinding FrameworkElement.Width}" Height="{TemplateBinding FrameworkElement.Height}" />
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </RepeatButton.Style>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb OverridesDefaultStyle="True" Name="Thumb" Width="11" Height="18" VerticalAlignment="Center" Focusable="False">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Grid UseLayoutRounding="True" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <Path Data="M0,0C0,0 11,0 11,0 11,0 11,18 11,18 11,18 0,18 0,18 0,18 0,0 0,0z" Stretch="Fill" Fill="#FFF0F0F0" Stroke="#FFACACAC" StrokeThickness="1" UseLayoutRounding="True" Name="grip" VerticalAlignment="Center" SnapsToDevicePixels="True" />
+                                                </Grid>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="UIElement.IsMouseOver">
+                                                        <Setter Property="Shape.Fill" TargetName="grip">
+                                                            <Setter.Value>
+                                                                <SolidColorBrush>#FFDCECFC</SolidColorBrush>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Setter Property="Shape.Stroke" TargetName="grip">
+                                                            <Setter.Value>
+                                                                <SolidColorBrush>#FF7EB4EA</SolidColorBrush>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Trigger.Value>
+                                                            True
+                                                        </Trigger.Value>
+                                                    </Trigger>
+                                                    <Trigger Property="Thumb.IsDragging">
+                                                        <Setter Property="Shape.Fill" TargetName="grip">
+                                                            <Setter.Value>
+                                                                <SolidColorBrush>#FFDAECFC</SolidColorBrush>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Setter Property="Shape.Stroke" TargetName="grip">
+                                                            <Setter.Value>
+                                                                <SolidColorBrush>#FF569DE5</SolidColorBrush>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Trigger.Value>
+                                                            True
+                                                        </Trigger.Value>
+                                                    </Trigger>
+                                                    <Trigger Property="UIElement.IsEnabled">
+                                                        <Setter Property="Shape.Fill" TargetName="grip">
+                                                            <Setter.Value>
+                                                                <SolidColorBrush>#FFF0F0F0</SolidColorBrush>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Setter Property="Shape.Stroke" TargetName="grip">
+                                                            <Setter.Value>
+                                                                <SolidColorBrush>#FFD9D9D9</SolidColorBrush>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Trigger.Value>
+                                                            False
+                                                        </Trigger.Value>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton>
+                                        <RepeatButton.Command>
+                                            <RoutedCommand />
+                                        </RepeatButton.Command>
+                                        <RepeatButton.Style>
+                                            <Style TargetType="RepeatButton">
+                                                <Style.Resources>
+                                                    <ResourceDictionary />
+                                                </Style.Resources>
+                                                <Setter Property="FrameworkElement.OverridesDefaultStyle">
+                                                    <Setter.Value>
+                                                        True
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Panel.Background">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#00FFFFFF</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="UIElement.Focusable">
+                                                    <Setter.Value>
+                                                        False
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="KeyboardNavigation.IsTabStop">
+                                                    <Setter.Value>
+                                                        False
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Control.Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="RepeatButton">
+                                                            <Rectangle Fill="{TemplateBinding Panel.Background}" Width="{TemplateBinding FrameworkElement.Width}" Height="{TemplateBinding FrameworkElement.Height}" />
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Style>
+                                        </RepeatButton.Style>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Slider.TickPlacement">
+                            <Setter Property="UIElement.Visibility" TargetName="TopTick">
+                                <Setter.Value>
+                                    <x:Static Member="Visibility.Visible" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Control.Template" TargetName="Thumb">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Grid UseLayoutRounding="True" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Path Data="M0,6C0,6 5.5,0 5.5,0 5.5,0 11,6 11,6 11,6 11,18 11,18 11,18 0,18 0,18 0,18 0,6 0,6z" Stretch="Fill" Fill="#FFF0F0F0" Stroke="#FFACACAC" StrokeThickness="1" UseLayoutRounding="True" Name="grip" VerticalAlignment="Center" SnapsToDevicePixels="True" />
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="UIElement.IsMouseOver">
+                                                <Setter Property="Shape.Fill" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FFDCECFC</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Shape.Stroke" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FF7EB4EA</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Trigger.Value>
+                                                    True
+                                                </Trigger.Value>
+                                            </Trigger>
+                                            <Trigger Property="Thumb.IsDragging">
+                                                <Setter Property="Shape.Fill" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FFDAECFC</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Shape.Stroke" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FF569DE5</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Trigger.Value>
+                                                    True
+                                                </Trigger.Value>
+                                            </Trigger>
+                                            <Trigger Property="UIElement.IsEnabled">
+                                                <Setter Property="Shape.Fill" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FFF0F0F0</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Shape.Stroke" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FFD9D9D9</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Trigger.Value>
+                                                    False
+                                                </Trigger.Value>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="FrameworkElement.Margin" TargetName="TrackBackground">
+                                <Setter.Value>
+                                    <Thickness>5,2,5,0</Thickness>
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                <x:Static Member="TickPlacement.TopLeft" />
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="Slider.TickPlacement">
+                            <Setter Property="UIElement.Visibility" TargetName="BottomTick">
+                                <Setter.Value>
+                                    <x:Static Member="Visibility.Visible" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Control.Template" TargetName="Thumb">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Grid UseLayoutRounding="True" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Path Data="M0,12C0,12 5.5,18 5.5,18 5.5,18 11,12 11,12 11,12 11,0 11,0 11,0 0,0 0,0 0,0 0,12 0,12z" Stretch="Fill" Fill="#FFF0F0F0" Stroke="#FFACACAC" StrokeThickness="1" UseLayoutRounding="True" Name="grip" VerticalAlignment="Center" SnapsToDevicePixels="True" />
+                                        </Grid>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="UIElement.IsMouseOver">
+                                                <Setter Property="Shape.Fill" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FFDCECFC</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Shape.Stroke" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FF7EB4EA</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Trigger.Value>
+                                                    True
+                                                </Trigger.Value>
+                                            </Trigger>
+                                            <Trigger Property="Thumb.IsDragging">
+                                                <Setter Property="Shape.Fill" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FFDAECFC</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Shape.Stroke" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FF569DE5</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Trigger.Value>
+                                                    True
+                                                </Trigger.Value>
+                                            </Trigger>
+                                            <Trigger Property="UIElement.IsEnabled">
+                                                <Setter Property="Shape.Fill" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FFF0F0F0</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Setter Property="Shape.Stroke" TargetName="grip">
+                                                    <Setter.Value>
+                                                        <SolidColorBrush>#FFD9D9D9</SolidColorBrush>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Trigger.Value>
+                                                    False
+                                                </Trigger.Value>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="FrameworkElement.Margin" TargetName="TrackBackground">
+                                <Setter.Value>
+                                    <Thickness>5,0,5,2</Thickness>
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                <x:Static Member="TickPlacement.BottomRight" />
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="Slider.TickPlacement">
+                            <Setter Property="UIElement.Visibility" TargetName="TopTick">
+                                <Setter.Value>
+                                    <x:Static Member="Visibility.Visible" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="UIElement.Visibility" TargetName="BottomTick">
+                                <Setter.Value>
+                                    <x:Static Member="Visibility.Visible" />
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                <x:Static Member="TickPlacement.Both" />
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="Slider.IsSelectionRangeEnabled">
+                            <Setter Property="UIElement.Visibility" TargetName="PART_SelectionRange">
+                                <Setter.Value>
+                                    <x:Static Member="Visibility.Visible" />
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                True
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="UIElement.IsKeyboardFocused">
+                            <Setter Property="TextElement.Foreground" TargetName="Thumb">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FF0000FF</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                <system:Boolean>True</system:Boolean>
+                            </Trigger.Value>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

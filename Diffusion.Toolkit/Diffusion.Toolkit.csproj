@@ -11,9 +11,29 @@
   <ItemGroup>
     <None Remove="Icons\blue-heart-32.png" />
     <None Remove="Icons\copy-32.png" />
+    <None Remove="Icons\Dark\copy-32.png" />
+    <None Remove="Icons\Dark\favorite-32.png" />
+    <None Remove="Icons\Dark\filter-32.png" />
+    <None Remove="Icons\Dark\link-32.png" />
+    <None Remove="Icons\Dark\models-32.png" />
+    <None Remove="Icons\Dark\rebuild-32.png" />
+    <None Remove="Icons\Dark\scan-folder-32.png" />
+    <None Remove="Icons\Dark\search-32.png" />
+    <None Remove="Icons\Dark\settings-32.png" />
+    <None Remove="Icons\Dark\trash-32.png" />
     <None Remove="Icons\favorite-32.png" />
     <None Remove="Icons\filter-32.png" />
     <None Remove="Icons\icons8-blue-heart-48.png" />
+    <None Remove="Icons\Light\copy-32.png" />
+    <None Remove="Icons\Light\favorite-32.png" />
+    <None Remove="Icons\Light\filter-32.png" />
+    <None Remove="Icons\Light\link-32.png" />
+    <None Remove="Icons\Light\models-32.png" />
+    <None Remove="Icons\Light\rebuild-32.png" />
+    <None Remove="Icons\Light\scan-folder-32.png" />
+    <None Remove="Icons\Light\search-32.png" />
+    <None Remove="Icons\Light\settings-32.png" />
+    <None Remove="Icons\Light\trash-32.png" />
     <None Remove="Icons\link-32.png" />
     <None Remove="Icons\models-32.png" />
     <None Remove="Icons\rebuild-32.png" />
@@ -44,19 +64,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Icons\copy-32.png" />
     <Resource Include="Icons\blue-heart-32.png" />
-    <Resource Include="Icons\favorite-32.png" />
-    <Resource Include="Icons\filter-32.png" />
+    <Resource Include="Icons\Dark\copy-32.png" />
+    <Resource Include="Icons\Dark\favorite-32.png" />
+    <Resource Include="Icons\Dark\filter-32.png" />
+    <Resource Include="Icons\Dark\link-32.png" />
+    <Resource Include="Icons\Dark\models-32.png" />
+    <Resource Include="Icons\Dark\rebuild-32.png" />
+    <Resource Include="Icons\Dark\scan-folder-32.png" />
+    <Resource Include="Icons\Dark\search-32.png" />
+    <Resource Include="Icons\Dark\settings-32.png" />
+    <Resource Include="Icons\Dark\trash-32.png" />
     <Resource Include="Icons\icons8-blue-heart-48.png" />
-    <Resource Include="Icons\rebuild-32.png" />
-    <Resource Include="Icons\scan-folder-32.png" />
-    <Resource Include="Icons\search-32.png" />
-    <Resource Include="Icons\link-32.png" />
-    <Resource Include="Icons\models-32.png" />
-    <Resource Include="Icons\settings-32.png" />
+    <Resource Include="Icons\Light\copy-32.png" />
+    <Resource Include="Icons\Light\favorite-32.png" />
+    <Resource Include="Icons\Light\filter-32.png" />
+    <Resource Include="Icons\Light\link-32.png" />
+    <Resource Include="Icons\Light\models-32.png" />
+    <Resource Include="Icons\Light\rebuild-32.png" />
+    <Resource Include="Icons\Light\scan-folder-32.png" />
+    <Resource Include="Icons\Light\search-32.png" />
+    <Resource Include="Icons\Light\settings-32.png" />
+    <Resource Include="Icons\Light\trash-32.png" />
     <Resource Include="Icons\star-32.png" />
-    <Resource Include="Icons\trash-32.png" />
     <Resource Include="Icons\x-mark-16.png" />
     <Resource Include="Icons\x-mark-32.png" />
     <Resource Include="Images\thumbnail.png" />
@@ -81,6 +111,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Page Update="Themes\Common.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Window.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Themes\Light.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="TipsWindow.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>

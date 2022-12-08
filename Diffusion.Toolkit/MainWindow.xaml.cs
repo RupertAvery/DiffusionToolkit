@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 using System.Windows.Documents.DocumentStructures;
 using Image = Diffusion.Database.Image;
 using System.Windows.Shapes;
+using Diffusion.Toolkit.Themes;
+using Microsoft.Win32;
 
 namespace Diffusion.Toolkit
 {
@@ -42,7 +44,7 @@ namespace Diffusion.Toolkit
 
         public MainWindow()
         {
-        
+
             InitializeComponent();
 
             QueryBuilder.Samplers = File.ReadAllLines("samplers.txt").ToList();
@@ -54,7 +56,7 @@ namespace Diffusion.Toolkit
                 OnNavigate = OnNavigate
             };
 
-
+            SystemEvents.UserPreferenceChanged += SystemEventsOnUserPreferenceChanged;
 
             _dataStore = new DataStore(Path.Combine(AppDataPath, "diffusion-toolkit.db"));
 
@@ -83,11 +85,26 @@ namespace Diffusion.Toolkit
             });
 
             DataContext = _model;
+
+
+
+            //var str = new System.Text.StringBuilder();
+            //using (var writer = new System.IO.StringWriter(str))
+            //    System.Windows.Markup.XamlWriter.Save(Slider.Template, writer);
+            //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void SystemEventsOnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        {
+            if (e.Category == UserPreferenceCategory.Color)
+            {
+                UpdateTheme();
+            }
         }
 
         private void ShowAbout()
         {
-            var welcome = new WelcomeWindow(_settings);
+            var welcome = new WelcomeWindow(_settings!);
             welcome.Owner = this;
             welcome.ShowDialog();
         }
@@ -142,14 +159,14 @@ namespace Diffusion.Toolkit
                 return;
             }
 
-            var files = new List<ImagePath>();
+            //var files = new List<ImagePath>();
 
-            for (var i = 1; i <= 100; i++)
-            {
-                files.Add(new ImagePath() { Id = i, Path = $"File{i:000}.png" });
-            }
+            //for (var i = 1; i <= 100; i++)
+            //{
+            //    files.Add(new ImagePath() { Id = i, Path = $"File{i:000}.png" });
+            //}
 
-            //var files = _dataStore.GetMarkedImagePaths().ToList();
+            var files = _dataStore.GetMarkedImagePaths().ToList();
             var count = 0;
 
             if (files.Count == 0)
@@ -188,19 +205,21 @@ namespace Diffusion.Toolkit
                                     _model.Status = $"Deleting {path}...";
                                     _model.CurrentPositionScan = count;
                                 });
-                                await Task.Delay(50);
-                                //File.Delete(imagePath.Path);
-                                //var dir = Path.GetDirectoryName(imagePath.Path);
-                                //var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
-                                //var textFilePath = Path.Join(dir, $"{fileName}.txt");
 
-                                //File.Delete(imagePath.Path);
-                                //if (File.Exists(textFilePath))
-                                //{
-                                //    File.Delete(textFilePath);
-                                //}
+                                //await Task.Delay(50);
 
-                                //_dataStore.DeleteImage(imagePath.Id);
+                                File.Delete(imagePath.Path);
+                                var dir = Path.GetDirectoryName(imagePath.Path);
+                                var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
+                                var textFilePath = Path.Join(dir, $"{fileName}.txt");
+
+                                File.Delete(imagePath.Path);
+                                if (File.Exists(textFilePath))
+                                {
+                                    File.Delete(textFilePath);
+                                }
+
+                                _dataStore.DeleteImage(imagePath.Id);
 
                             }
                             catch (Exception e)
@@ -234,7 +253,7 @@ namespace Diffusion.Toolkit
 
                     }
                 });
-               
+
             }
         }
 
@@ -256,6 +275,12 @@ namespace Diffusion.Toolkit
             {
                 _settings = new Settings();
 
+                UpdateTheme();
+
+                var welcome = new WelcomeWindow(_settings);
+                welcome.Owner = this;
+                welcome.ShowDialog();
+
                 var settings = new SettingsWindow(_dataStore, _settings);
                 settings.Owner = this;
                 settings.ShowDialog();
@@ -271,18 +296,41 @@ namespace Diffusion.Toolkit
 
                 if (_settings.ImagePaths.Any())
                 {
-                    Scan();
+                    if (MessageBox.Show("Do you want Diffusion Toolkit to scan your configured folders now?", "Setup", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    {
+                        Scan();
+                    };
+                }
+                else
+                {
+                    MessageBox.Show("You have not setup any image folders. You will not be able to search anything yet. Add folders, then click the Rescan Folders icon after you have set them up.", "Setup", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             else
             {
+                UpdateTheme();
+
+                if (!_settings.DontShowWelcomeOnStartup)
+                {
+                    var welcome = new WelcomeWindow(_settings);
+                    welcome.Owner = this;
+                    welcome.ShowDialog();
+                }
+
                 ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
             }
 
 
-            this.WindowState = _settings.WindowState;
-            this.Width = _settings.WindowSize.Width;
-            this.Height = _settings.WindowSize.Height;
+            if (_settings.WindowState.HasValue)
+            {
+                this.WindowState = _settings.WindowState.Value;
+            }
+
+            if (_settings.WindowSize.HasValue)
+            {
+                this.Width = _settings.WindowSize.Value.Width;
+                this.Height = _settings.WindowSize.Value.Height;
+            }
 
 
 
@@ -323,12 +371,7 @@ namespace Diffusion.Toolkit
 
             _navigatorService.Goto("search");
 
-            if (!_settings.DontShowWelcomeOnStartup)
-            {
-                var welcome = new WelcomeWindow(_settings);
-                welcome.Owner = this;
-                welcome.ShowDialog();
-            }
+
 
         }
 
@@ -355,9 +398,19 @@ namespace Diffusion.Toolkit
                     _search.LoadModels();
                 }
 
+                if (_settings.IsPropertyDirty(nameof(Settings.Theme)))
+                {
+                    UpdateTheme();
+                }
+
                 _settings.SetPristine();
 
             }
+        }
+
+        private void UpdateTheme()
+        {
+            ThemeManager.ChangeTheme(_settings!.Theme);
         }
 
         private void Rescan(object obj)
@@ -399,7 +452,7 @@ namespace Diffusion.Toolkit
             {
                 if (t.IsCompletedSuccessfully && t.Result)
                 {
-                    _search.ReloadMatches();
+                    _search.SearchImages();
                 }
             });
         }
@@ -410,7 +463,7 @@ namespace Diffusion.Toolkit
             {
                 if (t.IsCompletedSuccessfully && t.Result)
                 {
-                    _search.ReloadMatches();
+                    _search.SearchImages();
                 }
             });
         }
@@ -555,7 +608,7 @@ namespace Diffusion.Toolkit
 
                 Dispatcher.Invoke(() =>
                 {
-                    if (added == 0)
+                    if (added == 0 && removed == 0)
                     {
                         MessageBox.Show(_navigatorService.Host,
                             "No new images found",
@@ -603,6 +656,7 @@ namespace Diffusion.Toolkit
             var total = _dataStore.GetTotal();
             _model.Status = $"{total:###,###,##0} images in database";
         }
+
 
     }
 }

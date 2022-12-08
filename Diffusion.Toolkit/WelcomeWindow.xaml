@@ -10,13 +10,13 @@
         ShowInTaskbar="False"
         WindowStyle="SingleBorderWindow"
         ResizeMode="NoResize"
-        Title="Welcome" Height="465" Width="584">
-    <Grid Margin="10,10,10,0">
+        Title="Welcome" Height="500" Width="600">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <RichTextBox IsReadOnly="True" IsDocumentEnabled="True"  >
+        <RichTextBox Padding="10" IsReadOnly="True" IsDocumentEnabled="True" Background="Transparent" Foreground="{DynamicResource ForegroundBrush}" BorderBrush="Transparent" >
             <FlowDocument>
                 <Paragraph>
                     <Run FontSize="20">Welcome to Diffusion Toolkit</Run>

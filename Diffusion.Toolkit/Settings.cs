@@ -17,6 +17,7 @@ public class Settings
         DontShowWelcomeOnStartup = false;
         ImagePaths = new List<string>();
         FileExtensions = ".png, .jpg";
+        Theme = "System";
         PageSize = 100;
     }
 
@@ -26,9 +27,10 @@ public class Settings
     private string _previewGridHeight;
     private string _mainGridWidth2;
     private string _previewGridHeight2;
-    private WindowState _windowState;
-    private Size _windowSize;
+    private WindowState? _windowState;
+    private Size? _windowSize;
     private bool _dontShowWelcomeOnStartup;
+    private string _theme;
 
     public bool IsPropertyDirty(string name)
     {
@@ -97,13 +99,13 @@ public class Settings
         set => UpdateValue(ref _previewGridHeight2, value);
     }
 
-    public WindowState WindowState
+    public WindowState? WindowState
     {
         get => _windowState;
         set => UpdateValue(ref _windowState, value);
     }
 
-    public Size WindowSize
+    public Size? WindowSize
     {
         get => _windowSize;
         set => UpdateValue(ref _windowSize, value);
@@ -114,5 +116,11 @@ public class Settings
     {
         get => _dontShowWelcomeOnStartup;
         set => UpdateValue(ref _dontShowWelcomeOnStartup, value);
+    }
+
+    public string Theme
+    {
+        get => _theme;
+        set => UpdateValue(ref _theme, value);
     }
 }

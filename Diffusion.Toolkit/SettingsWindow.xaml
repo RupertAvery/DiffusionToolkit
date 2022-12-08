@@ -11,14 +11,15 @@
         WindowStyle="SingleBorderWindow"
         ResizeMode="NoResize"
         Title="Settings" Height="460" Width="600">
-    <Grid Margin="20">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid Margin="20">
             <StackPanel Grid.Row="0">
                 <Label>Diffusion Folders (Recursive)</Label>
-                <Grid Height="200">
+                <Grid Height="100">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition Width="90"/>
@@ -54,11 +55,24 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="90"/>
                     </Grid.ColumnDefinitions>
-                    <Slider Minimum="100" Maximum="500" Value="{Binding PageSize}" TickFrequency="50" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Orientation="Horizontal" Margin="0,0,10,0"></Slider>
+                    <Slider x:Name="Slider" Minimum="100" Maximum="500" Value="{Binding PageSize}" TickFrequency="50" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Orientation="Horizontal" Margin="0,0,10,0"></Slider>
                     <Label Grid.Column="1" Height="26" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="{Binding PageSize}" Margin="0,0,10,0"></Label>
+                </Grid>
+                <Label>Theme</Label>
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="90"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Height="26" VerticalContentAlignment="Center" Text="{Binding Theme}" Margin="0,0,10,0">
+                        <ComboBoxItem>System</ComboBoxItem>
+                        <ComboBoxItem>Light</ComboBoxItem>
+                        <ComboBoxItem>Dark</ComboBoxItem>
+                    </ComboBox>
                 </Grid>
             </StackPanel>
            
         </Grid>
+        <Label Grid.Row="1" HorizontalAlignment="Center">Settings will be applied on exit</Label>
     </Grid>
 </Window>

@@ -2,12 +2,15 @@
 using Diffusion.Database;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using Diffusion.Toolkit.Classes;
 using Diffusion.IO;
 using System.Text.RegularExpressions;
+using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Toolkit.Themes;
 
 namespace Diffusion.Toolkit
 {
@@ -35,10 +38,12 @@ namespace Diffusion.Toolkit
             _dataStore = dataStore;
 
             _model = new SettingsModel();
+            _model.PropertyChanged  += ModelOnPropertyChanged;
             _model.ImagePaths = new ObservableCollection<string>(settings.ImagePaths);
             _model.ModelRootPath = settings.ModelRootPath;
             _model.FileExtensions = settings.FileExtensions;
             _model.PageSize = settings.PageSize;
+            _model.Theme = settings.Theme;
 
             DataContext = _model;
 
@@ -48,8 +53,16 @@ namespace Diffusion.Toolkit
                 settings.ImagePaths = _model.ImagePaths.ToList();
                 settings.ModelRootPath = _model.ModelRootPath;
                 settings.FileExtensions = _model.FileExtensions;
-                settings.PageSize = _model.PageSize;
+                settings.Theme = _model.Theme;
             };
+        }
+
+        private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(SettingsModel.Theme))
+            {
+                ThemeManager.ChangeTheme(_model.Theme);
+            }
         }
 
         private void AddFolder_OnClick(object sender, RoutedEventArgs e)
