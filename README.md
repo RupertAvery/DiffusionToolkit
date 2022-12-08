@@ -30,7 +30,14 @@ Diffusion Toolkit also tracks:
 
 Think [Lexica.art](https://lexica.art/), but with more powerul search on your local images.
 
+# Themes
+
+Diffusion Toolkit supports Light and Dark themes. By default, it will use your system theme.
+
 ![image](https://user-images.githubusercontent.com/1910659/205200866-cac98b62-658c-4908-a188-09870d13acae.png)
+
+![image](https://user-images.githubusercontent.com/1910659/206368234-b5465b1f-9c7d-46bb-8ca3-4458aea761fc.png)
+
 
 # Installation
 
