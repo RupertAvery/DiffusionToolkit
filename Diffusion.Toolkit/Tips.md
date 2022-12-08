@@ -12,7 +12,7 @@
 
 On first load, you should be asked to add your image folders.
 
-![image](https://user-images.githubusercontent.com/1910659/205201001-de9cfd43-554a-447c-bba4-36f674eb0c54.png)
+![image](https://user-images.githubusercontent.com/1910659/206367658-3f322276-3f80-4f34-8385-b47f2ba0ee5b.png)
 
 Don't add nested folders, instead add the topmost folder. Folders will be scanned recusively.
 
