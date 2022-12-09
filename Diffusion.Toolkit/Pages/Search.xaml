@@ -71,13 +71,13 @@
 
         <Grid  Grid.Row="0" Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="32"></RowDefinition>
+                <RowDefinition Height="38"></RowDefinition>
                 <RowDefinition Height="30"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
                 <RowDefinition Height="30"></RowDefinition>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
-                <Label FontSize="18" Content="{Binding ModeName}"></Label>
+                <Label FontSize="24" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
             </Grid>
             <Grid Grid.Row="1" Margin="2">
                 <ComboBox x:Name="SearchTermTextBox" 

@@ -16,16 +16,16 @@ public class ModelScanner
 
             uint crc32Sum = 0;
 
-            if (Path.GetExtension(file).ToLower() == ".ckpt")
-            {
-                using (var zip = ZipFile.Open(file, ZipArchiveMode.Read))
-                {
-                    foreach (var entry in zip.Entries)
-                    {
-                        crc32Sum = crc32Sum + entry.Crc32 & 0xFFFFFFFF;
-                    }
-                }
-            }
+            //if (Path.GetExtension(file).ToLower() == ".ckpt")
+            //{
+            //    using (var zip = ZipFile.Open(file, ZipArchiveMode.Read))
+            //    {
+            //        foreach (var entry in zip.Entries)
+            //        {
+            //            crc32Sum = crc32Sum + entry.Crc32 & 0xFFFFFFFF;
+            //        }
+            //    }
+            //}
 
             var buffer = new byte[0x10000];
             using (var f = File.Open(file, FileMode.Open, FileAccess.Read))

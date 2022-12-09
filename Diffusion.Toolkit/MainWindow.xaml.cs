@@ -12,16 +12,18 @@ using Path = System.IO.Path;
 using Diffusion.Toolkit.Classes;
 using Search = Diffusion.Toolkit.Pages.Search;
 using Diffusion.Toolkit.Thumbnails;
-using System.Configuration;
-using Accessibility;
 using Diffusion.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents.DocumentStructures;
+using System.Windows.Threading;
+using Diffusion.Toolkit.Controls;
 using Image = Diffusion.Database.Image;
-using System.Windows.Shapes;
 using Diffusion.Toolkit.Themes;
 using Microsoft.Win32;
+using Diffusion.Toolkit.Pages;
+using System.Windows.Forms;
+using MessageBox = System.Windows.MessageBox;
+using Panel = System.Windows.Controls.Panel;
 
 namespace Diffusion.Toolkit
 {
@@ -41,6 +43,7 @@ namespace Diffusion.Toolkit
         private Search _search;
         private Pages.Models _models;
         private bool _tipsOpen;
+        private MessagePopupManager _messagePopupManager;
 
         public MainWindow()
         {
@@ -61,11 +64,11 @@ namespace Diffusion.Toolkit
             _dataStore = new DataStore(Path.Combine(AppDataPath, "diffusion-toolkit.db"));
 
             _model = new MainModel();
-            _model.Rescan = new RelayCommand<object>(Rescan);
-            _model.Rebuild = new RelayCommand<object>(Rebuild);
+            _model.Rescan = new AsyncCommand(RescanTask);
+            _model.Rebuild = new AsyncCommand(RebuildTask);
             _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
             _model.Settings = new RelayCommand<object>(ShowSettings);
-            _model.CancelScan = new RelayCommand<object>((o) => CancelScan());
+            _model.CancelScan = new AsyncCommand(CancelScan);
             _model.About = new RelayCommand<object>((o) => ShowAbout());
             _model.Help = new RelayCommand<object>((o) => ShowTips());
 
@@ -87,10 +90,11 @@ namespace Diffusion.Toolkit
             DataContext = _model;
 
 
+            _messagePopupManager = new MessagePopupManager(PopupHost, Frame, Dispatcher);
 
             //var str = new System.Text.StringBuilder();
             //using (var writer = new System.IO.StringWriter(str))
-            //    System.Windows.Markup.XamlWriter.Save(Slider.Template, writer);
+            //    System.Windows.Markup.XamlWriter.Save(EditMenu.Template, writer);
             //System.Diagnostics.Debug.Write(str);
         }
 
@@ -124,11 +128,11 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private void CancelScan()
+        private async Task CancelScan()
         {
-            var dialogResult = MessageBox.Show(_navigatorService.Host, "Are you sure you want to cancel the operation?", "Cancel", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+            var dialogResult = await _messagePopupManager.Show("Are you sure you want to cancel the operation?", "Cancel", PopupButtons.YesNo);
 
-            if (dialogResult == MessageBoxResult.Yes)
+            if (dialogResult == PopupResult.Yes)
             {
                 _scanCancellationTokenSource.Cancel();
             }
@@ -171,90 +175,102 @@ namespace Diffusion.Toolkit
 
             if (files.Count == 0)
             {
-                MessageBox.Show(this, "There are no files to delete", "Empty recycle bin", MessageBoxButton.OK, MessageBoxImage.Information);
+                _messagePopupManager.Show("There are no files to delete", "Empty recycle bin");
                 return;
             }
 
-            if (MessageBox.Show(this, "This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
+            _messagePopupManager.Show("This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", PopupButtons.YesNo).ContinueWith(t =>
             {
-                Task.Run(async () =>
+                if (t.Result == PopupResult.Yes)
                 {
-                    _model.IsScanning = true;
-
-                    try
+                    Task.Run(async () =>
                     {
-                        Dispatcher.Invoke(() =>
+                        _model.IsScanning = true;
+
+                        try
                         {
-                            _model.TotalFilesScan = files.Count;
-                            _model.CurrentPositionScan = 0;
-                        });
-
-                        foreach (var imagePath in files)
-                        {
-
-                            if (_scanCancellationTokenSource.IsCancellationRequested) break;
-
-                            try
+                            Dispatcher.Invoke(() =>
                             {
-                                count++;
+                                _model.TotalFilesScan = files.Count;
+                                _model.CurrentPositionScan = 0;
+                            });
 
-                                var path = Path.GetFileName(imagePath.Path);
-
-                                Dispatcher.Invoke(() =>
-                                {
-                                    _model.Status = $"Deleting {path}...";
-                                    _model.CurrentPositionScan = count;
-                                });
-
-                                //await Task.Delay(50);
-
-                                File.Delete(imagePath.Path);
-                                var dir = Path.GetDirectoryName(imagePath.Path);
-                                var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
-                                var textFilePath = Path.Join(dir, $"{fileName}.txt");
-
-                                File.Delete(imagePath.Path);
-                                if (File.Exists(textFilePath))
-                                {
-                                    File.Delete(textFilePath);
-                                }
-
-                                _dataStore.DeleteImage(imagePath.Id);
-
-                            }
-                            catch (Exception e)
+                            foreach (var imagePath in files)
                             {
-                                var result = Dispatcher.Invoke(() => MessageBox.Show(this, $"Failed to delete {imagePath.Path}. \n\n {e.Message}", "Error", MessageBoxButton.OKCancel, MessageBoxImage.Error));
 
-                                if (result == MessageBoxResult.Cancel)
+                                if (_scanCancellationTokenSource.IsCancellationRequested) break;
+
+                                try
                                 {
-                                    break;
-                                }
+                                    count++;
 
+                                    var path = Path.GetFileName(imagePath.Path);
+
+                                    Dispatcher.Invoke(() =>
+                                    {
+                                        _model.Status = $"Deleting {path}...";
+                                        _model.CurrentPositionScan = count;
+                                    });
+
+                                    //await Task.Delay(50);
+
+                                    File.Delete(imagePath.Path);
+                                    var dir = Path.GetDirectoryName(imagePath.Path);
+                                    var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
+                                    var textFilePath = Path.Join(dir, $"{fileName}.txt");
+
+                                    File.Delete(imagePath.Path);
+                                    if (File.Exists(textFilePath))
+                                    {
+                                        File.Delete(textFilePath);
+                                    }
+
+                                    _dataStore.DeleteImage(imagePath.Id);
+
+                                }
+                                catch (Exception e)
+                                {
+                                    var result = await Dispatcher.Invoke(async () =>
+                                    {
+                                        return await _messagePopupManager.Show($"Failed to delete {imagePath.Path}. \n\n {e.Message}", "Error", PopupButtons.OkCancel);
+                                    });
+
+                                    if (result == PopupResult.Yes)
+                                    {
+                                        break;
+                                    }
+
+                                }
                             }
+
+                            Dispatcher.Invoke(() =>
+                            {
+                                _model.TotalFilesScan = 100;
+                                _model.CurrentPositionScan = 0;
+
+                                _messagePopupManager.Show($"{count} images were deleted", "Delete images");
+                            });
+
                         }
-
-                        Dispatcher.Invoke(() =>
+                        finally
                         {
-                            _model.TotalFilesScan = 100;
-                            _model.CurrentPositionScan = 0;
+                            _model.IsScanning = false;
 
-                            MessageBox.Show($"{count} images were deleted", "Delete images", MessageBoxButton.OK, MessageBoxImage.Information);
-                        });
+                            SetTotalFilesStatus();
 
-                    }
-                    finally
-                    {
-                        _model.IsScanning = false;
+                            await _search.ReloadMatches();
 
-                        SetTotalFilesStatus();
+                        }
+                    });
+                }
+            });
 
-                        await _search.ReloadMatches();
 
-                    }
-                });
+            //if (MessageBox.Show(this, "This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
+            //{
 
-            }
+
+            //}
         }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -269,7 +285,7 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs e)
+        private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             if (!_configuration.TryLoad(out _settings))
             {
@@ -298,7 +314,7 @@ namespace Diffusion.Toolkit
                 {
                     if (MessageBox.Show("Do you want Diffusion Toolkit to scan your configured folders now?", "Setup", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        Scan();
+                        await Scan();
                     };
                 }
                 else
@@ -413,30 +429,36 @@ namespace Diffusion.Toolkit
             ThemeManager.ChangeTheme(_settings!.Theme);
         }
 
-        private void Rescan(object obj)
+        private async Task RescanTask()
         {
             if (_settings.ImagePaths.Any())
             {
-                Scan();
+                await Scan();
             }
             else
             {
-                MessageBox.Show("No image paths configured!", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _messagePopupManager.Show("No image paths configured!", "Rescan Folders");
             }
         }
 
 
-        private void Rebuild(object obj)
+        private async Task RebuildTask()
         {
             if (_settings.ImagePaths.Any())
             {
-                Rebuild();
+                var message = "This will update the metadata in the database with newly scanned metadata from the files.\r\n\r\n" +
+                              "You only need to do this if you think you're missing some metadata.\r\n\r\n" +
+                              "Are you sure you want to continue?";
+
+                var result = await _messagePopupManager.ShowMedium(message, "Rebuild Images", PopupButtons.YesNo);
+                if (result == PopupResult.Yes)
+                {
+                    await Rebuild();
+                }
             }
             else
             {
-                MessageBox.Show("No image paths configured!", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                await _messagePopupManager.Show("No image paths configured!", "Rebuild Images");
             }
         }
 
@@ -446,29 +468,31 @@ namespace Diffusion.Toolkit
         }
 
 
-        private void Scan()
+        private async Task Scan()
         {
-            Task.Run(() => ScanInternal(_settings.ImagePaths, false)).ContinueWith(t =>
+            await Task.Run(async () =>
             {
-                if (t.IsCompletedSuccessfully && t.Result)
+                var result = await ScanInternal(_settings.ImagePaths, false);
+                if (result)
                 {
                     _search.SearchImages();
                 }
             });
         }
 
-        private void Rebuild()
+        private async Task Rebuild()
         {
-            Task.Run(() => ScanInternal(_settings.ImagePaths, true)).ContinueWith(t =>
+            await Task.Run(async () =>
             {
-                if (t.IsCompletedSuccessfully && t.Result)
+                var result = await ScanInternal(_settings.ImagePaths, true);
+                if (result)
                 {
                     _search.SearchImages();
                 }
             });
         }
 
-        private bool ScanInternal(IEnumerable<string> paths, bool updateImages)
+        private async Task<bool> ScanInternal(IEnumerable<string> paths, bool updateImages)
         {
             if (_model.IsScanning) return false;
 
@@ -606,14 +630,11 @@ namespace Diffusion.Toolkit
                     });
                 }
 
-                Dispatcher.Invoke(() =>
+                await Dispatcher.Invoke(async () =>
                 {
                     if (added == 0 && removed == 0)
                     {
-                        MessageBox.Show(_navigatorService.Host,
-                            "No new images found",
-                            "Scan Complete",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        await _messagePopupManager.Show("No new images found", "Scan Complete");
                     }
                     else
                     {
@@ -625,10 +646,7 @@ namespace Diffusion.Toolkit
 
                         var message = string.Join("\n", messages.Where(m => !string.IsNullOrEmpty(m)));
 
-                        MessageBox.Show(_navigatorService.Host,
-                            message,
-                            updateImages ? "Rebuild Complete" : "Scan Complete",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+                        await _messagePopupManager.Show(message, updateImages ? "Rebuild Complete" : "Scan Complete");
                     }
 
                     SetTotalFilesStatus();
@@ -636,10 +654,9 @@ namespace Diffusion.Toolkit
             }
             catch (Exception ex)
             {
-                MessageBox.Show(_navigatorService.Host,
+                await _messagePopupManager.ShowMedium(
                     ex.Message,
-                    "Scan Error",
-                    MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    "Scan Error", PopupButtons.OK);
             }
             finally
             {
@@ -659,4 +676,67 @@ namespace Diffusion.Toolkit
 
 
     }
+
+    public class MessagePopupManager
+    {
+        private readonly Panel _host;
+        private readonly UIElement _placementTarget;
+        private readonly Dispatcher _dispatcher;
+
+        public MessagePopupManager(Panel host, UIElement placementTarget, Dispatcher dispatcher)
+        {
+            _host = host;
+            _placementTarget = placementTarget;
+            _dispatcher = dispatcher;
+        }
+
+        public Task<PopupResult> Show(string message, string title)
+        {
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(_placementTarget);
+            _host.Children.Add(popup);
+            return popup.Show(message, title)
+                .ContinueWith(t =>
+                {
+                    _dispatcher.Invoke(() =>
+                    {
+                        _host.Visibility = Visibility.Hidden;
+                    });
+                return t.Result;
+            });
+        }
+
+        public Task<PopupResult> Show(string message, string title, PopupButtons buttons)
+        {
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(_placementTarget);
+            _host.Children.Add(popup);
+            return popup.Show(message, title, buttons)
+                .ContinueWith(t =>
+                {
+                    _dispatcher.Invoke(() =>
+                    {
+                        _host.Visibility = Visibility.Hidden;
+                    });
+                    return t.Result;
+                });
+        }
+
+        public Task<PopupResult> ShowMedium(string message, string title, PopupButtons buttons)
+        {
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(_placementTarget);
+            _host.Children.Add(popup);
+            return popup.ShowMedium(message, title, buttons)
+                .ContinueWith(t =>
+                {
+                    _dispatcher.Invoke(() =>
+                    {
+                        _host.Visibility = Visibility.Hidden;
+                    });
+                    return t.Result;
+                });
+        }
+    }
+
 }

@@ -12,12 +12,7 @@
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Window.Resources>
         <ResourceDictionary>
-            <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVisCol"></converters:InverseBoolToVisibilityCollapsedConverter>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
-            <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
-            <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
-            <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
-            <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -28,20 +23,13 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="28"/>
         </Grid.RowDefinitions>
-        <!--<Grid.ColumnDefinitions>
-            <ColumnDefinition Width="100"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>-->
-        <Menu Grid.Row="0" Grid.ColumnSpan="3">
+
+        <Menu Grid.Row="0">
             <MenuItem Header="_File">
                 <MenuItem Header="_Close" Command="{Binding Close}"/>
             </MenuItem>
             <MenuItem Header="_Edit">
-                <MenuItem Header="_Settings" Command="{Binding Settings}"/>
-                <!--<Separator></Separator>
-                <MenuItem Header="Rescan _Folders" Command="{Binding Rescan}"/>
-                <MenuItem Header="Rebuild _Images" Command="{Binding Rebuild}"/>-->
+                <MenuItem x:Name="EditMenu"  Header="_Settings" Command="{Binding Settings}"/>
                 <Separator></Separator>
                 <MenuItem Header="_Empty recycle bin" Command="{Binding RemoveMarked}"/>
             </MenuItem>
@@ -49,13 +37,6 @@
                 <MenuItem Header="_About" Command="{Binding About}"/>
                 <MenuItem Header="_Tips" Command="{Binding Help}"/>
             </MenuItem>
-            <!--<MenuItem Header="_View">
-                <MenuItem Header="Search" Command="{Binding ShowSearch}"/>
-                <MenuItem Header="Models" Command="{Binding ShowModels}"/>
-                <Separator></Separator>
-                <MenuItem Header="Show Favorites" Command="{Binding ShowFavorite}"/>
-                <MenuItem Header="Show Marked for Deletion" Command="{Binding ShowMarked}"/>
-            </MenuItem>-->
         </Menu>
         <ToolBar Grid.Row="1">
             <Button Command="{Binding ShowSearch}">
@@ -83,11 +64,8 @@
                 <Image Width="32" Height="32" Source="{DynamicResource SettingsIcon}" ToolTip="Settings"></Image>
             </Button>
         </ToolBar>
-        <!--<StackPanel Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Background="AliceBlue" >
-        </StackPanel>-->
-        <Frame Grid.Row="2" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
+        <Frame x:Name="Frame" Grid.Row="2" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
         <Grid Grid.Row="3" ColumnSpan="3">
-            <!--<ProgressBar Value="{Binding CurrentPosition}" Maximum="{Binding TotalFiles}"></ProgressBar>-->
             <DockPanel HorizontalAlignment="Stretch">
                 <Button DockPanel.Dock="Right"  Width="50" Visibility="{Binding IsScanning, Converter={StaticResource boolToVisCol}}" Command="{Binding CancelScan}">Cancel</Button>
                 <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
@@ -95,6 +73,8 @@
                     <Label Content="{Binding Status}"></Label>
                 </Grid>
             </DockPanel>
+        </Grid>
+        <Grid RowSpan="4" x:Name="PopupHost" Visibility="Hidden"  Background="#000000" Opacity="0.5">
         </Grid>
     </Grid>
 </Window>

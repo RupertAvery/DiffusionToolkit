@@ -126,7 +126,7 @@ namespace Diffusion.Toolkit.Pages
 
             _modeSettings = new Dictionary<string, ModeSettings>()
             {
-                { "search", new ModeSettings() { Name="Search Results", ExtraQuery = "" } },
+                { "search", new ModeSettings() { Name="Diffusions", ExtraQuery = "" } },
                 { "favorites", new ModeSettings() { Name="Favorites", ExtraQuery = "favorite: true" } },
                 { "deleted", new ModeSettings() { Name="Recycle Bin", ExtraQuery = "delete: true" } },
             };

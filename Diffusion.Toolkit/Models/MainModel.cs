@@ -1,6 +1,5 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Input;
-using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -26,10 +25,12 @@ public class MainModel : BaseNotify
     private ICommand _cancelScan;
     private ICommand _about;
     private ICommand _help;
+    private MessagePopupModel _messagePopupModel;
 
     public MainModel()
     {
         _status = "Ready";
+        _messagePopupModel = new MessagePopupModel();
     }
 
     public Page Page
@@ -151,4 +152,6 @@ public class MainModel : BaseNotify
         get => _help;
         set => SetField(ref _help, value);
     }
+
+
 }

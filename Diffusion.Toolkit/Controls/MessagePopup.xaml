@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="Diffusion.Toolkit.Controls.MessagePopup"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
+             d:DataContext="{d:DesignInstance models:MessagePopupModel}"
+             xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+             xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
+             mc:Ignorable="d" Height="94" Width="171">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Popup IsOpen="{Binding IsVisible}" PlacementTarget="{Binding PlacementTarget}" Placement="Center" Width="{Binding Width}" Height="{Binding Height}" AllowsTransparency="True" PopupAnimation="Fade">
+        <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+            </Border.Effect>
+            <Grid>
+                <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="36"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="36"/>
+                    </Grid.RowDefinitions>
+                    <Label FontWeight="Bold" Grid.Row="0" Content="{Binding Title}" HorizontalAlignment="Center" FontSize="16"></Label>
+                    <TextBlock TextWrapping="WrapWithOverflow" Grid.Row="1" Text="{Binding Message}" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                    <Grid Grid.Row="2">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding OKCommand}" Visibility="{Binding HasOk, Converter={StaticResource boolToVisCol}}">OK</Button>
+                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding CancelCommand}" Visibility="{Binding HasCancel, Converter={StaticResource boolToVisCol}}">Cancel</Button>
+                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding YesCommand}" Visibility="{Binding HasYes, Converter={StaticResource boolToVisCol}}">Yes</Button>
+                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding NoCommand}" Visibility="{Binding HasNo, Converter={StaticResource boolToVisCol}}">No</Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Popup>
+</UserControl>

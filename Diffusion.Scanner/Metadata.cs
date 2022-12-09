@@ -36,7 +36,19 @@ public class Metadata
 
                 var isNovelAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description == "Software: NovelAI"));
 
-                if (isNovelAI)
+                var isInvokeAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("Dream: ")));
+
+                var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
+
+                if (isInvokeAINew)
+                {
+
+                }
+                else if (isInvokeAI)
+                {
+
+                }
+                else if (isNovelAI)
                 {
                     fileParameters = ReadNovelAIParameters(file, directories);
                 }
