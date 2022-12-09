@@ -28,7 +28,7 @@ Diffusion Toolkit also tracks:
 * Created date
 * Path
 
-Think [Lexica.art](https://lexica.art/), but with more powerul search on your local images.
+Think [Lexica.art](https://lexica.art/), but with more powerful search on your local images.
 
 # Themes
 
