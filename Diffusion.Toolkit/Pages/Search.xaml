@@ -199,7 +199,11 @@
 
                                 </controls:Thumbnail>
                                 <!--Margin="96,96,0,0"-->
-                                <Image IsHitTestVisible="False" Height="24" Width="24" Margin="0,96,96,0" Source="../Icons/blue-heart-32.png" Visibility="{Binding Favorite, Converter={StaticResource boolToVis}}"/>
+                                <Image IsHitTestVisible="False" Height="24" Width="24" Margin="0,96,96,0" Source="../Icons/blue-heart-32.png" Visibility="{Binding Favorite, Converter={StaticResource boolToVis}}">
+                                    <Image.Effect>
+                                        <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
+                                    </Image.Effect>
+                                </Image>
                                 <!--<Image IsHitTestVisible="False" Height="24" Width="24" Margin="0,96,72,0" Source="../Icons/star-32.png"/>
                                     <Label FontWeight="Bold" IsHitTestVisible="False" Height="24" Width="24" Margin="0,96,72,0" Content="1" HorizontalAlignment="Center" HorizontalContentAlignment="Center"></Label>-->
                                 <!--<Image IsHitTestVisible="False" Height="32" Width="32" Source="../Icons/x-mark-32.png" Visibility="{Binding ForDeletion, Converter={StaticResource boolToVis}}"/>-->
@@ -273,22 +277,70 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <Grid Style="{StaticResource Preview}">
+            <Grid  Style="{StaticResource Preview}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="32"/>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="32"/>
                 </Grid.RowDefinitions>
-                <Image Grid.Row="0" Grid.RowSpan="3" Source="{Binding Image}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
-                <StackPanel Orientation="Horizontal" Grid.Row="0" >
-                </StackPanel>
+                <Image Grid.Row="0"  Grid.RowSpan="3" Source="{Binding Image}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
+                <Grid Visibility="Visible" Grid.Row="0" RowSpan="3" Margin="-10" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <Grid Background="Transparent">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="32"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="1" Margin="20" Background="Transparent">
+                            <Grid Margin="-20" Background="Transparent"></Grid>
+                            <StackPanel>
+                                <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                         IsReadOnly="True"
+                                         Padding="5" Background="#5F000000" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
+                                <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                         IsReadOnly="True" Padding="5" Background="#5F000000" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
+                                <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                         IsReadOnly="True" Padding="5" Background="#5F000000" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
                 <StackPanel Orientation="Horizontal" Grid.Row="2" >
-                    <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}"></Image>
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=1}"/>
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=2}"/>
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=3}"/>
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=4}"/>
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=5}"/>
+                    <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=2}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=3}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=4}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=5}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
                 </StackPanel>
             </Grid>
 
