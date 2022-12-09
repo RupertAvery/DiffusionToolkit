@@ -21,4 +21,5 @@ public class FileParameters
     public decimal? HyperNetworkStrength { get; set; }
     public int? ClipSkip { get; set; }
     public int? ENSD { get; set; }
+    public decimal? PromptStrength { get; set; }
 }

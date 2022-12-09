@@ -40,6 +40,8 @@ public class SearchModel : BaseNotify
     private bool _firstPageEnabled;
     private bool _lastPageEnabled;
     private string _modeName;
+    private ICommand _showDropDown;
+    private ICommand _hideDropDown;
 
     public SearchModel()
     {
@@ -241,5 +243,17 @@ public class SearchModel : BaseNotify
     {
         get => _modeName;
         set => SetField(ref _modeName, value);
+    }
+
+    public ICommand ShowDropDown
+    {
+        get => _showDropDown;
+        set => SetField(ref _showDropDown, value);
+    }
+
+    public ICommand HideDropDown
+    {
+        get => _hideDropDown;
+        set => SetField(ref _hideDropDown, value);
     }
 }

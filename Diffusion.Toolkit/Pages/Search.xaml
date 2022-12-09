@@ -83,12 +83,14 @@
                 <ComboBox x:Name="SearchTermTextBox" 
                           Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
                           ItemsSource="{Binding SearchHistory}"
+                          PreviewKeyDown="SearchTermTextBox_OnPreviewKeyDown"
                           SelectionChanged="SearchTermTextBox_OnSelectionChanged"
                           IsEditable="True"
                           Padding="5,0,0,0"
                           HorizontalAlignment="Stretch" 
                           VerticalContentAlignment="Center">
                     <ComboBox.InputBindings>
+                        <KeyBinding Command="{Binding HideDropDown}" Key="Escape" />
                         <KeyBinding Command="{Binding SearchCommand}" Key="Return" CommandParameter="ManualSearch" />
                     </ComboBox.InputBindings>
                 </ComboBox>

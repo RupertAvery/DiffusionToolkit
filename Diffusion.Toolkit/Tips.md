@@ -2,8 +2,8 @@
 
 * [Getting Started](#getting-started)
 * [Updating your images](#updating-your-images)
-  * [Rescan Folders](#rescan-folders)
-  * [Rebuild Images](#rebuild-images)
+   * [Rescan Folders](#rescan-folders)
+   * [Rebuild Images](#rebuild-images)
 * [Navigation](#navigation)
 * [Searching](#searching)
 * [Advanced Searching](#advanced-searching)
@@ -130,43 +130,43 @@ Parameters will be ANDed, meaning adding more parameters will filter out more re
 
 ## Supported parameters
 
-* `steps:<number>`, `steps:<start>-<end>`
+* `steps: <number>` or `steps: <start>-<end>`
 
-* `sampler:<name>` 
+* `sampler: <name>` 
 
-  Sampler names can be a bit tricky, as they vary from one tool to another. This means we need to know what the samplers are in advance, so we can expect them (and not accidentally try to use the next parameter name as part of the sampler search). The `samplers.txt` file contains a list of known samplers. (If these are incorrect, let me know).
+	To seaerch for a sampler name, use whatever is stored in the metadata.
+	Sometimes, this will vary from tool to tool.  Also, for sampler names that use
+	spaces, put quotes around the name.
 
-  * Euler a or `euler_a`
-  * Euler or `euler`
-  * LMS or `lms`
-  * Heun or `heun`
-  * DPM2 or `dpm2`
-  * DPM2 a or `dpm2_a`
-  * DPM++ 2S a or `dpm++_2s_a`
-  * DPM++ 2M or `dpm++_2m`
-  * DPM++ SDE or `dpm++_sde`
-  * DPM fast or `dpm_fast`
-  * DPM adaptive or `dpm_adaptive`
-  * LMS Karras or `lms_karras`
-  * DPM2 Karras or `dpm2_karras`
-  * DPM2 a Karras or `dpm2_a_karras`
-  * DPM++ 2S a Karras or `dpm++_2s_a_karras`
-  * DPM++ 2M Karras or `dpm++_2s_karras`
-  * DPM++ SDE Karras or `dpm++_sde_karras`
-  * DDIM or `ddim`
-  * PLMS or `plms`
-  
-  So if a new sampler comes out, and the toolkit isn't updated, just add it to `samplers.txt`
+   * Euler a or `euler_a`
+   * Euler or `euler`
+   * LMS or `lms`
+   * Heun or `heun`
+   * DPM2 or `dpm2`
+   * DPM2 a or `dpm2_a`
+   * DPM++ 2S a or `dpm++_2s_a`
+   * DPM++ 2M or `dpm++_2m`
+   * DPM++ SDE or `dpm++_sde`
+   * DPM fast or `dpm_fast`
+   * DPM adaptive or `dpm_adaptive`
+   * LMS Karras or `lms_karras`
+   * DPM2 Karras or `dpm2_karras`
+   * DPM2 a Karras or `dpm2_a_karras`
+   * DPM++ 2S a Karras or `dpm++_2s_a_karras`
+   * DPM++ 2M Karras or `dpm++_2s_karras`
+   * DPM++ SDE Karras or `dpm++_sde_karras`
+   * DDIM or `ddim`
+   * PLMS or `plms`
 
-* `cfg:<number>` or `cfg_scale:<number>` or `cfg scale:<number>`
+* `cfg: <number>` or `cfg_scale: <number>` or `cfg scale: <number>`
 
-* `seed:<number>`
+* `seed: <number>`
 
-* `size:<width>x<height>` or `size:<width>:<height>` 
+* `size: <width>x<height>` or `size: <width>:<height>` 
   
   `width` and `height` can be a number or a question mark (`?`) to match any value. e.g. `size:512x?` 
 
-* `model_hash:<hash>`
+* `model_hash: <hash>`
 
 * `aesthetic_score: [<|>|<=|>=|<>] <number>`
 
@@ -186,42 +186,43 @@ Parameters will be ANDed, meaning adding more parameters will filter out more re
 
   Allows you to search by the file's created date
 
-  * `date: today` - Include files from the current date  
-  * `date: yesterday` - Include files from the previous date  
-  * `date: between 11-11-2022 and yesterday` - Include files from November 11, 2022 the previous date  
-  * `date: from 10-10-2022 to 11-11-2022` - alternate syntax
-  * `date: before 11-11-2022` - Include files since the beginning of time, up to November 11, 2022
-  * `date: since 01-01-2022` - Include files created on January 1, 2022 up to today
+   * `date: today` - Include files from the current date  
+   * `date: yesterday` - Include files from the previous date  
+   * `date: between 11-11-2022 and yesterday` - Include files from November 11, 2022 the previous date  
+   * `date: from 10-10-2022 to 11-11-2022` - alternate syntax
+   * `date: before 11-11-2022` - Include files since the beginning of time, up to November 11, 2022
+   * `date: since 01-01-2022` - Include files created on January 1, 2022 up to today
 
   Notes:
 
-  * `YYYY-MM-DD` format is supported
-  * `XX-XX-XXXX` dates will be parsed using your computer's date format, i.e. 
+   * `YYYY-MM-DD` format is supported
+   * `XX-XX-XXXX` dates will be parsed using your computer's date format, i.e. 
 `MM-DD-YYYY` for US and similar regions, `DD-MM-YYYY` for European regions.
 
- * `path:` You can use GLOBs, or criteria 
+* `path:` You can use GLOBs, or criteria 
    * Globs:
-     * `path: D:\diffusion\images**`      
-     * `path: **img2img**`      
+      * `path: D:\diffusion\images**`      
+      * `path: **img2img**`      
    * Criteria:
-     * `path: starts with D:\diffusion\images`      
-     * `path: contains img2img`      
+      * `path: starts with D:\diffusion\images`      
+      * `path: contains img2img`      
     
-    If your path constains spaces, wrap you path in double quotes.
+   If your path constains spaces, wrap you path in double quotes.
+
    * Globs:
-     * `path: "D:\My pics\images**"`      
-     * `path: "**funny cats**"`      
+      * `path: "D:\My pics\images**"`      
+      * `path: "**funny cats**"`      
    * Criteria:
-     * `path: starts with "D:\My pics\images"`      
-     * `path: contains "funny cats"`      
+      * `path: starts with "D:\My pics\images"`      
+      * `path: contains "funny cats"`      
 
 
 ## Notes
 
 * The parameters e.g. `steps:`, `sampler:` are not case sensitive. You can use `Steps:`, `Sampler:`, so you can copy it from a prompt.
 * You can have 0 or more spaces *after* the colon (`:`) and before the parameter value.
-  * e.g. `steps:20`, `steps: 20`, `steps:   20` are OK
-  * but `steps  :20`, `steps :20` are not
+    * e.g. `steps:20`, `steps: 20`, `steps:   20` are OK
+    * but `steps  :20`, `steps :20` are not
 
 ## Search on Multiple Values 
 

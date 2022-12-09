@@ -68,6 +68,13 @@ namespace Diffusion.Toolkit.Pages
                 _ = ThumbnailLoader.Instance.StartRun();
             });
 
+
+
+            var str = new System.Text.StringBuilder();
+            using (var writer = new System.IO.StringWriter(str))
+                System.Windows.Markup.XamlWriter.Save(SearchTermTextBox.Template, writer);
+            System.Diagnostics.Debug.Write(str);
+
         }
 
 
@@ -168,7 +175,8 @@ namespace Diffusion.Toolkit.Pages
             _model.LastPage = new RelayCommand<object>((o) => GoLastPage());
             _model.Refresh = new RelayCommand<object>((o) => ReloadMatches());
             _model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
-
+            _model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
+            _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
             SetMode("search");
 
             DataContext = _model;
@@ -826,6 +834,17 @@ namespace Diffusion.Toolkit.Pages
         private void SearchTermTextBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             //SearchImages(null);
+        }
+
+        private void SearchTermTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Down:
+                    SearchTermTextBox.IsDropDownOpen = true;
+                    e.Handled = true;
+                    break;
+            }
         }
     }
 }

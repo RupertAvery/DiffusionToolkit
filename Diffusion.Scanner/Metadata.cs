@@ -3,11 +3,25 @@ using System.Text.RegularExpressions;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
+using Dir = System.IO.Directory;
 
 namespace Diffusion.IO;
 
 public class Metadata
 {
+    private static Dictionary<string, List<string>> DirectoryTextFileCache = new Dictionary<string, List<string>>();
+
+    public static List<string> GetDirectoryTextFileCache(string path)
+    {
+        if (!DirectoryTextFileCache.TryGetValue(path, out var files))
+        {
+            files = Dir.GetFiles(path, "*.txt").ToList();
+            DirectoryTextFileCache.Add(path, files);
+        }
+
+        return files;
+    }
+
     public static FileParameters ReadFromFile(string file)
     {
         FileParameters fileParameters = null;
@@ -38,7 +52,18 @@ public class Metadata
                 if (File.Exists(parameterFile))
                 {
                     var parameters = File.ReadAllText(parameterFile);
-                    fileParameters = ReadA111Parameters(parameters);
+                    fileParameters = DetectAndReadMetaType(parameters);
+                }
+                else
+                {
+                    var currPath = Path.GetDirectoryName(parameterFile);
+                    var textFiles = GetDirectoryTextFileCache(currPath);
+                    var matchingFile = textFiles.FirstOrDefault(t => Path.GetFileNameWithoutExtension(parameterFile).StartsWith(Path.GetFileNameWithoutExtension(t)));
+                    if (matchingFile != null)
+                    {
+                        var parameters = File.ReadAllText(matchingFile);
+                        fileParameters = DetectAndReadMetaType(parameters);
+                    }
                 }
             }
 
@@ -58,7 +83,23 @@ public class Metadata
         return fileParameters;
     }
 
+    private static FileParameters DetectAndReadMetaType(string parameters)
+    {
+        if (IsStableDiffusion(parameters))
+        {
+            return ReadStableDiffusionParameters(parameters);
+        }
+        else
+        {
+            return ReadA111Parameters(parameters);
+        }
+    }
 
+    private static bool IsStableDiffusion(string metadata)
+    {
+        return metadata.Contains("\nWidth:") && metadata.Contains("\nHeight:") && metadata.Contains("\nSeed:");
+    }
+    
     private static FileParameters ReadNovelAIParameters(string file, IEnumerable<Directory> directories)
     {
         var fileParameters = new FileParameters();
@@ -128,6 +169,122 @@ public class Metadata
                 }
             }
         }
+
+        return fileParameters;
+    }
+
+    private static FileParameters ReadStableDiffusionParameters(string data)
+    {
+        var fileParameters = new FileParameters();
+
+        var parts = data.Split(new[] { '\n' });
+
+        const string negativePromptKey = "Negative prompt: ";
+        const string modelKey = "Stable Diffusion model: ";
+        const string widthKey = "Width: ";
+
+        fileParameters.Parameters = data;
+
+        var state = 0;
+
+        fileParameters.Prompt = "";
+        fileParameters.NegativePrompt = "";
+
+        string otherParam = "";
+
+        foreach (var part in parts)
+        {
+            var isNegativePrompt = part.StartsWith(negativePromptKey, StringComparison.InvariantCultureIgnoreCase);
+            var isModel = part.StartsWith(modelKey, StringComparison.InvariantCultureIgnoreCase);
+            var isWidth = part.StartsWith(widthKey, StringComparison.InvariantCultureIgnoreCase);
+
+            if (isWidth)
+            {
+                state = 1;
+            }
+            else if (isNegativePrompt)
+            {
+                state = 2;
+            }
+            else if (isModel)
+            {
+                state = 3;
+            }
+ 
+            switch (state)
+            {
+                case 0:
+                    fileParameters.Prompt += part + "\n";
+                    break;
+                case 2:
+                    if (isNegativePrompt)
+                    {
+                        fileParameters.NegativePrompt += part.Substring(negativePromptKey.Length);
+                    }
+                    else
+                    {
+                        fileParameters.NegativePrompt += part + "\n";
+                    }
+                    break;
+                case 1:
+
+
+                    var subParts = part.Split(new[] { ',' });
+                    foreach (var keyValue in subParts)
+                    {
+                        var kvp = keyValue.Split(new[] { ':' });
+                        switch (kvp[0].Trim())
+                        {
+                            case "Steps":
+                                fileParameters.Steps = int.Parse(kvp[1].Trim());
+                                break;
+                            case "Sampler":
+                                fileParameters.Sampler = kvp[1].Trim();
+                                break;
+                            case "Guidance Scale":
+                                fileParameters.CFGScale = decimal.Parse(kvp[1].Trim());
+                                break;
+                            case "Seed":
+                                fileParameters.Seed = long.Parse(kvp[1].Trim());
+                                break;
+                            case "Width":
+                                fileParameters.Width = int.Parse(kvp[1].Trim());
+                                break;
+                            case "Height":
+                                fileParameters.Height = int.Parse(kvp[1].Trim());
+                                break;
+                            case "Prompt Strength":
+                                fileParameters.PromptStrength = decimal.Parse(kvp[1].Trim());
+                                break;
+                                //case "Model hash":
+                                //    fileParameters.ModelHash = kvp[1].Trim();
+                                //    break;
+                                //case "Batch size":
+                                //    fileParameters.BatchSize = int.Parse(kvp[1].Trim());
+                                //    break;
+                                //case "Hypernet":
+                                //    fileParameters.HyperNetwork = kvp[1].Trim();
+                                //    break;
+                                //case "Hypernet strength":
+                                //    fileParameters.HyperNetworkStrength = decimal.Parse(kvp[1].Trim());
+                                //    break;
+                                //case "aesthetic_score":
+                                //    fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim());
+                                //    break;
+                        }
+                    }
+
+                    otherParam += part + "\n";
+
+                    break;
+                case 3:
+                    otherParam += part + "\n";
+                    break;
+            }
+
+        }
+
+        fileParameters.OtherParameters = otherParam;
 
         return fileParameters;
     }
