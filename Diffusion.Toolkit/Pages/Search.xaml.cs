@@ -9,8 +9,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -22,11 +20,6 @@ using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Controls;
 using Model = Diffusion.IO.Model;
 using Task = System.Threading.Tasks.Task;
-using System.Reflection;
-using System.Windows.Shapes;
-using System.Collections;
-using System.Windows.Controls.Primitives;
-using System.Xml.Linq;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -56,7 +49,7 @@ namespace Diffusion.Toolkit.Pages
 
         private ModeSettings _currentModeSettings;
 
-        private List<Model> _modelLookup = new List<Model>();
+        private ICollection<Model>? _modelLookup;
 
         public Search()
         {
@@ -70,10 +63,10 @@ namespace Diffusion.Toolkit.Pages
 
 
 
-            var str = new System.Text.StringBuilder();
-            using (var writer = new System.IO.StringWriter(str))
-                System.Windows.Markup.XamlWriter.Save(SearchTermTextBox.Template, writer);
-            System.Diagnostics.Debug.Write(str);
+            //var str = new System.Text.StringBuilder();
+            //using (var writer = new System.IO.StringWriter(str))
+            //    System.Windows.Markup.XamlWriter.Save(TempButton.Template, writer);
+            //System.Diagnostics.Debug.Write(str);
 
         }
 
@@ -122,8 +115,6 @@ namespace Diffusion.Toolkit.Pages
                 ThumbnailLoader.Instance.Stop();
             };
 
-            LoadModels();
-
             _modeSettings = new Dictionary<string, ModeSettings>()
             {
                 { "search", new ModeSettings() { Name="Diffusions", ExtraQuery = "" } },
@@ -131,26 +122,24 @@ namespace Diffusion.Toolkit.Pages
                 { "deleted", new ModeSettings() { Name="Recycle Bin", ExtraQuery = "delete: true" } },
             };
 
-
-
             if (_settings.MainGridWidth != null)
             {
                 MainGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.MainGridWidth);
                 MainGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.MainGridWidth2);
             }
-            if (_settings.PreviewGridHeight != null)
-            {
-                PreviewGrid.RowDefinitions[0].Height = GetGridLength(_settings.PreviewGridHeight);
-                PreviewGrid.RowDefinitions[2].Height = GetGridLength(_settings.PreviewGridHeight2);
-            }
+            //if (_settings.PreviewGridHeight != null)
+            //{
+            //    PreviewGrid.RowDefinitions[0].Height = GetGridLength(_settings.PreviewGridHeight);
+            //    PreviewGrid.RowDefinitions[2].Height = GetGridLength(_settings.PreviewGridHeight2);
+            //}
 
             var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
             widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[0], WidthChanged);
             widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[2], WidthChanged2);
 
-            var heightDescriptor = DependencyPropertyDescriptor.FromProperty(RowDefinition.HeightProperty, typeof(ItemsControl));
-            heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[0], HeightChanged);
-            heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[2], HeightChanged2);
+            //var heightDescriptor = DependencyPropertyDescriptor.FromProperty(RowDefinition.HeightProperty, typeof(ItemsControl));
+            //heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[0], HeightChanged);
+            //heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[2], HeightChanged2);
 
             _model = new SearchModel();
 
@@ -164,22 +153,38 @@ namespace Diffusion.Toolkit.Pages
             _model.CurrentImage.CopyPathCommand = new RelayCommand<object>(CopyPath);
             _model.CurrentImage.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
             _model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
-            _model.CurrentImage.CopyParameters = new RelayCommand<object>(CopyParameters);
-            _model.CurrentImage.OpenInExplorerCommand = new RelayCommand<object>(OpenInExplorer);
+            _model.CurrentImage.CopyParametersCommand = new RelayCommand<object>(CopyParameters);
+            _model.CurrentImage.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
             _model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
-
+            _model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
+            _model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => FavoriteSelected());
 
             _model.NextPage = new RelayCommand<object>((o) => GoNextPage());
             _model.PrevPage = new RelayCommand<object>((o) => GoPrevPage());
             _model.FirstPage = new RelayCommand<object>((o) => GoFirstPage());
             _model.LastPage = new RelayCommand<object>((o) => GoLastPage());
             _model.Refresh = new RelayCommand<object>((o) => ReloadMatches());
+            _model.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
+            _model.CopyFiles = new RelayCommand<object>((o) => CopyFiles());
+
             _model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
             _model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
             SetMode("search");
 
             DataContext = _model;
+        }
+
+        private void CopyFiles()
+        {
+            //foreach (ImageEntry selectedItem in ThumbnailListView.SelectedItems)
+            //{
+                
+            //}
+
+            //DataObject dataObject = new DataObject();
+            //dataObject.SetData(DataFormats.Bitmap, _selItems.Select(t => t.Path).ToArray());
+            //DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Copy);
         }
 
         private void ShowInThumbnails(object obj)
@@ -220,7 +225,7 @@ namespace Diffusion.Toolkit.Pages
             set => _settings = value;
         }
 
-        private void OpenInExplorer(object obj)
+        private void ShowInExplorer(object obj)
         {
             if (_model.CurrentImage == null) return;
             var p = _model.CurrentImage.Path;
@@ -352,16 +357,24 @@ namespace Diffusion.Toolkit.Pages
                         _model.CurrentImage.Date = _model.SelectedImageEntry.CreatedDate.ToString();
                         _model.CurrentImage.Rating = _model.SelectedImageEntry.Rating;
 
-                        var models = _modelLookup.Where(m => String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase));
-
-                        if (models.Any())
+                        if (_modelLookup != null)
                         {
-                            _model.CurrentImage.ModelName = string.Join(", ", models.Select(m => m.Filename)) + $" ({parameters.ModelHash})";
+                            var models = _modelLookup.Where(m => String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase));
+
+                            if (models.Any())
+                            {
+                                _model.CurrentImage.ModelName = string.Join(", ", models.Select(m => m.Filename)) + $" ({parameters.ModelHash})";
+                            }
+                            else
+                            {
+                                _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
+                            }
                         }
                         else
                         {
                             _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
                         }
+
                     }
                     catch (FileNotFoundException)
                     {
@@ -421,29 +434,11 @@ namespace Diffusion.Toolkit.Pages
             }
             else if (e.Key == Key.Delete || e.Key == Key.X)
             {
-                if (ThumbnailListView.SelectedItems != null)
-                {
-                    foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
-                    {
-                        entry.ForDeletion = !entry.ForDeletion;
-                        _dataStore.SetDeleted(entry.Id, entry.ForDeletion);
-                    }
-                }
+                DeleteSelected();
             }
             else if (e.Key == Key.F)
             {
-                if (ThumbnailListView.SelectedItems != null)
-                {
-                    foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
-                    {
-                        entry.Favorite = !entry.Favorite;
-                        if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
-                        {
-                            _model.CurrentImage.Favorite = entry.Favorite;
-                        }
-                        _dataStore.SetFavorite(entry.Id, entry.Favorite);
-                    }
-                }
+                FavoriteSelected();
             }
             else if (ratings.Contains(e.Key))
             {
@@ -477,6 +472,34 @@ namespace Diffusion.Toolkit.Pages
                     }
                 }
 
+            }
+        }
+
+        private void FavoriteSelected()
+        {
+            if (ThumbnailListView.SelectedItems != null)
+            {
+                foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                {
+                    entry.Favorite = !entry.Favorite;
+                    if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
+                    {
+                        _model.CurrentImage.Favorite = entry.Favorite;
+                    }
+                    _dataStore.SetFavorite(entry.Id, entry.Favorite);
+                }
+            }
+        }
+
+        private void DeleteSelected()
+        {
+            if (ThumbnailListView.SelectedItems != null)
+            {
+                foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                {
+                    entry.ForDeletion = !entry.ForDeletion;
+                    _dataStore.SetDeleted(entry.Id, entry.ForDeletion);
+                }
             }
         }
 
@@ -690,13 +713,6 @@ namespace Diffusion.Toolkit.Pages
             //}
         }
 
-        public void LoadModels()
-        {
-            if (_settings.ModelRootPath != null && Directory.Exists(_settings.ModelRootPath))
-            {
-                _modelLookup = ModelScanner.Scan(_settings.ModelRootPath).ToList();
-            }
-        }
 
         public void GoFirstPage()
         {
@@ -845,6 +861,16 @@ namespace Diffusion.Toolkit.Pages
                     e.Handled = true;
                     break;
             }
+        }
+
+        public void SetModels(ICollection<Model> modelsCollection)
+        {
+            _modelLookup = modelsCollection;
+        }
+
+        public void ToggleInfo()
+        {
+            _model.CurrentImage.IsParametersVisible = !_model.CurrentImage.IsParametersVisible;
         }
     }
 }

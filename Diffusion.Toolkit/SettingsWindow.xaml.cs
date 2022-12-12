@@ -44,6 +44,7 @@ namespace Diffusion.Toolkit
             _model.FileExtensions = settings.FileExtensions;
             _model.PageSize = settings.PageSize;
             _model.Theme = settings.Theme;
+            _model.WatchFolders = settings.WatchFolders;
 
             DataContext = _model;
 
@@ -54,7 +55,13 @@ namespace Diffusion.Toolkit
                 settings.ModelRootPath = _model.ModelRootPath;
                 settings.FileExtensions = _model.FileExtensions;
                 settings.Theme = _model.Theme;
+                settings.WatchFolders = _model.WatchFolders;
             };
+
+            //var str = new System.Text.StringBuilder();
+            //using (var writer = new System.IO.StringWriter(str))
+            //    System.Windows.Markup.XamlWriter.Save(WatchFolders.Template, writer);
+            //System.Diagnostics.Debug.Write(str);
         }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)

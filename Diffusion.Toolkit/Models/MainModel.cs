@@ -26,6 +26,7 @@ public class MainModel : BaseNotify
     private ICommand _about;
     private ICommand _help;
     private MessagePopupModel _messagePopupModel;
+    private ICommand _showInfo;
 
     public MainModel()
     {
@@ -153,5 +154,9 @@ public class MainModel : BaseNotify
         set => SetField(ref _help, value);
     }
 
-
+    public ICommand ShowInfo
+    {
+        get => _showInfo;
+        set => SetField(ref _showInfo, value);
+    }
 }

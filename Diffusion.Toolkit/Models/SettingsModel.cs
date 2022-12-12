@@ -51,4 +51,10 @@ public class SettingsModel : BaseNotify
         get => _theme;
         set => SetField(ref _theme, value);
     }
+
+    public bool WatchFolders
+    {
+        get;
+        set;
+    }
 }

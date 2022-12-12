@@ -7,8 +7,13 @@
         xmlns:mdXaml="clr-namespace:MdXaml;assembly=MdXaml"
         mc:Ignorable="d"
         ShowInTaskbar="False"
-        Title="Tips" Height="465" Width="584">
+        Title="Getting Started" Height="600" Width="800">
     <Grid Margin="0,0,0,0">
-        <RichTextBox BorderBrush="Transparent" x:Name="RichTextBox" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto"></RichTextBox>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <RichTextBox Padding="20" BorderBrush="Transparent" x:Name="RichTextBox" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto"></RichTextBox>
+        <Button Grid.Row="1" Width="160" Click="ButtonBase_OnClick">View Help Online</Button>
     </Grid>
 </Window>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,12 +24,28 @@ namespace Diffusion.Toolkit.Controls
     /// </summary>
     public partial class MessagePopup : UserControl
     {
+        private readonly MessagePopupManager _manager;
         private MessagePopupModel _model;
         private TaskCompletionSource<PopupResult> _tcs;
 
-        public MessagePopup(UIElement placementTarget)
+        private Timer t;
+
+        public void Close()
         {
+            t = new Timer(Callback, null, 1000, Timeout.Infinite);
+        }
+
+        private void Callback(object? state)
+        {
+            t.Dispose();
+            _manager.Close(this);
+        }
+
+        public MessagePopup(MessagePopupManager manager, UIElement placementTarget)
+        {
+            _manager = manager;
             InitializeComponent();
+
             _model = new MessagePopupModel();
 
             _tcs = new TaskCompletionSource<PopupResult>();
@@ -39,24 +56,28 @@ namespace Diffusion.Toolkit.Controls
             {
                 _model.IsVisible = false;
                 _tcs.SetResult(PopupResult.OK);
+                Close();
             });
 
             _model.CancelCommand = new RelayCommand<object>((o) =>
             {
                 _model.IsVisible = false;
                 _tcs.SetResult(PopupResult.Cancel);
+                Close();
             });
 
             _model.YesCommand = new RelayCommand<object>((o) =>
             {
                 _model.IsVisible = false;
                 _tcs.SetResult(PopupResult.Yes);
+                Close();
             });
 
             _model.NoCommand = new RelayCommand<object>((o) =>
             {
                 _model.IsVisible = false;
                 _tcs.SetResult(PopupResult.No);
+                Close();
             });
 
             DataContext = _model;
@@ -125,5 +146,14 @@ namespace Diffusion.Toolkit.Controls
             return _tcs.Task;
         }
 
+        public void Show()
+        {
+            _model.IsVisible = true;
+        }
+
+        public void Hide()
+        {
+            _model.IsVisible = false;
+        }
     }
 }

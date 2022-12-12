@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -42,6 +43,8 @@ public class SearchModel : BaseNotify
     private string _modeName;
     private ICommand _showDropDown;
     private ICommand _hideDropDown;
+    private ICommand _toggleParameters;
+    private ICommand _copyFiles;
 
     public SearchModel()
     {
@@ -255,5 +258,17 @@ public class SearchModel : BaseNotify
     {
         get => _hideDropDown;
         set => SetField(ref _hideDropDown, value);
+    }
+
+    public ICommand ToggleParameters
+    {
+        get => _toggleParameters;
+        set => SetField(ref _toggleParameters, value);
+    }
+
+    public ICommand CopyFiles
+    {
+        get => _copyFiles;
+        set => SetField(ref _copyFiles, value);
     }
 }

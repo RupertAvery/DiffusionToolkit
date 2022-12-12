@@ -31,6 +31,7 @@ public class Settings
     private Size? _windowSize;
     private bool _dontShowWelcomeOnStartup;
     private string _theme;
+    private bool _watchFolders;
 
     public bool IsPropertyDirty(string name)
     {
@@ -122,5 +123,11 @@ public class Settings
     {
         get => _theme;
         set => UpdateValue(ref _theme, value);
+    }
+
+    public bool WatchFolders
+    {
+        get => _watchFolders;
+        set => UpdateValue(ref _watchFolders, value);
     }
 }

@@ -9,15 +9,28 @@
       xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
       xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
       xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+      xmlns:fa="http://schemas.fontawesome.io/icons/"
       mc:Ignorable="d" 
       d:DataContext="{d:DesignInstance models:SearchModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="615" d:DesignWidth="800"
       Title="Search">
     <Page.Resources>
-
-
         <ResourceDictionary>
 
+            <Storyboard x:Key="gridLoading">
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="Page">
+                    <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="1">
+                        <EasingDoubleKeyFrame.EasingFunction>
+                            <CubicEase EasingMode="EaseOut"/>
+                        </EasingDoubleKeyFrame.EasingFunction>
+                    </EasingDoubleKeyFrame>
+                </DoubleAnimationUsingKeyFrames>
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" Storyboard.TargetName="Page">
+                    <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                    <EasingDoubleKeyFrame KeyTime="0:0:1" Value="1"/>
+                </DoubleAnimationUsingKeyFrames>
+            </Storyboard>
             <!--<Style BasedOn="{StaticResource {x:Type Button}}"
                    TargetType="Button"
                    x:Key="BorderlessButton">
@@ -151,8 +164,10 @@
                     <KeyBinding Command="{Binding NextPage}"  Key="PageDown" Modifiers="Alt" Gesture="ALT+PageDown"></KeyBinding>
                     <KeyBinding Command="{Binding FirstPage}"  Key="Home" Modifiers="Alt" Gesture="ALT+Home"></KeyBinding>
                     <KeyBinding Command="{Binding LastPage}"  Key="End" Modifiers="Alt" Gesture="ALT+End"></KeyBinding>
+                    <KeyBinding Command="{Binding CopyFiles}" Key="C" Modifiers="Control"  Gesture="Control+C"></KeyBinding>
                     <KeyBinding Command="{Binding Refresh}" Key="F5" Modifiers="Control"  Gesture="Control+F5"></KeyBinding>
                     <KeyBinding Command="{Binding FocusSearch}" Key="F6" Gesture="F6"></KeyBinding>
+                    <KeyBinding Command="{Binding ToggleParameters}" Key="I"></KeyBinding>
                 </ListView.InputBindings>
                 <ListView.Template>
                     <ControlTemplate >
@@ -179,33 +194,45 @@
                                         HorizontalAlignment="Stretch" VerticalAlignment="Top">
 
                                     <!--<controls:Thumbnail.ContextMenu>
-                                        <ContextMenu>
-                                            <MenuItem Header="Favorite (F)" ToolTip="F"/>
+                                        <ContextMenu DataContext="{Binding DataContext.CurrentImage, RelativeSource={RelativeSource FindAncestor, AncestorType=Page}}">
+                                            <MenuItem Header="Favorite (F)" ToolTip="F" Command="{Binding FavoriteCommand}"/>
                                             <Separator />
-                                            <MenuItem Header="Copy prompt" />
-                                            <MenuItem Header="Copy negative prompt" />
-                                            <MenuItem Header="Copy all parameters" />
+                                            <MenuItem Header="Copy prompt"  Command="{Binding CopyPromptCommand}"/>
+                                            <MenuItem Header="Copy negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
+                                            <MenuItem Header="Copy all parameters"  Command="{Binding CopyParametersCommand}"/>
                                             <Separator />
-                                            <MenuItem Header="Show in explorer" />
+                                            <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
                                             <Separator />
                                             <MenuItem Header="Add to Album" />
                                             <MenuItem Header="Remove from Album" />
                                             <Separator />
-                                            <MenuItem Visibility="{Binding ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash (Del)" ToolTip="Del"/>
-                                            <MenuItem Visibility="{Binding ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore (Del)" ToolTip="Del"/>
+                                            <MenuItem Visibility="{Binding ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash (Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
+                                            <MenuItem Visibility="{Binding ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore (Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
                                             <MenuItem Header="Delete immediately (ShiftDel)" ToolTip="Shift+Del" />
                                         </ContextMenu>
                                     </controls:Thumbnail.ContextMenu>-->
 
                                 </controls:Thumbnail>
                                 <!--Margin="96,96,0,0"-->
-                                <Image IsHitTestVisible="False" Height="24" Width="24" Margin="0,96,96,0" Source="../Icons/blue-heart-32.png" Visibility="{Binding Favorite, Converter={StaticResource boolToVis}}">
-                                    <Image.Effect>
-                                        <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
-                                    </Image.Effect>
-                                </Image>
-                                <!--<Image IsHitTestVisible="False" Height="24" Width="24" Margin="0,96,72,0" Source="../Icons/star-32.png"/>
-                                    <Label FontWeight="Bold" IsHitTestVisible="False" Height="24" Width="24" Margin="0,96,72,0" Content="1" HorizontalAlignment="Center" HorizontalContentAlignment="Center"></Label>-->
+                                <StackPanel Margin="0,96,0,0" Orientation="Horizontal">
+                                    <Image IsHitTestVisible="False" Height="24" Width="24" Source="../Icons/blue-heart-32.png" Visibility="{Binding Favorite, Converter={StaticResource boolToVisCol}}">
+                                        <Image.Effect>
+                                            <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
+                                        </Image.Effect>
+                                    </Image>
+                                    <Grid Background="Transparent">
+                                        <Image Visibility="{Binding Rating, Converter={StaticResource intToVis}, ConverterParameter=1}" IsHitTestVisible="False" Height="24" Width="24" Source="../Icons/star-32.png">
+                                            <Image.Effect>
+                                                <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
+                                            </Image.Effect>
+                                        </Image>
+                                        <!--<Label Foreground="White"  FontWeight="Bold" IsHitTestVisible="False" Height="24" Width="24"  Content="{Binding Rating}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+                                            <Label.Effect>
+                                                <DropShadowEffect BlurRadius="2" Opacity="0.8"  ShadowDepth="1" Direction="-90" RenderingBias="Quality" />
+                                            </Label.Effect>
+                                        </Label>-->
+                                    </Grid>
+                                </StackPanel>
                                 <!--<Image IsHitTestVisible="False" Height="32" Width="32" Source="../Icons/x-mark-32.png" Visibility="{Binding ForDeletion, Converter={StaticResource boolToVis}}"/>-->
                             </Grid>
                         </Border>
@@ -231,8 +258,8 @@
                          Content="{Binding Results}"
                 ></Label>
                 <StackPanel Grid.Column="1"   Orientation="Horizontal">
-                    <Button IsEnabled="{Binding FirstPageEnabled}" ToolTip="ALT+Home" Click="FirstPage_OnClick">|&lt;</Button>
-                    <Button IsEnabled="{Binding PrevPageEnabled}" ToolTip="ALT+PageUp" Click="PrevPage_OnClick">&lt;&lt;</Button>
+                    <Button Style="{DynamicResource BorderlessButton}" Width="16" IsEnabled="{Binding FirstPageEnabled}" ToolTip="ALT+Home" Click="FirstPage_OnClick">|&lt;</Button>
+                    <Button Style="{DynamicResource BorderlessButton}" Width="24" IsEnabled="{Binding PrevPageEnabled}" ToolTip="ALT+PageUp" Click="PrevPage_OnClick">&lt;&lt;</Button>
                     <TextBox  
                         MinWidth="30"
                              VerticalAlignment="Stretch" 
@@ -257,8 +284,8 @@
                            HorizontalContentAlignment="Center"
                            Content="{Binding Pages}"
                     ></Label>
-                    <Button IsEnabled="{Binding NextPageEnabled}" ToolTip="ALT+PageDown" Click="NextPage_OnClick">&gt;&gt;</Button>
-                    <Button IsEnabled="{Binding LastPageEnabled}" ToolTip="ALT+End" Click="LastPage_OnClick">&gt;|</Button>
+                    <Button Style="{DynamicResource BorderlessButton}" Width="24" IsEnabled="{Binding NextPageEnabled}" ToolTip="ALT+PageDown" Click="NextPage_OnClick">&gt;&gt;</Button>
+                    <Button Style="{DynamicResource BorderlessButton}" Width="16" IsEnabled="{Binding LastPageEnabled}" ToolTip="ALT+End" Click="LastPage_OnClick">&gt;|</Button>
                 </StackPanel>
             </Grid>
         </Grid>
@@ -272,11 +299,11 @@
         />
 
         <Grid x:Name="PreviewGrid" DataContext="{Binding CurrentImage}" Grid.Row="0" Grid.Column="2" >
-            <Grid.RowDefinitions>
+            <!--<Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="Auto" />
                 <RowDefinition/>
-            </Grid.RowDefinitions>
+            </Grid.RowDefinitions>-->
             <Grid  Style="{StaticResource Preview}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="32"/>
@@ -284,24 +311,128 @@
                     <RowDefinition Height="32"/>
                 </Grid.RowDefinitions>
                 <Image Grid.Row="0"  Grid.RowSpan="3" Source="{Binding Image}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
-                <Grid Visibility="Visible" Grid.Row="0" RowSpan="3"  Margin="10" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <Grid  Grid.Row="0" RowSpan="3"  Margin="10" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <Grid Background="Transparent">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="32"/>
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="1" Margin="10" Background="Transparent">
+                        <Grid 
+                            classes:VisibilityAnimation.AnimationType="Fade" 
+                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Grid.Row="0" Margin="10" Background="Transparent" VerticalAlignment="Bottom">
                             <Grid Margin="-20" Background="Transparent"></Grid>
-                            <StackPanel>
-                                <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                         IsReadOnly="True"
-                                         Padding="5" Background="#5F000000" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
-                                <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                         IsReadOnly="True" Padding="5" Background="#5F000000" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
-                                <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                         IsReadOnly="True" Padding="5" Background="#5F000000" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
-                            </StackPanel>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Background="#5F000000">
+
+                                    <Grid  Background="Transparent" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
+                                        <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding CopyPromptCommand}" >
+                                            <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid Background="Transparent" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
+                                        <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyNegativePromptCommand}" >
+                                            <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid Background="Transparent" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
+                                        <!--<Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyOthersCommand}" >
+                                            <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
+                                        </Button>-->
+                                        <Grid Grid.Column="1"></Grid>
+                                    </Grid>
+
+
+                                    <Grid  Background="Transparent" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                             IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
+                                        <Grid Grid.Column="1"></Grid>
+                                    </Grid>
+
+                                    <Grid  Background="Transparent" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"></TextBox>
+                                        <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding CopyPathCommand}" >
+                                            <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid  Background="Transparent" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                             IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
+                                        <Grid Grid.Column="1"></Grid>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <Grid  Grid.Row="1" Background="Transparent">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyParametersCommand}">
+                                <fa:ImageAwesome ToolTip="Copy Parameters" Icon="FileText" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <fa:ImageAwesome.Effect>
+                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                    </fa:ImageAwesome.Effect>
+                                </fa:ImageAwesome>
+                            </Button>
+
+                            <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding ShowInExplorerCommand}">
+                                <fa:ImageAwesome ToolTip="Show in Explorer" Icon="ExternalLink" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <fa:ImageAwesome.Effect>
+                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                    </fa:ImageAwesome.Effect>
+                                </fa:ImageAwesome>
+                            </Button>
+
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" DataContext="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType=Page, AncestorLevel=1} }" Command="{Binding ToggleParameters}">
+                                <fa:ImageAwesome ToolTip="Show info (I)" Icon="Eye" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <fa:ImageAwesome.Effect>
+                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                    </fa:ImageAwesome.Effect>
+                                </fa:ImageAwesome>
+                            </Button>
+
                         </Grid>
                         <StackPanel Orientation="Horizontal" Grid.Row="2" >
                             <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
@@ -342,10 +473,10 @@
                         </StackPanel>
                     </Grid>
                 </Grid>
-             
+
             </Grid>
 
-            <GridSplitter Grid.Row="1"
+            <!--<GridSplitter Grid.Row="1"
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Center"
                           ShowsPreview="True"
@@ -365,7 +496,7 @@
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
                             <Label FontWeight="SemiBold">Path</Label>
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding OpenInExplorerCommand}">
+                            <Button x:Name="TempButton" Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding ShowInExplorerCommand}">
                                 <Image Source="{DynamicResource LinkIcon}" Height="16" Width="16" ToolTip="Show in Explorer"></Image>
                             </Button>
                             <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2"  Command="{Binding CopyPathCommand}">
@@ -408,9 +539,9 @@
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
                             <Label FontWeight="SemiBold">Others</Label>
-                            <!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
+                            --><!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
-                            </Button>-->
+                            </Button>--><!--
                         </Grid>
 
                         <Border BorderThickness="5" >
@@ -423,9 +554,9 @@
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
                             <Label FontWeight="SemiBold">Model Name</Label>
-                            <!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
+                            --><!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
-                            </Button>-->
+                            </Button>--><!--
                         </Grid>
 
                         <Border BorderThickness="5" >
@@ -439,9 +570,9 @@
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
                             <Label FontWeight="SemiBold">Date</Label>
-                            <!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
+                            --><!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
-                            </Button>-->
+                            </Button>--><!--
                         </Grid>
 
                         <Border BorderThickness="5" >
@@ -457,9 +588,9 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0" Command="{Binding ShowInThumbnails}">Show in Thumbnails</Button>
-                    <Button Grid.Column="1" Command="{Binding CopyParameters}">Copy Parameters</Button>
+                    <Button Grid.Column="1" Command="{Binding CopyParametersCommand}">Copy Parameters</Button>
                 </Grid>
-            </Grid>
+            </Grid>-->
         </Grid>
     </Grid>
 </Page>

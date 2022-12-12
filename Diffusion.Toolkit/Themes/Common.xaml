@@ -20,260 +20,6 @@
         <Setter Property="Background" Value="{DynamicResource PreviewBackgroundBrush}"></Setter>
     </Style>
 
-    <ControlTemplate x:Key="{x:Static MenuItem.TopLevelItemTemplateKey}" TargetType="MenuItem">
-        <Border BorderThickness="{TemplateBinding Border.BorderThickness}" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}" Name="templateRoot" SnapsToDevicePixels="True">
-            <Grid Margin="-1,-1,-1,-1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" MinWidth="22" SharedSizeGroup="MenuItemIconColumnGroup" />
-                    <ColumnDefinition Width="13" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="30" />
-                    <ColumnDefinition Width="Auto" SharedSizeGroup="MenuItemIGTColumnGroup" />
-                    <ColumnDefinition Width="20" />
-                </Grid.ColumnDefinitions>
-                <ContentPresenter Content="{TemplateBinding MenuItem.Icon}" ContentSource="Icon" Name="Icon" Width="16" Height="16" Margin="3,3,3,3" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
-                <Border BorderThickness="1,1,1,1" BorderBrush="#FF26A0DA" Background="#3D26A0DA" Name="GlyphPanel" Width="22" Height="22" Margin="-1,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Hidden" ClipToBounds="False">
-                    <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="#FF212121" Name="Glyph" Width="10" Height="11" FlowDirection="LeftToRight" />
-                </Border>
-                <ContentPresenter RecognizesAccessKey="True" Content="{TemplateBinding HeaderedContentControl.Header}" ContentTemplate="{TemplateBinding HeaderedContentControl.HeaderTemplate}" ContentStringFormat="{TemplateBinding HeaderedItemsControl.HeaderStringFormat}" ContentSource="Header" Name="menuHeaderContainer" Margin="{TemplateBinding Control.Padding}" HorizontalAlignment="Left" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" Grid.Column="2" />
-                <TextBlock Text="{TemplateBinding MenuItem.InputGestureText}" Name="menuGestureText" Margin="{TemplateBinding Control.Padding}" VerticalAlignment="Center" Opacity="0.7" Grid.Column="4" />
-            </Grid>
-        </Border>
-        <ControlTemplate.Triggers>
-            <Trigger Property="MenuItem.Icon">
-                <Setter Property="UIElement.Visibility" TargetName="Icon">
-                    <Setter.Value>
-                        <x:Static Member="Visibility.Collapsed" />
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    <x:Null />
-                </Trigger.Value>
-            </Trigger>
-            <Trigger Property="MenuItem.IsChecked">
-                <Setter Property="UIElement.Visibility" TargetName="GlyphPanel">
-                    <Setter.Value>
-                        <x:Static Member="Visibility.Visible" />
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="UIElement.Visibility" TargetName="Icon">
-                    <Setter.Value>
-                        <x:Static Member="Visibility.Collapsed" />
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    True
-                </Trigger.Value>
-            </Trigger>
-            <Trigger Property="MenuItem.IsHighlighted">
-                <Setter Property="Panel.Background" TargetName="templateRoot">
-                    <Setter.Value>
-                        <SolidColorBrush>#3D26A0DA</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Border.BorderBrush" TargetName="templateRoot">
-                    <Setter.Value>
-                        <SolidColorBrush>#FF26A0DA</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    True
-                </Trigger.Value>
-            </Trigger>
-            <Trigger Property="UIElement.IsEnabled">
-                <Setter Property="TextElement.Foreground" TargetName="templateRoot">
-                    <Setter.Value>
-                        <SolidColorBrush>#FF707070</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Shape.Fill" TargetName="Glyph">
-                    <Setter.Value>
-                        <SolidColorBrush>#FF707070</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    False
-                </Trigger.Value>
-            </Trigger>
-            <MultiTrigger>
-                <MultiTrigger.Conditions>
-                    <Condition Property="MenuItem.IsHighlighted">
-                        <Condition.Value>
-                            True
-                        </Condition.Value>
-                    </Condition>
-                    <Condition Property="UIElement.IsEnabled">
-                        <Condition.Value>
-                            False
-                        </Condition.Value>
-                    </Condition>
-                </MultiTrigger.Conditions>
-                <Setter Property="Panel.Background" TargetName="templateRoot">
-                    <Setter.Value>
-                        <SolidColorBrush>#0A000000</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Border.BorderBrush" TargetName="templateRoot">
-                    <Setter.Value>
-                        <SolidColorBrush>#21000000</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-            </MultiTrigger>
-        </ControlTemplate.Triggers>
-    </ControlTemplate>
-
-
-    <ControlTemplate x:Key="{x:Static MenuItem.TopLevelHeaderTemplateKey}" TargetType="MenuItem">
-        <Border BorderThickness="{TemplateBinding Border.BorderThickness}" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}" Name="templateRoot" SnapsToDevicePixels="True">
-            <Grid VerticalAlignment="Center">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <ContentPresenter Content="{TemplateBinding MenuItem.Icon}" ContentSource="Icon" Name="Icon" Width="16" Height="16" Margin="3,3,3,3" HorizontalAlignment="Center" VerticalAlignment="Center" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
-                <Path Data="F1M10,1.2L4.7,9.1 4.5,9.1 0,5.2 1.3,3.5 4.3,6.1 8.3,0 10,1.2z" Fill="{TemplateBinding TextElement.Foreground}" Name="GlyphPanel" FlowDirection="LeftToRight" Margin="3,3,3,3" VerticalAlignment="Center" Visibility="Collapsed" />
-                <ContentPresenter RecognizesAccessKey="True" Content="{TemplateBinding HeaderedContentControl.Header}" ContentTemplate="{TemplateBinding HeaderedContentControl.HeaderTemplate}" ContentStringFormat="{TemplateBinding HeaderedItemsControl.HeaderStringFormat}" ContentSource="Header" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" Grid.Column="1" />
-                <Popup IsOpen="{TemplateBinding IsSubmenuOpen}" Placement="Bottom" PopupAnimation="{DynamicResource {x:Static SystemParameters.MenuPopupAnimationKey}}" AllowsTransparency="True" Name="PART_Popup" Focusable="False">
-                    <Border BorderThickness="1,1,1,1"  BorderBrush="{DynamicResource SecondaryBrush}" Background="{DynamicResource SecondaryBrush}" Name="SubMenuBorder">
-                        <ScrollViewer Style="{DynamicResource {ComponentResourceKey TypeInTargetAssembly=FrameworkElement, ResourceId=MenuScrollViewer}}" Name="SubMenuScrollViewer">
-                            <Grid RenderOptions.ClearTypeHint="Enabled">
-                                <Canvas Width="0" Height="0" HorizontalAlignment="Left" VerticalAlignment="Top">
-                                    <Rectangle Fill="{x:Null}" Name="OpaqueRect" Width="Auto" Height="Auto" />
-                                </Canvas>
-                                <Rectangle Fill="#FFD7D7D7" Width="1" Margin="29,2,0,2" HorizontalAlignment="Left" />
-                                <ItemsPresenter Name="ItemsPresenter" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" KeyboardNavigation.TabNavigation="Cycle" KeyboardNavigation.DirectionalNavigation="Cycle" Grid.IsSharedSizeScope="True" />
-                            </Grid>
-                        </ScrollViewer>
-                    </Border>
-                </Popup>
-            </Grid>
-        </Border>
-        <ControlTemplate.Triggers>
-            <Trigger Property="MenuItem.IsSuspendingPopupAnimation">
-                <Setter Property="Popup.PopupAnimation" TargetName="PART_Popup">
-                    <Setter.Value>
-                        <x:Static Member="PopupAnimation.None" />
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    True
-                </Trigger.Value>
-            </Trigger>
-            <Trigger Property="MenuItem.Icon">
-                <Setter Property="UIElement.Visibility" TargetName="Icon">
-                    <Setter.Value>
-                        <x:Static Member="Visibility.Collapsed" />
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    <x:Null />
-                </Trigger.Value>
-            </Trigger>
-            <Trigger Property="MenuItem.IsChecked">
-                <Setter Property="UIElement.Visibility" TargetName="GlyphPanel">
-                    <Setter.Value>
-                        <x:Static Member="Visibility.Visible" />
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="UIElement.Visibility" TargetName="Icon">
-                    <Setter.Value>
-                        <x:Static Member="Visibility.Collapsed" />
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    True
-                </Trigger.Value>
-            </Trigger>
-            <Trigger Property="MenuItem.IsHighlighted">
-                <Setter Property="Panel.Background" TargetName="templateRoot">
-                    <Setter.Value>
-                        <SolidColorBrush>#3D26A0DA</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Border.BorderBrush" TargetName="templateRoot">
-                    <Setter.Value>
-                        <SolidColorBrush>#FF26A0DA</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    True
-                </Trigger.Value>
-            </Trigger>
-            <Trigger Property="UIElement.IsEnabled">
-                <Setter Property="TextElement.Foreground" TargetName="templateRoot">
-                    <Setter.Value>
-                        <SolidColorBrush>#FF707070</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Shape.Fill" TargetName="GlyphPanel">
-                    <Setter.Value>
-                        <SolidColorBrush>#FF707070</SolidColorBrush>
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    False
-                </Trigger.Value>
-            </Trigger>
-            <Trigger Property="ScrollViewer.CanContentScroll" SourceName="SubMenuScrollViewer">
-                <Setter Property="Canvas.Top" TargetName="OpaqueRect">
-                    <Setter.Value>
-                        <Binding Path="VerticalOffset" ElementName="SubMenuScrollViewer" />
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="Canvas.Left" TargetName="OpaqueRect">
-                    <Setter.Value>
-                        <Binding Path="HorizontalOffset" ElementName="SubMenuScrollViewer" />
-                    </Setter.Value>
-                </Setter>
-                <Trigger.Value>
-                    False
-                </Trigger.Value>
-            </Trigger>
-        </ControlTemplate.Triggers>
-    </ControlTemplate>
-
-
-    <Style TargetType="Menu">
-        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
-        <Setter Property="BorderBrush" Value="Transparent"></Setter>
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
-        <!--<Style.Triggers>
-            <Trigger Property="IsHighlighted" Value="True">
-                <Setter Property="Background"  Value="{DynamicResource HighlightBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource HighlightBrush}"/>
-            </Trigger>
-        </Style.Triggers>-->
- 
-    </Style>
-
-    <Style TargetType="MenuItem">
-        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
-        <Setter Property="BorderBrush" Value="Transparent"></Setter>
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
-        <Style.Triggers>
-            <Trigger Property="IsHighlighted" Value="True">
-                <Setter Property="Background"  Value="{DynamicResource HighlightBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource HighlightBrush}"/>
-            </Trigger>
-            <Trigger Property="Role"
-                     Value="TopLevelHeader">
-                <Setter Property="Template"
-                        Value="{StaticResource {x:Static MenuItem.TopLevelHeaderTemplateKey}}" />
-                <Setter Property="Grid.IsSharedSizeScope"
-                        Value="true" />
-            </Trigger>
-            <!--<Trigger Property="Role"
-                     Value="SubmenuHeader">
-                <Setter Property="Template"
-                        Value="{StaticResource {x:Static MenuItem.TopLevelItemTemplateKey}}" />
-                <Setter Property="Grid.IsSharedSizeScope"
-                        Value="true" />
-            </Trigger>-->
-        </Style.Triggers>
-
-    </Style>
-
-
     <Style TargetType="Separator">
         <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
         <Setter Property="BorderThickness" Value="1"></Setter>
@@ -339,16 +85,17 @@
     </Style>
 
 
-    <Style TargetType="Button">
+
+    <Style x:Key="BorderlessButton" TargetType="Button">
         <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
         <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
         <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <Border Background="{TemplateBinding Background}" BorderBrush="{DynamicResource SecondaryBrush}" BorderThickness="1">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="Border" BorderThickness="0"  BorderBrush="{DynamicResource SecondaryBrush}" Background="{TemplateBinding Panel.Background}">
+                        <ContentPresenter Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -358,16 +105,34 @@
                 <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
             </Trigger>
         </Style.Triggers>
+
+    </Style>
+
+
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+        <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="Border" BorderThickness="1"  BorderBrush="{DynamicResource SecondaryBrush}" Background="{TemplateBinding Panel.Background}">
+                        <ContentPresenter Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+
     </Style>
 
     <Style TargetType="GridSplitter">
         <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"></Setter>
-    </Style>
-
-    <Style BasedOn="{StaticResource {x:Type Button}}"
-           TargetType="Button"
-           x:Key="BorderlessButton">
-        <Setter Property="BorderBrush" Value="Transparent"/>
     </Style>
 
     <!--A Style that extends the previous TextBlock Style with an x:Key of TitleText-->
@@ -545,6 +310,157 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="{x:Type CheckBox}"
+           TargetType="{x:Type CheckBox}">
+        <Setter Property="SnapsToDevicePixels"
+                Value="true" />
+        <Setter Property="OverridesDefaultStyle"
+                Value="true" />
+        <Setter Property="FocusVisualStyle"
+                Value="{DynamicResource CheckBoxFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="#00FFFFFF" Name="templateRoot" SnapsToDevicePixels="True">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border BorderThickness="1" BorderBrush="{DynamicResource SecondaryBrush}" Background="{TemplateBinding Panel.Background}" Name="checkBoxBorder" Margin="1,1,1,1" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}">
+                            <Grid Name="markGrid">
+                                <Path Fill="{DynamicResource ForegroundBrush}" Stroke="{DynamicResource SecondaryBrush}" Data="F1M9.97498,1.2233399999999999L4.6983,9.09834 4.52164,9.09834 0,5.193309999999999 1.27664,3.5216499999999997 4.255,6.08833 8.33331,1.52588E-05 9.97498,1.2233399999999999z" Stretch="None"  Name="optionMark" Margin="1,1,1,1" Opacity="0" />
+                                <Rectangle Fill="{DynamicResource SecondaryBrush}" Name="indeterminateMark" Margin="2,2,2,2" Opacity="0" />
+                            </Grid>
+                        </Border>
+                        <ContentPresenter RecognizesAccessKey="True" Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" Name="contentPresenter" Margin="{TemplateBinding Control.Padding}" HorizontalAlignment="{TemplateBinding Control.HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding Control.VerticalContentAlignment}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" Focusable="False" Grid.Column="1" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="ContentControl.HasContent">
+                            <Setter Property="FrameworkElement.FocusVisualStyle">
+                                <Setter.Value>
+                                    <Style TargetType="IFrameworkInputElement">
+                                        <Style.Resources>
+                                            <ResourceDictionary />
+                                        </Style.Resources>
+                                        <Setter Property="Control.Template">
+                                            <Setter.Value>
+                                                <ControlTemplate>
+                                                    <Rectangle Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2" Margin="14,0,0,0" SnapsToDevicePixels="True" />
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Control.Padding">
+                                <Setter.Value>
+                                    <Thickness>4,-1,0,0</Thickness>
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                True
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="UIElement.IsMouseOver">
+                            <Setter Property="Panel.Background" TargetName="checkBoxBorder" Value="{DynamicResource SecondaryBrush}"/>
+                            <Setter Property="Border.BorderBrush" TargetName="checkBoxBorder" Value="{DynamicResource SecondaryBrush}"/>
+                            <Setter Property="Shape.Fill" TargetName="optionMark" Value="{DynamicResource SecondaryBrush}"/>
+                            <Setter Property="Shape.Fill" TargetName="indeterminateMark">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FF212121</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                True
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="UIElement.IsEnabled">
+                            <Setter Property="Panel.Background" TargetName="checkBoxBorder">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FFE6E6E6</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Border.BorderBrush" TargetName="checkBoxBorder">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FFBCBCBC</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Shape.Fill" TargetName="optionMark">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FF707070</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Shape.Fill" TargetName="indeterminateMark">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FF707070</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                False
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="ButtonBase.IsPressed">
+                            <Setter Property="Panel.Background" TargetName="checkBoxBorder">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FFD9ECFF</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Border.BorderBrush" TargetName="checkBoxBorder">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FF3C77DD</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Shape.Fill" TargetName="optionMark">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FF212121</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Shape.Fill" TargetName="indeterminateMark">
+                                <Setter.Value>
+                                    <SolidColorBrush>#FF212121</SolidColorBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                True
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="ToggleButton.IsChecked">
+                            <Setter Property="UIElement.Opacity" TargetName="optionMark">
+                                <Setter.Value>
+                                    1
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="UIElement.Opacity" TargetName="indeterminateMark">
+                                <Setter.Value>
+                                    0
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                True
+                            </Trigger.Value>
+                        </Trigger>
+                        <Trigger Property="ToggleButton.IsChecked">
+                            <Setter Property="UIElement.Opacity" TargetName="optionMark">
+                                <Setter.Value>
+                                    0
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="UIElement.Opacity" TargetName="indeterminateMark">
+                                <Setter.Value>
+                                    1
+                                </Setter.Value>
+                            </Setter>
+                            <Trigger.Value>
+                                <x:Null />
+                            </Trigger.Value>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!--<Style x:Key="{x:Type Slider}" TargetType="{x:Type Slider}">
         <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"/>

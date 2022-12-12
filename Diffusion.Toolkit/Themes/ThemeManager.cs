@@ -25,9 +25,11 @@ namespace Diffusion.Toolkit.Themes
             app.Resources.MergedDictionaries.Clear();
             ResourceDictionary theme = (ResourceDictionary)Application.LoadComponent(new Uri($"Themes/{themeName}.xaml", UriKind.Relative));
             ResourceDictionary common = (ResourceDictionary)Application.LoadComponent(new Uri("Themes/Common.xaml", UriKind.Relative));
+            ResourceDictionary menu = (ResourceDictionary)Application.LoadComponent(new Uri($"Themes/Menu.xaml", UriKind.Relative));
             ResourceDictionary window = (ResourceDictionary)Application.LoadComponent(new Uri($"Themes/Window.xaml", UriKind.Relative));
             app.Resources.MergedDictionaries.Add(theme);
             app.Resources.MergedDictionaries.Add(common);
+            app.Resources.MergedDictionaries.Add(menu);
             app.Resources.MergedDictionaries.Add(window);
         }
         

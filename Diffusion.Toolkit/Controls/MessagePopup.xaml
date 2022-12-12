@@ -13,7 +13,10 @@
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Popup IsOpen="{Binding IsVisible}" PlacementTarget="{Binding PlacementTarget}" Placement="Center" Width="{Binding Width}" Height="{Binding Height}" AllowsTransparency="True" PopupAnimation="Fade">
+    <Popup IsOpen="{Binding IsVisible}" PlacementTarget="{Binding PlacementTarget}" 
+           Placement="Center" Width="{Binding Width}" Height="{Binding Height}"
+           AllowsTransparency="True" PopupAnimation="Fade"
+           >
         <Border         
                 BorderBrush="{DynamicResource SecondaryBrush}"
                 Background="{DynamicResource PrimaryBrush}"

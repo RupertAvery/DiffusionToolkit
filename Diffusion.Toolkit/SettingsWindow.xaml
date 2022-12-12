@@ -22,12 +22,13 @@
                 <Grid Height="100">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="120"/>
                     </Grid.ColumnDefinitions>
                     <ListBox ItemsSource="{Binding ImagePaths}" SelectedIndex="{Binding SelectedIndex}" Grid.RowSpan="2" Margin="0,0,10,0"></ListBox>
                     <StackPanel Grid.Column="1">
-                        <Button Click="AddFolder_OnClick" Margin="0,0,0,10">Add Folder</Button>
-                        <Button Click="RemoveFolder_OnClick">Remove Folder</Button>
+                        <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26">Add Folder</Button>
+                        <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26">Remove Folder</Button>
+                        <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" ToolTip="Automatically scan newly added images in folders. Experimental">Watch Folders</CheckBox>
                     </StackPanel>
 
                 </Grid>
@@ -35,7 +36,7 @@
                 <Grid >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="120"/>
                     </Grid.ColumnDefinitions>
                     <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions}" Margin="0,0,10,0"></TextBox>
                 </Grid>
@@ -43,7 +44,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="120"/>
                     </Grid.ColumnDefinitions>
                     <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding ModelRootPath}" Margin="0,0,10,0"></TextBox>
                     <Button Height="26" Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
@@ -53,7 +54,7 @@
                 <Grid >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="120"/>
                     </Grid.ColumnDefinitions>
                     <Slider x:Name="Slider" Minimum="100" Maximum="500" Value="{Binding PageSize}" TickFrequency="50" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Orientation="Horizontal" Margin="0,0,10,0"></Slider>
                     <Label Grid.Column="1" Height="26" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="{Binding PageSize}" Margin="0,0,10,0"></Label>
@@ -62,7 +63,7 @@
                 <Grid >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width="90"/>
+                        <ColumnDefinition Width="120"/>
                     </Grid.ColumnDefinitions>
                     <ComboBox Height="26" VerticalContentAlignment="Center" Text="{Binding Theme}" Margin="0,0,10,0">
                         <ComboBoxItem>System</ComboBoxItem>

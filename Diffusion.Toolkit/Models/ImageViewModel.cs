@@ -9,8 +9,8 @@ public class ImageViewModel : BaseNotify
     private ICommand _copyNegativePromptCommand;
     private ICommand _copyPathCommand;
     private ICommand _copyPromptCommand;
-    private ICommand _copyParameters;
-    private ICommand _openInExplorerCommand;
+    private ICommand _copyParametersCommand;
+    private ICommand _showInExplorerCommand;
     private string _path;
     private string _prompt;
     private string _negativePrompt;
@@ -21,6 +21,9 @@ public class ImageViewModel : BaseNotify
     private string _date;
     private int? _rating;
     private ICommand _showInThumbnails;
+    private bool _isParametersVisible;
+    private ICommand _deleteCommand;
+    private ICommand _favoriteCommand;
 
     public BitmapSource? Image
     {
@@ -78,10 +81,22 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _copyPathCommand, value);
     }
 
-    public ICommand OpenInExplorerCommand
+    public ICommand ShowInExplorerCommand
     {
-        get => _openInExplorerCommand;
-        set => SetField(ref _openInExplorerCommand, value);
+        get => _showInExplorerCommand;
+        set => SetField(ref _showInExplorerCommand, value);
+    }
+
+    public ICommand DeleteCommand
+    {
+        get => _deleteCommand;
+        set => SetField(ref _deleteCommand, value);
+    }
+
+    public ICommand FavoriteCommand
+    {
+        get => _favoriteCommand;
+        set => SetField(ref _favoriteCommand, value);
     }
 
 
@@ -99,10 +114,10 @@ public class ImageViewModel : BaseNotify
     }
 
 
-    public ICommand CopyParameters
+    public ICommand CopyParametersCommand
     {
-        get => _copyParameters;
-        set => SetField(ref _copyParameters, value);
+        get => _copyParametersCommand;
+        set => SetField(ref _copyParametersCommand, value);
     }
 
     public bool Favorite
@@ -121,5 +136,11 @@ public class ImageViewModel : BaseNotify
     {
         get => _showInThumbnails;
         set => SetField(ref _showInThumbnails, value);
+    }
+
+    public bool IsParametersVisible
+    {
+        get => _isParametersVisible;
+        set => SetField(ref _isParametersVisible, value);
     }
 }

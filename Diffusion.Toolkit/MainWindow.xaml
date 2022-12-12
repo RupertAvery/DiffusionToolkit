@@ -6,10 +6,15 @@
         xmlns:local="clr-namespace:Diffusion.Toolkit"
         xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
         xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         ResizeMode="CanResizeWithGrip"
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         Title="Diffusion Toolkit" Height="450" Width="800">
+    <Window.InputBindings>
+        <KeyBinding Key="I" Command="{Binding ShowInfo}"></KeyBinding>
+        <KeyBinding Key="F1" Command="{Binding Help}"></KeyBinding>
+    </Window.InputBindings>
     <Window.Resources>
         <ResourceDictionary>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
@@ -33,35 +38,45 @@
                 <Separator></Separator>
                 <MenuItem Header="_Empty recycle bin" Command="{Binding RemoveMarked}"/>
             </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="_Show/Hide info" Command="{Binding ShowInfo}" InputGestureText="I"/>
+            </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="{Binding About}"/>
-                <MenuItem Header="_Tips" Command="{Binding Help}"/>
+                <MenuItem Header="_Getting Started" Command="{Binding Help}" InputGestureText="F1"/>
             </MenuItem>
         </Menu>
-        <ToolBar Grid.Row="1">
+        <ToolBar Grid.Row="1" Height="32">
             <Button Command="{Binding ShowSearch}">
-                <Image Width="32" Height="32" Source="{DynamicResource SearchIcon}" ToolTip="Search"></Image>
+                <fa:ImageAwesome MinWidth="32" ToolTip="Search" Icon="Search" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
             </Button>
             <Button Command="{Binding ShowFavorite}">
-                <Image Width="32" Height="32" Source="{DynamicResource FavoriteIcon}" ToolTip="Favorites"></Image>
+                <fa:ImageAwesome MinWidth="32" ToolTip="Favorites" Icon="HeartOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
             </Button>
             <Button  Command="{Binding ShowMarked}">
-                <Image Width="32" Height="32" Source="{DynamicResource TrashIcon}" ToolTip="Recycle bin"></Image>
+                <fa:ImageAwesome MinWidth="32" ToolTip="Recycle bin" Icon="TrashOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
             </Button>
             <Separator></Separator>
             <Button Command="{Binding Rescan}">
-                <Image Width="32" Height="32" Source="{DynamicResource ScanFolderIcon}" ToolTip="Rescan Folders"></Image>
+                <fa:ImageAwesome TextElement.FontFamily="pack://application:,,,/FontAwesome.WPF;component/#FontAwesome"  MinWidth="32" ToolTip="Rescan Folders" Icon="SearchPlus" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
             </Button>
             <Button Command="{Binding Rebuild}">
-                <Image Width="32" Height="32" Source="{DynamicResource RebuildIcon}" ToolTip="Rebuild Images"></Image>
+                <fa:ImageAwesome MinWidth="32" ToolTip="Rebuild Images" Icon="Refresh" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
             </Button>
             <Separator></Separator>
             <Button Command="{Binding ShowModels}">
-                <Image Width="32" Height="32" Source="{DynamicResource ModelsIcon}" ToolTip="Models"></Image>
+                <fa:ImageAwesome MinWidth="32" ToolTip="Models" Icon="PuzzlePiece" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
             </Button>
             <Separator></Separator>
             <Button Command="{Binding Settings}">
-                <Image Width="32" Height="32" Source="{DynamicResource SettingsIcon}" ToolTip="Settings"></Image>
+                <fa:ImageAwesome MinWidth="32" ToolTip="Models" Icon="Gear" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
             </Button>
         </ToolBar>
         <Frame x:Name="Frame" Grid.Row="2" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>

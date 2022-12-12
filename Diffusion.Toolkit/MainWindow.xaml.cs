@@ -4,6 +4,7 @@ using Diffusion.Toolkit.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -15,18 +16,23 @@ using Diffusion.Toolkit.Thumbnails;
 using Diffusion.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Threading;
-using Diffusion.Toolkit.Controls;
 using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Themes;
 using Microsoft.Win32;
 using Diffusion.Toolkit.Pages;
 using System.Windows.Forms;
+using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
-using Panel = System.Windows.Controls.Panel;
+using Model = Diffusion.IO.Model;
+using Timer = System.Threading.Timer;
 
 namespace Diffusion.Toolkit
 {
+    public class AppInfo
+    {
+        public static string Version = "0.7";
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -47,10 +53,17 @@ namespace Diffusion.Toolkit
 
         public MainWindow()
         {
+            Logger.Log("===========================================");
+            Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
 
             InitializeComponent();
+            
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            currentDomain.UnhandledException += new UnhandledExceptionEventHandler(MyHandler);
 
             QueryBuilder.Samplers = File.ReadAllLines("samplers.txt").ToList();
+
+            Logger.Log($"Creating Thumbnail loader");
 
             ThumbnailLoader.CreateInstance(Dispatcher);
 
@@ -61,7 +74,11 @@ namespace Diffusion.Toolkit
 
             SystemEvents.UserPreferenceChanged += SystemEventsOnUserPreferenceChanged;
 
-            _dataStore = new DataStore(Path.Combine(AppDataPath, "diffusion-toolkit.db"));
+            var dbPath = Path.Combine(AppDataPath, "diffusion-toolkit.db");
+
+            Logger.Log($"Opening database at {dbPath}");
+
+            _dataStore = new DataStore(dbPath);
 
             _model = new MainModel();
             _model.Rescan = new AsyncCommand(RescanTask);
@@ -71,6 +88,7 @@ namespace Diffusion.Toolkit
             _model.CancelScan = new AsyncCommand(CancelScan);
             _model.About = new RelayCommand<object>((o) => ShowAbout());
             _model.Help = new RelayCommand<object>((o) => ShowTips());
+            _model.ShowInfo = new RelayCommand<object>((o) => ShowInfo());
 
             _model.PropertyChanged += ModelOnPropertyChanged;
 
@@ -90,12 +108,26 @@ namespace Diffusion.Toolkit
             DataContext = _model;
 
 
-            _messagePopupManager = new MessagePopupManager(PopupHost, Frame, Dispatcher);
+            _messagePopupManager = new MessagePopupManager(this, PopupHost, Frame, Dispatcher);
 
             //var str = new System.Text.StringBuilder();
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(EditMenu.Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void MyHandler(object sender, UnhandledExceptionEventArgs e)
+        {
+            var message = ((Exception)e.ExceptionObject).Message;
+            
+            Logger.Log($"An unhandled exception occured: {message}");
+
+            MessageBox.Show(this, message, "An unhandled exception occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+        }
+
+        private void ShowInfo()
+        {
+            _search.ToggleInfo();
         }
 
         private void SystemEventsOnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
@@ -289,6 +321,8 @@ namespace Diffusion.Toolkit
         {
             if (!_configuration.TryLoad(out _settings))
             {
+                Logger.Log($"Opening Settings for first time");
+
                 _settings = new Settings();
 
                 UpdateTheme();
@@ -312,14 +346,14 @@ namespace Diffusion.Toolkit
 
                 if (_settings.ImagePaths.Any())
                 {
-                    if (MessageBox.Show("Do you want Diffusion Toolkit to scan your configured folders now?", "Setup", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    if (await _messagePopupManager.Show("Do you want Diffusion Toolkit to scan your configured folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                     {
                         await Scan();
                     };
                 }
                 else
                 {
-                    MessageBox.Show("You have not setup any image folders. You will not be able to search anything yet. Add folders, then click the Rescan Folders icon after you have set them up.", "Setup", MessageBoxButton.OK, MessageBoxImage.Information);
+                    await _messagePopupManager.Show("You have not setup any image folders. You will not be able to search anything yet. Add folders, then click the Rescan Folders icon after you have set them up.", "Setup", PopupButtons.OK);
                 }
             }
             else
@@ -349,9 +383,11 @@ namespace Diffusion.Toolkit
             }
 
 
-
+            Activated += OnActivated;
             StateChanged += OnStateChanged;
             SizeChanged += OnSizeChanged;
+
+            Logger.Log($"Initializing pages");
 
             _models = new Pages.Models(_dataStore, _settings);
             _search = new Search(_navigatorService, _dataStore, _settings);
@@ -373,6 +409,19 @@ namespace Diffusion.Toolkit
             });
             _model.ShowModels = new RelayCommand<object>((o) => _navigatorService.Goto("models"));
 
+            if (_settings.WatchFolders)
+            {
+                foreach (var path in _settings.ImagePaths)
+                {
+                    var watcher = new FileSystemWatcher(path)
+                    {
+                        EnableRaisingEvents = true,
+                        IncludeSubdirectories = true,
+                    };
+                    watcher.Created += WatcherOnCreated;
+                    _watchers.Add(watcher);
+                }
+            }
 
 
             var pages = new Dictionary<string, Page>()
@@ -387,41 +436,157 @@ namespace Diffusion.Toolkit
 
             _navigatorService.Goto("search");
 
+            Logger.Log($"Loading models");
 
+            LoadModels();
+
+            Logger.Log($"{_modelsCollection.Count} models loaded");
+
+            _search.SetModels(_modelsCollection);
+
+            Logger.Log($"Init completed");
+        }
+
+        private async void OnActivated(object? sender, EventArgs e)
+        {
+
+            if (addedTotal > 0)
+            {
+                await Report(addedTotal, 0, 0, false);
+                lock (_lock)
+                {
+                    addedTotal = 0;
+                }
+            }
 
         }
 
-        private void ShowSettings(object obj)
+        private void WatcherOnCreated(object sender, FileSystemEventArgs e)
         {
-            var settings = new SettingsWindow(_dataStore, _settings);
-            settings.Owner = this;
-            settings.ShowDialog();
-
-            if (_settings.IsDirty)
+            if (e.ChangeType == WatcherChangeTypes.Created)
             {
-                _configuration.Save(_settings);
-
-                _search.Settings = _settings;
-
-                if (_settings.IsPropertyDirty(nameof(Settings.PageSize)))
+                if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath)) > -1)
                 {
-                    ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
-                    _search.SearchImages();
+                    AddFile(e.FullPath);
                 }
+            }
+        }
 
-                if (_settings.IsPropertyDirty(nameof(Settings.ModelRootPath)))
+        private List<FileSystemWatcher> _watchers = new List<FileSystemWatcher>();
+
+        private List<string> detectedFiles;
+
+        private Timer? t = null;
+        private object _lock = new object();
+
+        private void AddFile(string path)
+        {
+            lock (_lock)
+            {
+                if (t == null)
                 {
-                    _search.LoadModels();
+                    detectedFiles = new List<string>();
+                    t = new Timer(Callback, null, 2000, Timeout.Infinite);
                 }
-
-                if (_settings.IsPropertyDirty(nameof(Settings.Theme)))
+                else
                 {
-                    UpdateTheme();
+                    t.Change(2000, Timeout.Infinite);
                 }
+                detectedFiles.Add(path);
+            }
+        }
 
-                _settings.SetPristine();
+        private int addedTotal = 0;
+
+        private async void Callback(object? state)
+        {
+            int added;
+            float elapsed;
+            
+            lock (_lock)
+            {
+                t?.Dispose();
+                t = null;
+                (added, elapsed) = ScanFiles(detectedFiles.ToList(), false);
+            }
+ 
+            if (added > 0)
+            {
+                await Dispatcher.Invoke(async () =>
+                {
+                    var currentWindow = Application.Current.Windows.OfType<Window>().First();
+                    if (currentWindow.IsActive)
+                    {
+                        await Report(added, 0, elapsed, false);
+                    }
+                    else
+                    {
+                        lock (_lock)
+                        {
+                            addedTotal += added;
+                        }
+                    }
+                });
+             
 
             }
+
+        }
+
+
+        private void ShowSettings(object obj)
+        {
+            try
+            {
+                var settings = new SettingsWindow(_dataStore, _settings);
+                settings.Owner = this;
+                settings.ShowDialog();
+
+                if (_settings.IsDirty)
+                {
+                    _configuration.Save(_settings);
+
+                    _search.Settings = _settings;
+
+                    if (_settings.IsPropertyDirty(nameof(Settings.PageSize)))
+                    {
+                        ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
+                        _search.SearchImages();
+                    }
+
+                    if (_settings.IsPropertyDirty(nameof(Settings.ModelRootPath)))
+                    {
+                        LoadModels();
+                        _search.SetModels(_modelsCollection);
+                    }
+
+                    if (_settings.IsPropertyDirty(nameof(Settings.Theme)))
+                    {
+                        UpdateTheme();
+                    }
+
+                    if (_settings.IsPropertyDirty(nameof(Settings.WatchFolders)))
+                    {
+                        if (_watchers != null)
+                        {
+                            foreach (var watcher in _watchers)
+                            {
+                                watcher.Dispose();
+                            }
+                            _watchers.Clear();
+                        }
+
+                    }
+
+                    _settings.SetPristine();
+
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"{e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+          
         }
 
         private void UpdateTheme()
@@ -473,7 +638,7 @@ namespace Diffusion.Toolkit
             await Task.Run(async () =>
             {
                 var result = await ScanInternal(_settings.ImagePaths, false);
-                if (result)
+                if (result && _search != null)
                 {
                     _search.SearchImages();
                 }
@@ -492,6 +657,118 @@ namespace Diffusion.Toolkit
             });
         }
 
+        private (int, float) ScanFiles(IList<string> filesToScan, bool updateImages)
+        {
+            var added = 0;
+            var scanned = 0;
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            var max = filesToScan.Count;
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.TotalFilesScan = max;
+                _model.CurrentPositionScan = 0;
+            });
+
+            var newImages = new List<Image>();
+
+            foreach (var file in Scanner.Scan(filesToScan))
+            {
+                if (_scanCancellationTokenSource.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                scanned++;
+
+                if (file != null)
+                {
+                    var image = new Image()
+                    {
+                        Prompt = file.Prompt,
+                        NegativePrompt = file.NegativePrompt,
+                        Path = file.Path,
+                        Width = file.Width,
+                        Height = file.Height,
+                        ModelHash = file.ModelHash,
+                        Steps = file.Steps,
+                        Sampler = file.Sampler,
+                        CFGScale = file.CFGScale,
+                        Seed = file.Seed,
+                        BatchPos = file.BatchPos,
+                        BatchSize = file.BatchSize,
+                        CreatedDate = File.GetCreationTime(file.Path),
+                        AestheticScore = file.AestheticScore,
+                        HyperNetwork = file.HyperNetwork,
+                        HyperNetworkStrength = file.HyperNetworkStrength,
+                        ClipSkip = file.ClipSkip,
+                    };
+
+                    if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
+                    {
+                        file.HyperNetworkStrength = 1;
+                    }
+
+                    newImages.Add(image);
+                }
+
+                if (newImages.Count == 100)
+                {
+                    if (updateImages)
+                    {
+                        _dataStore.UpdateImagesByPath(newImages);
+                    }
+                    else
+                    {
+                        _dataStore.AddImages(newImages);
+                    }
+
+                    added += newImages.Count;
+                    newImages.Clear();
+                }
+
+                if (scanned % 33 == 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _model.CurrentPositionScan = scanned;
+                        _model.Status = $"Scanning {_model.CurrentPositionScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+                    });
+                }
+            }
+
+            if (newImages.Count > 0)
+            {
+                if (updateImages)
+                {
+                    _dataStore.UpdateImagesByPath(newImages);
+                }
+                else
+                {
+                    _dataStore.AddImages(newImages);
+                }
+                added += newImages.Count;
+            }
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.Status = $"Scanning {_model.TotalFilesScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+                _model.TotalFilesScan = Int32.MaxValue;
+                _model.CurrentPositionScan = 0;
+            });
+
+            stopwatch.Stop();
+
+            var elapsedTime = stopwatch.ElapsedMilliseconds / 1000f;
+
+
+            return (added, elapsedTime);
+        }
+
+
         private async Task<bool> ScanInternal(IEnumerable<string> paths, bool updateImages)
         {
             if (_model.IsScanning) return false;
@@ -499,17 +776,12 @@ namespace Diffusion.Toolkit
             _model.IsScanning = true;
 
             _scanCancellationTokenSource = new CancellationTokenSource();
-            var added = 0;
             var removed = 0;
+            var added = 0;
+
             try
             {
-                var scanned = 0;
-
-                var scanner = new Scanner(_settings.FileExtensions);
-
                 var existingImages = _dataStore.GetImagePaths().ToList();
-
-                HashSet<string> ignoreFiles = updateImages ? new HashSet<string>() : existingImages.Select(p => p.Path).ToHashSet();
 
                 var removedList = existingImages.Where(img => !File.Exists(img.Path)).ToList();
 
@@ -519,6 +791,8 @@ namespace Diffusion.Toolkit
                     _dataStore.DeleteImages(removedList.Select(i => i.Id));
                 }
 
+                var filesToScan = new List<string>();
+
                 foreach (var path in paths)
                 {
                     if (_scanCancellationTokenSource.IsCancellationRequested)
@@ -526,131 +800,16 @@ namespace Diffusion.Toolkit
                         break;
                     }
 
-                    var max = scanner.Count(path);
+                    var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
-                    Dispatcher.Invoke(() =>
-                    {
-                        _model.TotalFilesScan = max;
-                        _model.CurrentPositionScan = 0;
-                    });
-
-
-                    //scanned += images.Count();
-
-                    var files = scanner.Scan(path, ignoreFiles);
-
-                    var newImages = new List<Image>();
-
-                    foreach (var file in files)
-                    {
-                        if (_scanCancellationTokenSource.IsCancellationRequested)
-                        {
-                            break;
-                        }
-
-                        scanned++;
-
-                        if (file != null)
-                        {
-                            var image = new Image()
-                            {
-                                Prompt = file.Prompt,
-                                NegativePrompt = file.NegativePrompt,
-                                Path = file.Path,
-                                Width = file.Width,
-                                Height = file.Height,
-                                ModelHash = file.ModelHash,
-                                Steps = file.Steps,
-                                Sampler = file.Sampler,
-                                CFGScale = file.CFGScale,
-                                Seed = file.Seed,
-                                BatchPos = file.BatchPos,
-                                BatchSize = file.BatchSize,
-                                CreatedDate = File.GetCreationTime(file.Path),
-                                AestheticScore = file.AestheticScore,
-                                HyperNetwork = file.HyperNetwork,
-                                HyperNetworkStrength = file.HyperNetworkStrength,
-                                ClipSkip = file.ClipSkip,
-                            };
-
-                            if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
-                            {
-                                file.HyperNetworkStrength = 1;
-                            }
-
-                            newImages.Add(image);
-
-
-
-                        }
-
-                        if (newImages.Count == 50)
-                        {
-                            if (updateImages)
-                            {
-                                _dataStore.UpdateImagesByPath(newImages);
-                            }
-                            else
-                            {
-                                _dataStore.AddImages(newImages);
-                            }
-
-                            added += newImages.Count;
-                            newImages.Clear();
-                        }
-
-                        if (scanned % 51 == 0)
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                _model.CurrentPositionScan += 51;
-                                _model.Status = $"Scanning {_model.CurrentPositionScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
-                            });
-                        }
-                    }
-
-                    if (newImages.Count > 0)
-                    {
-                        if (updateImages)
-                        {
-                            _dataStore.UpdateImagesByPath(newImages);
-                        }
-                        else
-                        {
-                            _dataStore.AddImages(newImages);
-                        }
-                        added += newImages.Count;
-                    }
-
-                    Dispatcher.Invoke(() =>
-                    {
-                        _model.Status = $"Scanning {_model.TotalFilesScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
-                        _model.TotalFilesScan = Int32.MaxValue;
-                        _model.CurrentPositionScan = 0;
-                    });
+                    filesToScan.AddRange(Scanner.GetFiles(path, _settings.FileExtensions, ignoreFiles).ToList());
                 }
 
-                await Dispatcher.Invoke(async () =>
-                {
-                    if (added == 0 && removed == 0)
-                    {
-                        await _messagePopupManager.Show("No new images found", "Scan Complete");
-                    }
-                    else
-                    {
-                        var newOrOpdated = updateImages ? $"{added:#,###,##0} images updated" : $"{added:#,###,##0} new images added";
+                var (_added, elapsedTime) = ScanFiles(filesToScan, updateImages);
 
-                        var missing = removed > 0 ? $"{removed:#,###,##0} missing images removed" : string.Empty;
+                added = _added;
 
-                        var messages = new[] { newOrOpdated, missing };
-
-                        var message = string.Join("\n", messages.Where(m => !string.IsNullOrEmpty(m)));
-
-                        await _messagePopupManager.Show(message, updateImages ? "Rebuild Complete" : "Scan Complete");
-                    }
-
-                    SetTotalFilesStatus();
-                });
+                await Report(added, removed, elapsedTime, updateImages);
             }
             catch (Exception ex)
             {
@@ -668,75 +827,50 @@ namespace Diffusion.Toolkit
             return added + removed > 0;
         }
 
+        private async Task Report(int added, int removed, float elapsedTime, bool updateImages)
+        {
+            await Dispatcher.Invoke(async () =>
+            {
+                if (added == 0 && removed == 0)
+                {
+                    await _messagePopupManager.Show($"No new images found", "Scan Complete");
+                }
+                else
+                {
+                    var newOrOpdated = updateImages ? $"{added:#,###,##0} images updated" : $"{added:#,###,##0} new images added";
+
+                    var missing = removed > 0 ? $"{removed:#,###,##0} missing images removed" : string.Empty;
+
+                    var messages = new[] { newOrOpdated, missing };
+
+                    var message = string.Join("\n", messages.Where(m => !string.IsNullOrEmpty(m)));
+
+                    message = $"{message}";
+
+                    await _messagePopupManager.Show(message, updateImages ? "Rebuild Complete" : "Scan Complete");
+                }
+
+                SetTotalFilesStatus();
+            });
+
+        }
+
         private void SetTotalFilesStatus()
         {
             var total = _dataStore.GetTotal();
             _model.Status = $"{total:###,###,##0} images in database";
         }
 
+        private ICollection<Model> _modelsCollection;
+
+        private void LoadModels()
+        {
+            if (_settings.ModelRootPath != null && Directory.Exists(_settings.ModelRootPath))
+            {
+                _modelsCollection = ModelScanner.Scan(_settings.ModelRootPath).ToList();
+            }
+        }
 
     }
-
-    public class MessagePopupManager
-    {
-        private readonly Panel _host;
-        private readonly UIElement _placementTarget;
-        private readonly Dispatcher _dispatcher;
-
-        public MessagePopupManager(Panel host, UIElement placementTarget, Dispatcher dispatcher)
-        {
-            _host = host;
-            _placementTarget = placementTarget;
-            _dispatcher = dispatcher;
-        }
-
-        public Task<PopupResult> Show(string message, string title)
-        {
-            _host.Visibility = Visibility.Visible;
-            var popup = new MessagePopup(_placementTarget);
-            _host.Children.Add(popup);
-            return popup.Show(message, title)
-                .ContinueWith(t =>
-                {
-                    _dispatcher.Invoke(() =>
-                    {
-                        _host.Visibility = Visibility.Hidden;
-                    });
-                return t.Result;
-            });
-        }
-
-        public Task<PopupResult> Show(string message, string title, PopupButtons buttons)
-        {
-            _host.Visibility = Visibility.Visible;
-            var popup = new MessagePopup(_placementTarget);
-            _host.Children.Add(popup);
-            return popup.Show(message, title, buttons)
-                .ContinueWith(t =>
-                {
-                    _dispatcher.Invoke(() =>
-                    {
-                        _host.Visibility = Visibility.Hidden;
-                    });
-                    return t.Result;
-                });
-        }
-
-        public Task<PopupResult> ShowMedium(string message, string title, PopupButtons buttons)
-        {
-            _host.Visibility = Visibility.Visible;
-            var popup = new MessagePopup(_placementTarget);
-            _host.Children.Add(popup);
-            return popup.ShowMedium(message, title, buttons)
-                .ContinueWith(t =>
-                {
-                    _dispatcher.Invoke(() =>
-                    {
-                        _host.Visibility = Visibility.Hidden;
-                    });
-                    return t.Result;
-                });
-        }
-    }
-
 }
+
