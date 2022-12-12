@@ -7,12 +7,13 @@
         xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
         xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
         mc:Ignorable="d"
         ResizeMode="CanResizeWithGrip"
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Window.InputBindings>
-        <KeyBinding Key="I" Command="{Binding ShowInfo}"></KeyBinding>
+        <common:BareKeyBinding Key="I" Command="{Binding ShowInfo}"></common:BareKeyBinding>
         <KeyBinding Key="F1" Command="{Binding Help}"></KeyBinding>
     </Window.InputBindings>
     <Window.Resources>
