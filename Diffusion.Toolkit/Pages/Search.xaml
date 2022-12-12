@@ -54,6 +54,7 @@
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
             <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
             <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
+            <converters:BoolToBlurIntConverter x:Key="boolToBlur"></converters:BoolToBlurIntConverter>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
         </ResourceDictionary>
@@ -190,8 +191,7 @@
                                         Opacity="{Binding Path=ForDeletion, Converter={StaticResource BoolToOpacity}}"
                                         Height="128" Width="128" 
                                         MaxWidth="128" MaxHeight="128" 
-                                     
-                                        HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                       HorizontalAlignment="Stretch" VerticalAlignment="Top">
 
                                     <!--<controls:Thumbnail.ContextMenu>
                                         <ContextMenu DataContext="{Binding DataContext.CurrentImage, RelativeSource={RelativeSource FindAncestor, AncestorType=Page}}">
@@ -211,7 +211,10 @@
                                             <MenuItem Header="Delete immediately (ShiftDel)" ToolTip="Shift+Del" />
                                         </ContextMenu>
                                     </controls:Thumbnail.ContextMenu>-->
-
+                                    <controls:Thumbnail.Effect>
+                                        <BlurEffect Radius="{Binding NSFW, Converter={StaticResource boolToBlur}, ConverterParameter=20}" KernelType="Gaussian">
+                                        </BlurEffect>
+                                    </controls:Thumbnail.Effect>
                                 </controls:Thumbnail>
                                 <!--Margin="96,96,0,0"-->
                                 <StackPanel Margin="0,96,0,0" Orientation="Horizontal">
@@ -310,7 +313,12 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="32"/>
                 </Grid.RowDefinitions>
-                <Image Grid.Row="0"  Grid.RowSpan="3" Source="{Binding Image}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  />
+                <Image Grid.Row="0"  Grid.RowSpan="3" Source="{Binding Image}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <Image.Effect>
+                        <BlurEffect Radius="{Binding NSFW, Converter={StaticResource boolToBlur}, ConverterParameter=100}" KernelType="Gaussian">
+                        </BlurEffect>
+                    </Image.Effect>
+                </Image>
                 <Grid  Grid.Row="0" RowSpan="3"  Margin="10" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <Grid Background="Transparent">
                         <Grid.RowDefinitions>
@@ -539,9 +547,11 @@
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
                             <Label FontWeight="SemiBold">Others</Label>
-                            --><!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
+                            -->
+            <!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
-                            </Button>--><!--
+                            </Button>-->
+            <!--
                         </Grid>
 
                         <Border BorderThickness="5" >
@@ -554,9 +564,11 @@
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
                             <Label FontWeight="SemiBold">Model Name</Label>
-                            --><!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
+                            -->
+            <!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
-                            </Button>--><!--
+                            </Button>-->
+            <!--
                         </Grid>
 
                         <Border BorderThickness="5" >
@@ -570,9 +582,11 @@
                                 <ColumnDefinition Width="32"/>
                             </Grid.ColumnDefinitions>
                             <Label FontWeight="SemiBold">Date</Label>
-                            --><!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
+                            -->
+            <!--<Button Grid.Column="1" Background="Transparent" BorderBrush="Transparent">
                                 <Image Source="../Icons/copy-32.png" Height="16" Width="16"></Image>
-                            </Button>--><!--
+                            </Button>-->
+            <!--
                         </Grid>
 
                         <Border BorderThickness="5" >

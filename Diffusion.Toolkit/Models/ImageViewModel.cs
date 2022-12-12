@@ -24,6 +24,7 @@ public class ImageViewModel : BaseNotify
     private bool _isParametersVisible;
     private ICommand _deleteCommand;
     private ICommand _favoriteCommand;
+    private bool _nsfw;
 
     public BitmapSource? Image
     {
@@ -130,6 +131,12 @@ public class ImageViewModel : BaseNotify
     {
         get => _rating;
         set => SetField(ref _rating, value);
+    }
+
+    public bool NSFW
+    {
+        get => _nsfw;
+        set => SetField(ref _nsfw, value);
     }
 
     public ICommand ShowInThumbnails

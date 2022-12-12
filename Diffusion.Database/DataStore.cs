@@ -53,6 +53,7 @@ public class DataStore
         db.CreateIndex<Image>(image => image.Favorite);
         db.CreateIndex<Image>(image => image.CreatedDate);
         db.CreateIndex<Image>(image => image.ForDeletion);
+        db.CreateIndex<Image>(image => image.NSFW);
         db.CreateIndex<Image>(image => image.HyperNetwork);
         db.CreateIndex<Image>(image => image.HyperNetworkStrength);
 
@@ -799,6 +800,21 @@ public class DataStore
 
         command.ExecuteNonQuery();
     }
+
+    public void SetNSFW(int id, bool nsfw)
+    {
+        var db = OpenConnection();
+
+        var query = "UPDATE Image SET NSFW = @NSFW WHERE Id = @Id";
+
+        var command = db.CreateCommand(query);
+
+        command.Bind("@NSFW", nsfw);
+        command.Bind("@Id", id);
+
+        command.ExecuteNonQuery();
+    }
+
 
     public void SetRating(int id, int? rating)
     {

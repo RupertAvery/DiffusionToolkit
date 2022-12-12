@@ -30,6 +30,7 @@ public class Image
     public int? Rating { get; set; }
     public bool Favorite { get; set; }
     public bool ForDeletion { get; set; }
+    public bool NSFW { get; set; }
 
 
     public decimal? AestheticScore { get; set; }

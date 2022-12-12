@@ -14,6 +14,7 @@ public class ImageEntry : BaseNotify
     private bool _favorite;
     private int? _rating;
     private long _requestId;
+    private bool _nsfw;
 
     public ImageEntry(long requestId)
     {
@@ -43,6 +44,12 @@ public class ImageEntry : BaseNotify
     {
         get => _rating;
         set => SetField(ref _rating, value);
+    }
+
+    public bool NSFW
+    {
+        get => _nsfw;
+        set => SetField(ref _nsfw, value);
     }
 
     public string? FileName

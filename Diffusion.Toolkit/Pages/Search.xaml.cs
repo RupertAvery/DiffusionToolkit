@@ -356,6 +356,7 @@ namespace Diffusion.Toolkit.Pages
                         _model.CurrentImage.Favorite = _model.SelectedImageEntry.Favorite;
                         _model.CurrentImage.Date = _model.SelectedImageEntry.CreatedDate.ToString();
                         _model.CurrentImage.Rating = _model.SelectedImageEntry.Rating;
+                        _model.CurrentImage.NSFW = _model.SelectedImageEntry.NSFW;
 
                         if (_modelLookup != null)
                         {
@@ -440,6 +441,10 @@ namespace Diffusion.Toolkit.Pages
             {
                 FavoriteSelected();
             }
+            else if (e.Key == Key.N)
+            {
+                NSFWSelected();
+            }
             else if (ratings.Contains(e.Key))
             {
                 var rating = e.Key switch
@@ -487,6 +492,22 @@ namespace Diffusion.Toolkit.Pages
                         _model.CurrentImage.Favorite = entry.Favorite;
                     }
                     _dataStore.SetFavorite(entry.Id, entry.Favorite);
+                }
+            }
+        }
+
+        private void NSFWSelected()
+        {
+            if (ThumbnailListView.SelectedItems != null)
+            {
+                foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                {
+                    entry.NSFW = !entry.NSFW;
+                    if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
+                    {
+                        _model.CurrentImage.NSFW = entry.NSFW;
+                    }
+                    _dataStore.SetNSFW(entry.Id, entry.NSFW);
                 }
             }
         }
@@ -589,6 +610,7 @@ namespace Diffusion.Toolkit.Pages
                     Path = file.Path,
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
+                    NSFW = file.NSFW
                 });
 
                 if (count % 10 == 0)

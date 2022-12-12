@@ -35,7 +35,11 @@ public static class QueryBuilder
     private static readonly Regex ForeDeletionRegex = new Regex("\\b(?:for deletion|delete|to delete):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex FavoriteRegex = new Regex("\\b(?:favorite|fave):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private static readonly Regex NSFWRegex = new Regex("\\b(?:nsfw):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     public static List<string> Samplers { get; set; }
+
+    public static bool HideNFSW { get; set; }
 
     public static (string, IEnumerable<object>) Parse(string prompt)
     {
@@ -55,6 +59,7 @@ public static class QueryBuilder
         ParseHypernetStrength(ref prompt, conditions);
         ParseFavorite(ref prompt, conditions);
         ParseForDeletion(ref prompt, conditions);
+        ParseNSFW(ref prompt, conditions);
 
         ParsePrompt(ref prompt, conditions);
 
@@ -121,6 +126,33 @@ public static class QueryBuilder
 
         }
     }
+
+    private static void ParseNSFW(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        var match = NSFWRegex.Match(prompt);
+        if (match.Success)
+        {
+            prompt = NSFWRegex.Replace(prompt, String.Empty);
+
+            var value = true;
+
+            if (match.Groups["value"].Success)
+            {
+                value = match.Groups["value"].Value.ToLower() == "true";
+            }
+
+            conditions.Add(new KeyValuePair<string, object>("(NSFW = ?)", value));
+            return;
+        }
+
+        if (HideNFSW)
+        {
+            conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+        }
+
+        //return false;
+    }
+
 
     private static void ParseFavorite(ref string prompt, List<KeyValuePair<string, object>> conditions)
     {
