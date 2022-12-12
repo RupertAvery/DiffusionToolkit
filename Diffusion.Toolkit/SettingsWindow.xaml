@@ -38,7 +38,7 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="120"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions}" Margin="0,0,10,0"></TextBox>
+                    <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
                 </Grid>
                 <Label>Model Root</Label>
                 <Grid>
@@ -46,7 +46,7 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="120"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding ModelRootPath}" Margin="0,0,10,0"></TextBox>
+                    <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding ModelRootPath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
                     <Button Height="26" Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
 
                 </Grid>

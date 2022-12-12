@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
@@ -52,10 +53,31 @@ public class Settings
         IsDirty = true;
     }
 
+    private void UpdateList<T>(ref List<T> field, List<T> value, [CallerMemberName] string propertyName = "")
+    {
+        bool hasDiff = false;
+        if (field != null)
+        {
+            var firstNotSecond = field.Except(value).ToList();
+            var secondNotFirst = value.Except(field).ToList();
+
+            hasDiff = firstNotSecond.Any() || secondNotFirst.Any();
+        }
+        else
+        {
+            hasDiff = value.Any();
+        }
+
+        if (!hasDiff) return;
+        field = value;
+        _isPropertyDirty[propertyName] = true;
+        IsDirty = true;
+    }
+
     public List<string> ImagePaths
     {
         get => _imagePaths;
-        set => UpdateValue(ref _imagePaths, value);
+        set => UpdateList(ref _imagePaths, value);
     }
 
     public string ModelRootPath
