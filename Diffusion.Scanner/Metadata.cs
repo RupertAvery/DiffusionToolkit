@@ -42,11 +42,11 @@ public class Metadata
 
                 if (isInvokeAINew)
                 {
-
+                    fileParameters = ReadInvokeAIParametersNew(file, directories);
                 }
                 else if (isInvokeAI)
                 {
-
+                    fileParameters = ReadInvokeAIParameters(file, directories);
                 }
                 else if (isNovelAI)
                 {
@@ -111,8 +111,90 @@ public class Metadata
     {
         return metadata.Contains("\nWidth:") && metadata.Contains("\nHeight:") && metadata.Contains("\nSeed:");
     }
-    
-    private static FileParameters ReadNovelAIParameters(string file, IEnumerable<Directory> directories)
+
+    private static FileParameters ReadInvokeAIParameters(string file, IEnumerable<Directory> directories)
+    {
+        if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Dream: "), out var tag))
+        {
+            var fp = new FileParameters();
+            var command = tag.Description.Substring("Dream: ".Length);
+            var start = command.IndexOf("\"");
+            var end = command.IndexOf("\"", start + 1);
+            fp.Prompt = command.Substring(start + 1, end - start - 1);
+            var others = command.Substring(end + 1);
+            var args = others.Split(new char[] { ' ' });
+            for (var index = 0; index < args.Length; index++)
+            {
+                var arg = args[index];
+                switch (arg)
+                {
+                    case "-s":
+                        fp.Steps = int.Parse(args[index + 1]);
+                        index++;
+                        break;
+                    case "-S":
+                        fp.Seed = long.Parse(args[index + 1]);
+                        index++;
+                        break;
+                    case "-W":
+                        fp.Width = int.Parse(args[index + 1]);
+                        index++;
+                        break;
+                    case "-H":
+                        fp.Height = int.Parse(args[index + 1]);
+                        index++;
+                        break;
+                    case "-C":
+                        fp.CFGScale = decimal.Parse(args[index + 1]);
+                        index++;
+                        break;
+                    case "-A":
+                        fp.Sampler = args[index + 1];
+                        index++;
+                        break;
+                }
+            }
+
+            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Size: {fp.Width}x{fp.Height}";
+            
+            return fp;
+        }
+
+        return null;
+    }
+
+    private static FileParameters ReadInvokeAIParametersNew(string file, IEnumerable<Directory> directories)
+    {
+        if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("sd-metadata: "), out var tag))
+        {
+            var fp = new FileParameters();
+            var json= tag.Description.Substring("sd-metadata: ".Length);
+            var root = JsonDocument.Parse(json);
+            var image = root.RootElement.GetProperty("image");
+            var promptArray = image.GetProperty("prompt");
+            var promptArrayEnumerator = promptArray.EnumerateArray();
+            promptArrayEnumerator.MoveNext();
+            var promptObject = promptArrayEnumerator.Current;
+
+            fp.Prompt = promptObject.GetProperty("prompt").GetString();
+            fp.PromptStrength = promptObject.GetProperty("weight").GetDecimal();
+
+            fp.Steps = image.GetProperty("steps").GetInt32();
+            fp.CFGScale = image.GetProperty("cfg_scale").GetDecimal();
+            fp.Height = image.GetProperty("height").GetInt32();
+            fp.Width = image.GetProperty("width").GetInt32();
+            fp.Seed = image.GetProperty("seed").GetInt64();
+            fp.Sampler = image.GetProperty("sampler").GetString();
+
+            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Size: {fp.Width}x{fp.Height}";
+
+            return fp;
+        }
+
+        return null;
+    }
+
+        private static FileParameters ReadNovelAIParameters(string file, IEnumerable<Directory> directories)
     {
         var fileParameters = new FileParameters();
 
