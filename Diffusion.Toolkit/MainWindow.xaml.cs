@@ -865,10 +865,15 @@ namespace Diffusion.Toolkit
 
         private void LoadModels()
         {
-            if (_settings.ModelRootPath != null && Directory.Exists(_settings.ModelRootPath))
+            if (!string.IsNullOrEmpty(_settings.ModelRootPath) && Directory.Exists(_settings.ModelRootPath))
             {
                 _modelsCollection = ModelScanner.Scan(_settings.ModelRootPath).ToList();
             }
+            else
+            {
+                _modelsCollection = new List<Model>();
+            }
+
         }
 
     }
