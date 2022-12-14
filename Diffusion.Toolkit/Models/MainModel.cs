@@ -26,7 +26,11 @@ public class MainModel : BaseNotify
     private ICommand _about;
     private ICommand _help;
     private MessagePopupModel _messagePopupModel;
-    private ICommand _showInfo;
+    private ICommand _toggleInfo;
+    private ICommand _toggleNsfwBlur;
+    private ICommand _toggleHideNsfw;
+    private bool _hideNsfw;
+    private bool _nsfwBlur;
 
     public MainModel()
     {
@@ -154,9 +158,33 @@ public class MainModel : BaseNotify
         set => SetField(ref _help, value);
     }
 
-    public ICommand ShowInfo
+    public ICommand ToggleInfo
     {
-        get => _showInfo;
-        set => SetField(ref _showInfo, value);
+        get => _toggleInfo;
+        set => SetField(ref _toggleInfo, value);
+    }
+
+    public ICommand ToggleNSFWBlur
+    {
+        get => _toggleNsfwBlur;
+        set => SetField(ref _toggleNsfwBlur, value);
+    }
+
+    public ICommand ToggleHideNSFW
+    {
+        get => _toggleHideNsfw;
+        set => SetField(ref _toggleHideNsfw, value);
+    }
+
+    public bool NSFWBlur
+    {
+        get => _nsfwBlur;
+        set => SetField(ref _nsfwBlur, value);
+    }
+
+    public bool HideNSFW
+    {
+        get => _hideNsfw;
+        set => SetField(ref _hideNsfw, value);
     }
 }

@@ -20,6 +20,7 @@ using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Controls;
 using Model = Diffusion.IO.Model;
 using Task = System.Threading.Tasks.Task;
+using System.Windows.Media;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -65,7 +66,7 @@ namespace Diffusion.Toolkit.Pages
 
             //var str = new System.Text.StringBuilder();
             //using (var writer = new System.IO.StringWriter(str))
-            //    System.Windows.Markup.XamlWriter.Save(TempButton.Template, writer);
+            //    System.Windows.Markup.XamlWriter.Save(MyContextMenu.Template, writer);
             //System.Diagnostics.Debug.Write(str);
 
         }
@@ -158,6 +159,14 @@ namespace Diffusion.Toolkit.Pages
             _model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
             _model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
             _model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => FavoriteSelected());
+
+            _model.CopyPathCommand = new RelayCommand<object>(CopyPath);
+            _model.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
+            _model.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
+            _model.CopyParametersCommand = new RelayCommand<object>(CopyParameters);
+            _model.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
+            _model.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
+            _model.FavoriteCommand = new RelayCommand<object>(o => FavoriteSelected());
 
             _model.NextPage = new RelayCommand<object>((o) => GoNextPage());
             _model.PrevPage = new RelayCommand<object>((o) => GoPrevPage());
@@ -308,11 +317,35 @@ namespace Diffusion.Toolkit.Pages
                     var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
 
                     var count = _dataStore.Count(query);
+                    var size = _dataStore.CountFileSize(query);
+
+                    //_model.FileSize = size;
 
                     _model.IsEmpty = count == 0;
 
                     _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
-                    _model.Results = $"{count:###,###,##0} results found";
+
+                    float fsize = size;
+
+                    var ssize = $"{fsize:#,##0} B";
+
+                    if (fsize > 1073741824)
+                    {
+                        fsize /= 1073741824;
+                        ssize = $"{fsize:#,##0.00} GiB";
+                    }
+                    else if (fsize > 1048576)
+                    {
+                        fsize /= 1048576;
+                        ssize = $"{fsize:#,##0.00} MiB";
+                    }
+                    else if (fsize > 1024)
+                    {
+                        fsize /= 1024;
+                        ssize = $"{fsize:#,##0.00} KiB";
+                    }
+
+                    _model.Results = $"{count:###,###,##0} results found ({ssize})";
 
                     if (_model.IsEmpty)
                     {
@@ -418,7 +451,7 @@ namespace Diffusion.Toolkit.Pages
             OpenSelected();
         }
 
-        private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
+        private void ThumbnailListView_OnKeyDown(object sender, KeyEventArgs e)
         {
             var ratings = new[]
             {
@@ -456,27 +489,58 @@ namespace Diffusion.Toolkit.Pages
                     Key.D5 => 5,
                 };
 
-                if (ThumbnailListView.SelectedItems != null)
-                {
-                    foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
-                    {
+                RateSelected(rating);
 
-                        if (entry.Rating == rating)
-                        {
-                            entry.Rating = null;
-                        }
-                        else
-                        {
-                            entry.Rating = rating;
-                        }
-                        if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
-                        {
-                            _model.CurrentImage.Rating = entry.Rating;
-                        }
-                        _dataStore.SetRating(entry.Id, entry.Rating);
+            }
+        }
+
+        private void RateSelected(int rating)
+        {
+            if (ThumbnailListView.SelectedItems != null)
+            {
+                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+                foreach (var entry in imageEntries)
+                {
+
+                    if (entry.Rating == rating)
+                    {
+                        entry.Rating = null;
+                    }
+                    else
+                    {
+                        entry.Rating = rating;
+                    }
+                    if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
+                    {
+                        _model.CurrentImage.Rating = entry.Rating;
                     }
                 }
 
+                var ids = imageEntries.Select(x => x.Id).ToList();
+                _dataStore.SetRating(ids, rating);
+            }
+        }
+
+        private void UnrateSelected()
+        {
+            if (ThumbnailListView.SelectedItems != null)
+            {
+                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+                foreach (var entry in imageEntries)
+                {
+
+                    entry.Rating = null;
+
+                    if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
+                    {
+                        _model.CurrentImage.Rating = entry.Rating;
+                    }
+                }
+
+                var ids = imageEntries.Select(x => x.Id).ToList();
+                _dataStore.SetRating(ids, null);
             }
         }
 
@@ -484,15 +548,21 @@ namespace Diffusion.Toolkit.Pages
         {
             if (ThumbnailListView.SelectedItems != null)
             {
-                foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+                var favorite = !imageEntries.GroupBy(e => e.Favorite).OrderByDescending(g => g.Count()).First().Key;
+
+                foreach (var entry in imageEntries)
                 {
-                    entry.Favorite = !entry.Favorite;
+                    entry.Favorite = favorite;
                     if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
                     {
-                        _model.CurrentImage.Favorite = entry.Favorite;
+                        _model.CurrentImage.Favorite = favorite;
                     }
-                    _dataStore.SetFavorite(entry.Id, entry.Favorite);
                 }
+                
+                var ids = imageEntries.Select(x => x.Id).ToList();
+                _dataStore.SetFavorite(ids, favorite);
             }
         }
 
@@ -500,15 +570,21 @@ namespace Diffusion.Toolkit.Pages
         {
             if (ThumbnailListView.SelectedItems != null)
             {
-                foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+                var nsfw = !imageEntries.GroupBy(e => e.NSFW).OrderByDescending(g=>g.Count()).First().Key;
+
+                foreach (var entry in imageEntries)
                 {
-                    entry.NSFW = !entry.NSFW;
+                    entry.NSFW = nsfw;
                     if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
                     {
-                        _model.CurrentImage.NSFW = entry.NSFW;
+                        _model.CurrentImage.NSFW = nsfw;
                     }
-                    _dataStore.SetNSFW(entry.Id, entry.NSFW);
                 }
+
+                var ids = imageEntries.Select(x => x.Id).ToList();
+                _dataStore.SetNSFW(ids, nsfw);
             }
         }
 
@@ -516,10 +592,23 @@ namespace Diffusion.Toolkit.Pages
         {
             if (ThumbnailListView.SelectedItems != null)
             {
-                foreach (ImageEntry entry in ThumbnailListView.SelectedItems)
+                if (ThumbnailListView.SelectedItems != null)
                 {
-                    entry.ForDeletion = !entry.ForDeletion;
-                    _dataStore.SetDeleted(entry.Id, entry.ForDeletion);
+                    var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+                    var delete = !imageEntries.GroupBy(e => e.ForDeletion).OrderByDescending(g => g.Count()).First().Key;
+
+                    foreach (var entry in imageEntries)
+                    {
+                        entry.ForDeletion = delete;
+                        if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
+                        {
+                            _model.CurrentImage.ForDeletion = delete;
+                        }
+                    }
+
+                    var ids = imageEntries.Select(x => x.Id).ToList();
+                    _dataStore.SetDeleted(ids, delete);
                 }
             }
         }
@@ -894,5 +983,40 @@ namespace Diffusion.Toolkit.Pages
         {
             _model.CurrentImage.IsParametersVisible = !_model.CurrentImage.IsParametersVisible;
         }
+
+        public void SetNSFWBlur(bool value)
+        {
+            _model.NSFWBlur = value;
+        }
+
+        private void Rate1_OnClick(object sender, RoutedEventArgs e)
+        {
+            RateSelected(1);
+        }
+
+        private void Rate2_OnClick(object sender, RoutedEventArgs e)
+        {
+            RateSelected(2);
+        }
+
+        private void Rate3_OnClick(object sender, RoutedEventArgs e)
+        {
+            RateSelected(3);
+        }
+        private void Rate4_OnClick(object sender, RoutedEventArgs e)
+        {
+            RateSelected(4);
+        }
+
+        private void Rate5_OnClick(object sender, RoutedEventArgs e)
+        {
+            RateSelected(5);
+        }
+
+        private void Unrate_OnClick(object sender, RoutedEventArgs e)
+        {
+            UnrateSelected();
+        }
+
     }
 }

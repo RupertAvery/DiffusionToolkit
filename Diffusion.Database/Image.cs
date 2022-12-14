@@ -38,5 +38,5 @@ public class Image
     public decimal? HyperNetworkStrength { get; set; }
     public int? ClipSkip { get; set; }
     public int? ENSD { get; set; }
-
+    public long FileSize { get; set; }
 }

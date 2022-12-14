@@ -22,4 +22,5 @@ public class FileParameters
     public int? ClipSkip { get; set; }
     public int? ENSD { get; set; }
     public decimal? PromptStrength { get; set; }
+    public long FileSize { get; set; }
 }

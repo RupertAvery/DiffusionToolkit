@@ -51,11 +51,13 @@ public class DataStore
         db.CreateIndex<Image>(image => image.Steps);
         db.CreateIndex<Image>(image => image.AestheticScore);
         db.CreateIndex<Image>(image => image.Favorite);
-        db.CreateIndex<Image>(image => image.CreatedDate);
+        db.CreateIndex<Image>(image => image.Rating);
         db.CreateIndex<Image>(image => image.ForDeletion);
         db.CreateIndex<Image>(image => image.NSFW);
+        db.CreateIndex<Image>(image => image.CreatedDate);
         db.CreateIndex<Image>(image => image.HyperNetwork);
         db.CreateIndex<Image>(image => image.HyperNetworkStrength);
+        db.CreateIndex<Image>(image => image.FileSize);
 
         db.Close();
 
@@ -154,7 +156,8 @@ public class DataStore
             nameof(Image.CustomTags), 
             nameof(Image.Rating), 
             nameof(Image.Favorite), 
-            nameof(Image.ForDeletion)
+            nameof(Image.ForDeletion),
+            nameof(Image.NSFW)
         }; 
 
         var properties = typeof(Image).GetProperties().Where(p => !exclude.Contains(p.Name)).ToList();
@@ -338,6 +341,14 @@ public class DataStore
         db.DropIndex<Image>(image => image.Width);
         db.DropIndex<Image>(image => image.CFGScale);
         db.DropIndex<Image>(image => image.Steps);
+        db.DropIndex<Image>(image => image.AestheticScore);
+        db.DropIndex<Image>(image => image.Favorite);
+        db.DropIndex<Image>(image => image.CreatedDate);
+        db.DropIndex<Image>(image => image.ForDeletion);
+        db.DropIndex<Image>(image => image.NSFW);
+        db.DropIndex<Image>(image => image.HyperNetwork);
+        db.DropIndex<Image>(image => image.HyperNetworkStrength);
+        db.DropIndex<Image>(image => image.FileSize);
 
         db.CreateIndex<Image>(image => image.Path);
         db.CreateIndex<Image>(image => image.ModelHash);
@@ -347,6 +358,14 @@ public class DataStore
         db.CreateIndex<Image>(image => image.Width);
         db.CreateIndex<Image>(image => image.CFGScale);
         db.CreateIndex<Image>(image => image.Steps);
+        db.CreateIndex<Image>(image => image.AestheticScore);
+        db.CreateIndex<Image>(image => image.Favorite);
+        db.CreateIndex<Image>(image => image.CreatedDate);
+        db.CreateIndex<Image>(image => image.ForDeletion);
+        db.CreateIndex<Image>(image => image.NSFW);
+        db.CreateIndex<Image>(image => image.HyperNetwork);
+        db.CreateIndex<Image>(image => image.HyperNetworkStrength);
+        db.CreateIndex<Image>(image => image.FileSize);
         db.Close();
 
     }
@@ -360,6 +379,26 @@ public class DataStore
         db.Close();
 
         return count;
+    }
+
+
+    public long CountFileSize(string prompt)
+    {
+        using var db = OpenConnection();
+
+        if (string.IsNullOrEmpty(prompt))
+        {
+            var allcount = db.ExecuteScalar<int>($"SELECT SUM(FileSize) FROM Image");
+            return allcount;
+        }
+
+        var q = QueryBuilder.Parse(prompt);
+
+        var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+
+        db.Close();
+
+        return size;
     }
 
 
@@ -787,6 +826,26 @@ public class DataStore
         command.ExecuteNonQuery();
     }
 
+    public void SetDeleted(IEnumerable<int> ids, bool forDeletion)
+    {
+        var db = OpenConnection();
+
+        db.BeginTransaction();
+
+        var query = "UPDATE Image SET ForDeletion = @ForDeletion WHERE Id = @Id";
+
+        var command = db.CreateCommand(query);
+
+        foreach (var id in ids)
+        {
+            command.Bind("@ForDeletion", forDeletion);
+            command.Bind("@Id", id);
+            command.ExecuteNonQuery();
+        }
+
+        db.Commit();
+    }
+
     public void SetFavorite(int id, bool favorite)
     {
         var db = OpenConnection();
@@ -799,6 +858,26 @@ public class DataStore
         command.Bind("@Id", id);
 
         command.ExecuteNonQuery();
+    }
+
+
+    public void SetFavorite(IEnumerable<int> ids, bool favorite)
+    {
+        var db = OpenConnection();
+
+        db.BeginTransaction();
+
+        var query = "UPDATE Image SET Favorite = @Favorite WHERE Id = @Id";
+        var command = db.CreateCommand(query);
+
+        foreach (var id in ids)
+        {
+            command.Bind("@Favorite", favorite);
+            command.Bind("@Id", id);
+            command.ExecuteNonQuery();
+        }
+
+        db.Commit();
     }
 
     public void SetNSFW(int id, bool nsfw)
@@ -816,6 +895,25 @@ public class DataStore
     }
 
 
+    public void SetNSFW(IEnumerable<int> ids, bool nsfw)
+    {
+        var db = OpenConnection();
+
+        db.BeginTransaction();
+
+        var query = "UPDATE Image SET NSFW = @NSFW WHERE Id = @Id";
+        var command = db.CreateCommand(query);
+
+        foreach (var id in ids)
+        {
+            command.Bind("@NSFW", nsfw);
+            command.Bind("@Id", id);
+            command.ExecuteNonQuery();
+        }
+
+        db.Commit();
+    }
+
     public void SetRating(int id, int? rating)
     {
         var db = OpenConnection();
@@ -828,6 +926,26 @@ public class DataStore
         command.Bind("@Id", id);
 
         command.ExecuteNonQuery();
+    }
+
+    public void SetRating(IEnumerable<int> ids, int? rating)
+    {
+        var db = OpenConnection();
+
+        db.BeginTransaction();
+
+        var query = "UPDATE Image SET Rating = @Rating WHERE Id = @Id";
+
+        var command = db.CreateCommand(query);
+
+        foreach (var id in ids)
+        {
+            command.Bind("@Rating", rating);
+            command.Bind("@Id", id);
+            command.ExecuteNonQuery();
+        }
+
+        db.Commit();
     }
 
     public void SetCustomTags(int id, string tags)

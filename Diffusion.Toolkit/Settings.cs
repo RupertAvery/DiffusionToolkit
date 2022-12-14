@@ -33,6 +33,8 @@ public class Settings
     private bool _dontShowWelcomeOnStartup;
     private string _theme;
     private bool _watchFolders;
+    private bool _hideNsfw;
+    private bool _nsfwBlur;
 
     public bool IsPropertyDirty(string name)
     {
@@ -53,19 +55,23 @@ public class Settings
         IsDirty = true;
     }
 
-    private void UpdateList<T>(ref List<T> field, List<T> value, [CallerMemberName] string propertyName = "")
+    private void UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")
     {
         bool hasDiff = false;
-        if (field != null)
+        if (field != null && value != null)
         {
             var firstNotSecond = field.Except(value).ToList();
             var secondNotFirst = value.Except(field).ToList();
 
             hasDiff = firstNotSecond.Any() || secondNotFirst.Any();
         }
+        else if (field == null && value != null)
+        {
+            hasDiff = true;
+        }
         else
         {
-            hasDiff = value.Any();
+            hasDiff = value != null || value!.Any();
         }
 
         if (!hasDiff) return;
@@ -151,5 +157,17 @@ public class Settings
     {
         get => _watchFolders;
         set => UpdateValue(ref _watchFolders, value);
+    }
+
+    public bool HideNSFW
+    {
+        get => _hideNsfw;
+        set => UpdateValue(ref _hideNsfw, value);
+    }
+
+    public bool NSFWBlur
+    {
+        get => _nsfwBlur;
+        set => UpdateValue(ref _nsfwBlur, value);
     }
 }

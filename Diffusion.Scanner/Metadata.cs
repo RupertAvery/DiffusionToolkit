@@ -89,7 +89,9 @@ public class Metadata
 
         if (fileParameters != null)
         {
+            FileInfo fileInfo = new FileInfo(file);
             fileParameters.Path = file;
+            fileParameters.FileSize = fileInfo.Length;
         }
 
         return fileParameters;

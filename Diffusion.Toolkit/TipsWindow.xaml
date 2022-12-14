@@ -8,12 +8,12 @@
         mc:Ignorable="d"
         ShowInTaskbar="False"
         Title="Getting Started" Height="600" Width="800">
-    <Grid Margin="0,0,0,0">
+    <Grid Background="{StaticResource PrimaryBrush}">
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-        <RichTextBox Padding="20" BorderBrush="Transparent" x:Name="RichTextBox" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto"></RichTextBox>
-        <Button Grid.Row="1" Width="160" Click="ButtonBase_OnClick">View Help Online</Button>
+        <RichTextBox Margin="10,10,10,0" Padding="20" BorderBrush="Transparent" x:Name="RichTextBox" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto"></RichTextBox>
+        <Button Grid.Row="1" Width="160" Click="ButtonBase_OnClick" Margin="5">View Help Online</Button>
     </Grid>
 </Window>

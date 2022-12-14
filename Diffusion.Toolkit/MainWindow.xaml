@@ -13,7 +13,8 @@
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Window.InputBindings>
-        <common:BareKeyBinding Key="I" Command="{Binding ShowInfo}"></common:BareKeyBinding>
+        <common:BareKeyBinding Key="I" Command="{Binding ToggleInfo}"></common:BareKeyBinding>
+        <common:BareKeyBinding Key="B" Command="{Binding ToggleNSFWBlur}"></common:BareKeyBinding>
         <KeyBinding Key="F1" Command="{Binding Help}"></KeyBinding>
     </Window.InputBindings>
     <Window.Resources>
@@ -40,11 +41,15 @@
                 <MenuItem Header="_Empty recycle bin" Command="{Binding RemoveMarked}"/>
             </MenuItem>
             <MenuItem Header="_View">
-                <MenuItem Header="_Show/Hide info" Command="{Binding ShowInfo}" InputGestureText="I"/>
+                <MenuItem Header="_Show/Hide info" Command="{Binding ToggleInfo}" InputGestureText="I"/>
+                <MenuItem Header="_Blur NSFW" IsChecked="{Binding NSFWBlur}" InputGestureText="B" Command="{Binding ToggleNSFWBlur}"/>
+                <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFW}" Command="{Binding ToggleHideNSFW}"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="{Binding About}"/>
                 <MenuItem Header="_Getting Started" Command="{Binding Help}" InputGestureText="F1"/>
+                <Separator></Separator>
+                <MenuItem Header="_Check for updates" Click="MenuItem_OnClick"/>
             </MenuItem>
         </Menu>
         <ToolBar Grid.Row="1" Height="32">

@@ -55,7 +55,10 @@
             <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
             <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
             <converters:BoolToBlurIntConverter x:Key="boolToBlur"></converters:BoolToBlurIntConverter>
+            <converters:BoolToBlurIntMultiConverter x:Key="boolToBlurMulti"></converters:BoolToBlurIntMultiConverter>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
+            <converters:BoolToVisibilityMultiConverter x:Key="boolToVisMulti"></converters:BoolToVisibilityMultiConverter>
+            <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
         </ResourceDictionary>
         <!--<DataTemplate DataType="{x:Type toolkit:ImageEntry}">
@@ -134,12 +137,13 @@
             <ListView Grid.Row="2" x:Name="ThumbnailListView" Margin="2" Padding="10" ItemsSource="{Binding Images, NotifyOnTargetUpdated=True}"
                       SelectionMode="Extended"
                       SelectedItem="{Binding SelectedImageEntry}" 
-                      KeyDown="UIElement_OnKeyDown"
+                      KeyDown="ThumbnailListView_OnKeyDown"
                       PreviewMouseLeftButtonDown="ThumbnailListView_OnPreviewMouseLeftButtonDown"
                       MouseDown="ThumbnailListView_OnMouseDown"
                       MouseMove="ThumbnailListView_OnMouseMove"
                       MouseDoubleClick="Control_OnMouseDoubleClick"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      Tag="{Binding Path=.}"
                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                 <ListView.Resources>
                     <Style TargetType="ListViewItem">
@@ -185,34 +189,51 @@
                 <ListView.ItemTemplate>
                     <DataTemplate  DataType="{x:Type toolkit:ImageEntry}">
                         <Border CornerRadius="5" BorderBrush="LightGray" BorderThickness="2" Height="128" Width="128" Margin="12" >
-                            <Grid>
+                            <Grid >
                                 <controls:Thumbnail 
-                                        Source="{Binding Thumbnail, IsAsync = True}" 
-                                        Opacity="{Binding Path=ForDeletion, Converter={StaticResource BoolToOpacity}}"
-                                        Height="128" Width="128" 
-                                        MaxWidth="128" MaxHeight="128" 
-                                       HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                                    DataContext="{Binding .}"
+                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                    Source="{Binding Thumbnail, IsAsync = True}" 
+                                    Opacity="{Binding Path=ForDeletion, Converter={StaticResource BoolToOpacity}}"
+                                    Height="128" Width="128" 
+                                    MaxWidth="128" MaxHeight="128" 
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Top">
 
-                                    <!--<controls:Thumbnail.ContextMenu>
-                                        <ContextMenu DataContext="{Binding DataContext.CurrentImage, RelativeSource={RelativeSource FindAncestor, AncestorType=Page}}">
-                                            <MenuItem Header="Favorite (F)" ToolTip="F" Command="{Binding FavoriteCommand}"/>
+                                    <controls:Thumbnail.ContextMenu>
+                                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                            <MenuItem Header="Favorite (F)" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
+                                            <MenuItem Header="Rate">
+                                                <MenuItem Header="1" Click="Rate1_OnClick"></MenuItem>
+                                                <MenuItem Header="2" Click="Rate2_OnClick"></MenuItem>
+                                                <MenuItem Header="3" Click="Rate3_OnClick"></MenuItem>
+                                                <MenuItem Header="4" Click="Rate4_OnClick"></MenuItem>
+                                                <MenuItem Header="5" Click="Rate5_OnClick"></MenuItem>
+                                                <Separator></Separator>
+                                                <MenuItem Header="Remove rating" Click="Unrate_OnClick"></MenuItem>
+                                            </MenuItem>
                                             <Separator />
                                             <MenuItem Header="Copy prompt"  Command="{Binding CopyPromptCommand}"/>
                                             <MenuItem Header="Copy negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
                                             <MenuItem Header="Copy all parameters"  Command="{Binding CopyParametersCommand}"/>
                                             <Separator />
                                             <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
-                                            <Separator />
+                                            <!--<Separator />
                                             <MenuItem Header="Add to Album" />
-                                            <MenuItem Header="Remove from Album" />
+                                            <MenuItem Header="Remove from Album" />-->
                                             <Separator />
-                                            <MenuItem Visibility="{Binding ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash (Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
-                                            <MenuItem Visibility="{Binding ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore (Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
-                                            <MenuItem Header="Delete immediately (ShiftDel)" ToolTip="Shift+Del" />
+                                            <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash (Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
+                                            <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore (Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
+                                            <!--<MenuItem Header="Delete immediately (Shift+Del)" />-->
                                         </ContextMenu>
-                                    </controls:Thumbnail.ContextMenu>-->
+                                    </controls:Thumbnail.ContextMenu>
                                     <controls:Thumbnail.Effect>
-                                        <BlurEffect Radius="{Binding NSFW, Converter={StaticResource boolToBlur}, ConverterParameter=20}" KernelType="Gaussian">
+                                        <BlurEffect  KernelType="Gaussian">
+                                            <BlurEffect.Radius>
+                                                <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
+                                                    <Binding Path="NSFW"></Binding>
+                                                    <Binding ElementName="MainGrid" Path="DataContext.NSFWBlur" ></Binding>
+                                                </MultiBinding>
+                                            </BlurEffect.Radius>
                                         </BlurEffect>
                                     </controls:Thumbnail.Effect>
                                 </controls:Thumbnail>
@@ -313,12 +334,37 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="32"/>
                 </Grid.RowDefinitions>
-                <Image Grid.Row="0"  Grid.RowSpan="3" Source="{Binding Image}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                <Image Grid.Row="0"  Grid.RowSpan="3" 
+                       Source="{Binding Image}" 
+                       HorizontalAlignment="Stretch" 
+                       VerticalAlignment="Stretch" >
+                    <Image.Visibility>
+                        <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
+                            <Binding Path="NSFW"></Binding>
+                            <Binding ElementName="MainGrid" Path="DataContext.NSFWBlur" ></Binding>
+                        </MultiBinding>
+                    </Image.Visibility>
                     <Image.Effect>
-                        <BlurEffect Radius="{Binding NSFW, Converter={StaticResource boolToBlur}, ConverterParameter=100}" KernelType="Gaussian">
+                        <BlurEffect  KernelType="Gaussian">
+                            <BlurEffect.Radius>
+                                <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
+                                    <Binding Path="NSFW"></Binding>
+                                    <Binding ElementName="MainGrid" Path="DataContext.NSFWBlur" ></Binding>
+                                </MultiBinding>
+                            </BlurEffect.Radius>
                         </BlurEffect>
                     </Image.Effect>
                 </Image>
+                <Grid Grid.Row="0" RowSpan="3" Background="Transparent">
+                    <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
+                        <fa:ImageAwesome.Visibility>
+                            <MultiBinding Converter="{StaticResource boolToVisMulti}" ConverterParameter="20">
+                                <Binding Path="NSFW"></Binding>
+                                <Binding ElementName="MainGrid" Path="DataContext.NSFWBlur" ></Binding>
+                            </MultiBinding>
+                        </fa:ImageAwesome.Visibility>
+                    </fa:ImageAwesome>
+                </Grid>
                 <Grid  Grid.Row="0" RowSpan="3"  Margin="10" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                     <Grid Background="Transparent">
                         <Grid.RowDefinitions>

@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.IO", "Diffusion.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Database", "Diffusion.Database\Diffusion.Database.csproj", "{727FFECB-8D70-4A0F-8DEB-2C43462A2718}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Common", "Diffusion.Common\Diffusion.Common.csproj", "{16540737-4B11-42BD-90E3-99D2F6751638}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Common", "Diffusion.Common\Diffusion.Common.csproj", "{16540737-4B11-42BD-90E3-99D2F6751638}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Updater", "Diffusion.Updater\Diffusion.Updater.csproj", "{1C125C3C-EF74-4485-9103-8EF71EA05FEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{16540737-4B11-42BD-90E3-99D2F6751638}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16540737-4B11-42BD-90E3-99D2F6751638}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16540737-4B11-42BD-90E3-99D2F6751638}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C125C3C-EF74-4485-9103-8EF71EA05FEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C125C3C-EF74-4485-9103-8EF71EA05FEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C125C3C-EF74-4485-9103-8EF71EA05FEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C125C3C-EF74-4485-9103-8EF71EA05FEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

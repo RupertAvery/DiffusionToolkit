@@ -58,10 +58,10 @@ namespace Diffusion.Toolkit
                 settings.WatchFolders = _model.WatchFolders;
             };
 
-            //var str = new System.Text.StringBuilder();
-            //using (var writer = new System.IO.StringWriter(str))
-            //    System.Windows.Markup.XamlWriter.Save(WatchFolders.Template, writer);
-            //System.Diagnostics.Debug.Write(str);
+            var str = new System.Text.StringBuilder();
+            using (var writer = new System.IO.StringWriter(str))
+                System.Windows.Markup.XamlWriter.Save(TabItem.Template, writer);
+            System.Diagnostics.Debug.Write(str);
         }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)

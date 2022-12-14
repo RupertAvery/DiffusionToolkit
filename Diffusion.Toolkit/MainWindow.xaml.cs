@@ -25,12 +25,13 @@ using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 using Model = Diffusion.IO.Model;
 using Timer = System.Threading.Timer;
+using Diffusion.Updater;
 
 namespace Diffusion.Toolkit
 {
-    public class AppInfo
+    public static class AppInfo
     {
-        public static string Version = "0.7";
+        public static SemanticVersion Version => SemanticVersionHelper.GetLocalVersion();
     }
 
     /// <summary>
@@ -88,7 +89,9 @@ namespace Diffusion.Toolkit
             _model.CancelScan = new AsyncCommand(CancelScan);
             _model.About = new RelayCommand<object>((o) => ShowAbout());
             _model.Help = new RelayCommand<object>((o) => ShowTips());
-            _model.ShowInfo = new RelayCommand<object>((o) => ShowInfo());
+            _model.ToggleInfo = new RelayCommand<object>((o) => ToggleInfo());
+            _model.ToggleNSFWBlur = new RelayCommand<object>((o) => ToggleNSFWBlur());
+            _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
 
             _model.PropertyChanged += ModelOnPropertyChanged;
 
@@ -116,6 +119,21 @@ namespace Diffusion.Toolkit
             //System.Diagnostics.Debug.Write(str);
         }
 
+        private void ToggleHideNSFW()
+        {
+            _model.HideNSFW = !_model.HideNSFW;
+            QueryBuilder.HideNFSW = _model.HideNSFW;
+            _settings.HideNSFW = _model.HideNSFW;
+            _search.SearchImages();
+        }
+
+        private void ToggleNSFWBlur()
+        {
+            _model.NSFWBlur = !_model.NSFWBlur;
+            _settings.NSFWBlur = _model.NSFWBlur;
+            _search.SetNSFWBlur(_model.NSFWBlur);
+        }
+
         private void MyHandler(object sender, UnhandledExceptionEventArgs e)
         {
             var message = ((Exception)e.ExceptionObject).Message;
@@ -125,7 +143,7 @@ namespace Diffusion.Toolkit
             MessageBox.Show(this, message, "An unhandled exception occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
 
-        private void ShowInfo()
+        private void ToggleInfo()
         {
             _search.ToggleInfo();
         }
@@ -353,7 +371,7 @@ namespace Diffusion.Toolkit
                 }
                 else
                 {
-                    await _messagePopupManager.Show("You have not setup any image folders. You will not be able to search anything yet. Add folders, then click the Rescan Folders icon after you have set them up.", "Setup", PopupButtons.OK);
+                    await _messagePopupManager.ShowMedium("You have not setup any image folders. You will not be able to search for anything yet.\r\n\r\nAdd folders first, then click the Rescan Folders icon in the toolbar to scan your images.", "Setup", PopupButtons.OK);
                 }
             }
             else
@@ -382,6 +400,9 @@ namespace Diffusion.Toolkit
                 this.Height = _settings.WindowSize.Value.Height;
             }
 
+            _model.HideNSFW = _settings.HideNSFW;
+            QueryBuilder.HideNFSW = _model.HideNSFW;
+            _model.NSFWBlur = _settings.NSFWBlur;
 
             Activated += OnActivated;
             StateChanged += OnStateChanged;
@@ -391,6 +412,7 @@ namespace Diffusion.Toolkit
 
             _models = new Pages.Models(_dataStore, _settings);
             _search = new Search(_navigatorService, _dataStore, _settings);
+            _search.SetNSFWBlur(_model.NSFWBlur);
 
             _model.ShowFavorite = new RelayCommand<object>((o) =>
             {
@@ -464,6 +486,13 @@ namespace Diffusion.Toolkit
         private void WatcherOnCreated(object sender, FileSystemEventArgs e)
         {
             if (e.ChangeType == WatcherChangeTypes.Created)
+            {
+                if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath)) > -1)
+                {
+                    AddFile(e.FullPath);
+                }
+            }
+            else if (e.ChangeType == WatcherChangeTypes.Renamed)
             {
                 if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath)) > -1)
                 {
@@ -705,6 +734,7 @@ namespace Diffusion.Toolkit
                         HyperNetwork = file.HyperNetwork,
                         HyperNetworkStrength = file.HyperNetworkStrength,
                         ClipSkip = file.ClipSkip,
+                        FileSize = file.FileSize,
                     };
 
                     if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
@@ -847,7 +877,14 @@ namespace Diffusion.Toolkit
 
                     message = $"{message}";
 
-                    await _messagePopupManager.Show(message, updateImages ? "Rebuild Complete" : "Scan Complete");
+                    if (updateImages)
+                    {
+                        await _messagePopupManager.Show(message, "Rebuild Complete");
+                    }
+                    else
+                    {
+                        await _messagePopupManager.Show(message, "Scan Complete", 10);
+                    }
                 }
 
                 SetTotalFilesStatus();
@@ -876,6 +913,10 @@ namespace Diffusion.Toolkit
 
         }
 
+        private void MenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            Process.Start("Diffusion.Updater.exe");
+        }
     }
 }
 

@@ -11,20 +11,25 @@ public class ImageViewModel : BaseNotify
     private ICommand _copyPromptCommand;
     private ICommand _copyParametersCommand;
     private ICommand _showInExplorerCommand;
+    private ICommand _showInThumbnails;
+    private ICommand _deleteCommand;
+    private ICommand _favoriteCommand;
+
+    private BitmapSource? _image;
+
     private string _path;
     private string _prompt;
     private string _negativePrompt;
     private string _otherParameters;
-    private BitmapSource? _image;
-    private bool _favorite;
     private string _modelName;
     private string _date;
+
+    private bool _favorite;
     private int? _rating;
-    private ICommand _showInThumbnails;
-    private bool _isParametersVisible;
-    private ICommand _deleteCommand;
-    private ICommand _favoriteCommand;
     private bool _nsfw;
+    private bool _forDeletion;
+
+    private bool _isParametersVisible;
 
     public BitmapSource? Image
     {
@@ -131,6 +136,12 @@ public class ImageViewModel : BaseNotify
     {
         get => _rating;
         set => SetField(ref _rating, value);
+    }
+
+    public bool ForDeletion
+    {
+        get => _forDeletion;
+        set => SetField(ref _forDeletion, value);
     }
 
     public bool NSFW

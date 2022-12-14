@@ -25,10 +25,12 @@ namespace Diffusion.Toolkit.Controls
     public partial class MessagePopup : UserControl
     {
         private readonly MessagePopupManager _manager;
+        private int _timeout;
         private MessagePopupModel _model;
         private TaskCompletionSource<PopupResult> _tcs;
 
         private Timer t;
+        private Timer t2;
 
         public void Close()
         {
@@ -37,14 +39,34 @@ namespace Diffusion.Toolkit.Controls
 
         private void Callback(object? state)
         {
-            t.Dispose();
+            t?.Dispose();
+            t2?.Dispose();
             _manager.Close(this);
         }
 
-        public MessagePopup(MessagePopupManager manager, UIElement placementTarget)
+
+        private void Callback2(object? state)
+        {
+            if (_timeout > 0) _timeout--;
+            if (_timeout == 0)
+            {
+                t2.Dispose();
+                _model.IsVisible = false;
+                _tcs.SetResult(PopupResult.OK);
+                Close();
+            }
+        }
+
+        public MessagePopup(MessagePopupManager manager, UIElement placementTarget, int timeout)
         {
             _manager = manager;
+            _timeout = timeout;
             InitializeComponent();
+
+            if (timeout > 0)
+            {
+                t2 = new Timer(Callback2, null, 1000, 1000);
+            }
 
             _model = new MessagePopupModel();
 

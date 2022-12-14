@@ -256,4 +256,16 @@
 
     </Style>
 
+    <Style TargetType="ContextMenu">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <Setter Property="BorderBrush" Value="Transparent"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+        <!--<Style.Triggers>
+            <Trigger Property="IsHighlighted" Value="True">
+                <Setter Property="Background"  Value="{DynamicResource HighlightBrush}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+            </Trigger>
+        </Style.Triggers>-->
+
+    </Style>
 </ResourceDictionary>

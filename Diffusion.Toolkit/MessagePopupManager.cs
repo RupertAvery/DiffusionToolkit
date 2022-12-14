@@ -72,10 +72,10 @@ public class MessagePopupManager
         });
     }
 
-    public Task<PopupResult> Show(string message, string title)
+    public Task<PopupResult> Show(string message, string title, int timeout = 0)
     {
         _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget);
+        var popup = new MessagePopup(this, _placementTarget, timeout);
         _popups.Add(popup);
         _host.Children.Add(popup);
         return popup.Show(message, title)
@@ -89,10 +89,10 @@ public class MessagePopupManager
             });
     }
 
-    public Task<PopupResult> Show(string message, string title, PopupButtons buttons)
+    public Task<PopupResult> Show(string message, string title, PopupButtons buttons, int timeout = 0)
     {
         _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget);
+        var popup = new MessagePopup(this, _placementTarget, timeout);
         _popups.Add(popup);
         _host.Children.Add(popup);
         return popup.Show(message, title, buttons)
@@ -106,10 +106,10 @@ public class MessagePopupManager
             });
     }
 
-    public Task<PopupResult> ShowMedium(string message, string title, PopupButtons buttons)
+    public Task<PopupResult> ShowMedium(string message, string title, PopupButtons buttons, int timeout = 0)
     {
         _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget);
+        var popup = new MessagePopup(this, _placementTarget, timeout);
         _popups.Add(popup);
         _host.Children.Add(popup);
         return popup.ShowMedium(message, title, buttons)

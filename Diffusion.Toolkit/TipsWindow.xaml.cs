@@ -2,6 +2,7 @@
 using MdXaml;
 using System.Windows;
 using System.Windows.Documents;
+using Diffusion.Toolkit.MdStyles;
 
 namespace Diffusion.Toolkit
 {
@@ -17,7 +18,7 @@ namespace Diffusion.Toolkit
             InitializeComponent();
             Markdown engine = new Markdown();
             var markdown = File.ReadAllText("Tips.md");
-            engine.DocumentStyle = MarkdownStyle.GithubLike;
+            engine.DocumentStyle = CustomStyles.BetterGithub;
             FlowDocument document = engine.Transform(markdown);
             RichTextBox.Document = document;
         }

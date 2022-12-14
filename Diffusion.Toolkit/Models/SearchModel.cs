@@ -45,6 +45,18 @@ public class SearchModel : BaseNotify
     private ICommand _hideDropDown;
     private ICommand _toggleParameters;
     private ICommand _copyFiles;
+    private bool _nsfwBlur;
+
+    private ICommand _copyOthersCommand;
+    private ICommand _copyNegativePromptCommand;
+    private ICommand _copyPathCommand;
+    private ICommand _copyPromptCommand;
+    private ICommand _copyParametersCommand;
+    private ICommand _showInExplorerCommand;
+    private ICommand _showInThumbnails;
+    private ICommand _deleteCommand;
+    private ICommand _favoriteCommand;
+    private long _fileSize;
 
     public SearchModel()
     {
@@ -270,5 +282,70 @@ public class SearchModel : BaseNotify
     {
         get => _copyFiles;
         set => SetField(ref _copyFiles, value);
+    }
+
+
+    public bool NSFWBlur
+    {
+        get => _nsfwBlur;
+        set => SetField(ref _nsfwBlur, value);
+    }
+
+
+    public ICommand CopyPromptCommand
+    {
+        get => _copyPromptCommand;
+        set => SetField(ref _copyPromptCommand, value);
+    }
+
+    public ICommand CopyPathCommand
+    {
+        get => _copyPathCommand;
+        set => SetField(ref _copyPathCommand, value);
+    }
+
+    public ICommand ShowInExplorerCommand
+    {
+        get => _showInExplorerCommand;
+        set => SetField(ref _showInExplorerCommand, value);
+    }
+
+    public ICommand DeleteCommand
+    {
+        get => _deleteCommand;
+        set => SetField(ref _deleteCommand, value);
+    }
+
+    public ICommand FavoriteCommand
+    {
+        get => _favoriteCommand;
+        set => SetField(ref _favoriteCommand, value);
+    }
+
+
+    public ICommand CopyNegativePromptCommand
+    {
+        get => _copyNegativePromptCommand;
+        set => SetField(ref _copyNegativePromptCommand, value);
+    }
+
+
+    public ICommand CopyOthersCommand
+    {
+        get => _copyOthersCommand;
+        set => SetField(ref _copyOthersCommand, value);
+    }
+
+
+    public ICommand CopyParametersCommand
+    {
+        get => _copyParametersCommand;
+        set => SetField(ref _copyParametersCommand, value);
+    }
+
+    public long FileSize
+    {
+        get => _fileSize;
+        set => SetField(ref _fileSize, value);
     }
 }
