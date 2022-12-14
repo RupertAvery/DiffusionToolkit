@@ -106,7 +106,7 @@ You can use the Favorite search parameter to filter images by favorites. See [Ad
 
 # Rating
 
-When inside the thumbnail viewer, press `1-5` to set the **Rating** on the selected image. A star will indicate that the image has beed rated. An equivalent number of yellow stars in the Preview Pane will indicate the rating of the image.  Press the same number again to remove the rating.
+When inside the thumbnail viewer, press `1-5` to set the **Rating** on the selected image. A star will indicate that the image has been rated. An equivalent number of yellow stars in the Preview Pane will indicate the rating of the image.  Press the same number again to remove the rating.
 
 You can rate multiple selected images.
 
