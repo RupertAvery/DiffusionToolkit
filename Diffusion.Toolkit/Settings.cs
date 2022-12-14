@@ -35,6 +35,8 @@ public class Settings
     private bool _watchFolders;
     private bool _hideNsfw;
     private bool _nsfwBlur;
+    private bool _scanForNewImagesOnStartup;
+    private bool _checkForUpdatesOnStartup;
 
     public bool IsPropertyDirty(string name)
     {
@@ -169,5 +171,17 @@ public class Settings
     {
         get => _nsfwBlur;
         set => UpdateValue(ref _nsfwBlur, value);
+    }
+
+    public bool CheckForUpdatesOnStartup
+    {
+        get => _checkForUpdatesOnStartup;
+        set => UpdateValue(ref _checkForUpdatesOnStartup, value);
+    }
+
+    public bool ScanForNewImagesOnStartup
+    {
+        get => _scanForNewImagesOnStartup;
+        set => UpdateValue(ref _scanForNewImagesOnStartup, value);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Diffusion.Updater;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,11 +20,18 @@ namespace Diffusion.Toolkit
     public class WelcomeModel : BaseNotify
     {
         private bool _dontShowWelcomeOnStartup;
+        private string _version;
 
         public bool DontShowWelcomeOnStartup
         {
             get => _dontShowWelcomeOnStartup;
             set => SetField(ref _dontShowWelcomeOnStartup, value);
+        }
+
+        public string Version
+        {
+            get => _version;
+            set => SetField(ref _version, value);
         }
     }
 
@@ -41,8 +49,11 @@ namespace Diffusion.Toolkit
 
             InitializeComponent();
 
+            var semanticVersion = SemanticVersionHelper.GetLocalVersion();
+
             _model = new WelcomeModel();
             _model.DontShowWelcomeOnStartup = settings.DontShowWelcomeOnStartup;
+            _model.Version = semanticVersion.ToString();
 
             Closing += (sender, args) =>
             {

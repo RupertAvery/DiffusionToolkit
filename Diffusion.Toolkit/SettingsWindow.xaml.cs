@@ -45,6 +45,8 @@ namespace Diffusion.Toolkit
             _model.PageSize = settings.PageSize;
             _model.Theme = settings.Theme;
             _model.WatchFolders = settings.WatchFolders;
+            _model.CheckForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
+            _model.ScanForNewImagesOnStartup = settings.ScanForNewImagesOnStartup;
 
             DataContext = _model;
 
@@ -56,6 +58,8 @@ namespace Diffusion.Toolkit
                 settings.FileExtensions = _model.FileExtensions;
                 settings.Theme = _model.Theme;
                 settings.WatchFolders = _model.WatchFolders;
+                settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
+                settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
             };
 
             var str = new System.Text.StringBuilder();

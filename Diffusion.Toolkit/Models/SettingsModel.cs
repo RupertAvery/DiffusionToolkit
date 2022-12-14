@@ -10,6 +10,8 @@ public class SettingsModel : BaseNotify
     private string _fileExtensions;
     private int _pageSize;
     private string _theme;
+    private bool _checkForUpdatesOnStartup;
+    private bool _scanForNewImagesOnStartup;
 
     public SettingsModel()
     {
@@ -56,5 +58,17 @@ public class SettingsModel : BaseNotify
     {
         get;
         set;
+    }
+
+    public bool CheckForUpdatesOnStartup
+    {
+        get => _checkForUpdatesOnStartup;
+        set => SetField(ref _checkForUpdatesOnStartup, value);
+    }
+
+    public bool ScanForNewImagesOnStartup
+    {
+        get => _scanForNewImagesOnStartup;
+        set => SetField(ref _scanForNewImagesOnStartup, value);
     }
 }

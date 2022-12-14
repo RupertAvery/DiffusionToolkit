@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Security.Policy;
 using Microsoft.VisualBasic;
 
 namespace Diffusion.Updater
@@ -12,6 +13,8 @@ namespace Diffusion.Updater
         private bool _updateSuccessful;
         private UpdateChecker _updateChecker;
 
+        private string _targetPath;
+        private string _exePath;
         public Form1()
         {
             InitializeComponent();
@@ -19,6 +22,24 @@ namespace Diffusion.Updater
 
         private async void Form1_Load(object sender, EventArgs e)
         {
+
+            string[] args = Environment.GetCommandLineArgs();
+
+            if (args.Length < 2)
+            {
+                MessageBox.Show("You must specify the target path as an argument", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                Application.Exit();
+            }
+
+            _targetPath = args[1];
+            _exePath = Path.Join(_targetPath, "Diffusion.Toolkit.exe");
+
+            if (!Directory.Exists(_targetPath) || !File.Exists(_exePath))
+            {
+                MessageBox.Show("Diffusion assembly was not found at the specified target", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                Application.Exit();
+            }
+
             try
             {
                 buttonOK.Enabled = false;
@@ -27,8 +48,10 @@ namespace Diffusion.Updater
 
                 _updateChecker = new UpdateChecker();
 
-                if (await _updateChecker.CheckForUpdate())
+                if (await _updateChecker.CheckForUpdate(_targetPath))
                 {
+                    _selectedRelease = _updateChecker.LatestRelease;
+
                     textBoxNotes.Text = $"A new version is available. Do you want to update?\r\n\r\n{_selectedRelease.name}\r\n{new string('=', _selectedRelease.name.Length)}\r\n\r\n{_selectedRelease.body}\r\n\r\n";
                     buttonOK.Enabled = true;
                 }
@@ -105,7 +128,7 @@ namespace Diffusion.Updater
 
                 using (var zip = ZipFile.Open(tempFile, ZipArchiveMode.Read))
                 {
-                    zip.ExtractToDirectory(".", true);
+                    zip.ExtractToDirectory(_targetPath, true);
                 }
 
                 Log($"Done!");
@@ -124,7 +147,7 @@ namespace Diffusion.Updater
                 Close();
                 if (_updateSuccessful)
                 {
-                    Process.Start("Diffusion.Toolkit.exe");
+                    Process.Start(_exePath);
                 }
             }
             else
@@ -135,7 +158,7 @@ namespace Diffusion.Updater
 
         private void TryKillProcess()
         {
-            string targetProcessPath = Path.Join(Application.StartupPath, "Diffusion.Toolkit.exe");
+            string targetProcessPath = Path.Join(_exePath);
             string targetProcessName = "Diffusion.Toolkit";
 
             Process[] runningProcesses = Process.GetProcesses();

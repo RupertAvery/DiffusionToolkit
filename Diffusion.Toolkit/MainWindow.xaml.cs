@@ -58,7 +58,7 @@ namespace Diffusion.Toolkit
             Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
 
             InitializeComponent();
-            
+
             AppDomain currentDomain = AppDomain.CurrentDomain;
             currentDomain.UnhandledException += new UnhandledExceptionEventHandler(MyHandler);
 
@@ -137,7 +137,7 @@ namespace Diffusion.Toolkit
         private void MyHandler(object sender, UnhandledExceptionEventArgs e)
         {
             var message = ((Exception)e.ExceptionObject).Message;
-            
+
             Logger.Log($"An unhandled exception occured: {message}");
 
             MessageBox.Show(this, message, "An unhandled exception occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
@@ -466,7 +466,33 @@ namespace Diffusion.Toolkit
 
             _search.SetModels(_modelsCollection);
 
+            if (_settings.CheckForUpdatesOnStartup)
+            {
+                var checker = new UpdateChecker();
+
+                Logger.Log($"Checking for latest version");
+
+                var hasUpdate = await checker.CheckForUpdate();
+
+                if (hasUpdate)
+                {
+                    var result = await _messagePopupManager.Show("An update is available. Do you want to install now?", "Diffusion Toolkit", PopupButtons.YesNo);
+                    if (result == PopupResult.Yes)
+                    {
+                        CallUpdater();
+                    }
+                }
+            }
+
+            if (_settings.ScanForNewImagesOnStartup)
+            {
+                Logger.Log($"Scanning for new images");
+
+                await ScanInternal(_settings.ImagePaths, false, false);
+            }
+
             Logger.Log($"Init completed");
+
         }
 
         private async void OnActivated(object? sender, EventArgs e)
@@ -531,14 +557,14 @@ namespace Diffusion.Toolkit
         {
             int added;
             float elapsed;
-            
+
             lock (_lock)
             {
                 t?.Dispose();
                 t = null;
                 (added, elapsed) = ScanFiles(detectedFiles.ToList(), false);
             }
- 
+
             if (added > 0)
             {
                 await Dispatcher.Invoke(async () =>
@@ -556,7 +582,7 @@ namespace Diffusion.Toolkit
                         }
                     }
                 });
-             
+
 
             }
 
@@ -615,7 +641,7 @@ namespace Diffusion.Toolkit
             {
                 MessageBox.Show($"{e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-          
+
         }
 
         private void UpdateTheme()
@@ -799,7 +825,7 @@ namespace Diffusion.Toolkit
         }
 
 
-        private async Task<bool> ScanInternal(IEnumerable<string> paths, bool updateImages)
+        private async Task<bool> ScanInternal(IEnumerable<string> paths, bool updateImages, bool reportIfNone = true)
         {
             if (_model.IsScanning) return false;
 
@@ -839,7 +865,10 @@ namespace Diffusion.Toolkit
 
                 added = _added;
 
-                await Report(added, removed, elapsedTime, updateImages);
+                if ((added + removed == 0 && reportIfNone) || added + removed > 0)
+                {
+                    await Report(added, removed, elapsedTime, updateImages);
+                }
             }
             catch (Exception ex)
             {
@@ -915,7 +944,36 @@ namespace Diffusion.Toolkit
 
         private void MenuItem_OnClick(object sender, RoutedEventArgs e)
         {
-            Process.Start("Diffusion.Updater.exe");
+            CallUpdater();
+        }
+
+        private void FileCopy(string filename, string target)
+        {
+            File.Copy(filename, Path.Join(target, filename), true);
+        }
+
+        private void CallUpdater()
+        {
+            Logger.Log($"Calling updater...");
+
+            var updaterExe = "Diffusion.Updater.exe";
+
+            var path = "Updater";
+
+            var temp = Path.Join(path, updaterExe);
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            FileCopy(updaterExe, path);
+            FileCopy("Diffusion.Updater.deps.json", path);
+            FileCopy("Diffusion.Updater.dll", path);
+            FileCopy("Diffusion.Updater.runtimeconfig.json", path);
+
+
+            Process.Start(temp, System.AppDomain.CurrentDomain.BaseDirectory);
         }
     }
 }

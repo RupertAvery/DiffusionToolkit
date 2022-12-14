@@ -29,11 +29,11 @@ public class UpdateChecker
 
 
 
-    public async Task<bool> CheckForUpdate()
+    public async Task<bool> CheckForUpdate(string? path = null)
     {
         LatestRelease = await GetLatestRelease();
 
-        var localVersion = SemanticVersionHelper.GetLocalVersion();
+        var localVersion = SemanticVersionHelper.GetLocalVersion(path);
 
         SemanticVersion.TryParse(LatestRelease.tag_name, out var releaseVersion);
 

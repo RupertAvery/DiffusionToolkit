@@ -19,7 +19,10 @@
         <RichTextBox Padding="10" IsReadOnly="True" IsDocumentEnabled="True" Background="Transparent" Foreground="{DynamicResource ForegroundBrush}" BorderBrush="Transparent" >
             <FlowDocument>
                 <Paragraph>
-                    <Run FontSize="20">Welcome to Diffusion Toolkit</Run>
+                    <Run FontSize="20">Diffusion Toolkit</Run>
+                    <Run FontSize="20" xml:space="preserve"> </Run>
+                    <Run FontSize="20">v</Run>
+                    <Run FontSize="20" Text="{Binding Version}"></Run>
                 </Paragraph>
                 <Table>
                     <Table.Columns>
@@ -36,7 +39,7 @@
                             <TableCell>
                                 <Paragraph>
                                     <Bold>Diffusion Toolkit</Bold>
-                                    <Run>is an image viewer with support for reading metadata stored with AI-generated images by tools such as AUTOMATIC1111 and NovelAI.</Run>
+                                    <Run>is an image viewer with support for reading metadata stored with AI-generated images by tools such as AUTOMATIC1111 and NovelAI, InvokeAI, Stable Diffusion and many others.</Run>
                                 </Paragraph>
                                 <Paragraph>
                                 </Paragraph>
@@ -55,12 +58,12 @@
                 <List>
                     <ListItem>
                         <Paragraph>
-                            <Run>Support for AUTOMATIC1111 and NovelAI metadata formats</Run>
+                            <Run>Support for AUTOMATIC1111, NovelAI, InvokeAI, and Stable Diffusion metadata formats</Run>
                         </Paragraph>
                     </ListItem>
                     <ListItem>
                         <Paragraph>
-                            <Run>Support for .PNG and .JPG+.TXT files</Run>
+                            <Run>Support for .PNG and .JPG + .TXT files</Run>
                         </Paragraph>
                     </ListItem>
                     <ListItem>
@@ -81,7 +84,7 @@
                 </List>
                 <Paragraph>
                     See
-                    <Bold>Help > Tips</Bold> for information about keyboard shortcuts and querying.
+                    <Bold>Help > Getting Started</Bold> or press F1 for information on how to use this application.
                 </Paragraph>
                 <Paragraph>
                     Check for updates at

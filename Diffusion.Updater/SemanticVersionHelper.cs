@@ -2,9 +2,11 @@ namespace Diffusion.Updater;
 
 public class SemanticVersionHelper
 {
-    public static SemanticVersion GetLocalVersion()
+    public static SemanticVersion GetLocalVersion(string? path = null)
     {
         var localVersion = new SemanticVersion();
+
+        var versionPath = path == null? "version.txt" : Path.Combine(path, "version.txt");
 
         if (File.Exists("version.txt"))
         {
