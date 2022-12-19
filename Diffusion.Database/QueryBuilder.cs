@@ -37,6 +37,8 @@ public static class QueryBuilder
 
     private static readonly Regex NSFWRegex = new Regex("\\b(?:nsfw):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private static readonly Regex NegativePromptRegex = new Regex("\\b(?:negative prompt|negative_prompt|-):\\s*(?<value>.*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     public static List<string> Samplers { get; set; }
 
     public static bool HideNFSW { get; set; }
@@ -61,6 +63,7 @@ public static class QueryBuilder
         ParseForDeletion(ref prompt, conditions);
         ParseNSFW(ref prompt, conditions);
 
+        ParseNegativePrompt(ref prompt, conditions);
         ParsePrompt(ref prompt, conditions);
 
         return (string.Join(" AND ", conditions.Select(c => c.Key)),
@@ -265,10 +268,35 @@ public static class QueryBuilder
         }
     }
 
+    private static void ParseNegativePrompt(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        var match = NegativePromptRegex.Match(prompt);
+        if (match.Success)
+        {
+            prompt = NegativePromptRegex.Replace(prompt, String.Empty);
 
+            var value = match.Groups["value"].Value;
+
+            var tokens = CSVParser.Parse(value);
+
+            foreach (var token in tokens)
+            {
+                conditions.Add(new KeyValuePair<string, object>("(NegativePrompt LIKE ?)", $"%{token.Trim()}%"));
+            }
+
+        }
+
+
+    }
 
     private static void ParsePrompt(ref string prompt, List<KeyValuePair<string, object>> conditions)
     {
+        if (prompt.Trim().Length == 0)
+        {
+            conditions.Add(new KeyValuePair<string, object>("(Prompt LIKE ? OR Prompt IS NULL)", "%%"));
+            return;
+        }
+
         var tokens = CSVParser.Parse(prompt);
 
         foreach (var token in tokens)
