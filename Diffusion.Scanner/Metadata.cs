@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using MetadataExtractor;
+using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
@@ -30,34 +31,49 @@ public class Metadata
         {
             var ext = Path.GetExtension(file).ToLower();
 
-            if (ext == ".png")
+            switch (ext)
             {
-                IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
+                case ".png":
+                    {
+                        IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
 
-                var isNovelAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description == "Software: NovelAI"));
+                        var isNovelAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description == "Software: NovelAI"));
 
-                var isInvokeAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("Dream: ")));
+                        var isInvokeAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("Dream: ")));
 
-                var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
+                        var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
 
-                if (isInvokeAINew)
-                {
-                    fileParameters = ReadInvokeAIParametersNew(file, directories);
-                }
-                else if (isInvokeAI)
-                {
-                    fileParameters = ReadInvokeAIParameters(file, directories);
-                }
-                else if (isNovelAI)
-                {
-                    fileParameters = ReadNovelAIParameters(file, directories);
-                }
-                else
-                {
-                    fileParameters = ReadAutomatic1111Parameters(file, directories);
-                }
+                        if (isInvokeAINew)
+                        {
+                            fileParameters = ReadInvokeAIParametersNew(file, directories);
+                        }
+                        else if (isInvokeAI)
+                        {
+                            fileParameters = ReadInvokeAIParameters(file, directories);
+                        }
+                        else if (isNovelAI)
+                        {
+                            fileParameters = ReadNovelAIParameters(file, directories);
+                        }
+                        else
+                        {
+                            fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        }
+
+                        break;
+                    }
+                case ".jpg" or ".jpeg":
+                    {
+                        IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(file);
+                        
+                        fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        
+                        break;
+                    }
+
             }
-            else
+
+            if (fileParameters == null)
             {
                 var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
 
@@ -158,7 +174,7 @@ public class Metadata
             }
 
             fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Size: {fp.Width}x{fp.Height}";
-            
+
             return fp;
         }
 
@@ -170,7 +186,7 @@ public class Metadata
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("sd-metadata: "), out var tag))
         {
             var fp = new FileParameters();
-            var json= tag.Description.Substring("sd-metadata: ".Length);
+            var json = tag.Description.Substring("sd-metadata: ".Length);
             var root = JsonDocument.Parse(json);
             var image = root.RootElement.GetProperty("image");
             var promptArray = image.GetProperty("prompt");
@@ -196,7 +212,7 @@ public class Metadata
         return null;
     }
 
-        private static FileParameters ReadNovelAIParameters(string file, IEnumerable<Directory> directories)
+    private static FileParameters ReadNovelAIParameters(string file, IEnumerable<Directory> directories)
     {
         var fileParameters = new FileParameters();
 
@@ -240,7 +256,7 @@ public class Metadata
                 }
             }
 
- 
+
             fileParameters.NegativePrompt = json.RootElement.GetProperty("uc").GetString();
         }
 
@@ -306,7 +322,7 @@ public class Metadata
             {
                 state = 3;
             }
- 
+
             switch (state)
             {
                 case 0:
@@ -509,7 +525,16 @@ public class Metadata
 
         Tag tag;
 
-        if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("parameters:"), out tag))
+
+        if (TryFindTag(directories, "Exif SubIFD", "User Comment", tag => true, out tag))
+        {
+            fileParameters = ReadA111Parameters(tag.Description);
+        }
+        else if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("parameters:"), out tag))
+        {
+            fileParameters = ReadA111Parameters(tag.Description);
+        }
+        else if (TryFindTag(directories, "PNG-iTXt", "Textual Data", tag => tag.Description.StartsWith("parameters:"), out tag))
         {
             fileParameters = ReadA111Parameters(tag.Description);
         }
