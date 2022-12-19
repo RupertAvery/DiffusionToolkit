@@ -527,7 +527,12 @@ public class Metadata
 
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("aesthetic_score:"), out tag))
         {
+            if (fileParameters == null)
+            {
+                fileParameters = new FileParameters();
+            }
             fileParameters.AestheticScore = decimal.Parse(tag.Description.Substring("aesthetic_score:".Length));
+            fileParameters.OtherParameters = $"aesthetic_score: {fileParameters.AestheticScore}";
         }
 
 
