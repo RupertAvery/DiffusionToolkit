@@ -31,6 +31,7 @@ public class MainModel : BaseNotify
     private ICommand _toggleHideNsfw;
     private bool _hideNsfw;
     private bool _nsfwBlur;
+    private ICommand _showPrompts;
 
     public MainModel()
     {
@@ -186,5 +187,11 @@ public class MainModel : BaseNotify
     {
         get => _hideNsfw;
         set => SetField(ref _hideNsfw, value);
+    }
+
+    public ICommand ShowPrompts
+    {
+        get => _showPrompts;
+        set => SetField(ref _showPrompts, value);
     }
 }

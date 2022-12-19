@@ -65,6 +65,10 @@
                 <fa:ImageAwesome MinWidth="32" ToolTip="Recycle bin" Icon="TrashOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
+            <Button  Command="{Binding ShowPrompts}">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Prompts" Icon="FileTextOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
+            </Button>
             <Separator></Separator>
             <Button Command="{Binding Rescan}">
                 <fa:ImageAwesome TextElement.FontFamily="pack://application:,,,/FontAwesome.WPF;component/#FontAwesome"  MinWidth="32" ToolTip="Rescan Folders" Icon="SearchPlus" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">

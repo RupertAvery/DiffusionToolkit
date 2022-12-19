@@ -412,6 +412,7 @@ namespace Diffusion.Toolkit
 
             _models = new Pages.Models(_dataStore, _settings);
             _search = new Search(_navigatorService, _dataStore, _settings);
+            _prompts = new Prompts(_dataStore, _settings);
             _search.SetNSFWBlur(_model.NSFWBlur);
 
             _model.ShowFavorite = new RelayCommand<object>((o) =>
@@ -429,7 +430,14 @@ namespace Diffusion.Toolkit
                 _navigatorService.Goto("search");
                 _search.ShowSearch();
             });
-            _model.ShowModels = new RelayCommand<object>((o) => _navigatorService.Goto("models"));
+            _model.ShowModels = new RelayCommand<object>((o) =>
+            {
+                _navigatorService.Goto("models");
+            });
+            _model.ShowPrompts = new RelayCommand<object>((o) =>
+            {
+                _navigatorService.Goto("prompts");
+            });
 
             if (_settings.WatchFolders)
             {
@@ -450,6 +458,7 @@ namespace Diffusion.Toolkit
             {
                 { "search", _search },
                 { "models", _models },
+                { "prompts", _prompts },
                 //{ "config", _configPage},
                 //{ "setup", new SetupPage(_navigatorService) },
             };
@@ -471,17 +480,24 @@ namespace Diffusion.Toolkit
                 var checker = new UpdateChecker();
 
                 Logger.Log($"Checking for latest version");
-
-                var hasUpdate = await checker.CheckForUpdate();
-
-                if (hasUpdate)
+                try
                 {
-                    var result = await _messagePopupManager.Show("An update is available. Do you want to install now?", "Diffusion Toolkit", PopupButtons.YesNo);
-                    if (result == PopupResult.Yes)
+                    var hasUpdate = await checker.CheckForUpdate();
+
+                    if (hasUpdate)
                     {
-                        CallUpdater();
+                        var result = await _messagePopupManager.Show("An update is available. Do you want to install now?", "Diffusion Toolkit", PopupButtons.YesNo);
+                        if (result == PopupResult.Yes)
+                        {
+                            CallUpdater();
+                        }
                     }
                 }
+                catch (Exception exception)
+                {
+                    await _messagePopupManager.Show(exception.Message, "Update error", PopupButtons.OK);
+                }
+
             }
 
             if (_settings.ScanForNewImagesOnStartup)
@@ -928,6 +944,7 @@ namespace Diffusion.Toolkit
         }
 
         private ICollection<Model> _modelsCollection;
+        private Prompts _prompts;
 
         private void LoadModels()
         {
