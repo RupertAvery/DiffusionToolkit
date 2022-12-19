@@ -187,6 +187,11 @@ Parameters will be ANDed, meaning adding more parameters will filter out more re
 
 # Supported parameters
 
+## Negative Prompt
+
+* `negative prompt: <term> [,<term>]`
+* `negative_prompt: <term> [,<term>]`
+
 ## Steps
 
 * `steps: <number>`
@@ -311,17 +316,19 @@ Allows you to search by the file's created date
 
 File Creation Date is a Diffusion Toolkit metadata taken from the image file's path during scanning.
 
-You can use [globs](https://www.sqlitetutorial.net/sqlite-glob/), or the criteria `starts with` or `contains`. 
+You can use [globs](https://www.sqlitetutorial.net/sqlite-glob/), or the criteria `starts with`, `contains`, or `ends with`. 
 
 * `path: <term>`  
 
    * using globs:
       * `path: D:\diffusion\images**`      
       * `path: **img2img**`      
+      * `path: *.jpg`      
 
    * using criteria:
       * `path: starts with D:\diffusion\images`      
       * `path: contains img2img`      
+      * `path: ends with .jpg`      
     
    If your path constains spaces, wrap your path in double quotes.
 
