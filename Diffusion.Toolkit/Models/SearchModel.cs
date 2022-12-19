@@ -57,6 +57,9 @@ public class SearchModel : BaseNotify
     private ICommand _deleteCommand;
     private ICommand _favoriteCommand;
     private long _fileSize;
+    private ICommand _copySeedCommand;
+    private ICommand _copyHashCommand;
+    private ICommand _ratingCommand;
 
     public SearchModel()
     {
@@ -347,5 +350,23 @@ public class SearchModel : BaseNotify
     {
         get => _fileSize;
         set => SetField(ref _fileSize, value);
+    }
+
+    public ICommand CopySeedCommand
+    {
+        get => _copySeedCommand;
+        set => SetField(ref _copySeedCommand, value);
+    }
+
+    public ICommand CopyHashCommand
+    {
+        get => _copyHashCommand;
+        set => SetField(ref _copyHashCommand, value);
+    }
+
+    public ICommand RatingCommand
+    {
+        get => _ratingCommand;
+        set => SetField(ref _ratingCommand, value);
     }
 }

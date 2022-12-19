@@ -154,6 +154,8 @@ namespace Diffusion.Toolkit.Pages
             _model.CurrentImage.CopyPathCommand = new RelayCommand<object>(CopyPath);
             _model.CurrentImage.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
             _model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
+            //_model.CurrentImage.CopySeed = new RelayCommand<object>(CopySeed);
+            //_model.CurrentImage.CopyHash = new RelayCommand<object>(CopyHash);
             _model.CurrentImage.CopyParametersCommand = new RelayCommand<object>(CopyParameters);
             _model.CurrentImage.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
             _model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
@@ -163,10 +165,13 @@ namespace Diffusion.Toolkit.Pages
             _model.CopyPathCommand = new RelayCommand<object>(CopyPath);
             _model.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
             _model.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
+            _model.CopySeedCommand = new RelayCommand<object>(CopySeed);
+            _model.CopyHashCommand = new RelayCommand<object>(CopyHash);
             _model.CopyParametersCommand = new RelayCommand<object>(CopyParameters);
             _model.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
             _model.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
             _model.FavoriteCommand = new RelayCommand<object>(o => FavoriteSelected());
+            _model.RatingCommand = new RelayCommand<object>(o => RateSelected(int.Parse((string)o)));
 
             _model.NextPage = new RelayCommand<object>((o) => GoNextPage());
             _model.PrevPage = new RelayCommand<object>((o) => GoPrevPage());
@@ -188,7 +193,7 @@ namespace Diffusion.Toolkit.Pages
         {
             //foreach (ImageEntry selectedItem in ThumbnailListView.SelectedItems)
             //{
-                
+
             //}
 
             //DataObject dataObject = new DataObject();
@@ -263,6 +268,19 @@ namespace Diffusion.Toolkit.Pages
             Clipboard.SetText(p);
         }
 
+        private void CopySeed(object obj)
+        {
+            if (_model.CurrentImage == null) return;
+            var p = _model.CurrentImage.Seed.ToString();
+            Clipboard.SetText(p);
+        }
+
+        private void CopyHash(object obj)
+        {
+            if (_model.CurrentImage == null) return;
+            var p = _model.CurrentImage.ModelHash;
+            Clipboard.SetText(p);
+        }
 
         private void CopyParameters(object obj)
         {
@@ -390,6 +408,8 @@ namespace Diffusion.Toolkit.Pages
                         _model.CurrentImage.Date = _model.SelectedImageEntry.CreatedDate.ToString();
                         _model.CurrentImage.Rating = _model.SelectedImageEntry.Rating;
                         _model.CurrentImage.NSFW = _model.SelectedImageEntry.NSFW;
+                        _model.CurrentImage.ModelHash = parameters.ModelHash;
+                        _model.CurrentImage.Seed = parameters.Seed;
 
                         if (_modelLookup != null)
                         {
@@ -460,6 +480,11 @@ namespace Diffusion.Toolkit.Pages
                 Key.D3,
                 Key.D4,
                 Key.D5,
+                Key.D6,
+                Key.D7,
+                Key.D8,
+                Key.D9,
+                Key.D0,
             };
 
             if (e.Key == Key.Enter)
@@ -487,6 +512,11 @@ namespace Diffusion.Toolkit.Pages
                     Key.D3 => 3,
                     Key.D4 => 4,
                     Key.D5 => 5,
+                    Key.D6 => 6,
+                    Key.D7 => 7,
+                    Key.D8 => 8,
+                    Key.D9 => 9,
+                    Key.D0 => 10,
                 };
 
                 RateSelected(rating);
@@ -560,7 +590,7 @@ namespace Diffusion.Toolkit.Pages
                         _model.CurrentImage.Favorite = favorite;
                     }
                 }
-                
+
                 var ids = imageEntries.Select(x => x.Id).ToList();
                 _dataStore.SetFavorite(ids, favorite);
             }
@@ -572,7 +602,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
-                var nsfw = !imageEntries.GroupBy(e => e.NSFW).OrderByDescending(g=>g.Count()).First().Key;
+                var nsfw = !imageEntries.GroupBy(e => e.NSFW).OrderByDescending(g => g.Count()).First().Key;
 
                 foreach (var entry in imageEntries)
                 {

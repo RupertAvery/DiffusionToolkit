@@ -30,6 +30,8 @@ public class ImageViewModel : BaseNotify
     private bool _forDeletion;
 
     private bool _isParametersVisible;
+    private long _seed;
+    private string _modelHash;
 
     public BitmapSource? Image
     {
@@ -160,5 +162,17 @@ public class ImageViewModel : BaseNotify
     {
         get => _isParametersVisible;
         set => SetField(ref _isParametersVisible, value);
+    }
+
+    public long Seed
+    {
+        get => _seed;
+        set => SetField(ref _seed, value);
+    }
+
+    public string ModelHash
+    {
+        get => _modelHash;
+        set => SetField(ref _modelHash, value);
     }
 }

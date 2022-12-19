@@ -203,17 +203,24 @@
                                         <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                             <MenuItem Header="Favorite (F)" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
                                             <MenuItem Header="Rate">
-                                                <MenuItem Header="1" Click="Rate1_OnClick"></MenuItem>
-                                                <MenuItem Header="2" Click="Rate2_OnClick"></MenuItem>
-                                                <MenuItem Header="3" Click="Rate3_OnClick"></MenuItem>
-                                                <MenuItem Header="4" Click="Rate4_OnClick"></MenuItem>
-                                                <MenuItem Header="5" Click="Rate5_OnClick"></MenuItem>
+                                                <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
+                                                <MenuItem Header="2" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
+                                                <MenuItem Header="3" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
+                                                <MenuItem Header="4" Command="{Binding RatingCommand}" CommandParameter="4"></MenuItem>
+                                                <MenuItem Header="5" Command="{Binding RatingCommand}" CommandParameter="5"></MenuItem>
+                                                <MenuItem Header="6" Command="{Binding RatingCommand}" CommandParameter="6"></MenuItem>
+                                                <MenuItem Header="7" Command="{Binding RatingCommand}" CommandParameter="7"></MenuItem>
+                                                <MenuItem Header="8" Command="{Binding RatingCommand}" CommandParameter="8"></MenuItem>
+                                                <MenuItem Header="9" Command="{Binding RatingCommand}" CommandParameter="9"></MenuItem>
+                                                <MenuItem Header="10" Command="{Binding RatingCommand}" CommandParameter="10"></MenuItem>
                                                 <Separator></Separator>
                                                 <MenuItem Header="Remove rating" Click="Unrate_OnClick"></MenuItem>
                                             </MenuItem>
                                             <Separator />
                                             <MenuItem Header="Copy prompt"  Command="{Binding CopyPromptCommand}"/>
                                             <MenuItem Header="Copy negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
+                                            <MenuItem Header="Copy seed"  Command="{Binding CopySeedCommand}"/>
+                                            <MenuItem Header="Copy hash"  Command="{Binding CopyHashCommand}"/>
                                             <MenuItem Header="Copy all parameters"  Command="{Binding CopyParametersCommand}"/>
                                             <Separator />
                                             <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
@@ -512,6 +519,7 @@
                                     <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
                                 </Image.Effect>
                             </Image>
+
                             <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=4}">
                                 <Image.Effect>
                                     <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
@@ -519,6 +527,36 @@
                             </Image>
 
                             <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=5}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=6}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=7}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=8}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=9}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=10}">
                                 <Image.Effect>
                                     <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
                                 </Image.Effect>
