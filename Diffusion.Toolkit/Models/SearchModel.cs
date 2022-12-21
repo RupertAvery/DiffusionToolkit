@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Models;
@@ -47,20 +48,6 @@ public class SearchModel : BaseNotify
     private ICommand _copyFiles;
     private bool _nsfwBlur;
 
-    private ICommand _copyOthersCommand;
-    private ICommand _copyNegativePromptCommand;
-    private ICommand _copyPathCommand;
-    private ICommand _copyPromptCommand;
-    private ICommand _copyParametersCommand;
-    private ICommand _showInExplorerCommand;
-    private ICommand _showInThumbnails;
-    private ICommand _deleteCommand;
-    private ICommand _favoriteCommand;
-    private long _fileSize;
-    private ICommand _copySeedCommand;
-    private ICommand _copyHashCommand;
-    private ICommand _ratingCommand;
-
     public SearchModel()
     {
         _images = new ObservableCollection<ImageEntry>();
@@ -71,6 +58,13 @@ public class SearchModel : BaseNotify
         _resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
     }
+
+    public DataStore DataStore
+    {
+        get;
+        set;
+    }
+
 
     public ObservableCollection<ImageEntry>? Images
     {
@@ -126,31 +120,6 @@ public class SearchModel : BaseNotify
         set => SetField(ref _searchCommand, value);
     }
 
-    public bool NextPageEnabled
-    {
-        get => _nextEnabled;
-        private set => SetField(ref _nextEnabled, value);
-    }
-
-    public bool PrevPageEnabled
-    {
-        get => _prevPageEnabled;
-        private set => SetField(ref _prevPageEnabled, value);
-    }
-
-    public bool FirstPageEnabled
-    {
-        get => _firstPageEnabled;
-        private set => SetField(ref _firstPageEnabled, value);
-    }
-
-    public bool LastPageEnabled
-    {
-        get => _lastPageEnabled;
-        private set => SetField(ref _lastPageEnabled, value);
-    }
-
-
     public int Page
     {
         get => _page;
@@ -169,11 +138,6 @@ public class SearchModel : BaseNotify
             {
                 value = 1;
             }
-
-            PrevPageEnabled = value > 1;
-            NextPageEnabled = value < _pages;
-            FirstPageEnabled = value > 1;
-            LastPageEnabled = value < _pages;
 
             SetField(ref _page, value);
         }
@@ -219,30 +183,6 @@ public class SearchModel : BaseNotify
     {
         get => _hideIcons;
         set => SetField(ref _hideIcons, value);
-    }
-
-    public ICommand PrevPage
-    {
-        get => _prevPage;
-        set => SetField(ref _prevPage, value);
-    }
-
-    public ICommand NextPage
-    {
-        get => _nextPage;
-        set => SetField(ref _nextPage, value);
-    }
-
-    public ICommand FirstPage
-    {
-        get => _firstPage;
-        set => SetField(ref _firstPage, value);
-    }
-
-    public ICommand LastPage
-    {
-        get => _lastPage;
-        set => SetField(ref _lastPage, value);
     }
 
     public ICommand Refresh
@@ -294,79 +234,4 @@ public class SearchModel : BaseNotify
         set => SetField(ref _nsfwBlur, value);
     }
 
-
-    public ICommand CopyPromptCommand
-    {
-        get => _copyPromptCommand;
-        set => SetField(ref _copyPromptCommand, value);
-    }
-
-    public ICommand CopyPathCommand
-    {
-        get => _copyPathCommand;
-        set => SetField(ref _copyPathCommand, value);
-    }
-
-    public ICommand ShowInExplorerCommand
-    {
-        get => _showInExplorerCommand;
-        set => SetField(ref _showInExplorerCommand, value);
-    }
-
-    public ICommand DeleteCommand
-    {
-        get => _deleteCommand;
-        set => SetField(ref _deleteCommand, value);
-    }
-
-    public ICommand FavoriteCommand
-    {
-        get => _favoriteCommand;
-        set => SetField(ref _favoriteCommand, value);
-    }
-
-
-    public ICommand CopyNegativePromptCommand
-    {
-        get => _copyNegativePromptCommand;
-        set => SetField(ref _copyNegativePromptCommand, value);
-    }
-
-
-    public ICommand CopyOthersCommand
-    {
-        get => _copyOthersCommand;
-        set => SetField(ref _copyOthersCommand, value);
-    }
-
-
-    public ICommand CopyParametersCommand
-    {
-        get => _copyParametersCommand;
-        set => SetField(ref _copyParametersCommand, value);
-    }
-
-    public long FileSize
-    {
-        get => _fileSize;
-        set => SetField(ref _fileSize, value);
-    }
-
-    public ICommand CopySeedCommand
-    {
-        get => _copySeedCommand;
-        set => SetField(ref _copySeedCommand, value);
-    }
-
-    public ICommand CopyHashCommand
-    {
-        get => _copyHashCommand;
-        set => SetField(ref _copyHashCommand, value);
-    }
-
-    public ICommand RatingCommand
-    {
-        get => _ratingCommand;
-        set => SetField(ref _ratingCommand, value);
-    }
 }

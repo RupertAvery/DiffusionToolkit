@@ -57,6 +57,7 @@ namespace Diffusion.Toolkit
                 settings.ModelRootPath = _model.ModelRootPath;
                 settings.FileExtensions = _model.FileExtensions;
                 settings.Theme = _model.Theme;
+                settings.PageSize = _model.PageSize;
                 settings.WatchFolders = _model.WatchFolders;
                 settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
                 settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;

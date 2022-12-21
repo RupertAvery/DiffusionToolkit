@@ -411,7 +411,7 @@ namespace Diffusion.Toolkit
             Logger.Log($"Initializing pages");
 
             _models = new Pages.Models(_dataStore, _settings);
-            _search = new Search(_navigatorService, _dataStore, _settings);
+            _search = new Search(_navigatorService, _dataStore, _messagePopupManager, _settings);
             _prompts = new Prompts(_dataStore, _settings);
             _search.SetNSFWBlur(_model.NSFWBlur);
 
@@ -420,20 +420,24 @@ namespace Diffusion.Toolkit
                 _navigatorService.Goto("search");
                 _search.ShowFavorite();
             });
+            
             _model.ShowMarked = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
                 _search.ShowMarked();
             });
+            
             _model.ShowSearch = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
                 _search.ShowSearch();
             });
+
             _model.ShowModels = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("models");
             });
+
             _model.ShowPrompts = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("prompts");

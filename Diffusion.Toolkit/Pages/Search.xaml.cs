@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -105,7 +106,7 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public Search(NavigatorService navigatorService, DataStore dataStore, Settings settings) : this()
+        public Search(NavigatorService navigatorService, DataStore dataStore, MessagePopupManager messagePopupManager, Settings settings) : this()
         {
             this._navigatorService = navigatorService;
             this._dataStore = dataStore;
@@ -144,39 +145,14 @@ namespace Diffusion.Toolkit.Pages
 
             _model = new SearchModel();
 
-
+            _model.DataStore = _dataStore;
             _model.Page = 0;
             _model.Pages = 0;
             _model.TotalFiles = 100;
-
+            _model.Images = new ObservableCollection<ImageEntry>();
             _model.PropertyChanged += ModelOnPropertyChanged;
             _model.SearchCommand = new RelayCommand<object>(SearchImages);
-            _model.CurrentImage.CopyPathCommand = new RelayCommand<object>(CopyPath);
-            _model.CurrentImage.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
-            _model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
-            //_model.CurrentImage.CopySeed = new RelayCommand<object>(CopySeed);
-            //_model.CurrentImage.CopyHash = new RelayCommand<object>(CopyHash);
-            _model.CurrentImage.CopyParametersCommand = new RelayCommand<object>(CopyParameters);
-            _model.CurrentImage.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
-            _model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
-            _model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
-            _model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => FavoriteSelected());
 
-            _model.CopyPathCommand = new RelayCommand<object>(CopyPath);
-            _model.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
-            _model.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
-            _model.CopySeedCommand = new RelayCommand<object>(CopySeed);
-            _model.CopyHashCommand = new RelayCommand<object>(CopyHash);
-            _model.CopyParametersCommand = new RelayCommand<object>(CopyParameters);
-            _model.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
-            _model.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
-            _model.FavoriteCommand = new RelayCommand<object>(o => FavoriteSelected());
-            _model.RatingCommand = new RelayCommand<object>(o => RateSelected(int.Parse((string)o)));
-
-            _model.NextPage = new RelayCommand<object>((o) => GoNextPage());
-            _model.PrevPage = new RelayCommand<object>((o) => GoPrevPage());
-            _model.FirstPage = new RelayCommand<object>((o) => GoFirstPage());
-            _model.LastPage = new RelayCommand<object>((o) => GoLastPage());
             _model.Refresh = new RelayCommand<object>((o) => ReloadMatches());
             _model.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
             _model.CopyFiles = new RelayCommand<object>((o) => CopyFiles());
@@ -187,6 +163,9 @@ namespace Diffusion.Toolkit.Pages
             SetMode("search");
 
             DataContext = _model;
+
+            ThumbnailListView.DataStore = dataStore;
+            ThumbnailListView.MessagePopupManager = messagePopupManager;
         }
 
         private void CopyFiles()
@@ -201,15 +180,6 @@ namespace Diffusion.Toolkit.Pages
             //DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Copy);
         }
 
-        private void ShowInThumbnails(object obj)
-        {
-            ThumbnailListView.ScrollIntoView(ThumbnailListView.SelectedItem);
-            var index = ThumbnailListView.Items.IndexOf(ThumbnailListView.SelectedItem);
-            if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(index) is ListViewItem item)
-            {
-                item.Focus();
-            }
-        }
 
 
         private void WidthChanged(object? sender, EventArgs e)
@@ -247,56 +217,66 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        private void CopyPath(object obj)
-        {
-            if (_model.CurrentImage == null) return;
-            var p = _model.CurrentImage.Path;
-            Clipboard.SetText(p);
-        }
+        //private void CopyPath(object obj)
+        //{
+        //    if (_model.CurrentImage == null) return;
+        //    var p = _model.CurrentImage.Path;
+        //    Clipboard.SetText(p);
+        //}
 
-        private void CopyPrompt(object obj)
-        {
-            if (_model.CurrentImage == null) return;
-            var p = _model.CurrentImage.Prompt;
-            Clipboard.SetText(p);
-        }
+        //private void CopyPrompt(object obj)
+        //{
+        //    if (_model.CurrentImage == null) return;
+        //    var p = _model.CurrentImage.Prompt;
+        //    Clipboard.SetText(p);
+        //}
 
-        private void CopyNegative(object obj)
-        {
-            if (_model.CurrentImage == null) return;
-            var p = _model.CurrentImage.NegativePrompt;
-            Clipboard.SetText(p);
-        }
+        //private void CopyNegative(object obj)
+        //{
+        //    if (_model.CurrentImage == null) return;
+        //    var p = _model.CurrentImage.NegativePrompt;
+        //    Clipboard.SetText(p);
+        //}
 
-        private void CopySeed(object obj)
-        {
-            if (_model.CurrentImage == null) return;
-            var p = _model.CurrentImage.Seed.ToString();
-            Clipboard.SetText(p);
-        }
+        //private void CopySeed(object obj)
+        //{
+        //    if (_model.CurrentImage == null) return;
+        //    var p = _model.CurrentImage.Seed.ToString();
+        //    Clipboard.SetText(p);
+        //}
 
-        private void CopyHash(object obj)
-        {
-            if (_model.CurrentImage == null) return;
-            var p = _model.CurrentImage.ModelHash;
-            Clipboard.SetText(p);
-        }
+        //private void CopyHash(object obj)
+        //{
+        //    if (_model.CurrentImage == null) return;
+        //    var p = _model.CurrentImage.ModelHash;
+        //    Clipboard.SetText(p);
+        //}
 
-        private void CopyParameters(object obj)
-        {
-            if (_model.CurrentImage == null) return;
+        //private void CopyParameters(object obj)
+        //{
+        //    if (_model.CurrentImage == null) return;
 
-            var p = _model.CurrentImage.Prompt;
-            var n = _model.CurrentImage.NegativePrompt;
-            var o = _model.CurrentImage.OtherParameters;
-            var parameters = $"{p}\r\n\r\nNegative prompt: {n}\r\n{o}";
+        //    var p = _model.CurrentImage.Prompt;
+        //    var n = _model.CurrentImage.NegativePrompt;
+        //    var o = _model.CurrentImage.OtherParameters;
+        //    var parameters = $"{p}\r\n\r\nNegative prompt: {n}\r\n{o}";
 
-            Clipboard.SetText(parameters);
-        }
+        //    Clipboard.SetText(parameters);
+        //}
 
         public void SearchImages()
         {
             SearchImages(null);
+        }
+
+        static T Time<T>(Func<T> action)
+        {
+            Stopwatch t = new Stopwatch();
+            T result = action();
+            t.Start();
+            Debug.WriteLine($"{t.ElapsedMilliseconds}ms");
+            t.Stop();
+            return result;
         }
 
         public void SearchImages(object obj)
@@ -313,7 +293,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 Dispatcher.Invoke(() =>
                 {
-                    _model.Images!.Clear();
+                    //_model.Images!.Clear();
 
                     if (!string.IsNullOrEmpty(_model.SearchText))
                     {
@@ -440,6 +420,10 @@ namespace Diffusion.Toolkit.Pages
                     }
                 }
             }
+            //else if (e.PropertyName == nameof(SearchModel.Page))
+            //{
+            //    ReloadMatches(true);
+            //}
             else if (e.PropertyName == nameof(SearchModel.SearchText))
             {
                 if (string.IsNullOrEmpty(_model.SearchText))
@@ -449,6 +433,7 @@ namespace Diffusion.Toolkit.Pages
 
             }
         }
+
 
         public static BitmapImage GetBitmapImage(string path)
         {
@@ -465,184 +450,6 @@ namespace Diffusion.Toolkit.Pages
             return bitmap;
         }
 
-
-        private void Control_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            OpenSelected();
-        }
-
-        private void ThumbnailListView_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            var ratings = new[]
-            {
-                Key.D1,
-                Key.D2,
-                Key.D3,
-                Key.D4,
-                Key.D5,
-                Key.D6,
-                Key.D7,
-                Key.D8,
-                Key.D9,
-                Key.D0,
-            };
-
-            if (e.Key == Key.Enter)
-            {
-                OpenSelected();
-            }
-            else if (e.Key == Key.Delete || e.Key == Key.X)
-            {
-                DeleteSelected();
-            }
-            else if (e.Key == Key.F)
-            {
-                FavoriteSelected();
-            }
-            else if (e.Key == Key.N)
-            {
-                NSFWSelected();
-            }
-            else if (ratings.Contains(e.Key))
-            {
-                var rating = e.Key switch
-                {
-                    Key.D1 => 1,
-                    Key.D2 => 2,
-                    Key.D3 => 3,
-                    Key.D4 => 4,
-                    Key.D5 => 5,
-                    Key.D6 => 6,
-                    Key.D7 => 7,
-                    Key.D8 => 8,
-                    Key.D9 => 9,
-                    Key.D0 => 10,
-                };
-
-                RateSelected(rating);
-
-            }
-        }
-
-        private void RateSelected(int rating)
-        {
-            if (ThumbnailListView.SelectedItems != null)
-            {
-                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
-
-                foreach (var entry in imageEntries)
-                {
-
-                    if (entry.Rating == rating)
-                    {
-                        entry.Rating = null;
-                    }
-                    else
-                    {
-                        entry.Rating = rating;
-                    }
-                    if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
-                    {
-                        _model.CurrentImage.Rating = entry.Rating;
-                    }
-                }
-
-                var ids = imageEntries.Select(x => x.Id).ToList();
-                _dataStore.SetRating(ids, rating);
-            }
-        }
-
-        private void UnrateSelected()
-        {
-            if (ThumbnailListView.SelectedItems != null)
-            {
-                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
-
-                foreach (var entry in imageEntries)
-                {
-
-                    entry.Rating = null;
-
-                    if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
-                    {
-                        _model.CurrentImage.Rating = entry.Rating;
-                    }
-                }
-
-                var ids = imageEntries.Select(x => x.Id).ToList();
-                _dataStore.SetRating(ids, null);
-            }
-        }
-
-        private void FavoriteSelected()
-        {
-            if (ThumbnailListView.SelectedItems != null)
-            {
-                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
-
-                var favorite = !imageEntries.GroupBy(e => e.Favorite).OrderByDescending(g => g.Count()).First().Key;
-
-                foreach (var entry in imageEntries)
-                {
-                    entry.Favorite = favorite;
-                    if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
-                    {
-                        _model.CurrentImage.Favorite = favorite;
-                    }
-                }
-
-                var ids = imageEntries.Select(x => x.Id).ToList();
-                _dataStore.SetFavorite(ids, favorite);
-            }
-        }
-
-        private void NSFWSelected()
-        {
-            if (ThumbnailListView.SelectedItems != null)
-            {
-                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
-
-                var nsfw = !imageEntries.GroupBy(e => e.NSFW).OrderByDescending(g => g.Count()).First().Key;
-
-                foreach (var entry in imageEntries)
-                {
-                    entry.NSFW = nsfw;
-                    if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
-                    {
-                        _model.CurrentImage.NSFW = nsfw;
-                    }
-                }
-
-                var ids = imageEntries.Select(x => x.Id).ToList();
-                _dataStore.SetNSFW(ids, nsfw);
-            }
-        }
-
-        private void DeleteSelected()
-        {
-            if (ThumbnailListView.SelectedItems != null)
-            {
-                if (ThumbnailListView.SelectedItems != null)
-                {
-                    var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
-
-                    var delete = !imageEntries.GroupBy(e => e.ForDeletion).OrderByDescending(g => g.Count()).First().Key;
-
-                    foreach (var entry in imageEntries)
-                    {
-                        entry.ForDeletion = delete;
-                        if (_model.CurrentImage != null && _model.CurrentImage.Path == entry.Path)
-                        {
-                            _model.CurrentImage.ForDeletion = delete;
-                        }
-                    }
-
-                    var ids = imageEntries.Select(x => x.Id).ToList();
-                    _dataStore.SetDeleted(ids, delete);
-                }
-            }
-        }
-
         public void SetOpacityView(bool value)
         {
             _model.ImageOpacity = value ? 0.35f : 1.0f;
@@ -653,20 +460,6 @@ namespace Diffusion.Toolkit.Pages
             _model.HideIcons = value;
         }
 
-        private void OpenSelected()
-        {
-            using Process fileopener = new Process();
-
-            if (_model.SelectedImageEntry != null)
-            {
-                fileopener.StartInfo.FileName = "explorer";
-                fileopener.StartInfo.Arguments = "\"" + _model.SelectedImageEntry.Path + "\"";
-                fileopener.Start();
-            }
-        }
-
-
-
         public Task ReloadMatches(bool focus = true)
         {
             return Task.Run(LoadMatchesOnThread)
@@ -676,7 +469,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            ResetView(focus);
+                            ThumbnailListView.ResetView(focus);
                         });
                     }
                 });
@@ -691,35 +484,25 @@ namespace Diffusion.Toolkit.Pages
 
             var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
 
-            var matches = _dataStore
+            var matches = Time(() => _dataStore
                 .Search(query, _settings.PageSize,
-                    _settings.PageSize * (_model.Page - 1));
-
-
-            var images = new List<ImageEntry>();
+                    _settings.PageSize * (_model.Page - 1)));
 
             Dispatcher.Invoke(() =>
             {
-                _model.TotalFiles = _settings.PageSize;
-                _model.CurrentPosition = 0;
+                //_model.Images.Clear();
+                _model.Images = new ObservableCollection<ImageEntry>();
             });
+
+            var images = new List<ImageEntry>();
 
             var sw = new Stopwatch();
             sw.Start();
 
-            Dispatcher.Invoke(() =>
-            {
-                _model.Images = new ObservableCollection<ImageEntry>();
-            });
 
             var count = 0;
             foreach (var file in matches)
             {
-                //if (token.IsCancellationRequested)
-                //{
-                //    break;
-                //}
-
                 images.Add(new ImageEntry(rId)
                 {
                     Id = file.Id,
@@ -732,51 +515,39 @@ namespace Diffusion.Toolkit.Pages
                     NSFW = file.NSFW
                 });
 
-                if (count % 10 == 0)
+                if (images.Count == 30)
                 {
-                    Dispatcher.Invoke(() =>
+                    foreach (var image in images)
                     {
-                        foreach (var image in images)
+                        Dispatcher.Invoke(() =>
                         {
                             _model.Images.Add(image);
-                        }
-                        _model.CurrentPosition += images.Count;
-                        images.Clear();
-                    });
+
+                        });
+                    }
+                    images.Clear();
                 }
-
-
-                //Dispatcher.Invoke(() =>
-                //{
-                //    _model.Images.Add(new ImageEntry(rId)
-                //    {
-                //        Id = file.Id,
-                //        Favorite = file.Favorite,
-                //        ForDeletion = file.ForDeletion,
-                //        Rating = file.Rating,
-                //        Path = file.Path,
-                //        FileName = Path.GetFileName(file.Path),
-                //    });
-                //    _model.CurrentPosition++;
-                //});
-
 
                 count++;
             }
 
-
             Dispatcher.Invoke(() =>
             {
-                foreach (var image in images)
+                Dispatcher.Invoke(() =>
                 {
-                    _model.Images.Add(image);
-                }
-
-                _model.TotalFiles = Int32.MaxValue;
-                _model.CurrentPosition = 0;
+                    foreach (var image in images)
+                    {
+                        _model.Images.Add(image);
+                    }
+                    images.Clear();
+                });
+                //_model.Images.Clear();
+                //_model.Images = new ObservableCollection<ImageEntry>(images);
             });
 
+
             sw.Stop();
+
 
             Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
 
@@ -789,24 +560,6 @@ namespace Diffusion.Toolkit.Pages
             {
                 ReloadMatches();
                 e.Handled = true;
-            }
-        }
-
-        private void ResetView(bool focus)
-        {
-            if (_model.Images is { Count: > 0 })
-            {
-                ThumbnailListView.ScrollIntoView(_model.Images[0]);
-                ThumbnailListView.SelectedItem = _model.Images[0];
-
-                if (focus)
-                {
-                    if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(0) is ListViewItem item)
-                    {
-                        item.Focus();
-                    }
-
-                }
             }
         }
 
@@ -847,152 +600,6 @@ namespace Diffusion.Toolkit.Pages
             SearchImages(null);
         }
 
-        private void UIElement_OnMouseMove(object sender, MouseEventArgs e)
-        {
-            //if (e.LeftButton == MouseButtonState.Pressed)
-            //{
-            //}
-        }
-
-
-        public void GoFirstPage()
-        {
-            _model.Page = 1;
-
-            ReloadMatches();
-        }
-
-        public void GoLastPage()
-        {
-            _model.Page = _model.Pages;
-
-            ReloadMatches();
-        }
-
-        public void GoPrevPage()
-        {
-            _model.Page--;
-
-            ReloadMatches();
-        }
-
-        public void GoNextPage()
-        {
-            _model.Page++;
-
-            ReloadMatches();
-        }
-
-
-        private void FirstPage_OnClick(object sender, RoutedEventArgs e)
-        {
-            GoFirstPage();
-        }
-        private void PrevPage_OnClick(object sender, RoutedEventArgs e)
-        {
-            GoPrevPage();
-        }
-
-        private void NextPage_OnClick(object sender, RoutedEventArgs e)
-        {
-            GoNextPage();
-        }
-
-        private void LastPage_OnClick(object sender, RoutedEventArgs e)
-        {
-            GoLastPage();
-        }
-
-        private List<ImageEntry> _selItems = new List<ImageEntry>();
-        private Point _start;
-        private bool _restoreSelection;
-        private void ThumbnailListView_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            //if (ThumbnailListView.SelectedItems.Count == 0)
-            //    return;
-            ImageEntry? currentShape = ThumbnailListView.SelectedItem as ImageEntry;
-
-            System.Windows.Point pt = e.GetPosition(ThumbnailListView);
-            var item = System.Windows.Media.VisualTreeHelper.HitTest(ThumbnailListView, pt);
-
-            var thumbnail = item.VisualHit as Thumbnail;
-
-            this._start = e.GetPosition(null);
-            _selItems.Clear();
-            _selItems.AddRange(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
-
-            //_restoreSelection = false;
-
-            //if (thumbnail != null && ThumbnailListView.SelectedItems.Contains(thumbnail.DataContext))
-            //{
-            //    _restoreSelection = true;
-            //}
-        }
-
-        private void ThumbnailListView_OnMouseMove(object sender, MouseEventArgs e)
-        {
-            Point mpos = e.GetPosition(null);
-            Vector diff = this._start - mpos;
-
-            if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail) &&
-                (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
-            {
-                if (this.ThumbnailListView.SelectedItems.Count == 0)
-                {
-                    return;
-                }
-
-                if (_selItems.Contains(ThumbnailListView.SelectedItems[0]))
-                {
-                    foreach (object selItem in _selItems)
-                    {
-                        if (!ThumbnailListView.SelectedItems.Contains(selItem))
-                            ThumbnailListView.SelectedItems.Add(selItem);
-                    }
-                }
-                else
-                {
-                    _selItems.Clear();
-                    _selItems.AddRange(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
-                }
-
-
-                var source = (ListView)sender;
-                //var path = ((ImageEntry)source.DataContext).Path;
-
-                DataObject dataObject = new DataObject();
-                dataObject.SetData(DataFormats.FileDrop, _selItems.Select(t => t.Path).ToArray());
-                DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Copy);
-
-            }
-
-        }
-
-        private void ThumbnailListView_OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            //if (e.LeftButton == MouseButtonState.Pressed)
-            //{
-            //    if (this.ThumbnailListView.SelectedItems.Count == 0)
-            //    {
-            //        return;
-            //    }
-
-            //    foreach (object selItem in _selItems)
-            //    {
-            //        if (!ThumbnailListView.SelectedItems.Contains(selItem))
-            //            ThumbnailListView.SelectedItems.Add(selItem);
-            //    }
-
-            //}
-
-        }
-
-        private void SearchTermTextBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            //SearchImages(null);
-        }
-
         private void SearchTermTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
@@ -1019,34 +626,9 @@ namespace Diffusion.Toolkit.Pages
             _model.NSFWBlur = value;
         }
 
-        private void Rate1_OnClick(object sender, RoutedEventArgs e)
+        private void ThumbnailListView_OnPageChangedEvent(object? sender, int e)
         {
-            RateSelected(1);
+            ReloadMatches(true);
         }
-
-        private void Rate2_OnClick(object sender, RoutedEventArgs e)
-        {
-            RateSelected(2);
-        }
-
-        private void Rate3_OnClick(object sender, RoutedEventArgs e)
-        {
-            RateSelected(3);
-        }
-        private void Rate4_OnClick(object sender, RoutedEventArgs e)
-        {
-            RateSelected(4);
-        }
-
-        private void Rate5_OnClick(object sender, RoutedEventArgs e)
-        {
-            RateSelected(5);
-        }
-
-        private void Unrate_OnClick(object sender, RoutedEventArgs e)
-        {
-            UnrateSelected();
-        }
-
     }
 }
