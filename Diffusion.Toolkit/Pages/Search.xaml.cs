@@ -249,37 +249,37 @@ namespace Diffusion.Toolkit.Pages
 
         private void CopyPath(object obj)
         {
-            if (_model.CurrentImage == null) return;
+            if (_model.CurrentImage?.Path == null) return;
             var p = _model.CurrentImage.Path;
-            Clipboard.SetText(p);
+            Clipboard.SetDataObject(p);
         }
 
         private void CopyPrompt(object obj)
         {
-            if (_model.CurrentImage == null) return;
+            if (_model.CurrentImage?.Prompt == null) return;
             var p = _model.CurrentImage.Prompt;
-            Clipboard.SetText(p);
+            Clipboard.SetDataObject(p);
         }
 
         private void CopyNegative(object obj)
         {
-            if (_model.CurrentImage == null) return;
+            if (_model.CurrentImage?.NegativePrompt == null) return;
             var p = _model.CurrentImage.NegativePrompt;
-            Clipboard.SetText(p);
+            Clipboard.SetDataObject(p);
         }
 
         private void CopySeed(object obj)
         {
-            if (_model.CurrentImage == null) return;
+            if (_model.CurrentImage?.Seed == null) return;
             var p = _model.CurrentImage.Seed.ToString();
-            Clipboard.SetText(p);
+            Clipboard.SetDataObject(p);
         }
 
         private void CopyHash(object obj)
         {
-            if (_model.CurrentImage == null) return;
+            if (_model.CurrentImage?.ModelHash == null) return;
             var p = _model.CurrentImage.ModelHash;
-            Clipboard.SetText(p);
+            Clipboard.SetDataObject(p);
         }
 
         private void CopyParameters(object obj)
@@ -291,7 +291,7 @@ namespace Diffusion.Toolkit.Pages
             var o = _model.CurrentImage.OtherParameters;
             var parameters = $"{p}\r\n\r\nNegative prompt: {n}\r\n{o}";
 
-            Clipboard.SetText(parameters);
+            Clipboard.SetDataObject(parameters);
         }
 
         public void SearchImages()
