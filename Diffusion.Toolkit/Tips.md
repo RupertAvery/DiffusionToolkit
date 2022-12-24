@@ -361,6 +361,17 @@ You can search on multiple values on most parameters. The results will be ORed, 
   * e.g. `cfg: 4.5|7|9|12`
   * e.g. `model_hash: aabbccdd | deadbeef | 12345678`
 
+# Prompt Search
+
+The Prompts button in the toolbar will bring you to the Prompts tab.
+
+You can search specifically on prompts here, using the same query language for searching images. Unique prompts are displayed, along with the usage count.
+
+## Full Text and Similarity Slider
+
+If you check **Full Text**, the entire text will be used as a search term, instead of eing broken up by commas.  This will also enable the Similarity slider.
+
+The Similarity Slider will try to do a fuzzy match by applying a Hamming Distance to all prompts. This may be useful for searching for prompts generated using Dynamic Prompts plugin.
 
 # FAQ
 
