@@ -37,7 +37,7 @@ public static class QueryBuilder
 
     private static readonly Regex NSFWRegex = new Regex("\\b(?:nsfw):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex NegativePromptRegex = new Regex("\\b(?:negative prompt|negative_prompt|-):\\s*(?<value>.*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex NegativePromptRegex = new Regex("\\b(?:negative prompt|negative_prompt|negative):\\s*(?<value>.*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public static List<string> Samplers { get; set; }
 

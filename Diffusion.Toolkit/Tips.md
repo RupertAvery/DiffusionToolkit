@@ -174,6 +174,8 @@ is not the same as the previous term.
 
 # Advanced Searching
 
+The prompt, if any, must always come first.  
+
 You can also include image generation parameters in your search query. 
 
 Add the parameters to the end of your query, e.g:
@@ -184,6 +186,7 @@ A man staring into a starry night sky, by Van Gogh steps: 20 cfg:12
 
 Parameters will be ANDed, meaning adding more parameters will filter out more results. 
 
+The way the query is parsed is, each possible parameter is matched and then removed from the query. Any remaining unmatched text will be considered as part of the prompt.
 
 # Supported parameters
 
@@ -191,6 +194,7 @@ Parameters will be ANDed, meaning adding more parameters will filter out more re
 
 * `negative prompt: <term> [,<term>]`
 * `negative_prompt: <term> [,<term>]`
+* `negative: <term> [,<term>]`
 
 ## Steps
 
