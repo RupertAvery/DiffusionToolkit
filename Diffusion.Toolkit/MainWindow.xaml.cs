@@ -26,6 +26,7 @@ using MessageBox = System.Windows.MessageBox;
 using Model = Diffusion.IO.Model;
 using Timer = System.Threading.Timer;
 using Diffusion.Updater;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Diffusion.Toolkit
 {
@@ -412,6 +413,17 @@ namespace Diffusion.Toolkit
 
             _models = new Pages.Models(_dataStore, _settings);
             _search = new Search(_navigatorService, _dataStore, _messagePopupManager, _settings);
+            _search.MoveFiles = (files) =>
+            {
+                using var dialog = new CommonOpenFileDialog();
+                dialog.IsFolderPicker = true;
+
+                if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+                {
+                    var path = dialog.FileName;
+                    Task.Run(async () => await MoveFiles(files, path));
+                }
+            };
             _prompts = new Prompts(_dataStore, _settings);
             _search.SetNSFWBlur(_model.NSFWBlur);
 
@@ -420,13 +432,13 @@ namespace Diffusion.Toolkit
                 _navigatorService.Goto("search");
                 _search.ShowFavorite();
             });
-            
+
             _model.ShowMarked = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
                 _search.ShowMarked();
             });
-            
+
             _model.ShowSearch = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
@@ -731,6 +743,67 @@ namespace Diffusion.Toolkit
                 }
             });
         }
+
+        private async Task MoveFiles(IList<ImageEntry> images, string path)
+        {
+
+            foreach (var watcher in _watchers)
+            {
+                watcher.EnableRaisingEvents = false;
+            }
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.TotalFilesScan = images.Count;
+                _model.CurrentPositionScan = 0;
+            });
+
+            var moved = 0;
+
+            foreach (var image in images)
+            {
+                var fileName = Path.GetFileName(image.Path);
+                var newPath = Path.Join(path, fileName);
+                if (image.Path != newPath)
+                {
+                    File.Move(image.Path, newPath);
+
+                    _dataStore.MoveImage(image.Id, newPath);
+
+                    var moved1 = moved;
+                    Dispatcher.Invoke(() =>
+                    {
+                        image.Path = newPath;
+                        _model.CurrentPositionScan = moved1;
+                        _model.Status = $"Moving {_model.CurrentPositionScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+                    });
+                    moved++;
+                }
+                else
+                {
+                    _model.TotalFilesScan--;
+                }
+            }
+
+
+            await Dispatcher.Invoke(async () =>
+            {
+                _model.Status = $"Moving {_model.TotalFilesScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+                _model.TotalFilesScan = Int32.MaxValue;
+                _model.CurrentPositionScan = 0;
+                await _messagePopupManager.Show($"{moved} files were moved.", "Move images", PopupButtons.OK);
+            });
+
+            //await _search.ReloadMatches();
+
+            foreach (var watcher in _watchers)
+            {
+                watcher.EnableRaisingEvents = true;
+            }
+
+
+        }
+
 
         private (int, float) ScanFiles(IList<string> filesToScan, bool updateImages)
         {

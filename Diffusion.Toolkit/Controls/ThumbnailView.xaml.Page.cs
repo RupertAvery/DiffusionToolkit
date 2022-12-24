@@ -33,5 +33,10 @@ namespace Diffusion.Toolkit.Controls
 
             PageChangedEvent?.Invoke(this, Model.Page);
         }
+
+        public void SetPagingEnabled()
+        {
+            Model.SetPagingEnabled(Model.Page);
+        }
     }
 }

@@ -129,7 +129,7 @@ namespace Diffusion.Database
                     // TODO: Try converting the prompt into a list of numbers (vocabulary), then perform hamming on the numbers instead of the whole prompt
                     if (distance > 0)
                     {
-                        foreach (var result in allResults.Where(r => r.Prompt.Length >= prompt.Length))
+                        foreach (var result in allResults.Where(r => r.Prompt != null && r.Prompt.Length >= prompt.Length))
                         {
                             if (HammingDistance(prompt, result.Prompt) <= distance)
                             {

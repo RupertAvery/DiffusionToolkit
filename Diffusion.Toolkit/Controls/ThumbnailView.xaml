@@ -125,6 +125,8 @@
                                         <MenuItem Header="Copy hash"  Command="{Binding CopyHashCommand}"/>
                                         <MenuItem Header="Copy all parameters"  Command="{Binding CopyParametersCommand}"/>
                                         <Separator />
+                                        <MenuItem Header="Move"  Command="{Binding MoveCommand}"/>
+                                        <Separator />
                                         <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
                                         <!--<Separator />
                                             <MenuItem Header="Add to Album" />

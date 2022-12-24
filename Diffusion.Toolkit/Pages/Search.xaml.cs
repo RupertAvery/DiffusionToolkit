@@ -209,6 +209,13 @@ namespace Diffusion.Toolkit.Pages
             set => _settings = value;
         }
 
+        public Action<IList<ImageEntry>> MoveFiles
+        {
+            get => ThumbnailListView.MoveFiles;
+            set => ThumbnailListView.MoveFiles = value;
+
+        }
+
         private void ShowInExplorer(object obj)
         {
             if (_model.CurrentImage == null) return;
@@ -355,6 +362,8 @@ namespace Diffusion.Toolkit.Pages
                         return;
                     }
                     _model.Page = 1;
+
+                    ThumbnailListView.SetPagingEnabled();
                 });
 
 

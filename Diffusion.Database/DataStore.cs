@@ -122,6 +122,6 @@ public class ImagePath
 
 public class UsedPrompt
 {
-    public string Prompt { get; set; }
+    public string? Prompt { get; set; }
     public int Usage { get; set; }
 }

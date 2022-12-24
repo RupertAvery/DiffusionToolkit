@@ -1,5 +1,6 @@
 ﻿using SQLite;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -180,6 +181,50 @@ namespace Diffusion.Database
             db.Close();
 
             //return paths;
+        }
+
+        public void MoveImage(int id, string newPath)
+        {
+            using var db = OpenConnection();
+
+
+            db.Execute("UPDATE Image SET Path = ? WHERE Id = ?", newPath, id);
+
+            db.Close();
+        }
+
+        public void MoveImages(IEnumerable<ImagePath> images, string path)
+        {
+            using var db = OpenConnection();
+
+            db.BeginTransaction();
+
+            try
+            {
+                var query =
+                    "UPDATE Image SET Path = @Path WHERE Id = @Id";
+
+                var command = db.CreateCommand(query);
+
+                foreach (var image in images)
+                {
+                    var fileName = Path.GetFileName(image.Path);
+                    var newPath = Path.Join(path, fileName);
+                    File.Move(image.Path, newPath);
+                    command.Bind("@Path", newPath);
+                    command.ExecuteNonQuery();
+                }
+
+                db.Commit();
+            }
+            catch (Exception e)
+            {
+                db.Rollback();
+            }
+            finally
+            {
+                db.Close();
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Diffusion.Toolkit.Controls;
 
@@ -56,6 +57,7 @@ public class ThumbnailViewModel : BaseNotify
     private ICommand _ratingCommand;
     private ICommand _nsfwCommand;
     private ICommand _removeEntryCommand;
+    private ICommand _moveCommand;
 
     public ThumbnailViewModel()
     {
@@ -140,13 +142,19 @@ public class ThumbnailViewModel : BaseNotify
                 value = 1;
             }
 
-            PrevPageEnabled = value > 1;
-            NextPageEnabled = value < _pages;
-            FirstPageEnabled = value > 1;
-            LastPageEnabled = value < _pages;
+            SetPagingEnabled(value);
 
             SetField(ref _page, value);
         }
+    }
+
+    public void SetPagingEnabled(int value)
+    {
+
+        PrevPageEnabled = value > 1;
+        NextPageEnabled = value < _pages;
+        FirstPageEnabled = value > 1;
+        LastPageEnabled = value < _pages;
     }
 
     public bool IsEmpty
@@ -164,7 +172,10 @@ public class ThumbnailViewModel : BaseNotify
     public string Results
     {
         get => _results;
-        set => SetField(ref _results, value);
+        set
+        {
+            SetField(ref _results, value);
+        }
     }
 
     public string ResultStatus
@@ -330,5 +341,11 @@ public class ThumbnailViewModel : BaseNotify
     {
         get => _removeEntryCommand;
         set => SetField(ref _removeEntryCommand, value);
+    }
+
+    public ICommand MoveCommand
+    {
+        get => _moveCommand;
+        set => SetField(ref _moveCommand, value);
     }
 }

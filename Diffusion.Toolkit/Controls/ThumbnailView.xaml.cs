@@ -53,6 +53,7 @@ namespace Diffusion.Toolkit.Controls
             Model.NSFWCommand = new RelayCommand<object>(o => NSFWSelected());
             Model.RatingCommand = new RelayCommand<object>(o => RateSelected(int.Parse((string)o)));
             Model.RemoveEntryCommand = new RelayCommand<object>(o => RemoveEntry());
+            Model.MoveCommand = new RelayCommand<object>(o => MoveSelected());
 
             Model.NextPage = new RelayCommand<object>((o) => GoNextPage());
             Model.PrevPage = new RelayCommand<object>((o) => GoPrevPage());
@@ -65,6 +66,12 @@ namespace Diffusion.Toolkit.Controls
             //_model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
             //_model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             //_model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
+        }
+
+        private void MoveSelected()
+        {
+            var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+            MoveFiles(imageEntries);
         }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -449,5 +456,7 @@ namespace Diffusion.Toolkit.Controls
                 e.Handled = true;
             }
         }
+
+        public Action<IList<ImageEntry>> MoveFiles;
     }
 }
