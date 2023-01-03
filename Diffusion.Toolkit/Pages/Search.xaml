@@ -161,28 +161,34 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="32"/>
                 </Grid.RowDefinitions>
-                <Image Grid.Row="0"  Grid.RowSpan="3" 
-                       Source="{Binding Image}" 
-                       HorizontalAlignment="Stretch" 
-                       VerticalAlignment="Stretch" >
-                    <Image.Visibility>
-                        <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
-                            <Binding Path="NSFW"></Binding>
-                            <Binding ElementName="MainGrid" Path="DataContext.NSFWBlur" ></Binding>
-                        </MultiBinding>
-                    </Image.Visibility>
-                    <Image.Effect>
-                        <BlurEffect  KernelType="Gaussian">
-                            <BlurEffect.Radius>
-                                <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
-                                    <Binding Path="NSFW"></Binding>
-                                    <Binding ElementName="MainGrid" Path="DataContext.NSFWBlur" ></Binding>
-                                </MultiBinding>
-                            </BlurEffect.Radius>
-                        </BlurEffect>
-                    </Image.Effect>
-                </Image>
-                <Grid Grid.Row="0" RowSpan="3" Background="Transparent">
+                <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
+                              HorizontalScrollBarVisibility="Auto" 
+                              VerticalScrollBarVisibility="Auto"  
+                              KeyDown="UIElement_OnKeyDown"
+                              >
+                    <Image x:Name="Preview"
+                           MouseWheel="UIElement_OnMouseWheel"  
+                           Source="{Binding Image}" >
+                        <Image.Visibility>
+                            <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
+                                <Binding Path="NSFW"></Binding>
+                                <Binding ElementName="MainGrid" Path="DataContext.NSFWBlur" ></Binding>
+                            </MultiBinding>
+                        </Image.Visibility>
+                        <Image.Effect>
+                            <BlurEffect  KernelType="Gaussian">
+                                <BlurEffect.Radius>
+                                    <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
+                                        <Binding Path="NSFW"></Binding>
+                                        <Binding ElementName="MainGrid" Path="DataContext.NSFWBlur" ></Binding>
+                                    </MultiBinding>
+                                </BlurEffect.Radius>
+                            </BlurEffect>
+                        </Image.Effect>
+                    </Image>
+                </ScrollViewer>
+              
+                <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False">
                     <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
                         <fa:ImageAwesome.Visibility>
                             <MultiBinding Converter="{StaticResource boolToVisMulti}" ConverterParameter="20">
@@ -192,15 +198,17 @@
                         </fa:ImageAwesome.Visibility>
                     </fa:ImageAwesome>
                 </Grid>
-                <Grid  Grid.Row="0" RowSpan="3"  Margin="10" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                    <Grid Background="Transparent">
+                <Grid  Grid.Row="0" RowSpan="3"  Margin="10"  Background="{x:Null}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                >
+                    <Grid  Background="{x:Null}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
-                            <RowDefinition Height="32"/>
+                            <RowDefinition Height="56"/>
                         </Grid.RowDefinitions>
                         <Grid 
                             classes:VisibilityAnimation.AnimationType="Fade" 
-                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Grid.Row="0" Margin="10" Background="Transparent" VerticalAlignment="Bottom">
+                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Grid.Row="0" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
+                        >
                             <Grid Margin="-20" Background="Transparent"></Grid>
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <StackPanel Background="#5F000000">
@@ -282,12 +290,13 @@
                             </ScrollViewer>
                         </Grid>
 
-                        <Grid  Grid.Row="1" Background="Transparent">
+                        <Grid  Grid.Row="1" Background="Transparent"  IsHitTestVisible="true">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="40"/>
                                 <ColumnDefinition Width="40"/>
                                 <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="16"/>
                             </Grid.ColumnDefinitions>
 
                             <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyParametersCommand}">

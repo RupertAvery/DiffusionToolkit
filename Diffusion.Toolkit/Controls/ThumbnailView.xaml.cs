@@ -109,7 +109,7 @@ namespace Diffusion.Toolkit.Controls
                 Key.D0,
             };
 
-            if (e.Key == Key.Enter)
+            if (e.Key == Key.Enter && e.KeyboardDevice.Modifiers == ModifierKeys.None)
             {
                 OpenSelected();
             }
@@ -119,20 +119,20 @@ namespace Diffusion.Toolkit.Controls
                 {
                     RemoveEntry();
                 }
-                else
+                else if (e.KeyboardDevice.Modifiers == ModifierKeys.None)
                 {
                     DeleteSelected();
                 }
             }
-            else if (e.Key == Key.F)
+            else if (e.Key == Key.F && e.KeyboardDevice.Modifiers == ModifierKeys.None)
             {
                 FavoriteSelected();
             }
-            else if (e.Key == Key.N)
+            else if (e.Key == Key.N && e.KeyboardDevice.Modifiers == ModifierKeys.None)
             {
                 NSFWSelected();
             }
-            else if (ratings.Contains(e.Key))
+            else if (ratings.Contains(e.Key) && e.KeyboardDevice.Modifiers == ModifierKeys.None)
             {
                 var rating = e.Key switch
                 {
@@ -149,7 +149,6 @@ namespace Diffusion.Toolkit.Controls
                 };
 
                 RateSelected(rating);
-
             }
         }
 

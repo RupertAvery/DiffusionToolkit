@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using Path = System.IO.Path;
@@ -137,11 +138,11 @@ namespace Diffusion.Toolkit
 
         private void MyHandler(object sender, UnhandledExceptionEventArgs e)
         {
-            var message = ((Exception)e.ExceptionObject).Message;
+            var exception = ((Exception)e.ExceptionObject);
 
-            Logger.Log($"An unhandled exception occured: {message}");
+            Logger.Log($"An unhandled exception occured: {exception.Message}\r\n\r\n{exception.StackTrace}");
 
-            MessageBox.Show(this, message, "An unhandled exception occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            MessageBox.Show(this, exception.Message, "An unhandled exception occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
         }
 
         private void ToggleInfo()
@@ -201,7 +202,7 @@ namespace Diffusion.Toolkit
 
         private void OnClosing(object? sender, CancelEventArgs e)
         {
-            if (_settings.IsDirty)
+            if (_settings.IsDirty())
             {
                 _configuration.Save(_settings);
             }
@@ -354,7 +355,7 @@ namespace Diffusion.Toolkit
                 settings.Owner = this;
                 settings.ShowDialog();
 
-                if (_settings.IsDirty)
+                if (_settings.IsDirty())
                 {
                     _configuration.Save(_settings);
                     _settings.SetPristine();
@@ -629,7 +630,7 @@ namespace Diffusion.Toolkit
                 settings.Owner = this;
                 settings.ShowDialog();
 
-                if (_settings.IsDirty)
+                if (_settings.IsDirty())
                 {
                     _configuration.Save(_settings);
 
@@ -1042,33 +1043,39 @@ namespace Diffusion.Toolkit
             CallUpdater();
         }
 
-        private void FileCopy(string filename, string target)
+        private void FileCopy(string source, string filename, string target)
         {
-            File.Copy(filename, Path.Join(target, filename), true);
+            File.Copy(Path.Combine(source, filename), Path.Combine(target, filename), true);
         }
 
         private void CallUpdater()
         {
             Logger.Log($"Calling updater...");
 
-            var updaterExe = "Diffusion.Updater.exe";
+            var appDir = System.AppDomain.CurrentDomain.BaseDirectory;
 
-            var path = "Updater";
+            var temp = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Updater");
 
-            var temp = Path.Join(path, updaterExe);
-
-            if (!Directory.Exists(path))
+            if (!Directory.Exists(temp))
             {
-                Directory.CreateDirectory(path);
+                Directory.CreateDirectory(temp);
             }
 
-            FileCopy(updaterExe, path);
-            FileCopy("Diffusion.Updater.deps.json", path);
-            FileCopy("Diffusion.Updater.dll", path);
-            FileCopy("Diffusion.Updater.runtimeconfig.json", path);
+            FileCopy(appDir, "Diffusion.Updater.exe", temp);
+            FileCopy(appDir, "Diffusion.Updater.deps.json", temp);
+            FileCopy(appDir, "Diffusion.Updater.dll", temp);
+            FileCopy(appDir, "Diffusion.Updater.runtimeconfig.json", temp);
+
+            MessageBox.Show(appDir, "AppDir");
+
+            var pi = new ProcessStartInfo()
+            {
+                FileName = Path.Combine(temp, "Diffusion.Updater.exe"),
+                Arguments = appDir
+            };
 
 
-            Process.Start(temp, System.AppDomain.CurrentDomain.BaseDirectory);
+            Process.Start(pi);
         }
     }
 }

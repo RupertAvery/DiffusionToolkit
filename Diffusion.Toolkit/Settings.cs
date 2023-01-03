@@ -22,7 +22,13 @@ public class Settings
         PageSize = 100;
     }
 
-    public bool IsDirty { get; private set; }
+    private bool _isDirty;
+
+    public bool IsDirty()
+    {
+        return _isDirty;
+    }
+
     private readonly Dictionary<string, bool> _isPropertyDirty = new Dictionary<string, bool>();
     private string _mainGridWidth;
     private string _previewGridHeight;
@@ -45,7 +51,7 @@ public class Settings
 
     public void SetPristine()
     {
-        IsDirty = false;
+        _isDirty = false;
         _isPropertyDirty.Clear();
     }
 
@@ -54,7 +60,7 @@ public class Settings
         if (EqualityComparer<T>.Default.Equals(field, value)) return;
         field = value;
         _isPropertyDirty[propertyName] = true;
-        IsDirty = true;
+        _isDirty = true;
     }
 
     private void UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")
@@ -79,7 +85,7 @@ public class Settings
         if (!hasDiff) return;
         field = value;
         _isPropertyDirty[propertyName] = true;
-        IsDirty = true;
+        _isDirty = true;
     }
 
     public List<string> ImagePaths
@@ -116,18 +122,6 @@ public class Settings
     {
         get => _mainGridWidth2;
         set => UpdateValue(ref _mainGridWidth2, value);
-    }
-
-    public string PreviewGridHeight
-    {
-        get => _previewGridHeight;
-        set => UpdateValue(ref _previewGridHeight, value);
-    }
-
-    public string PreviewGridHeight2
-    {
-        get => _previewGridHeight2;
-        set => UpdateValue(ref _previewGridHeight2, value);
     }
 
     public WindowState? WindowState

@@ -6,8 +6,14 @@
    * [Watch Folders](#watch-folders)
    * [Rebuild Images](#rebuild-images)
 * [Navigation](#navigation)
-* [Displaying Metadata (PNGInfo)](#displaying-metadata-pnginfo)
+* [Preview](#preview)
+   * [Displaying Metadata (PNGInfo)](#displaying-metadata-pnginfo)
 * [Drag and Drop](#drag-and-drop)
+* [Tagging](#tagging)
+   * [Favorites](#favorites)
+   * [Rating](#rating)
+   * [NSFW](#nsfw-tag)
+   * [Deleting](#deleting)
 * [Searching](#searching)
 * [Advanced Searching](#advanced-searching)
 * [Supported Parameters](#supported-parameters)
@@ -64,7 +70,6 @@ This is best used when generating images via a tool or webgui.  You will only be
 
 Running this should not affect any existing favorites or ratings
 
-
 # Navigation
 
 The Search view is the default on startup.  Here you can enter your prompt, and press Enter to intitate the search. Matching images will be displayed in the thumbnail view. By default, results will be limited to 100 per page. This can be changed in settings.
@@ -79,10 +84,21 @@ Use the buttons at the bottom of the page to move between pages. The keyboard sh
 
 Double-clicking an image or pressing Enter with an image selected will launch your default image viewer.
 
-On the right is the Preview Pane, where the image preview.
+# Preview
 
+On the right is the Preview Pane, where the image preview can be seen.
 
-# Displaying Metadata (PNGInfo)
+## Zoom
+
+With the Preview Pane in focus, hold CTRL and press - or + to zoom in and out of the image.
+
+You may also hold CTRL and use the mouse scroller to zoom in and out of the image.
+
+Click and drag the image to pan the view when the image or zoom is larger than the Preview Pane.
+
+Zoom will be reset when you select another image.
+
+## Displaying Metadata (PNGInfo)
 
 To display the prompt and other metadata associated with the image (i.e. PNGInfo) press the **eye icon** located at the bottom right of the Preview Pane, or press `i` while in the Thumbnail View.
 
@@ -91,8 +107,11 @@ To display the prompt and other metadata associated with the image (i.e. PNGInfo
 
 You can drag an image from the thumbnail to another app, such as the PNGInfo tab in a WebUI to transfer the metadata, or to an explorer folder to copy the image to the target folder
 
+# Tagging
 
-# Favorites
+You can tag your files with additional metadata (only in Diffusion Toolkit) to help you organize and manage your images further.
+
+## Favorites
 
 When inside the thumbnail viewer, press `F` to toggle **Favorite** on the selected image.  A blue heart will indicate that the image has been tagged as Favorite. This will also be indicated in the Preview Pane.
 
@@ -104,7 +123,7 @@ When in the Favorite View, toggling an image Favorite off will cause the image t
 
 You can use the Favorite search parameter to filter images by favorites. See [Advanced Searching](#advanced-searching) for more information.
 
-# Rating
+## Rating
 
 When inside the thumbnail viewer, press `1-5` to set the **Rating** on the selected image. A star will indicate that the image has been rated. An equivalent number of yellow stars in the Preview Pane will indicate the rating of the image.  Press the same number again to remove the rating.
 
@@ -112,7 +131,7 @@ You can rate multiple selected images.
 
 You can use the Rating search parameter to filter images by rating. See [Advanced Searching](#advanced-searching) for more information.
 
-# NSFW Tag
+## NSFW Tag
 
 When inside the thumbnail viewer, press `N` to toggle **NSFW** Tag on the selected image. If the **View > Blur NSFW** option is checked, the image will be blurred to indicate NSFW on the image.  Otherwise there no visible indicator that the image is tagged as NSFW.
 
@@ -128,7 +147,7 @@ You can use the NSFW search parameter to filter images by nsfw. See [Advanced Se
 
 The shortcut for **View > Blur NSFW** is `B`
 
-# Deleting
+## Deleting
 
 When inside the thumbnail viewer, press `Del` or `X` to toggle **For Deletion** on the selected image.  The thumbnail will become transparent, indicating that the image has been tagged as For Deletion.
 

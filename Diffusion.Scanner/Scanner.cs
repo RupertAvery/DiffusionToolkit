@@ -37,9 +37,7 @@ namespace Diffusion.IO
                 }
                 catch (Exception e)
                 {
-                    Logger.Log($"An error occurred while reading {file}: ");
-                    Logger.Log(e.Message);
-                    Logger.Log(e.StackTrace);
+                    Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
                 }
 
                 if (fp != null)
