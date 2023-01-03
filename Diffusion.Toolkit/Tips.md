@@ -289,6 +289,13 @@ If you specify this term explicitly, it will override the **Hide NSFW from Resul
 
 * `nsfw: [true|false]`
 
+## No Metadata
+
+This filter will show images that do not have metadata.
+
+* `nometa: [true|false]`
+* `nometadata: [true|false]`
+
 ## For Deletion
 
 For Deletion is a Diffusion Toolkit metadata with a value of true or false, entered by the user. See [Deleting](#deleting)

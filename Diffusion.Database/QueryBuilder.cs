@@ -36,6 +36,7 @@ public static class QueryBuilder
     private static readonly Regex FavoriteRegex = new Regex("\\b(?:favorite|fave):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex NSFWRegex = new Regex("\\b(?:nsfw):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex NoMetadataRegex = new Regex("\\b(?:nometa|nometadata):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex NegativePromptRegex = new Regex("\\b(?:negative prompt|negative_prompt|negative):\\s*(?<value>.*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
@@ -62,6 +63,7 @@ public static class QueryBuilder
         ParseFavorite(ref prompt, conditions);
         ParseForDeletion(ref prompt, conditions);
         ParseNSFW(ref prompt, conditions);
+        ParseNoMetadata(ref prompt, conditions);
 
         ParseNegativePrompt(ref prompt, conditions);
         ParsePrompt(ref prompt, conditions);
@@ -156,6 +158,24 @@ public static class QueryBuilder
         //return false;
     }
 
+    private static void ParseNoMetadata(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        var match = NoMetadataRegex.Match(prompt);
+
+        if (match.Success)
+        {
+            prompt = NoMetadataRegex.Replace(prompt, String.Empty);
+
+            var value = true;
+
+            if (match.Groups["value"].Success)
+            {
+                value = match.Groups["value"].Value.ToLower() == "true";
+            }
+
+            conditions.Add(new KeyValuePair<string, object>("(NoMetadata = ?)", value));
+        }
+    }
 
     private static void ParseFavorite(ref string prompt, List<KeyValuePair<string, object>> conditions)
     {

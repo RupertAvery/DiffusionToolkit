@@ -854,6 +854,7 @@ namespace Diffusion.Toolkit
                         HyperNetworkStrength = file.HyperNetworkStrength,
                         ClipSkip = file.ClipSkip,
                         FileSize = file.FileSize,
+                        NoMetadata = file.NoMetadata
                     };
 
                     if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)

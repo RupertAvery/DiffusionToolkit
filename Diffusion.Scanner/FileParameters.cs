@@ -23,4 +23,5 @@ public class FileParameters
     public int? ENSD { get; set; }
     public decimal? PromptStrength { get; set; }
     public long FileSize { get; set; }
+    public bool NoMetadata { get; set; }
 }
