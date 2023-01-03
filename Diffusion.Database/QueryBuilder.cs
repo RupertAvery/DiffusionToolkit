@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -235,7 +236,7 @@ public static class QueryBuilder
                 oper = match.Groups["operator"].Value;
             }
 
-            conditions.Add(new KeyValuePair<string, object>($"(HyperNetworkStrength {oper} ?)", decimal.Parse(match.Groups["value"].Value)));
+            conditions.Add(new KeyValuePair<string, object>($"(HyperNetworkStrength {oper} ?)", decimal.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture)));
         }
     }
 
@@ -255,7 +256,7 @@ public static class QueryBuilder
                 oper = match.Groups["operator"].Value;
             }
 
-            conditions.Add(new KeyValuePair<string, object>($"(AestheticScore {oper} ?)", decimal.Parse(match.Groups["value"].Value)));
+            conditions.Add(new KeyValuePair<string, object>($"(AestheticScore {oper} ?)", decimal.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture)));
         }
     }
 
@@ -282,7 +283,7 @@ public static class QueryBuilder
             }
             else
             {
-                conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)", int.Parse(value)));
+                conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)", int.Parse(value, CultureInfo.InvariantCulture)));
             }
 
         }
@@ -483,11 +484,11 @@ public static class QueryBuilder
             prompt = SeedRegex.Replace(prompt, String.Empty);
             if (match.Groups["end"].Success)
             {
-                conditions.Add(new KeyValuePair<string, object>("(Seed BETWEEN ? AND ?)", new object[] { long.Parse(match.Groups["start"].Value), long.Parse(match.Groups["end"].Value) }));
+                conditions.Add(new KeyValuePair<string, object>("(Seed BETWEEN ? AND ?)", new object[] { long.Parse(match.Groups["start"].Value, CultureInfo.InvariantCulture), long.Parse(match.Groups["end"].Value, CultureInfo.InvariantCulture) }));
             }
             else
             {
-                conditions.Add(new KeyValuePair<string, object>("(Seed = ?)", long.Parse(match.Groups["start"].Value)));
+                conditions.Add(new KeyValuePair<string, object>("(Seed = ?)", long.Parse(match.Groups["start"].Value, CultureInfo.InvariantCulture)));
             }
         }
     }

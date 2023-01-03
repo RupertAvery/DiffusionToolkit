@@ -5,6 +5,7 @@ using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
+using System.Globalization;
 
 namespace Diffusion.IO;
 
@@ -142,23 +143,23 @@ public class Metadata
                 switch (arg)
                 {
                     case "-s":
-                        fp.Steps = int.Parse(args[index + 1]);
+                        fp.Steps = int.Parse(args[index + 1], CultureInfo.InvariantCulture);
                         index++;
                         break;
                     case "-S":
-                        fp.Seed = long.Parse(args[index + 1]);
+                        fp.Seed = long.Parse(args[index + 1], CultureInfo.InvariantCulture);
                         index++;
                         break;
                     case "-W":
-                        fp.Width = int.Parse(args[index + 1]);
+                        fp.Width = int.Parse(args[index + 1], CultureInfo.InvariantCulture);
                         index++;
                         break;
                     case "-H":
-                        fp.Height = int.Parse(args[index + 1]);
+                        fp.Height = int.Parse(args[index + 1], CultureInfo.InvariantCulture);
                         index++;
                         break;
                     case "-C":
-                        fp.CFGScale = decimal.Parse(args[index + 1]);
+                        fp.CFGScale = decimal.Parse(args[index + 1], CultureInfo.InvariantCulture);
                         index++;
                         break;
                     case "-A":
@@ -343,25 +344,25 @@ public class Metadata
                         switch (kvp[0].Trim())
                         {
                             case "Steps":
-                                fileParameters.Steps = int.Parse(kvp[1].Trim());
+                                fileParameters.Steps = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Sampler":
                                 fileParameters.Sampler = kvp[1].Trim();
                                 break;
                             case "Guidance Scale":
-                                fileParameters.CFGScale = decimal.Parse(kvp[1].Trim());
+                                fileParameters.CFGScale = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Seed":
-                                fileParameters.Seed = long.Parse(kvp[1].Trim());
+                                fileParameters.Seed = long.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Width":
-                                fileParameters.Width = int.Parse(kvp[1].Trim());
+                                fileParameters.Width = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Height":
-                                fileParameters.Height = int.Parse(kvp[1].Trim());
+                                fileParameters.Height = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Prompt Strength":
-                                fileParameters.PromptStrength = decimal.Parse(kvp[1].Trim());
+                                fileParameters.PromptStrength = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                                 //case "Model hash":
                                 //    fileParameters.ModelHash = kvp[1].Trim();
@@ -458,6 +459,8 @@ public class Metadata
 
                     fileParameters.OtherParameters = part;
 
+                    //var decimalFormatter = new DecimalFormatter();
+
                     var subParts = part.Split(new[] { ',' });
                     foreach (var keyValue in subParts)
                     {
@@ -465,36 +468,36 @@ public class Metadata
                         switch (kvp[0].Trim())
                         {
                             case "Steps":
-                                fileParameters.Steps = int.Parse(kvp[1].Trim());
+                                fileParameters.Steps = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Sampler":
                                 fileParameters.Sampler = kvp[1].Trim();
                                 break;
                             case "CFG scale":
-                                fileParameters.CFGScale = decimal.Parse(kvp[1].Trim());
+                                fileParameters.CFGScale = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Seed":
-                                fileParameters.Seed = long.Parse(kvp[1].Trim());
+                                fileParameters.Seed = long.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Size":
                                 var size = kvp[1].Split(new[] { 'x' });
-                                fileParameters.Width = int.Parse(size[0].Trim());
-                                fileParameters.Height = int.Parse(size[1].Trim());
+                                fileParameters.Width = int.Parse(size[0].Trim(), CultureInfo.InvariantCulture);
+                                fileParameters.Height = int.Parse(size[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Model hash":
                                 fileParameters.ModelHash = kvp[1].Trim();
                                 break;
                             case "Batch size":
-                                fileParameters.BatchSize = int.Parse(kvp[1].Trim());
+                                fileParameters.BatchSize = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "Hypernet":
                                 fileParameters.HyperNetwork = kvp[1].Trim();
                                 break;
                             case "Hypernet strength":
-                                fileParameters.HyperNetworkStrength = decimal.Parse(kvp[1].Trim());
+                                fileParameters.HyperNetworkStrength = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "aesthetic_score":
-                                fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim());
+                                fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                         }
                     }
@@ -552,7 +555,7 @@ public class Metadata
                 fileParameters = new FileParameters();
             }
             fileParameters.AestheticScore = decimal.Parse(tag.Description.Substring("aesthetic_score:".Length));
-            fileParameters.OtherParameters = $"aesthetic_score: {fileParameters.AestheticScore}";
+            fileParameters.OtherParameters ??= $"aesthetic_score: {fileParameters.AestheticScore}";
         }
 
 
