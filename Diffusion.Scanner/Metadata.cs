@@ -23,91 +23,87 @@ public class Metadata
         return files;
     }
 
-    public static FileParameters ReadFromFile(string file)
+    public static FileParameters? ReadFromFile(string file)
     {
         FileParameters fileParameters = null;
 
-        try
+
+        var ext = Path.GetExtension(file).ToLower();
+
+        switch (ext)
         {
-            var ext = Path.GetExtension(file).ToLower();
-
-            switch (ext)
-            {
-                case ".png":
-                    {
-                        IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
-
-                        var isNovelAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description == "Software: NovelAI"));
-
-                        var isInvokeAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("Dream: ")));
-
-                        var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
-
-                        if (isInvokeAINew)
-                        {
-                            fileParameters = ReadInvokeAIParametersNew(file, directories);
-                        }
-                        else if (isInvokeAI)
-                        {
-                            fileParameters = ReadInvokeAIParameters(file, directories);
-                        }
-                        else if (isNovelAI)
-                        {
-                            fileParameters = ReadNovelAIParameters(file, directories);
-                        }
-                        else
-                        {
-                            fileParameters = ReadAutomatic1111Parameters(file, directories);
-                        }
-
-                        break;
-                    }
-                case ".jpg" or ".jpeg":
-                    {
-                        IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(file);
-                        
-                        fileParameters = ReadAutomatic1111Parameters(file, directories);
-                        
-                        break;
-                    }
-
-            }
-
-            if (fileParameters == null)
-            {
-                var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
-
-                if (File.Exists(parameterFile))
+            case ".png":
                 {
-                    var parameters = File.ReadAllText(parameterFile);
+                    IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
+
+                    var isNovelAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description == "Software: NovelAI"));
+
+                    var isInvokeAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("Dream: ")));
+
+                    var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
+
+                    if (isInvokeAINew)
+                    {
+                        fileParameters = ReadInvokeAIParametersNew(file, directories);
+                    }
+                    else if (isInvokeAI)
+                    {
+                        fileParameters = ReadInvokeAIParameters(file, directories);
+                    }
+                    else if (isNovelAI)
+                    {
+                        fileParameters = ReadNovelAIParameters(file, directories);
+                    }
+                    else
+                    {
+                        fileParameters = ReadAutomatic1111Parameters(file, directories);
+                    }
+
+                    break;
+                }
+            case ".jpg" or ".jpeg":
+                {
+                    IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(file);
+
+                    fileParameters = ReadAutomatic1111Parameters(file, directories);
+
+                    break;
+                }
+
+        }
+
+        if (fileParameters == null)
+        {
+            var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
+
+            if (File.Exists(parameterFile))
+            {
+                var parameters = File.ReadAllText(parameterFile);
+                fileParameters = DetectAndReadMetaType(parameters);
+            }
+            else
+            {
+                var currPath = Path.GetDirectoryName(parameterFile);
+                var textFiles = GetDirectoryTextFileCache(currPath);
+
+                var matchingFile = textFiles.FirstOrDefault(t => Path.GetFileNameWithoutExtension(parameterFile).StartsWith(Path.GetFileNameWithoutExtension(t)));
+                
+                if (matchingFile != null)
+                {
+                    var parameters = File.ReadAllText(matchingFile);
                     fileParameters = DetectAndReadMetaType(parameters);
                 }
-                else
-                {
-                    var currPath = Path.GetDirectoryName(parameterFile);
-                    var textFiles = GetDirectoryTextFileCache(currPath);
-                    var matchingFile = textFiles.FirstOrDefault(t => Path.GetFileNameWithoutExtension(parameterFile).StartsWith(Path.GetFileNameWithoutExtension(t)));
-                    if (matchingFile != null)
-                    {
-                        var parameters = File.ReadAllText(matchingFile);
-                        fileParameters = DetectAndReadMetaType(parameters);
-                    }
-                }
             }
-
-
         }
-        catch (Exception e)
+
         {
-
-        }
 
 
         if (fileParameters != null)
         {
-            FileInfo fileInfo = new FileInfo(file);
-            fileParameters.Path = file;
-            fileParameters.FileSize = fileInfo.Length;
+        FileInfo fileInfo = new FileInfo(file);
+        fileParameters.Path = file;
+        fileParameters.FileSize = fileInfo.Length;
         }
 
         return fileParameters;

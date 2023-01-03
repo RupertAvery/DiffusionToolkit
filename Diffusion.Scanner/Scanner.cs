@@ -1,6 +1,7 @@
 ﻿using Dir = System.IO.Directory;
 using System.IO;
 using static System.Net.WebRequestMethods;
+using File = System.IO.File;
 
 namespace Diffusion.IO
 {
@@ -28,7 +29,23 @@ namespace Diffusion.IO
         {
             foreach (var file in files)
             {
-                yield return Metadata.ReadFromFile(file);
+                FileParameters? fp = null;
+
+                try
+                {
+                    fp = Metadata.ReadFromFile(file);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log($"An error occurred while reading {file}: ");
+                    Logger.Log(e.Message);
+                    Logger.Log(e.StackTrace);
+                }
+
+                if (fp != null)
+                {
+                    yield return fp;
+                }
             }
         }
 

@@ -10,4 +10,8 @@
     <PackageReference Include="MetadataExtractor" Version="2.7.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
+  </ItemGroup>
+
 </Project>
