@@ -25,9 +25,9 @@
 
 On first load, you will be shown the settings dialog, where you can add your image folders.
 
-![image](https://user-images.githubusercontent.com/1910659/206367658-3f322276-3f80-4f34-8385-b47f2ba0ee5b.png)
+![image](https://user-images.githubusercontent.com/1910659/210345314-e1e6a37c-94d0-47cc-994d-77a01ad712ee.png)
 
-If you have your images stored in several nested folders, don't add the nested folders, instead add the topmost folder. Folders will be scanned recusively.
+If you have your images stored in several nested folders, don't add the nested folders, just add the topmost folder. Folders will be scanned recusively.
 
 You can choose to Watch Folders for new images. See [Watch Folders](#watch-folders) for more information on this option.
 
@@ -39,6 +39,8 @@ Diffusion Toolkit does not require you to click through folders to search for an
 
 Here you can set the number of images to appear on a page.  
 
+You can also select the theme to use. System will use Light or Dark depending on your current system theme settings (tested on Windows 11).   You may also manually set to Light or Dark theme.
+
 Settings will be applied and saved upon closing the Settings dialog.
 
 You will be prompted to scan your selected folders for images. All parsed information will be saved into a SQLite database at `%APPDATA%\DiffusionToolkit\diffusion-toolkit.db`.
@@ -46,7 +48,6 @@ You will be prompted to scan your selected folders for images. All parsed inform
 You will get a notice upon completion. You can now begin searching via prompt. 
 
 Pressing Enter with an empty search bar will list all images.
-
 
 # Updating your images
 
@@ -88,6 +89,12 @@ Double-clicking an image or pressing Enter with an image selected will launch yo
 
 On the right is the Preview Pane, where the image preview can be seen.
 
+![image](https://user-images.githubusercontent.com/1910659/210345752-d0a2deef-174d-4bae-b191-393387a8fce6.png)
+
+When you rate or favorite an image, an indicator will appear in the bottom left.
+
+![image](https://user-images.githubusercontent.com/1910659/210347580-5e5bfbf7-63e6-4581-99c7-56806b002377.png)
+
 ## Zoom
 
 With the Preview Pane in focus, hold CTRL and press - or + to zoom in and out of the image.
@@ -101,6 +108,8 @@ Zoom will be reset when you select another image.
 ## Displaying Metadata (PNGInfo)
 
 To display the prompt and other metadata associated with the image (i.e. PNGInfo) press the **eye icon** located at the bottom right of the Preview Pane, or press `i` while in the Thumbnail View.
+
+![image](https://user-images.githubusercontent.com/1910659/210345696-914d36bf-76dc-4717-ab3c-cc622e80d07b.png)
 
 
 # Drag and Drop
