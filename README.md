@@ -34,9 +34,9 @@ Think [Lexica.art](https://lexica.art/), but with more powerful search on your l
 
 Diffusion Toolkit supports Light and Dark themes. By default, it will use your system theme.
 
-![image](https://user-images.githubusercontent.com/1910659/205200866-cac98b62-658c-4908-a188-09870d13acae.png)
+![image](https://user-images.githubusercontent.com/1910659/210345039-32b76844-9dc9-4891-9c3b-f9f6efb09e53.png)
 
-![image](https://user-images.githubusercontent.com/1910659/206368234-b5465b1f-9c7d-46bb-8ca3-4458aea761fc.png)
+![image](https://user-images.githubusercontent.com/1910659/210344793-557fd0ba-65ab-4b27-8da7-75438c71085b.png)
 
 
 # Installation
