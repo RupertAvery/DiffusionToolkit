@@ -336,13 +336,13 @@ public static class QueryBuilder
             var height = match.Groups["height"].Value;
             if (NumericRegex.IsMatch(height))
             {
-                conditions.Add(new KeyValuePair<string, object>("(Height = ?)", int.Parse(height)));
+                conditions.Add(new KeyValuePair<string, object>("(Height = ?)", int.Parse(height, CultureInfo.InvariantCulture)));
             }
 
             var width = match.Groups["width"].Value;
             if (NumericRegex.IsMatch(width))
             {
-                conditions.Add(new KeyValuePair<string, object>("(Width = ?)", int.Parse(width)));
+                conditions.Add(new KeyValuePair<string, object>("(Width = ?)", int.Parse(width, CultureInfo.InvariantCulture)));
             }
 
         }
@@ -360,7 +360,7 @@ public static class QueryBuilder
             {
                 if (match.Groups[i].Value.Length > 0)
                 {
-                    orConditions.Add(new KeyValuePair<string, object>("(CFGScale = ?)", float.Parse(match.Groups[i].Value)));
+                    orConditions.Add(new KeyValuePair<string, object>("(CFGScale = ?)", float.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
                 }
             }
 
@@ -464,7 +464,7 @@ public static class QueryBuilder
             {
                 if (match.Groups[i].Value.Length > 0)
                 {
-                    orConditions.Add(new KeyValuePair<string, object>("(Steps = ?)", int.Parse(match.Groups[i].Value)));
+                    orConditions.Add(new KeyValuePair<string, object>("(Steps = ?)", int.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
                 }
             }
 

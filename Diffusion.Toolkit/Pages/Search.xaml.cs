@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -98,11 +99,11 @@ namespace Diffusion.Toolkit.Pages
             }
             else if (match.Groups["star"].Success)
             {
-                return new GridLength(double.Parse(match.Groups["value"].Value), GridUnitType.Star);
+                return new GridLength(double.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture), GridUnitType.Star);
             }
             else
             {
-                return new GridLength(double.Parse(match.Groups["value"].Value), GridUnitType.Pixel);
+                return new GridLength(double.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture), GridUnitType.Pixel);
             }
         }
 

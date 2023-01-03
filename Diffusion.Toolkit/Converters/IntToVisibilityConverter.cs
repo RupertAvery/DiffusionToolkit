@@ -10,7 +10,7 @@ public class IntToVisibilityConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if((int?)value == null) return Visibility.Collapsed;
-        return (int?)value >= int.Parse((string)parameter) ? Visibility.Visible : Visibility.Collapsed;
+        return (int?)value >= int.Parse((string)parameter, CultureInfo.InvariantCulture) ? Visibility.Visible : Visibility.Collapsed;
     }
     
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

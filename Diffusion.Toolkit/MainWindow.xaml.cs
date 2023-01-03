@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -22,6 +23,7 @@ using Diffusion.Toolkit.Themes;
 using Microsoft.Win32;
 using Diffusion.Toolkit.Pages;
 using System.Windows.Forms;
+using System.Windows.Markup;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 using Model = Diffusion.IO.Model;
@@ -114,6 +116,11 @@ namespace Diffusion.Toolkit
 
 
             _messagePopupManager = new MessagePopupManager(this, PopupHost, Frame, Dispatcher);
+
+            //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
+            //Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-PT");
+            //FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(
+            //    XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
 
             //var str = new System.Text.StringBuilder();
             //using (var writer = new System.IO.StringWriter(str))

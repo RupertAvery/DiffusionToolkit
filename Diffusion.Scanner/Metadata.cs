@@ -269,10 +269,10 @@ public class Metadata
                 switch (ptag.Name)
                 {
                     case "Image Width":
-                        fileParameters.Width = int.Parse(ptag.Description);
+                        fileParameters.Width = int.Parse(ptag.Description, CultureInfo.InvariantCulture);
                         break;
                     case "Image Height":
-                        fileParameters.Height = int.Parse(ptag.Description);
+                        fileParameters.Height = int.Parse(ptag.Description, CultureInfo.InvariantCulture);
                         break;
                 }
             }
@@ -554,7 +554,7 @@ public class Metadata
             {
                 fileParameters = new FileParameters();
             }
-            fileParameters.AestheticScore = decimal.Parse(tag.Description.Substring("aesthetic_score:".Length));
+            fileParameters.AestheticScore = decimal.Parse(tag.Description.Substring("aesthetic_score:".Length), CultureInfo.InvariantCulture);
             fileParameters.OtherParameters ??= $"aesthetic_score: {fileParameters.AestheticScore}";
         }
 

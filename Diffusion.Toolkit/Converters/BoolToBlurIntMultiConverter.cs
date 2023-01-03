@@ -10,7 +10,7 @@ public class BoolToBlurIntMultiConverter : IMultiValueConverter
     {
         if (value[0] is bool && value[1] is bool)
         {
-            return (bool)value[0] && (bool)value[1] ? double.Parse((string)parameter) : 0d;
+            return (bool)value[0] && (bool)value[1] ? double.Parse((string)parameter, CultureInfo.InvariantCulture) : 0d;
         }
 
         return 0d;

@@ -8,7 +8,7 @@ public class BoolToBlurIntConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return (bool)value ? double.Parse((string)parameter) : 0d;
+        return (bool)value ? double.Parse((string)parameter, CultureInfo.InvariantCulture) : 0d;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
