@@ -1054,7 +1054,12 @@ namespace Diffusion.Toolkit
 
             var appDir = System.AppDomain.CurrentDomain.BaseDirectory;
 
-            var temp = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "Updater");
+            if(appDir.EndsWith("\\"))
+            {
+                appDir = appDir.Substring(0, appDir.Length - 1);
+            }
+
+            var temp = Path.Combine(appDir, "Updater");
 
             if (!Directory.Exists(temp))
             {
@@ -1066,12 +1071,10 @@ namespace Diffusion.Toolkit
             FileCopy(appDir, "Diffusion.Updater.dll", temp);
             FileCopy(appDir, "Diffusion.Updater.runtimeconfig.json", temp);
 
-            MessageBox.Show(appDir, "AppDir");
-
             var pi = new ProcessStartInfo()
             {
                 FileName = Path.Combine(temp, "Diffusion.Updater.exe"),
-                Arguments = appDir
+                Arguments = $"\"{appDir}\""
             };
 
 
