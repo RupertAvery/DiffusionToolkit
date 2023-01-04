@@ -32,6 +32,8 @@ public class MainModel : BaseNotify
     private bool _hideNsfw;
     private bool _nsfwBlur;
     private ICommand _showPrompts;
+    private bool _fitToPreview;
+    private ICommand _toggleFitToPreview;
 
     public MainModel()
     {
@@ -193,5 +195,18 @@ public class MainModel : BaseNotify
     {
         get => _showPrompts;
         set => SetField(ref _showPrompts, value);
+    }
+
+    public bool FitToPreview
+    {
+        get => _fitToPreview;
+        set => SetField(ref _fitToPreview, value);
+    }
+
+
+    public ICommand ToggleFitToPreview
+    {
+        get => _toggleFitToPreview;
+        set => SetField(ref _toggleFitToPreview, value);
     }
 }

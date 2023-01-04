@@ -469,6 +469,9 @@ namespace Diffusion.Toolkit.Pages
 
         public Task ReloadMatches(bool focus = true)
         {
+            //await LoadMatchesAsync();
+
+            //ThumbnailListView.ResetView(focus);
             return Task.Run(LoadMatchesOnThread)
                 .ContinueWith(t =>
                 {
@@ -482,11 +485,9 @@ namespace Diffusion.Toolkit.Pages
                 });
         }
 
-
-        private void LoadMatchesOnThread()
+        private async Task LoadMatchesAsync()
         {
             var rId = r.NextInt64();
-
             ThumbnailLoader.Instance.SetCurrentRequestId(rId);
 
             var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
@@ -497,8 +498,7 @@ namespace Diffusion.Toolkit.Pages
 
             Dispatcher.Invoke(() =>
             {
-                //_model.Images.Clear();
-                _model.Images = new ObservableCollection<ImageEntry>();
+                _model.Images.Clear();
             });
 
             var images = new List<ImageEntry>();
@@ -522,34 +522,69 @@ namespace Diffusion.Toolkit.Pages
                     NSFW = file.NSFW
                 });
 
-                if (images.Count == 30)
-                {
-                    foreach (var image in images)
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            _model.Images.Add(image);
-
-                        });
-                    }
-                    images.Clear();
-                }
 
                 count++;
             }
 
             Dispatcher.Invoke(() =>
             {
-                Dispatcher.Invoke(() =>
+                _model.Images = new ObservableCollection<ImageEntry>(images);
+            });
+
+            sw.Stop();
+
+            Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
+
+            foreach (var image in _model.Images)
+            {
+                await image.LoadThumbnail();
+            }
+        }
+
+        private async Task LoadMatchesOnThread()
+        {
+            var rId = r.NextInt64();
+            ThumbnailLoader.Instance.SetCurrentRequestId(rId);
+
+            var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
+
+            var matches = Time(() => _dataStore
+                .Search(query, _settings.PageSize,
+                    _settings.PageSize * (_model.Page - 1)));
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.Images.Clear();
+            });
+
+            var images = new List<ImageEntry>();
+
+            var sw = new Stopwatch();
+            sw.Start();
+
+
+            var count = 0;
+            foreach (var file in matches)
+            {
+                images.Add(new ImageEntry(rId)
                 {
-                    foreach (var image in images)
-                    {
-                        _model.Images.Add(image);
-                    }
-                    images.Clear();
+                    Id = file.Id,
+                    Favorite = file.Favorite,
+                    ForDeletion = file.ForDeletion,
+                    Rating = file.Rating,
+                    Path = file.Path,
+                    CreatedDate = file.CreatedDate,
+                    FileName = Path.GetFileName(file.Path),
+                    NSFW = file.NSFW
                 });
-                //_model.Images.Clear();
-                //_model.Images = new ObservableCollection<ImageEntry>(images);
+
+
+                count++;
+            }
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.Images = new ObservableCollection<ImageEntry>(images);
             });
 
 
@@ -557,6 +592,12 @@ namespace Diffusion.Toolkit.Pages
 
 
             Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
+
+
+            foreach (var image in _model.Images)
+            {
+                await image.LoadThumbnail();
+            }
 
 
         }
@@ -631,6 +672,11 @@ namespace Diffusion.Toolkit.Pages
         public void SetNSFWBlur(bool value)
         {
             _model.NSFWBlur = value;
+        }
+
+        public void SetFitToPreview(bool value)
+        {
+            _model.CurrentImage.FitToPreview = value;
         }
 
         private void ThumbnailListView_OnPageChangedEvent(object? sender, int e)

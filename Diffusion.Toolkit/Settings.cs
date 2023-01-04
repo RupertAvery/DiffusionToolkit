@@ -43,6 +43,7 @@ public class Settings
     private bool _nsfwBlur;
     private bool _scanForNewImagesOnStartup;
     private bool _checkForUpdatesOnStartup;
+    private bool _fitToPreview;
 
     public bool IsPropertyDirty(string name)
     {
@@ -177,5 +178,11 @@ public class Settings
     {
         get => _scanForNewImagesOnStartup;
         set => UpdateValue(ref _scanForNewImagesOnStartup, value);
+    }
+
+    public bool FitToPreview
+    {
+        get => _fitToPreview;
+        set => UpdateValue(ref _fitToPreview, value);
     }
 }

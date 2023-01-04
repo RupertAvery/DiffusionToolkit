@@ -96,6 +96,7 @@ namespace Diffusion.Toolkit
             _model.ToggleInfo = new RelayCommand<object>((o) => ToggleInfo());
             _model.ToggleNSFWBlur = new RelayCommand<object>((o) => ToggleNSFWBlur());
             _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
+            _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
 
             _model.PropertyChanged += ModelOnPropertyChanged;
 
@@ -141,6 +142,13 @@ namespace Diffusion.Toolkit
             _model.NSFWBlur = !_model.NSFWBlur;
             _settings.NSFWBlur = _model.NSFWBlur;
             _search.SetNSFWBlur(_model.NSFWBlur);
+        }
+
+        private void ToggleFitToPreview()
+        {
+            _model.FitToPreview = !_model.FitToPreview;
+            _settings.FitToPreview = _model.FitToPreview;
+            _search.SetFitToPreview(_model.FitToPreview);
         }
 
         private void MyHandler(object sender, UnhandledExceptionEventArgs e)
@@ -412,6 +420,7 @@ namespace Diffusion.Toolkit
             _model.HideNSFW = _settings.HideNSFW;
             QueryBuilder.HideNFSW = _model.HideNSFW;
             _model.NSFWBlur = _settings.NSFWBlur;
+            _model.FitToPreview = _settings.FitToPreview;
 
             Activated += OnActivated;
             StateChanged += OnStateChanged;
@@ -434,6 +443,7 @@ namespace Diffusion.Toolkit
             };
             _prompts = new Prompts(_dataStore, _settings);
             _search.SetNSFWBlur(_model.NSFWBlur);
+            _search.SetFitToPreview(_settings.FitToPreview);
 
             _model.ShowFavorite = new RelayCommand<object>((o) =>
             {

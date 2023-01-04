@@ -44,6 +44,8 @@
                 <MenuItem Header="_Show/Hide info" Command="{Binding ToggleInfo}" InputGestureText="I"/>
                 <MenuItem Header="_Blur NSFW" IsChecked="{Binding NSFWBlur}" InputGestureText="B" Command="{Binding ToggleNSFWBlur}"/>
                 <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFW}" Command="{Binding ToggleHideNSFW}"/>
+                <Separator/>
+                <MenuItem Header="_Fit to Preview" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="{Binding About}"/>

@@ -47,6 +47,7 @@ public class SearchModel : BaseNotify
     private ICommand _toggleParameters;
     private ICommand _copyFiles;
     private bool _nsfwBlur;
+    private bool _fitToPreview;
 
     public SearchModel()
     {
@@ -233,5 +234,6 @@ public class SearchModel : BaseNotify
         get => _nsfwBlur;
         set => SetField(ref _nsfwBlur, value);
     }
+
 
 }

@@ -87,13 +87,15 @@ Double-clicking an image or pressing Enter with an image selected will launch yo
 
 # Preview
 
-On the right is the Preview Pane, where the image preview can be seen.
+On the right is the Preview Pane, where the image preview will be displayed when an thumbnail is selected.
 
 ![image](https://user-images.githubusercontent.com/1910659/210345752-d0a2deef-174d-4bae-b191-393387a8fce6.png)
 
 When you rate or favorite an image, an indicator will appear in the bottom left.
 
 ![image](https://user-images.githubusercontent.com/1910659/210347580-5e5bfbf7-63e6-4581-99c7-56806b002377.png)
+
+You can set the image to automatically fit to the preview area by clicking **View > Fit to Preview**. Otherwise by default the image will be displayed at 100%, and you can Zoom and Pan the image. 
 
 ## Zoom
 
@@ -104,6 +106,8 @@ You may also hold CTRL and use the mouse scroller to zoom in and out of the imag
 Click and drag the image to pan the view when the image or zoom is larger than the Preview Pane.
 
 Zoom will be reset when you select another image.
+
+Zoom functionality is a bit basic, and it will not zoom in where your cursor is when zooming with the mouse scroll button.
 
 ## Displaying Metadata (PNGInfo)
 

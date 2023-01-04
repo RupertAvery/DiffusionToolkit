@@ -60,6 +60,7 @@
             <converters:BoolToVisibilityMultiConverter x:Key="boolToVisMulti"></converters:BoolToVisibilityMultiConverter>
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
+            <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
         </ResourceDictionary>
         <!--<DataTemplate DataType="{x:Type toolkit:ImageEntry}">
             <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -162,12 +163,13 @@
                     <RowDefinition Height="32"/>
                 </Grid.RowDefinitions>
                 <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
-                              HorizontalScrollBarVisibility="Auto" 
-                              VerticalScrollBarVisibility="Auto"  
+                              HorizontalScrollBarVisibility="{Binding FitToPreview, Converter={StaticResource scrollBarVisibility}}" 
+                              VerticalScrollBarVisibility="{Binding FitToPreview, Converter={StaticResource scrollBarVisibility}}"  
                               KeyDown="UIElement_OnKeyDown"
                               >
                     <Image x:Name="Preview"
                            MouseWheel="UIElement_OnMouseWheel"  
+                           RenderOptions.BitmapScalingMode="Fant"
                            Source="{Binding Image}" >
                         <Image.Visibility>
                             <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
@@ -210,6 +212,7 @@
                             Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Grid.Row="0" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
                         >
                             <Grid Margin="-20" Background="Transparent"></Grid>
+
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <StackPanel Background="#5F000000">
 
