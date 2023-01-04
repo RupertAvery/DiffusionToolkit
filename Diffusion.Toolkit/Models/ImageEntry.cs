@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Diffusion.IO;
 using Diffusion.Toolkit.Thumbnails;
@@ -60,27 +61,25 @@ public class ImageEntry : BaseNotify
 
     public BitmapSource? Thumbnail
     {
-        get
-        {
-            if (_thumbnail == null)
-            {
-                var job = new ThumbnailJob()
-                {
-                    RequestId = _requestId,
-                    Path = Path, 
-                    Height = Height,
-                    Width = Width
-                };
+        get => _thumbnail;
+        set => SetField(ref _thumbnail, value);
+    }
 
-                _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
-                {
-                    _thumbnail = d;
-                    OnPropertyChanged();
-                });
-            }
-            return _thumbnail;
-        }
-        //set => SetField(ref _thumbnail, value);
+    public async Task LoadThumbnail()
+    {
+        var job = new ThumbnailJob()
+        {
+            RequestId = _requestId,
+            Path = Path,
+            Height = Height,
+            Width = Width
+        };
+
+        await ThumbnailLoader.Instance.QueueAsync(job, (d) =>
+        {
+            Thumbnail = d;
+            OnPropertyChanged(nameof(Thumbnail));
+        });
     }
 
     public int Height { get; set; }
