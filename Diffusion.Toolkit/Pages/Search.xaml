@@ -61,6 +61,7 @@
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
+            <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
         </ResourceDictionary>
         <!--<DataTemplate DataType="{x:Type toolkit:ImageEntry}">
             <StackPanel Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
@@ -170,6 +171,7 @@
                     <Image x:Name="Preview"
                            MouseWheel="UIElement_OnMouseWheel"  
                            RenderOptions.BitmapScalingMode="Fant"
+                           Stretch="{Binding FitToPreview, Converter={StaticResource stretch}}"
                            Source="{Binding Image}" >
                         <Image.Visibility>
                             <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
