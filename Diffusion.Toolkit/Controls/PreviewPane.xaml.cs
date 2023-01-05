@@ -146,6 +146,14 @@ namespace Diffusion.Toolkit.Controls
             Image.IsParametersVisible = !Image.IsParametersVisible;
         }
 
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            OnPopout?.Invoke();
+        }
+
+        public bool IsPopout { get; set; }
+
+        public Action OnPopout { get; set; }
     }
 }
 

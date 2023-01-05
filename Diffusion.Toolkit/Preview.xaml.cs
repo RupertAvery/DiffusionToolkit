@@ -29,6 +29,8 @@ namespace Diffusion.Toolkit
             _model = new PreviewModel();
             InitializeComponent();
             DataContext = _model;
+
+            PreviewPane.IsPopout = true;
         }
 
         public void SetNSFWBlur(bool value)

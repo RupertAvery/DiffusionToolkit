@@ -487,6 +487,8 @@ namespace Diffusion.Toolkit
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
             _search.SetThumbnailSize(_settings.ThumbnailSize);
 
+            _search.OnPopout = PopoutPreview;
+
             _model.ShowFavorite = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");

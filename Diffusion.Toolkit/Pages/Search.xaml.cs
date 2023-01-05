@@ -104,8 +104,13 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-
-        private ScrollDragger _scrollDragger;
+        public Action OnPopout
+        {
+            set
+            {
+                PreviewPane.OnPopout = value;
+            }
+        }
 
         public Search(NavigatorService navigatorService, DataStore dataStore, MessagePopupManager messagePopupManager, Settings settings) : this()
         {

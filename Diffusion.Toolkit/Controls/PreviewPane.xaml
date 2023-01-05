@@ -8,7 +8,7 @@
              xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVisCol"></converters:InverseBoolToVisibilityCollapsedConverter>
@@ -23,6 +23,15 @@
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
             <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
+
+            <Style x:Key="ShowOnHover" TargetType="Grid">
+                <Setter Property="Opacity" Value="0.25"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="true">
+                        <Setter Property="StackPanel.Opacity" Value="1" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="PreviewGrid" DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}">
@@ -33,7 +42,7 @@
             </Grid.RowDefinitions>-->
         <Grid  Style="{StaticResource Preview}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="32"/>
+                <RowDefinition Height="42"/>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="32"/>
             </Grid.RowDefinitions>
@@ -76,17 +85,37 @@
                     </fa:ImageAwesome.Visibility>
                 </fa:ImageAwesome>
             </Grid>
+
+            <Grid  Grid.Row="0" Background="Transparent" IsHitTestVisible="true">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="16"/>
+                </Grid.ColumnDefinitions>
+                <Grid Visibility="{Binding IsPopout, Converter={StaticResource invBoolToVis}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" Grid.Column="1" Background="Transparent" >
+                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Click="ButtonBase_OnClick">
+                        <fa:ImageAwesome ToolTip="Pop out" Icon="WindowRestore" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <fa:ImageAwesome.Effect>
+                                <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                            </fa:ImageAwesome.Effect>
+                        </fa:ImageAwesome>
+                    </Button>
+                </Grid>
+            </Grid>
+
             <Grid  Grid.Row="0" RowSpan="3"  Margin="10"  Background="{x:Null}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 >
                 <Grid  Background="{x:Null}">
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="48"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="56"/>
                     </Grid.RowDefinitions>
-                    <Grid 
-                            classes:VisibilityAnimation.AnimationType="Fade" 
-                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Grid.Row="0" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
-                        >
+
+                    <Grid  Grid.Row="1"
+                           classes:VisibilityAnimation.AnimationType="Fade" 
+                           Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
+                    >
                         <Grid Margin="-20" Background="Transparent"></Grid>
 
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -129,7 +158,7 @@
                                     <!--<Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyOthersCommand}" >
                                             <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
                                         </Button>-->
-                                    <Grid Grid.Column="1"></Grid>
+                                    <Grid Opacity="0.5" Grid.Column="1"></Grid>
                                 </Grid>
 
 
@@ -140,7 +169,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox Foreground="White" FontSize="14" BorderThickness="0"
                                              IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
-                                    <Grid Grid.Column="1"></Grid>
+                                    <Grid Opacity="0.5" Grid.Column="1"></Grid>
                                 </Grid>
 
                                 <Grid  Background="Transparent" >
@@ -163,13 +192,13 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox Foreground="White" FontSize="14" BorderThickness="0"
                                              IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
-                                    <Grid Grid.Column="1"></Grid>
+                                    <Grid Opacity="0.5" Grid.Column="1"></Grid>
                                 </Grid>
                             </StackPanel>
                         </ScrollViewer>
                     </Grid>
 
-                    <Grid  Grid.Row="1" Background="Transparent"  IsHitTestVisible="true">
+                    <Grid Grid.Row="2" Background="Transparent"  IsHitTestVisible="true">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="40"/>
@@ -203,6 +232,7 @@
                         </Button>
 
                     </Grid>
+
                     <StackPanel Orientation="Horizontal" Grid.Row="2" >
                         <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
                             <Image.Effect>
