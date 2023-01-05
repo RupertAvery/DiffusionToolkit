@@ -41,11 +41,21 @@
                 <MenuItem Header="_Empty recycle bin" Command="{Binding RemoveMarked}"/>
             </MenuItem>
             <MenuItem Header="_View">
+                <MenuItem Header="Thumbnails">
+                    <MenuItem Header="128x128" Command="{Binding SetThumbnailSize}" CommandParameter="128"/>
+                    <MenuItem Header="192x192" Command="{Binding SetThumbnailSize}" CommandParameter="192"/>
+                    <MenuItem Header="256x256" Command="{Binding SetThumbnailSize}" CommandParameter="256"/>
+                    <MenuItem Header="384x384" Command="{Binding SetThumbnailSize}" CommandParameter="384"/>
+                    <MenuItem Header="512x512" Command="{Binding SetThumbnailSize}" CommandParameter="512"/>
+                </MenuItem>
+                <Separator/>
                 <MenuItem Header="_Show/Hide info" Command="{Binding ToggleInfo}" InputGestureText="I"/>
                 <MenuItem Header="_Blur NSFW" IsChecked="{Binding NSFWBlur}" InputGestureText="B" Command="{Binding ToggleNSFWBlur}"/>
                 <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFW}" Command="{Binding ToggleHideNSFW}"/>
                 <Separator/>
                 <MenuItem Header="_Fit to Preview" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"/>
+                <MenuItem Header="_Show/Hide Preview" Command="{Binding TogglePreview}"/>
+                <MenuItem Header="_Popout Preview" Command="{Binding PoputPreview}"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="{Binding About}"/>

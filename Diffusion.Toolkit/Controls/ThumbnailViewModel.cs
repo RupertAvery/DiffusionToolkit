@@ -58,6 +58,7 @@ public class ThumbnailViewModel : BaseNotify
     private ICommand _nsfwCommand;
     private ICommand _removeEntryCommand;
     private ICommand _moveCommand;
+    private int _thumbnailSize;
 
     public ThumbnailViewModel()
     {
@@ -66,6 +67,7 @@ public class ThumbnailViewModel : BaseNotify
         _imageOpacity = 1;
         _isEmpty = true;
         _resultStatus = "Type anything to begin";
+        _thumbnailSize = 128;
     }
 
     public ObservableCollection<ImageEntry>? Images
@@ -347,5 +349,11 @@ public class ThumbnailViewModel : BaseNotify
     {
         get => _moveCommand;
         set => SetField(ref _moveCommand, value);
+    }
+
+    public int ThumbnailSize
+    {
+        get => _thumbnailSize;
+        set => SetField(ref _thumbnailSize, value);
     }
 }

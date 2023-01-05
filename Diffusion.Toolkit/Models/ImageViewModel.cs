@@ -33,6 +33,7 @@ public class ImageViewModel : BaseNotify
     private long _seed;
     private string _modelHash;
     private bool _fitToPreview;
+    private ICommand _toggleParameters;
 
     public BitmapSource? Image
     {
@@ -163,6 +164,12 @@ public class ImageViewModel : BaseNotify
     {
         get => _isParametersVisible;
         set => SetField(ref _isParametersVisible, value);
+    }
+
+    public ICommand ToggleParameters
+    {
+        get => _toggleParameters;
+        set => SetField(ref _toggleParameters, value);
     }
 
     public bool FitToPreview

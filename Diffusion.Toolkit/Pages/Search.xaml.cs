@@ -10,7 +10,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,10 +18,8 @@ using Diffusion.Toolkit.Thumbnails;
 using File = System.IO.File;
 using Path = System.IO.Path;
 using Diffusion.Toolkit.Classes;
-using Diffusion.Toolkit.Controls;
 using Model = Diffusion.IO.Model;
 using Task = System.Threading.Tasks.Task;
-using System.Windows.Media;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -158,7 +155,7 @@ namespace Diffusion.Toolkit.Pages
             _model.SearchCommand = new RelayCommand<object>(SearchImages);
 
             _model.Refresh = new RelayCommand<object>((o) => ReloadMatches());
-            _model.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
+            _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
             _model.CopyFiles = new RelayCommand<object>((o) => CopyFiles());
 
             _model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
@@ -171,7 +168,6 @@ namespace Diffusion.Toolkit.Pages
             ThumbnailListView.DataStore = dataStore;
             ThumbnailListView.MessagePopupManager = messagePopupManager;
 
-            _scrollDragger = new ScrollDragger(Preview, ScrollViewer);
         }
 
         private void CopyFiles()
@@ -211,60 +207,16 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
+        public Action<ImageViewModel> OnCurrentImageChange { get; set; }
+
+        public ImageViewModel? CurrentImage => _model.CurrentImage;
+
         private void ShowInExplorer(object obj)
         {
             if (_model.CurrentImage == null) return;
             var p = _model.CurrentImage.Path;
             Process.Start("explorer.exe", $"/select,\"{p}\"");
         }
-
-
-        //private void CopyPath(object obj)
-        //{
-        //    if (_model.CurrentImage == null) return;
-        //    var p = _model.CurrentImage.Path;
-        //    Clipboard.SetText(p);
-        //}
-
-        //private void CopyPrompt(object obj)
-        //{
-        //    if (_model.CurrentImage == null) return;
-        //    var p = _model.CurrentImage.Prompt;
-        //    Clipboard.SetText(p);
-        //}
-
-        //private void CopyNegative(object obj)
-        //{
-        //    if (_model.CurrentImage == null) return;
-        //    var p = _model.CurrentImage.NegativePrompt;
-        //    Clipboard.SetText(p);
-        //}
-
-        //private void CopySeed(object obj)
-        //{
-        //    if (_model.CurrentImage == null) return;
-        //    var p = _model.CurrentImage.Seed.ToString();
-        //    Clipboard.SetText(p);
-        //}
-
-        //private void CopyHash(object obj)
-        //{
-        //    if (_model.CurrentImage == null) return;
-        //    var p = _model.CurrentImage.ModelHash;
-        //    Clipboard.SetText(p);
-        //}
-
-        //private void CopyParameters(object obj)
-        //{
-        //    if (_model.CurrentImage == null) return;
-
-        //    var p = _model.CurrentImage.Prompt;
-        //    var n = _model.CurrentImage.NegativePrompt;
-        //    var o = _model.CurrentImage.OtherParameters;
-        //    var parameters = $"{p}\r\n\r\nNegative prompt: {n}\r\n{o}";
-
-        //    Clipboard.SetText(parameters);
-        //}
 
         public void SearchImages()
         {
@@ -383,7 +335,7 @@ namespace Diffusion.Toolkit.Pages
 
                     try
                     {
-                        _zoomValue = 1;
+                        PreviewPane.ResetZoom();
 
                         _model.CurrentImage.Image = _model.SelectedImageEntry == null ? null : GetBitmapImage(_model.SelectedImageEntry.Path);
                         _model.CurrentImage.Path = parameters.Path;
@@ -415,7 +367,9 @@ namespace Diffusion.Toolkit.Pages
                             _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
                         }
 
-                        ZoomPreview();
+                        PreviewPane.ZoomPreview();
+
+                        OnCurrentImageChange?.Invoke(_model.CurrentImage);
                     }
                     catch (FileNotFoundException)
                     {
@@ -566,7 +520,7 @@ namespace Diffusion.Toolkit.Pages
             var count = 0;
             foreach (var file in matches)
             {
-                images.Add(new ImageEntry(rId)
+                var imageEntry = new ImageEntry(rId)
                 {
                     Id = file.Id,
                     Favorite = file.Favorite,
@@ -576,16 +530,23 @@ namespace Diffusion.Toolkit.Pages
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
                     NSFW = file.NSFW
+                };
+
+                Dispatcher.Invoke(() =>
+                {
+                    _model.Images.Add(imageEntry);
                 });
+
+                //images.Add(imageEntry);
 
 
                 count++;
             }
 
-            Dispatcher.Invoke(() =>
-            {
-                _model.Images = new ObservableCollection<ImageEntry>(images);
-            });
+            //Dispatcher.Invoke(() =>
+            //{
+            //    _model.Images = new ObservableCollection<ImageEntry>(images);
+            //});
 
 
             sw.Stop();
@@ -594,12 +555,19 @@ namespace Diffusion.Toolkit.Pages
             Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
 
 
-            foreach (var image in _model.Images)
+            await RefreshThumbnails();
+
+        }
+
+        public async Task RefreshThumbnails()
+        {
+            if (_model.Images != null)
             {
-                await image.LoadThumbnail();
+                foreach (var image in _model.Images)
+                {
+                    await image.LoadThumbnail();
+                }
             }
-
-
         }
 
         private void Page_OnKeyDown(object sender, KeyEventArgs e)
@@ -683,155 +651,37 @@ namespace Diffusion.Toolkit.Pages
         {
             ReloadMatches(true);
         }
-        private double _zoomValue = 1.0;
 
-        private void UIElement_OnMouseWheel(object sender, MouseWheelEventArgs e)
+        public void SetThumbnailSize(int thumbnailSize)
         {
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
-            {
-                if (e.Delta > 0)
-                {
-                    _zoomValue += 0.1;
-                }
-                else
-                {
-                    _zoomValue -= 0.1;
-                }
-
-
-                ZoomPreview();
-
-                e.Handled = true;
-            }
+            ThumbnailListView.SetThumbnailSize(thumbnailSize);
+            _ = RefreshThumbnails();
         }
 
-        private void ZoomPreview()
+        public void SetPreviewVisible(bool visible)
         {
-            if (_zoomValue < 0.1)
+            PreviewPane.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            GridSplitter.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            
+            if (visible)
             {
-                _zoomValue = 0.1;
-            }
-            if (_zoomValue > 3)
-            {
-                _zoomValue = 3;
-            }
+                MainGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.MainGridWidth);
+                MainGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.MainGridWidth2);
 
-            ScaleTransform scale = new ScaleTransform(_zoomValue, _zoomValue);
-            Preview.LayoutTransform = scale;
+                var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
+                widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[0], WidthChanged);
+                widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[2], WidthChanged2);
+            }
+            else
+            {
+
+                var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
+                widthDescriptor.RemoveValueChanged(MainGrid.ColumnDefinitions[0], WidthChanged);
+                widthDescriptor.RemoveValueChanged(MainGrid.ColumnDefinitions[2], WidthChanged2);
+
+                MainGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+                MainGrid.ColumnDefinitions[2].Width = new GridLength(0);
+            }
         }
-
-        private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.D0 && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
-            {
-                _zoomValue = 1;
-                ZoomPreview();
-            }
-            if (e.Key == Key.OemPlus && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
-            {
-                _zoomValue += 0.1;
-                ZoomPreview();
-            }
-            if (e.Key == Key.OemMinus && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
-            {
-                _zoomValue -= 0.1;
-                ZoomPreview();
-            }
-
-
-            e.Handled = true;
-        }
-    }
-}
-public class ScrollDragger
-{
-    private readonly ScrollViewer _scrollViewer;
-    private readonly UIElement _content;
-    private readonly Cursor _dragCursor = Cursors.Hand;
-    private double _scrollMouseX;
-    private double _scrollMouseY;
-    private int _updateCounter = 0;
-
-    public ScrollDragger(UIElement content, ScrollViewer scrollViewer)
-    {
-        _scrollViewer = scrollViewer;
-        _content = content;
-
-        content.MouseLeftButtonDown += scrollViewer_MouseLeftButtonDown;
-        content.PreviewMouseMove += scrollViewer_PreviewMouseMove;
-        content.PreviewMouseLeftButtonUp += scrollViewer_PreviewMouseLeftButtonUp;
-    }
-
-    private void scrollViewer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        // Capture the mouse, reset counter, switch to hand cursor to indicate dragging
-        _content.CaptureMouse();
-        _updateCounter = 0;
-        _scrollViewer.Cursor = _dragCursor;
-    }
-
-    private void scrollViewer_PreviewMouseMove(object sender, MouseEventArgs e)
-    {
-        if (_content.IsMouseCaptured)
-        {
-            _updateCounter++;
-
-            // Skip dragging on the first PreviewMouseMove event after the left mouse button goes down. It actually triggers two of these and this ignores both, preventing jumping.
-            if (_updateCounter <= 1)
-            {
-                // Grab starting mouse offset relative to scroll viewer, used to calculate first delta
-                _scrollMouseY = e.GetPosition(_scrollViewer).Y;
-                _scrollMouseX = e.GetPosition(_scrollViewer).X;
-                return;
-            }
-
-            // Calculate new vertical offset then scroll to it
-            var newVOff = HandleMouseMoveAxisUpdateScroll(_scrollViewer.VerticalOffset, ref _scrollMouseY, e.GetPosition(_scrollViewer).Y, _scrollViewer.ScrollableHeight);
-            _scrollViewer.ScrollToVerticalOffset(newVOff);
-
-            // Calculate new horizontal offset and scroll to it
-            var newHOff = HandleMouseMoveAxisUpdateScroll(_scrollViewer.HorizontalOffset, ref _scrollMouseX, e.GetPosition(_scrollViewer).X, _scrollViewer.ScrollableWidth);
-            _scrollViewer.ScrollToHorizontalOffset(newHOff);
-        }
-    }
-
-    private double HandleMouseMoveAxisUpdateScroll(double offsetStart, ref double oldScrollMouse, double newScrollMouse, double scrollableMax)
-    {
-        // How far does the user want to drag since the last update?
-        var mouseDelta = oldScrollMouse - newScrollMouse;
-
-        // Add mouse delta to current scroll offset to get the new expected scroll offset
-        var newScrollOffset = offsetStart + mouseDelta;
-
-        // Keep the scroll offset from going off the screen
-        var newScrollOffsetClamped = newScrollOffset.Clamp(0, scrollableMax);
-
-        // Save the current mouse position in scroll coordinates so that we'll have it for next update
-        oldScrollMouse = newScrollMouse;
-
-        return newScrollOffsetClamped;
-    }
-
-    private void scrollViewer_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        _content.ReleaseMouseCapture();
-        _updateCounter = 0; // Reset counter, used to prevent jumping at start of drag
-        _scrollViewer.Cursor = null;
-    }
-
-    public void Unload()
-    {
-        _content.MouseLeftButtonDown -= scrollViewer_MouseLeftButtonDown;
-        _content.PreviewMouseMove -= scrollViewer_PreviewMouseMove;
-        _content.PreviewMouseLeftButtonUp -= scrollViewer_PreviewMouseLeftButtonUp;
-    }
-}
-
-public static class MathExtensions
-{
-    // Clamp the value between the min and max. Value returned will be min or max if it's below min or above max
-    public static double Clamp(this Double value, double min, double max)
-    {
-        return Math.Min(Math.Max(value, min), max);
     }
 }

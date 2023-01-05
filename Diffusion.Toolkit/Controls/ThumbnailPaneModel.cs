@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Diffusion.Database;
-using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Models;
 
-namespace Diffusion.Toolkit.Models;
+namespace Diffusion.Toolkit.Controls;
 
-public class SearchModel : BaseNotify
+public class ThumbnailPaneModel : BaseNotify
 {
     private ObservableCollection<ImageEntry>? _images;
     private ImageEntry? _selectedImage;
@@ -44,11 +41,12 @@ public class SearchModel : BaseNotify
     private string _modeName;
     private ICommand _showDropDown;
     private ICommand _hideDropDown;
+    private ICommand _toggleParameters;
     private ICommand _copyFiles;
     private bool _nsfwBlur;
     private bool _fitToPreview;
 
-    public SearchModel()
+    public ThumbnailPaneModel()
     {
         _images = new ObservableCollection<ImageEntry>();
         _searchHistory = new ObservableCollection<string>();
@@ -78,12 +76,6 @@ public class SearchModel : BaseNotify
         set => SetField(ref _currentImage, value);
     }
 
-
-    public ImageEntry? SelectedImageEntry
-    {
-        get => _selectedImage;
-        set => SetField(ref _selectedImage, value);
-    }
 
 
     public int CurrentPosition
@@ -215,6 +207,12 @@ public class SearchModel : BaseNotify
         set => SetField(ref _hideDropDown, value);
     }
 
+    public ICommand ToggleParameters
+    {
+        get => _toggleParameters;
+        set => SetField(ref _toggleParameters, value);
+    }
+
     public ICommand CopyFiles
     {
         get => _copyFiles;
@@ -229,4 +227,9 @@ public class SearchModel : BaseNotify
     }
 
 
+    public ImageEntry? SelectedImageEntry
+    {
+        get => _selectedImage;
+        set => SetField(ref _selectedImage, value);
+    }
 }

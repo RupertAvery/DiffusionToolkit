@@ -1,0 +1,280 @@
+﻿<UserControl x:Class="Diffusion.Toolkit.Controls.PreviewPane"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
+             xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVisCol"></converters:InverseBoolToVisibilityCollapsedConverter>
+            <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
+            <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
+            <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
+            <converters:BoolToBlurIntConverter x:Key="boolToBlur"></converters:BoolToBlurIntConverter>
+            <converters:BoolToBlurIntMultiConverter x:Key="boolToBlurMulti"></converters:BoolToBlurIntMultiConverter>
+            <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
+            <converters:BoolToVisibilityMultiConverter x:Key="boolToVisMulti"></converters:BoolToVisibilityMultiConverter>
+            <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
+            <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
+            <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
+            <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid x:Name="PreviewGrid" DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}">
+        <!--<Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition/>
+            </Grid.RowDefinitions>-->
+        <Grid  Style="{StaticResource Preview}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="32"/>
+            </Grid.RowDefinitions>
+            <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
+                              HorizontalScrollBarVisibility="{Binding FitToPreview, Converter={StaticResource scrollBarVisibility}}" 
+                              VerticalScrollBarVisibility="{Binding FitToPreview, Converter={StaticResource scrollBarVisibility}}"  
+                              KeyDown="UIElement_OnKeyDown"
+                              >
+                <Image x:Name="Preview"
+                           MouseWheel="UIElement_OnMouseWheel"  
+                           RenderOptions.BitmapScalingMode="Fant"
+                           Stretch="{Binding FitToPreview, Converter={StaticResource stretch}}"
+                           Source="{Binding Image}" >
+                    <Image.Visibility>
+                        <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
+                            <Binding Path="NSFW"></Binding>
+                            <Binding Path="NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
+                        </MultiBinding>
+                    </Image.Visibility>
+                    <Image.Effect>
+                        <BlurEffect  KernelType="Gaussian">
+                            <BlurEffect.Radius>
+                                <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
+                                    <Binding Path="NSFW"></Binding>
+                                    <Binding Path="NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                                </MultiBinding>
+                            </BlurEffect.Radius>
+                        </BlurEffect>
+                    </Image.Effect>
+                </Image>
+            </ScrollViewer>
+
+            <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False">
+                <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
+                    <fa:ImageAwesome.Visibility>
+                        <MultiBinding Converter="{StaticResource boolToVisMulti}" ConverterParameter="20">
+                            <Binding Path="NSFW"></Binding>
+                            <Binding Path="NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                        </MultiBinding>
+                    </fa:ImageAwesome.Visibility>
+                </fa:ImageAwesome>
+            </Grid>
+            <Grid  Grid.Row="0" RowSpan="3"  Margin="10"  Background="{x:Null}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                >
+                <Grid  Background="{x:Null}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="56"/>
+                    </Grid.RowDefinitions>
+                    <Grid 
+                            classes:VisibilityAnimation.AnimationType="Fade" 
+                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Grid.Row="0" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
+                        >
+                        <Grid Margin="-20" Background="Transparent"></Grid>
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel Background="#5F000000">
+
+                                <Grid  Background="Transparent" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
+                                    <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding CopyPromptCommand}" >
+                                        <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
+                                    </Button>
+                                </Grid>
+
+                                <Grid Background="Transparent" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
+                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyNegativePromptCommand}" >
+                                        <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
+                                    </Button>
+                                </Grid>
+
+                                <Grid Background="Transparent" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
+                                    <!--<Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyOthersCommand}" >
+                                            <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
+                                        </Button>-->
+                                    <Grid Grid.Column="1"></Grid>
+                                </Grid>
+
+
+                                <Grid  Background="Transparent" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                             IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
+                                    <Grid Grid.Column="1"></Grid>
+                                </Grid>
+
+                                <Grid  Background="Transparent" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True"
+                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"></TextBox>
+                                    <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding CopyPathCommand}" >
+                                        <Image Source="{DynamicResource CopyIcon}" Height="16" Width="16" ToolTip="Copy to clipboard"></Image>
+                                    </Button>
+                                </Grid>
+
+                                <Grid  Background="Transparent" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="32"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                             IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
+                                    <Grid Grid.Column="1"></Grid>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <Grid  Grid.Row="1" Background="Transparent"  IsHitTestVisible="true">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="16"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyParametersCommand}">
+                            <fa:ImageAwesome ToolTip="Copy Parameters" Icon="FileText" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Effect>
+                                    <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                </fa:ImageAwesome.Effect>
+                            </fa:ImageAwesome>
+                        </Button>
+
+                        <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding ShowInExplorerCommand}">
+                            <fa:ImageAwesome ToolTip="Show in Explorer" Icon="ExternalLink" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Effect>
+                                    <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                </fa:ImageAwesome.Effect>
+                            </fa:ImageAwesome>
+                        </Button>
+
+                        <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleParameters}">
+                            <fa:ImageAwesome ToolTip="Show info (I)" Icon="Eye" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Effect>
+                                    <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                </fa:ImageAwesome.Effect>
+                            </fa:ImageAwesome>
+                        </Button>
+
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" >
+                        <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=2}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=3}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=4}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=5}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=6}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=7}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=8}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=9}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=10}">
+                            <Image.Effect>
+                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                            </Image.Effect>
+                        </Image>
+
+                    </StackPanel>
+                </Grid>
+            </Grid>
+
+        </Grid>
+
+    </Grid>
+</UserControl>

@@ -457,5 +457,10 @@ namespace Diffusion.Toolkit.Controls
         }
 
         public Action<IList<ImageEntry>> MoveFiles;
+
+        public void SetThumbnailSize(int thumbnailSize)
+        {
+            Model.ThumbnailSize = thumbnailSize;
+        }
     }
 }

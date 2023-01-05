@@ -34,10 +34,15 @@ public class MainModel : BaseNotify
     private ICommand _showPrompts;
     private bool _fitToPreview;
     private ICommand _toggleFitToPreview;
+    private ICommand _setThumbnailSize;
+    private ICommand _poputPreview;
+    private ICommand _togglePreview;
+    private bool _isPreviewVisible;
 
     public MainModel()
     {
         _status = "Ready";
+        _isPreviewVisible = true;
         _messagePopupModel = new MessagePopupModel();
     }
 
@@ -208,5 +213,29 @@ public class MainModel : BaseNotify
     {
         get => _toggleFitToPreview;
         set => SetField(ref _toggleFitToPreview, value);
+    }
+
+    public ICommand SetThumbnailSize
+    {
+        get => _setThumbnailSize;
+        set => SetField(ref _setThumbnailSize, value);
+    }
+
+    public ICommand PoputPreview
+    {
+        get => _poputPreview;
+        set => SetField(ref _poputPreview, value);
+    }
+
+    public ICommand TogglePreview
+    {
+        get => _togglePreview;
+        set => SetField(ref _togglePreview, value);
+    }
+
+    public bool IsPreviewVisible
+    {
+        get => _isPreviewVisible;
+        set => SetField(ref _isPreviewVisible, value);
     }
 }

@@ -20,6 +20,7 @@ public class Settings
         FileExtensions = ".png, .jpg";
         Theme = "System";
         PageSize = 100;
+        ThumbnailSize = 128;
     }
 
     private bool _isDirty;
@@ -44,6 +45,7 @@ public class Settings
     private bool _scanForNewImagesOnStartup;
     private bool _checkForUpdatesOnStartup;
     private bool _fitToPreview;
+    private int _thumbnailSize;
 
     public bool IsPropertyDirty(string name)
     {
@@ -184,5 +186,11 @@ public class Settings
     {
         get => _fitToPreview;
         set => UpdateValue(ref _fitToPreview, value);
+    }
+
+    public int ThumbnailSize
+    {
+        get => _thumbnailSize;
+        set => UpdateValue(ref _thumbnailSize, value);
     }
 }

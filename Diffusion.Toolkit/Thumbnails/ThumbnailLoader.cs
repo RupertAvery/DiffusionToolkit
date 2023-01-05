@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Diffusion.Toolkit.Controls;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -36,6 +37,29 @@ public class ThumbnailLoader
             {
                 sri.Stream.CopyTo(_defaultStream);
                 _defaultStream.Position = 0;
+            }
+        }
+    }
+
+    public int Size
+    {
+        get => _size;
+        set
+        {
+            _size = value;
+            ThumbnailCache.Instance.Clear();
+        }
+    }
+
+    public bool EnableCache
+    {
+        get => _enableCache;
+        set
+        {
+            _enableCache = value;
+            if (!value)
+            {
+                ThumbnailCache.Instance.Clear();
             }
         }
     }
@@ -82,6 +106,8 @@ public class ThumbnailLoader
     }
 
     private long _requestId;
+    private int _size = 128;
+    private bool _enableCache;
 
     public void SetCurrentRequestId(long requestId)
     {
@@ -100,12 +126,33 @@ public class ThumbnailLoader
                 continue;
             }
 
-            if (!ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path,
-                    out BitmapSource? thumbnail))
+            if (_enableCache)
             {
-                // Debug.WriteLine($"Loading from disk");
+                if (!ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path,
+                        out BitmapSource? thumbnail))
+                {
+                    // Debug.WriteLine($"Loading from disk");
 
-                thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height);
+                    thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
+                    ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
+
+                    _dispatcher.Invoke(() =>
+                    {
+                        job.Completion(thumbnail);
+                    });
+                }
+                else
+                {
+                    _dispatcher.Invoke(() =>
+                    {
+                        job.Completion(thumbnail);
+                    });
+                }
+            }
+            else
+            {
+
+                var thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
                 ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
 
                 _dispatcher.Invoke(() =>
@@ -113,13 +160,7 @@ public class ThumbnailLoader
                     job.Completion(thumbnail);
                 });
             }
-            else
-            {
-                _dispatcher.Invoke(() =>
-                {
-                    job.Completion(thumbnail);
-                });
-            }
+            
         }
     }
 
@@ -128,14 +169,12 @@ public class ThumbnailLoader
         await _channel.Writer.WriteAsync(new Job<ThumbnailJob, BitmapSource>() { Data = job, Completion = completion });
     }
 
-    private static Stream GenerateThumbnail(string path, int width, int height)
+    private static Stream GenerateThumbnail(string path, int width, int height, int size)
     {
         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
         var bitmap = new BitmapImage();
         //bitmap.UriSource = new Uri(path);
         bitmap.BeginInit();
-
-        var size = 128;
 
         if (width > height)
         {
@@ -162,13 +201,13 @@ public class ThumbnailLoader
         return ministream;
     }
 
-    private BitmapImage GetThumbnailImmediate(string path, int width, int height)
+    private BitmapImage GetThumbnailImmediate(string path, int width, int height, int size)
     {
         var bitmap = new BitmapImage();
         bitmap.BeginInit();
         if (File.Exists(path))
         {
-            bitmap.StreamSource = GenerateThumbnail(path, width, height);
+            bitmap.StreamSource = GenerateThumbnail(path, width, height, size);
         }
         else
         {

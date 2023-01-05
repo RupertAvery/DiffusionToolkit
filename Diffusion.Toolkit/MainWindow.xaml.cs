@@ -97,6 +97,9 @@ namespace Diffusion.Toolkit
             _model.ToggleNSFWBlur = new RelayCommand<object>((o) => ToggleNSFWBlur());
             _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
             _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
+            _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
+            _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
+            _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview());
 
             _model.PropertyChanged += ModelOnPropertyChanged;
 
@@ -127,6 +130,42 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(EditMenu.Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void PopoutPreview()
+        {
+            if (_previewWindow == null)
+            {
+                _model.IsPreviewVisible = false;
+                _search.SetPreviewVisible(_model.IsPreviewVisible);
+
+                _previewWindow = new PreviewWindow();
+                _previewWindow.Owner = this;
+                _previewWindow.Closed += (sender, args) =>
+                {
+                    _previewWindow = null;
+                };
+                _previewWindow.Show();
+                _previewWindow.SetCurrentImage(_search.CurrentImage);
+                _search.OnCurrentImageChange = (image) =>
+                {
+                    _previewWindow?.SetCurrentImage(image);
+                };
+            }
+        }
+
+        private void TogglePreview()
+        {
+            _model.IsPreviewVisible = !_model.IsPreviewVisible;
+            _search.SetPreviewVisible(_model.IsPreviewVisible);
+        }
+
+        private void SetThumbnailSize(int size)
+        {
+            _settings.ThumbnailSize = size;
+            ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
+            _search.SetThumbnailSize(_settings.ThumbnailSize);
+
         }
 
         private void ToggleHideNSFW()
@@ -445,6 +484,9 @@ namespace Diffusion.Toolkit
             _search.SetNSFWBlur(_model.NSFWBlur);
             _search.SetFitToPreview(_settings.FitToPreview);
 
+            ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
+            _search.SetThumbnailSize(_settings.ThumbnailSize);
+
             _model.ShowFavorite = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
@@ -541,7 +583,14 @@ namespace Diffusion.Toolkit
                 await ScanInternal(_settings.ImagePaths, false, false);
             }
 
+
+
             Logger.Log($"Init completed");
+
+            //_previewWindow = new PreviewWindow();
+            //_previewWindow.ShowInTaskbar = false;
+            //_previewWindow.Owner = this;
+            //_previewWindow.Show();
 
         }
 
@@ -558,6 +607,8 @@ namespace Diffusion.Toolkit
             }
 
         }
+
+        private PreviewWindow? _previewWindow;
 
         private void WatcherOnCreated(object sender, FileSystemEventArgs e)
         {

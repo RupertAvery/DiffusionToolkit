@@ -80,4 +80,9 @@ public class ThumbnailCache
     {
         _instance = new ThumbnailCache(maxItems, evictItems);
     }
+
+    public void Clear()
+    {
+        _cache.Clear();
+    }
 }

@@ -31,7 +31,7 @@
                             <Slider IsEnabled="{Binding FullTextPrompt}" VerticalAlignment="Center" Margin="10,0,0,0" Value="{Binding PromptDistance}" TickFrequency="5" Minimum="10" Maximum="150" Width="200"></Slider>
                             <Label VerticalAlignment="Center"  Margin="10,0,0,0">Different</Label>
                         </StackPanel>
-                        <DataGrid Grid.Row="2" ItemsSource="{Binding Prompts}" AutoGenerateColumns="False" SelectionMode="Single"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <DataGrid Style="{DynamicResource DataGridStyle1}" Grid.Row="2" ItemsSource="{Binding Prompts}" AutoGenerateColumns="False" SelectionMode="Single"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Prompt" Binding="{Binding Prompt}" MaxWidth="900" IsReadOnly="True">
                                     <DataGridTextColumn.ElementStyle>
