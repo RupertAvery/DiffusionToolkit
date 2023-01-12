@@ -141,6 +141,7 @@ namespace Diffusion.Toolkit
 
                 _previewWindow = new PreviewWindow();
                 _previewWindow.Owner = this;
+
                 _previewWindow.Closed += (sender, args) =>
                 {
                     _previewWindow = null;
@@ -521,13 +522,16 @@ namespace Diffusion.Toolkit
             {
                 foreach (var path in _settings.ImagePaths)
                 {
-                    var watcher = new FileSystemWatcher(path)
+                    if (Directory.Exists(path))
                     {
-                        EnableRaisingEvents = true,
-                        IncludeSubdirectories = true,
-                    };
-                    watcher.Created += WatcherOnCreated;
-                    _watchers.Add(watcher);
+                        var watcher = new FileSystemWatcher(path)
+                        {
+                            EnableRaisingEvents = true,
+                            IncludeSubdirectories = true,
+                        };
+                        watcher.Created += WatcherOnCreated;
+                        _watchers.Add(watcher);
+                    }
                 }
             }
 
@@ -1021,9 +1025,12 @@ namespace Diffusion.Toolkit
                         break;
                     }
 
-                    var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
+                    if (Directory.Exists(path))
+                    {
+                        var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
-                    filesToScan.AddRange(Scanner.GetFiles(path, _settings.FileExtensions, ignoreFiles).ToList());
+                        filesToScan.AddRange(Scanner.GetFiles(path, _settings.FileExtensions, ignoreFiles).ToList());
+                    }
                 }
 
                 var (_added, elapsedTime) = ScanFiles(filesToScan, updateImages);

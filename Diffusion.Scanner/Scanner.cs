@@ -13,8 +13,11 @@ namespace Diffusion.IO
 
             foreach (var extension in extensions.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             {
-                files = files.Concat(Dir.EnumerateFiles(path, $"*{extension}",
-                    SearchOption.AllDirectories));
+                if (Directory.Exists(path))
+                {
+                    files = files.Concat(Dir.EnumerateFiles(path, $"*{extension}",
+                        SearchOption.AllDirectories));
+                }
             }
 
             if (ignoreFiles != null)
