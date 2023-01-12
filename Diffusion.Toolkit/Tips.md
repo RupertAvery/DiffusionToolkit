@@ -35,7 +35,7 @@ You may also add the checkpoint model root folder. This will allow the app to di
 
 You can set what file extensions to scan for. Don't include an asterisk, but do include the dot, and separate with commas e.g. `.png, .jpg`.
 
-Diffusion Toolkit does not require you to click through folders to search for an image. Instead, search for a term (that may include a path), and you will recieve a thumbnail list of all matches. As the number of matching images can be in the thousands or tens of thousands, the results arg paged.
+Diffusion Toolkit does not require you to click through folders to search for an image. Instead, search for a term or a parameter used in your PNGINfo and you will recieve a list of all matching images. As the number of matching images can be in the thousands or tens of thousands, the results arg paged.
 
 Here you can set the number of images to appear on a page.  
 
@@ -85,40 +85,9 @@ Use the buttons at the bottom of the page to move between pages. The keyboard sh
 
 Double-clicking an image or pressing Enter with an image selected will launch your default image viewer.
 
-# Preview
+## Thumbnail Size
 
-On the right is the Preview Pane, where the image preview will be displayed when an thumbnail is selected.
-
-![image](https://user-images.githubusercontent.com/1910659/210345752-d0a2deef-174d-4bae-b191-393387a8fce6.png)
-
-When you rate or favorite an image, an indicator will appear in the bottom left.
-
-![image](https://user-images.githubusercontent.com/1910659/210347580-5e5bfbf7-63e6-4581-99c7-56806b002377.png)
-
-You can set the image to automatically fit to the preview area by clicking **View > Fit to Preview**. Otherwise by default the image will be displayed at 100%, and you can Zoom and Pan the image. 
-
-## Zoom
-
-With the Preview Pane in focus, hold CTRL and press - or + to zoom in and out of the image.
-
-You may also hold CTRL and use the mouse scroller to zoom in and out of the image.
-
-Click and drag the image to pan the view when the image or zoom is larger than the Preview Pane.
-
-Zoom will be reset when you select another image.
-
-Zoom functionality is a bit basic, and it will not zoom in where your cursor is when zooming with the mouse scroll button.
-
-## Displaying Metadata (PNGInfo)
-
-To display the prompt and other metadata associated with the image (i.e. PNGInfo) press the **eye icon** located at the bottom right of the Preview Pane, or press `i` while in the Thumbnail View.
-
-![image](https://user-images.githubusercontent.com/1910659/210345696-914d36bf-76dc-4717-ab3c-cc622e80d07b.png)
-
-
-# Drag and Drop
-
-You can drag an image from the thumbnail to another app, such as the PNGInfo tab in a WebUI to transfer the metadata, or to an explorer folder to copy the image to the target folder
+Click View > Thumbnails to select the thumbnail size.
 
 # Tagging
 
@@ -169,6 +138,53 @@ If you click on the **Recycle Bin Icon **in the toolbar, you will be presented w
 When in the **Recycle Bin View**, toggling an image delete off will cause the image to be removed from the list and it will not be displayed the next time you visit the Recycle Bin View.
 
 To permanently remove all images marked For Deletion, click **Edit > Empty Recycle Bin**.
+
+# Preview
+
+On the right is the Preview Pane, where the image preview will be displayed when an thumbnail is selected.
+
+![image](https://user-images.githubusercontent.com/1910659/210345752-d0a2deef-174d-4bae-b191-393387a8fce6.png)
+
+When you rate or favorite an image, an indicator will appear in the bottom left.
+
+![image](https://user-images.githubusercontent.com/1910659/210347580-5e5bfbf7-63e6-4581-99c7-56806b002377.png)
+
+You can set the image to automatically fit to the preview area by clicking **View > Fit to Preview**. Otherwise by default the image will be displayed at 100%, and you can Zoom and Pan the image. 
+
+When the Preview Pane is in focus, you can use the same shortcut keys to tag the current image.
+
+You can also use the left and right cursor keys to move between images.
+
+## Zoom
+
+With the Preview Pane in focus, hold CTRL and press - or + to zoom in and out of the image.
+
+You may also hold CTRL and use the mouse scroller to zoom in and out of the image.
+
+Click and drag the image to pan the view when the image or zoom is larger than the Preview Pane.
+
+Zoom will be reset when you select another image.
+
+Zoom functionality is a bit basic, and it will not zoom in where your cursor is when zooming with the mouse scroll button.
+
+## Displaying Metadata (PNGInfo)
+
+To display the prompt and other metadata associated with the image (i.e. PNGInfo) press the **eye icon** located at the bottom right of the Preview Pane, or press `i` while in the Thumbnail View.
+
+![image](https://user-images.githubusercontent.com/1910659/210345696-914d36bf-76dc-4717-ab3c-cc622e80d07b.png)
+
+## Popout
+
+Pressing the Popout button at the top-right of the preview pane will pop out the preview pane into it's own window. This will allow you to arrange the thumbnail and preview as you like, or even move them to separate desktops.
+
+When the Preview Pane is in popped out, you can still use the same shortcut keys to tag the current image.
+
+You can also use the left and right cursor keys to move between images.
+
+# Drag and Drop
+
+You can drag an image from the thumbnail to another app, such as the PNGInfo tab in a WebUI to transfer the metadata, or to an explorer folder to copy the image to the target folder
+
 
 # Searching
 
