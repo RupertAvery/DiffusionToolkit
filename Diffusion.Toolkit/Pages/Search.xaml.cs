@@ -444,6 +444,36 @@ namespace Diffusion.Toolkit.Pages
                 });
         }
 
+        public void Next()
+        {
+            if (_model.Images == null) return;
+            int currentIndex = 0;
+            if (_model.SelectedImageEntry != null)
+            {
+                currentIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
+            }
+
+            if (currentIndex < _model.Images.Count - 1)
+            {
+                _model.SelectedImageEntry = _model.Images[currentIndex + 1];
+            }
+        }
+
+        public void Prev()
+        {
+            if (_model.Images == null) return;
+            int currentIndex = 0;
+            if (_model.SelectedImageEntry != null)
+            {
+                currentIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
+            }
+
+            if (currentIndex > 0)
+            {
+                _model.SelectedImageEntry = _model.Images[currentIndex - 1];
+            }
+        }
+
         private async Task LoadMatchesAsync()
         {
             var rId = r.NextInt64();
@@ -667,7 +697,7 @@ namespace Diffusion.Toolkit.Pages
         {
             PreviewPane.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
             GridSplitter.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-            
+
             if (visible)
             {
                 MainGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.MainGridWidth);

@@ -23,6 +23,17 @@ namespace Diffusion.Toolkit
     public partial class PreviewWindow : Window
     {
         private PreviewModel _model;
+        private Action _onNext;
+
+        public Action OnNext
+        {
+            set => PreviewPane.OnNext = value;
+        }
+
+        public Action OnPrev
+        {
+            set => PreviewPane.OnPrev = value;
+        }
 
         public PreviewWindow()
         {

@@ -141,6 +141,8 @@ namespace Diffusion.Toolkit
 
                 _previewWindow = new PreviewWindow();
                 _previewWindow.Owner = this;
+                _previewWindow.OnNext = () => _search.Next();
+                _previewWindow.OnPrev = () => _search.Prev();
 
                 _previewWindow.Closed += (sender, args) =>
                 {

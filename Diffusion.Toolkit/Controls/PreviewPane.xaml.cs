@@ -125,20 +125,20 @@ namespace Diffusion.Toolkit.Controls
             {
                 _zoomValue = 1;
                 ZoomPreview();
+                e.Handled = true;
             }
             if (e.Key == Key.OemPlus && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
             {
                 _zoomValue += 0.1;
                 ZoomPreview();
+                e.Handled = true;
             }
             if (e.Key == Key.OemMinus && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
             {
                 _zoomValue -= 0.1;
                 ZoomPreview();
+                e.Handled = true;
             }
-
-
-            e.Handled = true;
         }
 
         public void ToggleInfo()
@@ -154,6 +154,25 @@ namespace Diffusion.Toolkit.Controls
         public bool IsPopout { get; set; }
 
         public Action OnPopout { get; set; }
+        public Action OnNext { get; set; }
+        public Action OnPrev { get; set; }
+
+        private void ScrollViewer_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Left)
+            {
+                OnPrev?.Invoke();
+                e.Handled = true;
+            }
+
+            if (e.Key == Key.Right)
+            {
+                OnNext?.Invoke();
+                e.Handled = true;
+            }
+
+
+        }
     }
 }
 

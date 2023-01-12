@@ -49,6 +49,7 @@
             <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
                               HorizontalScrollBarVisibility="{Binding FitToPreview, Converter={StaticResource scrollBarVisibility}}" 
                               VerticalScrollBarVisibility="{Binding FitToPreview, Converter={StaticResource scrollBarVisibility}}"  
+                              PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
                               KeyDown="UIElement_OnKeyDown"
                               >
                 <Image x:Name="Preview"
