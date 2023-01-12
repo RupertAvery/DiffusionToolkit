@@ -166,6 +166,16 @@ namespace Diffusion.Toolkit.Controls
             return null;
         }
 
+        public void SelectItem(int index)
+        {
+            ThumbnailListView.SelectedIndex = index;
+            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+            //var item = wrapPanel.Children[0] as ListViewItem;
+            var item = wrapPanel.Children[ThumbnailListView.SelectedIndex];
+            ThumbnailListView.ScrollIntoView(item as ListViewItem);
+            //wrapPanel.Children[ThumbnailListView.SelectedIndex];
+        }
+
         /// <summary>
         /// Handle wrapping around if an arrow key is pressed at the edge of the <see cref="ListView"/>.
         /// </summary>

@@ -20,6 +20,7 @@ using Path = System.IO.Path;
 using Diffusion.Toolkit.Classes;
 using Model = Diffusion.IO.Model;
 using Task = System.Threading.Tasks.Task;
+using System.Windows.Media;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -173,6 +174,28 @@ namespace Diffusion.Toolkit.Pages
             ThumbnailListView.DataStore = dataStore;
             ThumbnailListView.MessagePopupManager = messagePopupManager;
 
+            PreviewPane.NSFW = (id, b) =>
+            {
+                _dataStore.SetNSFW(id, b);
+                Update(id);
+            };
+            PreviewPane.Favorite = (id, b) =>
+            {
+                _dataStore.SetFavorite(id, b);
+                Update(id);
+            };
+            PreviewPane.Rate = (id, b) =>
+            {
+                _dataStore.SetRating(id, b);
+                Update(id);
+            };
+            PreviewPane.Delete = (id, b) =>
+            {
+                _dataStore.SetDeleted(id, b);
+                Update(id);
+            };
+            PreviewPane.OnNext = Next;
+            PreviewPane.OnPrev = Prev;
         }
 
         private void CopyFiles()
@@ -342,6 +365,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         PreviewPane.ResetZoom();
 
+                        _model.CurrentImage.Id = _model.SelectedImageEntry.Id;
                         _model.CurrentImage.Image = _model.SelectedImageEntry == null ? null : GetBitmapImage(_model.SelectedImageEntry.Path);
                         _model.CurrentImage.Path = parameters.Path;
                         _model.CurrentImage.Prompt = parameters.Prompt;
@@ -351,6 +375,7 @@ namespace Diffusion.Toolkit.Pages
                         _model.CurrentImage.Date = _model.SelectedImageEntry.CreatedDate.ToString();
                         _model.CurrentImage.Rating = _model.SelectedImageEntry.Rating;
                         _model.CurrentImage.NSFW = _model.SelectedImageEntry.NSFW;
+                        _model.CurrentImage.ForDeletion = _model.SelectedImageEntry.ForDeletion;
                         _model.CurrentImage.ModelHash = parameters.ModelHash;
                         _model.CurrentImage.Seed = parameters.Seed;
 
@@ -456,7 +481,10 @@ namespace Diffusion.Toolkit.Pages
             if (currentIndex < _model.Images.Count - 1)
             {
                 _model.SelectedImageEntry = _model.Images[currentIndex + 1];
+
+                ThumbnailListView.SelectItem(currentIndex + 1);
             }
+
         }
 
         public void Prev()
@@ -471,6 +499,8 @@ namespace Diffusion.Toolkit.Pages
             if (currentIndex > 0)
             {
                 _model.SelectedImageEntry = _model.Images[currentIndex - 1];
+
+                ThumbnailListView.SelectItem(currentIndex - 1);
             }
         }
 
@@ -717,6 +747,17 @@ namespace Diffusion.Toolkit.Pages
                 MainGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
                 MainGrid.ColumnDefinitions[2].Width = new GridLength(0);
             }
+        }
+
+        public void Update(int id)
+        {
+            var imageData = _dataStore.GetImage(id);
+            var image = _model.Images.FirstOrDefault(i => i.Id == id);
+
+            image.NSFW = imageData.NSFW;
+            image.Favorite = imageData.Favorite;
+            image.Rating = imageData.Rating;
+            image.ForDeletion = imageData.ForDeletion;
         }
     }
 }

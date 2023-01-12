@@ -35,6 +35,8 @@ public class ImageViewModel : BaseNotify
     private bool _fitToPreview;
     private ICommand _toggleParameters;
 
+    public int Id { get; set; }
+
     public BitmapSource? Image
     {
         get => _image;

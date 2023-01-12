@@ -119,9 +119,68 @@ namespace Diffusion.Toolkit.Controls
             Preview.LayoutTransform = scale;
         }
 
+        private static Key[] _ratings = new[]
+        {
+            Key.D1,
+            Key.D2,
+            Key.D3,
+            Key.D4,
+            Key.D5,
+            Key.D6,
+            Key.D7,
+            Key.D8,
+            Key.D9,
+            Key.D0,
+        };
+
+        public Action<int, bool> NSFW { get; set; }
+        public Action<int, bool> Favorite { get; set; }
+        public Action<int, int?> Rate { get; set; }
+        public Action<int, bool> Delete { get; set; }
+
         private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.D0 && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+            if ((e.Key == Key.X  || e.Key == Key.Delete) && e.KeyboardDevice.Modifiers == ModifierKeys.None)
+            {
+                Image.ForDeletion = !Image.ForDeletion;
+                Delete?.Invoke(Image.Id, Image.ForDeletion);
+            }
+            if (e.Key == Key.N && e.KeyboardDevice.Modifiers == ModifierKeys.None)
+            {
+                Image.NSFW = !Image.NSFW;
+                NSFW?.Invoke(Image.Id, Image.NSFW);
+            }
+            if (e.Key == Key.F && e.KeyboardDevice.Modifiers == ModifierKeys.None)
+            {
+                Image.Favorite = !Image.Favorite;
+                Favorite?.Invoke(Image.Id, Image.Favorite);
+            }
+            if (_ratings.Contains(e.Key) && e.KeyboardDevice.Modifiers == ModifierKeys.None)
+            {
+                int? rating = e.Key switch
+                {
+                    Key.D1 => 1,
+                    Key.D2 => 2,
+                    Key.D3 => 3,
+                    Key.D4 => 4,
+                    Key.D5 => 5,
+                    Key.D6 => 6,
+                    Key.D7 => 7,
+                    Key.D8 => 8,
+                    Key.D9 => 9,
+                    Key.D0 => 10,
+                };
+
+                if (Image.Rating == rating)
+                {
+                    rating = null;
+                }
+
+                Image.Rating = rating;
+
+                Rate?.Invoke(Image.Id, rating);
+            }
+            else if (e.Key == Key.D0 && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
             {
                 _zoomValue = 1;
                 ZoomPreview();

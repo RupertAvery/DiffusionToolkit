@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static SQLite.SQLite3;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Diffusion.Database
 {
@@ -59,6 +60,19 @@ namespace Diffusion.Database
             db.Close();
 
             return count;
+        }
+
+
+        public Image GetImage(int id)
+        {
+            using var db = OpenConnection();
+            
+
+            var image = db.FindWithQuery<Image>($"SELECT * FROM Image WHERE Id = ?", id);
+
+            db.Close();
+
+            return image;
         }
 
         public IEnumerable<Image> Search(string prompt, int pageSize, int offset)

@@ -139,11 +139,11 @@ namespace Diffusion.Toolkit
                 _model.IsPreviewVisible = false;
                 _search.SetPreviewVisible(_model.IsPreviewVisible);
 
-                _previewWindow = new PreviewWindow();
+                _previewWindow = new PreviewWindow(_dataStore);
                 _previewWindow.Owner = this;
                 _previewWindow.OnNext = () => _search.Next();
                 _previewWindow.OnPrev = () => _search.Prev();
-
+                _previewWindow.Changed = (id) => _search.Update(id);
                 _previewWindow.Closed += (sender, args) =>
                 {
                     _previewWindow = null;
