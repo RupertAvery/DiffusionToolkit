@@ -43,8 +43,6 @@
                   MouseDown="ThumbnailListView_OnMouseDown"
                   MouseMove="ThumbnailListView_OnMouseMove"
                   MouseDoubleClick="Control_OnMouseDoubleClick"
-                  KeyboardNavigation.DirectionalNavigation="Cycle"
-                  KeyboardNavigation.TabNavigation="Cycle"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                   Tag="{Binding Path=.}"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
