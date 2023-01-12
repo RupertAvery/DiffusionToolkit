@@ -39,6 +39,7 @@
                   SelectionMode="Extended"
                   SelectedItem="{Binding SelectedImageEntry}" 
                   KeyDown="ThumbnailListView_OnKeyDown"
+                  PreviewKeyDown="ThumbnailListView_OnPreviewKeyDown"
                   PreviewMouseLeftButtonDown="ThumbnailListView_OnPreviewMouseLeftButtonDown"
                   MouseDown="ThumbnailListView_OnMouseDown"
                   MouseMove="ThumbnailListView_OnMouseMove"

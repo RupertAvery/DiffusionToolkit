@@ -152,6 +152,55 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
+        private static T? GetChildOfType<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+
+                var result = (child as T) ?? GetChildOfType<T>(child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Handle wrapping around if an arrow key is pressed at the edge of the <see cref="ListView"/>.
+        /// </summary>
+        private void ThumbnailListView_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1)
+            {
+                return;
+            }
+
+            var delta = e.Key switch
+            {
+                Key.Left => -1,
+                Key.Right => 1,
+                _ => 0
+            };
+
+            if (delta != 0) 
+            {
+                var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+                var item = wrapPanel.Children[0] as ListViewItem;
+                var columns = (int)(wrapPanel.ActualWidth / item.ActualWidth);
+
+                if (ThumbnailListView.SelectedIndex + delta < 0 || ThumbnailListView.SelectedIndex + delta >= wrapPanel.Children.Count)
+                {
+                    e.Handled = true;
+                }
+                else if ((ThumbnailListView.SelectedIndex + delta) % columns == (delta == 1 ? 0 : columns - 1))
+                {
+                    ThumbnailListView.SelectedIndex += delta;
+                    wrapPanel.Children[ThumbnailListView.SelectedIndex].Focus();
+                    e.Handled = true;
+                }
+            }
+        }
 
         private void RateSelected(int rating)
         {
