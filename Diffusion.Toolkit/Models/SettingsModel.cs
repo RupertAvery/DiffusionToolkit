@@ -12,6 +12,9 @@ public class SettingsModel : BaseNotify
     private string _theme;
     private bool _checkForUpdatesOnStartup;
     private bool _scanForNewImagesOnStartup;
+    private bool _autoTagNsfw;
+    private string _nsfwTags;
+    private string _hashCache;
 
     public SettingsModel()
     {
@@ -70,5 +73,23 @@ public class SettingsModel : BaseNotify
     {
         get => _scanForNewImagesOnStartup;
         set => SetField(ref _scanForNewImagesOnStartup, value);
+    }
+
+    public bool AutoTagNSFW
+    {
+        get => _autoTagNsfw;
+        set => SetField(ref _autoTagNsfw, value);
+    }
+
+    public string NSFWTags
+    {
+        get => _nsfwTags;
+        set => SetField(ref _nsfwTags, value);
+    }
+
+    public string HashCache
+    {
+        get => _hashCache;
+        set => SetField(ref _hashCache, value);
     }
 }

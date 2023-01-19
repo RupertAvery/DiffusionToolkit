@@ -6,6 +6,7 @@ using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
 using System.Globalization;
+using MetadataExtractor.Formats.WebP;
 
 namespace Diffusion.IO;
 
@@ -70,7 +71,14 @@ public class Metadata
 
                     break;
                 }
+            case ".webp":
+            {
+                IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(file);
 
+                fileParameters = ReadAutomatic1111Parameters(file, directories);
+
+                break;
+            }
         }
 
         if (fileParameters == null)
@@ -413,7 +421,7 @@ public class Metadata
 
         fileParameters.Prompt = "";
         fileParameters.NegativePrompt = "";
-
+ 
         foreach (var part in parts)
         {
             var isNegativePrompt = part.StartsWith(negativePromptKey, StringComparison.InvariantCultureIgnoreCase);

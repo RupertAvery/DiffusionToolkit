@@ -11,6 +11,9 @@ using System.Text.RegularExpressions;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Themes;
+using Diffusion.Toolkit.Pages;
+using System.Diagnostics;
+using System.IO;
 
 namespace Diffusion.Toolkit
 {
@@ -38,7 +41,7 @@ namespace Diffusion.Toolkit
             _dataStore = dataStore;
 
             _model = new SettingsModel();
-            _model.PropertyChanged  += ModelOnPropertyChanged;
+            _model.PropertyChanged += ModelOnPropertyChanged;
             _model.ImagePaths = new ObservableCollection<string>(settings.ImagePaths);
             _model.ModelRootPath = settings.ModelRootPath;
             _model.FileExtensions = settings.FileExtensions;
@@ -47,6 +50,9 @@ namespace Diffusion.Toolkit
             _model.WatchFolders = settings.WatchFolders;
             _model.CheckForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
             _model.ScanForNewImagesOnStartup = settings.ScanForNewImagesOnStartup;
+            _model.AutoTagNSFW = settings.AutoTagNSFW;
+            _model.NSFWTags = string.Join("\r\n", settings.NSFWTags);
+            _model.HashCache = settings.HashCache;
 
             DataContext = _model;
 
@@ -61,6 +67,9 @@ namespace Diffusion.Toolkit
                 settings.WatchFolders = _model.WatchFolders;
                 settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
                 settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
+                settings.AutoTagNSFW = _model.AutoTagNSFW;
+                settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                settings.HashCache = _model.HashCache;
             };
 
             var str = new System.Text.StringBuilder();
@@ -83,7 +92,7 @@ namespace Diffusion.Toolkit
             dialog.IsFolderPicker = true;
             if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
             {
-                if (_model.ImagePaths.Any(d => dialog.FileName.StartsWith(d)))
+                if (_model.ImagePaths.Any(d => dialog.FileName.StartsWith(d + "\\")))
                 {
                     MessageBox.Show(this,
                         "The selected folder is already on the path of one of the included folders",
@@ -136,6 +145,73 @@ namespace Diffusion.Toolkit
         {
             Regex regex = new Regex("[^0-9]+");
             e.Handled = regex.IsMatch(e.Text);
+        }
+
+        private void Open_DB_Folder(object sender, RoutedEventArgs e)
+        {
+            Process.Start("explorer.exe", $"/select,\"{_dataStore.DatabasePath}\"");
+        }
+
+        private void Backup_DB(object sender, RoutedEventArgs e)
+        {
+            _dataStore.CreateBackup();
+
+            var result = MessageBox.Show(this,
+                "A database backup has been created.",
+                "Backup Database", MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        private void Restore_DB(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("SQLite databases", ".db"));
+            dialog.DefaultDirectory = Path.GetDirectoryName(_dataStore.DatabasePath);
+            dialog.Filters.Add(new CommonFileDialogFilter("All files", ".*"));
+            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            {
+                if (dialog.FileName == _dataStore.DatabasePath)
+                {
+                    MessageBox.Show(this,
+                    "The selectd file is the current database. Please try another file.",
+                    "Restore Database", MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation);
+
+                    return;
+                }
+                
+                var result = MessageBox.Show(this,
+                    $"Are you sure you want to restore the file {dialog.FileName}? Your current database will be overwritten!",
+                    "Restore Database", MessageBoxButton.YesNo,
+                    MessageBoxImage.Exclamation, MessageBoxResult.No);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    if (!_dataStore.TryRestoreBackup(dialog.FileName))
+                    {
+                        MessageBox.Show(this,
+                            "The database backup is not a Diffusion Toolkit database.",
+                            "Restore Database", MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        return;
+                    }
+                }
+
+                MessageBox.Show(this,
+                    "The database backup has been restored.",
+                    "Restore Database", MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+        }
+
+        private void BrowseHashCache_OnClick(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("A1111 cache", "*.json"));
+            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            {
+                _model.HashCache = dialog.FileName;
+            }
         }
     }
 }

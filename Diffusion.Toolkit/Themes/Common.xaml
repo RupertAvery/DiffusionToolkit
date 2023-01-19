@@ -32,7 +32,6 @@
         <Setter Property="BorderBrush" Value="Transparent"></Setter>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
     </Style>
-
     <Style x:Key="{ComponentResourceKey ResourceId=DataGridSelectAllButtonStyle, TypeInTargetAssembly={x:Type DataGrid}}" TargetType="{x:Type Button}">
         <Setter Property="Template">
             <Setter.Value>

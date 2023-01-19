@@ -84,21 +84,25 @@ namespace Diffusion.Database
             return result;
         }
 
-        public void UpdateImagesByPath(IEnumerable<Image> images)
+        public int UpdateImagesByPath(IEnumerable<Image> images, IEnumerable<string> includeProperties)
         {
+            var updated = 0;
+
             using var db = OpenConnection();
 
             db.BeginTransaction();
 
             var exclude = new string[]
             {
-            nameof(Image.Id),
-            nameof(Image.CustomTags),
-            nameof(Image.Rating),
-            nameof(Image.Favorite),
-            nameof(Image.ForDeletion),
-            nameof(Image.NSFW)
+                nameof(Image.Id),
+                nameof(Image.CustomTags),
+                nameof(Image.Rating),
+                nameof(Image.Favorite),
+                nameof(Image.ForDeletion),
+                nameof(Image.NSFW)
             };
+
+            exclude = exclude.Except(includeProperties).ToArray();
 
             var properties = typeof(Image).GetProperties().Where(p => !exclude.Contains(p.Name)).ToList();
 
@@ -122,13 +126,15 @@ namespace Diffusion.Database
                 {
                     command.Bind($"@{property.Name}", property.GetValue(image));
                 }
-                command.ExecuteNonQuery();
+                updated += command.ExecuteNonQuery();
             }
 
             db.Commit();
+
+            return updated;
         }
 
-        public void AddImages(IEnumerable<Image> images)
+        public void AddImages(IEnumerable<Image> images, IEnumerable<string> includeProperties)
         {
             using var db = OpenConnection();
 
@@ -137,8 +143,19 @@ namespace Diffusion.Database
             var fieldList = new List<string>();
             var paramList = new List<string>();
 
-            var nonProps = new string[] { nameof(Image.Id) }; /*            { "CustomTags", "Rating", "Favorite", "ForDeletion" } */;
-            var properties = typeof(Image).GetProperties().Where(p => !nonProps.Contains(p.Name)).ToList();
+            var exclude = new string[]
+            {
+                nameof(Image.Id),
+                //nameof(Image.CustomTags),
+                //nameof(Image.Rating),
+                //nameof(Image.Favorite),
+                //nameof(Image.ForDeletion),
+                //nameof(Image.NSFW)
+            };
+
+            exclude = exclude.Except(includeProperties).ToArray();
+
+            var properties = typeof(Image).GetProperties().Where(p => !exclude.Contains(p.Name)).ToList();
 
             foreach (var property in properties)
             {

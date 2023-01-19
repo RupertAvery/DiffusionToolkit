@@ -8,17 +8,38 @@
       d:DataContext="{d:DesignInstance local:ModelsModel, IsDesignTimeCreatable = True}"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Models">
+    <Page.Resources>
+        <SolidColorBrush x:Key="ListBox.Disabled.Background" Color="#FFFFFFFF"/>
+        <SolidColorBrush x:Key="ListBox.Disabled.Border" Color="#FFD9D9D9"/>
+       
+    </Page.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <ListBox ItemsSource="{Binding Models}" DisplayMemberPath="DisplayName" 
-                 SelectedItem="{Binding SelectedModel}"
-                 VerticalAlignment="Stretch">
+        <DockPanel  VerticalAlignment="Stretch">
+            <TextBox Height="26" VerticalContentAlignment="Center" DockPanel.Dock="Top" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+            <ListBox ItemsSource="{Binding FilteredModels}" DisplayMemberPath="DisplayName" 
+                     SelectedItem="{Binding SelectedModel}"
+                     VerticalAlignment="Stretch">
+                <ListBox.Resources>
 
-        </ListBox>
+                    <!--Defines a context menu-->
+                    <ContextMenu x:Key="MyElementMenu">
+                        <MenuItem Header="Compute SHA256" Click="ComputeSHA256_Click"/>
+                    </ContextMenu>
+
+                    <!--Sets a context menu for each ListBoxItem in the current ListBox-->
+                    <Style TargetType="{x:Type ListBoxItem}">
+                        <Setter Property="ContextMenu" Value="{StaticResource MyElementMenu}"/>
+                    </Style>
+
+                </ListBox.Resources>
+            </ListBox>
+        </DockPanel>
+
         <Grid Grid.Column="1" Margin="10">
             <Grid.RowDefinitions>
                 <RowDefinition Height="48"/>
@@ -35,8 +56,8 @@
                             <Bold>Hash:</Bold>
                             <Run Text="{Binding SelectedModel.Hash, Mode=OneWay}"></Run>
                             <LineBreak/>
-                            <Bold>Hash v2:</Bold>
-                            <Run Text="{Binding SelectedModel.Hashv2, Mode=OneWay}"></Run>
+                            <Bold>SHA256:</Bold>
+                            <Run Text="{Binding SelectedModel.SHA256, Mode=OneWay}"></Run>
                         </Paragraph>
                     </FlowDocument>
                 </RichTextBox>

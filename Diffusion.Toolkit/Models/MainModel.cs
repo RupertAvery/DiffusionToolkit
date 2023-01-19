@@ -1,5 +1,6 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -38,6 +39,11 @@ public class MainModel : BaseNotify
     private ICommand _poputPreview;
     private ICommand _togglePreview;
     private bool _isPreviewVisible;
+    private ICommand _markAllForDeletion;
+    private ICommand _unmarkAllForDeletion;
+    private ICommand _removeMatching;
+    private ICommand _autoTagNsfw;
+    private ICommand _reloadHashes;
 
     public MainModel()
     {
@@ -81,6 +87,12 @@ public class MainModel : BaseNotify
     {
         get => _rebuild;
         set => SetField(ref _rebuild, value);
+    }
+
+    public ICommand ReloadHashes
+    {
+        get => _reloadHashes;
+        set => SetField(ref _reloadHashes, value);
     }
 
     public bool ShowIcons
@@ -237,5 +249,29 @@ public class MainModel : BaseNotify
     {
         get => _isPreviewVisible;
         set => SetField(ref _isPreviewVisible, value);
+    }
+
+    public ICommand MarkAllForDeletion
+    {
+        get => _markAllForDeletion;
+        set => SetField(ref _markAllForDeletion, value);
+    }
+
+    public ICommand UnmarkAllForDeletion
+    {
+        get => _unmarkAllForDeletion;
+        set => SetField(ref _unmarkAllForDeletion, value);
+    }
+
+    public ICommand RemoveMatching
+    {
+        get => _removeMatching;
+        set => SetField(ref _removeMatching, value);
+    }
+
+    public ICommand AutoTagNSFW
+    {
+        get => _autoTagNsfw;
+        set => SetField(ref _autoTagNsfw, value);
     }
 }

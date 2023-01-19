@@ -75,7 +75,44 @@ namespace Diffusion.Database
             return image;
         }
 
-        public IEnumerable<Image> Search(string prompt, int pageSize, int offset)
+
+        public IEnumerable<Image> QueryAll()
+        {
+            using var db = OpenConnection();
+
+            var images = db.Query<Image>($"SELECT * FROM Image");
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+
+            db.Close();
+        }
+
+
+        public IEnumerable<Image> Query(string? prompt)
+        {
+            using var db = OpenConnection();
+
+            if (string.IsNullOrEmpty(prompt))
+            {
+                throw new Exception("Query prompt cannot be empty!");
+            }
+
+            var q = QueryBuilder.Parse(prompt);
+
+            var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+
+            db.Close();
+        }
+
+        public IEnumerable<Image> Search(string? prompt, int pageSize, int offset)
         {
             using var db = OpenConnection();
 
@@ -113,7 +150,7 @@ namespace Diffusion.Database
         private string lastPrompt;
         private List<UsedPrompt>? allResults;
 
-        public IEnumerable<UsedPrompt> SearchPrompts(string prompt, bool fullText, int distance)
+        public IEnumerable<UsedPrompt> SearchPrompts(string? prompt, bool fullText, int distance)
         {
             IEnumerable<UsedPrompt> results = new List<UsedPrompt>();
 

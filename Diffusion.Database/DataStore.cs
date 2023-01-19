@@ -23,6 +23,46 @@ public partial class DataStore
         Create();
     }
 
+    public bool CheckIsValid()
+    {
+        var isValid = false;
+        try
+        {
+            var baseImageColumns = new[]
+            {
+                nameof(Image.Path),
+                nameof(Image.Prompt),
+                nameof(Image.Seed),
+                nameof(Image.Sampler),
+                nameof(Image.CFGScale),
+            };
+
+            using var db = OpenConnection();
+            
+            if (db.TableExist(nameof(Image)))
+            {
+                isValid = true;
+
+                var columns = db.GetTableInfo(nameof(Image));
+
+                var columnNames = columns.Select(cc => cc.Name).ToList();
+
+                if (!baseImageColumns.All(c => columnNames.Any(cc => cc == c)))
+                {
+                    isValid = false;
+                }
+
+            }
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+
+
+        return isValid;
+    }
+
     public void Create()
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
@@ -111,7 +151,25 @@ public partial class DataStore
     }
 
 
+    public void CreateBackup()
+    {
+        var path = Path.GetDirectoryName(DatabasePath);
+        var backupFilename = $"Backup-{DateTime.Now:yyyyMMdd-hhmmss}.db";
+        File.Copy(DatabasePath, Path.Combine(path, backupFilename));
+    }
 
+    public bool TryRestoreBackup(string path)
+    {
+        var temp = new DataStore(path);
+        if (temp.CheckIsValid())
+        {
+            File.Copy(path, DatabasePath, true);
+            Create();
+            return true;
+        }
+
+        return false;
+    }
 }
 
 public class ImagePath

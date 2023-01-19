@@ -17,6 +17,7 @@ public class Settings
     {
         DontShowWelcomeOnStartup = false;
         ImagePaths = new List<string>();
+        NSFWTags = new List<string>() { "nsfw", "nude", "naked" };
         FileExtensions = ".png, .jpg";
         Theme = "System";
         PageSize = 100;
@@ -46,6 +47,16 @@ public class Settings
     private bool _checkForUpdatesOnStartup;
     private bool _fitToPreview;
     private int _thumbnailSize;
+    private bool _autoTagNSFW;
+    private List<string> _nsfwTags;
+    private string _hashCache;
+
+    public List<string> NSFWTags
+    {
+        get => _nsfwTags;
+        set => UpdateList(ref _nsfwTags, value);
+    }
+
 
     public bool IsPropertyDirty(string name)
     {
@@ -192,5 +203,17 @@ public class Settings
     {
         get => _thumbnailSize;
         set => UpdateValue(ref _thumbnailSize, value);
+    }
+
+    public bool AutoTagNSFW
+    {
+        get => _autoTagNSFW;
+        set => UpdateValue(ref _autoTagNSFW, value);
+    }
+
+    public string HashCache
+    {
+        get => _hashCache;
+        set => UpdateValue(ref _hashCache, value);
     }
 }

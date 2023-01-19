@@ -123,6 +123,23 @@ public class MessagePopupManager
             });
     }
 
+    public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons, int width, int height, int timeout = 0)
+    {
+        _host.Visibility = Visibility.Visible;
+        var popup = new MessagePopup(this, _placementTarget, timeout);
+        _popups.Add(popup);
+        _host.Children.Add(popup);
+        return popup.ShowCustom(message, title, buttons, width, height)
+            .ContinueWith(t =>
+            {
+                _dispatcher.Invoke(() =>
+                {
+                    _host.Visibility = Visibility.Hidden;
+                });
+                return t.Result;
+            });
+    }
+
     public void Close(MessagePopup messagePopup)
     {
         _dispatcher.Invoke(() =>

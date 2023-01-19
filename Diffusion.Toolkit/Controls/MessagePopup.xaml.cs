@@ -168,6 +168,23 @@ namespace Diffusion.Toolkit.Controls
             return _tcs.Task;
         }
 
+        public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons, int width, int height)
+        {
+            _model.Width = width;
+            _model.Height = height;
+
+            _model.IsVisible = true;
+            _model.Title = title;
+            _model.Message = message;
+
+            _model.HasOk = buttons.HasFlag(PopupButtons.OK);
+            _model.HasCancel = buttons.HasFlag(PopupButtons.Cancel);
+            _model.HasYes = buttons.HasFlag(PopupButtons.Yes);
+            _model.HasNo = buttons.HasFlag(PopupButtons.No);
+
+            return _tcs.Task;
+        }
+        
         public void Show()
         {
             _model.IsVisible = true;

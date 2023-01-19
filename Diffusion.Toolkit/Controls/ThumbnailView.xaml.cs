@@ -323,6 +323,9 @@ namespace Diffusion.Toolkit.Controls
                 {
                     var ids = imageEntries.Select(x => x.Id).ToList();
 
+                    Model.SelectedImageEntry = null;
+                    ThumbnailListView.SelectedIndex = -1;
+
                     foreach (var image in imageEntries)
                     {
                         Model.Images.Remove(image);

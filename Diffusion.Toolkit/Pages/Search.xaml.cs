@@ -21,6 +21,7 @@ using Diffusion.Toolkit.Classes;
 using Model = Diffusion.IO.Model;
 using Task = System.Threading.Tasks.Task;
 using System.Windows.Media;
+using static System.String;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -73,7 +74,7 @@ namespace Diffusion.Toolkit.Pages
 
 
         private Random r = new Random();
-        private readonly string[] _searchHints = File.ReadAllLines("hints.txt").Where(s => !string.IsNullOrEmpty(s.Trim())).ToArray();
+        private readonly string[] _searchHints = File.ReadAllLines("hints.txt").Where(s => !IsNullOrEmpty(s.Trim())).ToArray();
 
         private void GetRandomHint()
         {
@@ -85,7 +86,7 @@ namespace Diffusion.Toolkit.Pages
 
         public GridLength GetGridLength(string? value)
         {
-            if (string.IsNullOrEmpty(value)) return new GridLength(0, GridUnitType.Auto);
+            if (IsNullOrEmpty(value)) return new GridLength(0, GridUnitType.Auto);
 
             if (value == "*") return new GridLength(0, GridUnitType.Star);
 
@@ -277,7 +278,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     //_model.Images!.Clear();
 
-                    if (!string.IsNullOrEmpty(_model.SearchText))
+                    if (!IsNullOrEmpty(_model.SearchText))
                     {
                         if (_model.SearchHistory.Count == 0 || (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != _model.SearchText))
                         {
@@ -359,56 +360,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (_model.SelectedImageEntry != null)
                 {
-                    var parameters = Metadata.ReadFromFile(_model.SelectedImageEntry.Path);
-
-                    try
-                    {
-                        PreviewPane.ResetZoom();
-
-                        _model.CurrentImage.Id = _model.SelectedImageEntry.Id;
-                        _model.CurrentImage.Image = _model.SelectedImageEntry == null ? null : GetBitmapImage(_model.SelectedImageEntry.Path);
-                        _model.CurrentImage.Path = parameters.Path;
-                        _model.CurrentImage.Prompt = parameters.Prompt;
-                        _model.CurrentImage.NegativePrompt = parameters.NegativePrompt;
-                        _model.CurrentImage.OtherParameters = parameters.OtherParameters;
-                        _model.CurrentImage.Favorite = _model.SelectedImageEntry.Favorite;
-                        _model.CurrentImage.Date = _model.SelectedImageEntry.CreatedDate.ToString();
-                        _model.CurrentImage.Rating = _model.SelectedImageEntry.Rating;
-                        _model.CurrentImage.NSFW = _model.SelectedImageEntry.NSFW;
-                        _model.CurrentImage.ForDeletion = _model.SelectedImageEntry.ForDeletion;
-                        _model.CurrentImage.ModelHash = parameters.ModelHash;
-                        _model.CurrentImage.Seed = parameters.Seed;
-
-                        if (_modelLookup != null)
-                        {
-                            var models = _modelLookup.Where(m => String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase));
-
-                            if (models.Any())
-                            {
-                                _model.CurrentImage.ModelName = string.Join(", ", models.Select(m => m.Filename)) + $" ({parameters.ModelHash})";
-                            }
-                            else
-                            {
-                                _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
-                            }
-                        }
-                        else
-                        {
-                            _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
-                        }
-
-                        PreviewPane.ZoomPreview();
-
-                        OnCurrentImageChange?.Invoke(_model.CurrentImage);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        MessageBox.Show(_navigatorService.Host, "The source image could not be located. This can happen when you move or rename the file outside of Diffusion Toolkit.", "Load image failed", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(_navigatorService.Host, $"{ex.Message}", "An error occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                    }
+                    LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
                 }
             }
             //else if (e.PropertyName == nameof(SearchModel.Page))
@@ -417,7 +369,7 @@ namespace Diffusion.Toolkit.Pages
             //}
             else if (e.PropertyName == nameof(SearchModel.SearchText))
             {
-                if (string.IsNullOrEmpty(_model.SearchText))
+                if (IsNullOrEmpty(_model.SearchText))
                 {
                     GetRandomHint();
                 }
@@ -425,6 +377,69 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
+        public void LoadPreviewImage(string path, ImageEntry? image = null)
+        {
+            var parameters = Metadata.ReadFromFile(path);
+
+            try
+            {
+                PreviewPane.ResetZoom();
+
+                if (image != null)
+                {
+                    _model.CurrentImage.Id = image.Id;
+                    _model.CurrentImage.Favorite = image.Favorite;
+                    _model.CurrentImage.Date = image.CreatedDate.ToString();
+                    _model.CurrentImage.Rating = image.Rating;
+                    _model.CurrentImage.NSFW = image.NSFW;
+                    _model.CurrentImage.ForDeletion = image.ForDeletion;
+                }
+
+                _model.CurrentImage.Image = GetBitmapImage(path);
+                _model.CurrentImage.Path = parameters.Path;
+                _model.CurrentImage.Prompt = parameters.Prompt;
+                _model.CurrentImage.NegativePrompt = parameters.NegativePrompt;
+                _model.CurrentImage.OtherParameters = parameters.OtherParameters;
+
+                _model.CurrentImage.ModelHash = parameters.ModelHash;
+                _model.CurrentImage.Seed = parameters.Seed;
+
+                if (_modelLookup != null)
+                {
+                    var models = _modelLookup.Where(m =>
+                        !IsNullOrEmpty(parameters.ModelHash) &&
+                        (String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase) 
+                         ||
+                         (m.SHA256 != null && string.Equals(m.SHA256.Substring(0, parameters.ModelHash.Length), parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase))
+                    ));
+
+                    if (models.Any())
+                    {
+                        _model.CurrentImage.ModelName = Join(", ", models.Select(m => m.Filename)) + $" ({parameters.ModelHash})";
+                    }
+                    else
+                    {
+                        _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
+                    }
+                }
+                else
+                {
+                    _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
+                }
+
+                PreviewPane.ZoomPreview();
+
+                OnCurrentImageChange?.Invoke(_model.CurrentImage);
+            }
+            catch (FileNotFoundException)
+            {
+                MessageBox.Show(_navigatorService.Host, "The source image could not be located. This can happen when you move or rename the file outside of Diffusion Toolkit.", "Load image failed", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(_navigatorService.Host, $"{ex.Message}", "An error occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+        }
 
         public static BitmapImage GetBitmapImage(string path)
         {
@@ -758,6 +773,25 @@ namespace Diffusion.Toolkit.Pages
             image.Favorite = imageData.Favorite;
             image.Rating = imageData.Rating;
             image.ForDeletion = imageData.ForDeletion;
+        }
+
+        private void PreviewPane_OnDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                // Note that you can have more than one file.
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                // Assuming you have one file that you care about, pass it off to whatever
+                // handling code you have defined.
+                LoadPreviewImage(files[0]);
+            }
+
+        }
+
+        public string? GetPrompt()
+        {
+            return _model.SearchText;
         }
     }
 }

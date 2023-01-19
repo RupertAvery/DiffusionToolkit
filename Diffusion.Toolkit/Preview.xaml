@@ -10,7 +10,7 @@
         d:DataContext="{d:DesignInstance local:PreviewModel, IsDesignTimeCreatable=True}"
         Title="Preview" Height="450" Width="800">
     <Grid>
-        <controls:PreviewPane NSFWBlur="{Binding NSFWBlur}" Image="{Binding CurrentImage}"  x:Name="PreviewPane"></controls:PreviewPane>
+        <controls:PreviewPane NSFWBlur="{Binding NSFWBlur}" Image="{Binding CurrentImage}"  x:Name="PreviewPane" AllowDrop="True" Drop="PreviewPane_OnDrop"></controls:PreviewPane>
 
     </Grid>
 </Window>

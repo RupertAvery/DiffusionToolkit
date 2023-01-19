@@ -1,5 +1,7 @@
 # Table of Contents
 
+* [Diffusion Toolkit](#diffusion-toolkit)
+* [Features](#features)
 * [Getting Started](#getting-started)
 * [Updating your images](#updating-your-images)
    * [Rescan Folders](#rescan-folders)
@@ -20,60 +22,113 @@
 * [Notes](#notes)
 * [Search on Multiple Values](#search-on-multiple-values)
 
+# Diffusion Toolkit
+
+When AI Image Generators generate an image, it may also embed the parameters used to generate that image in the image as metadata, or store it in a separate text file.
+
+Diffusion Toolkit scans your AI-Generated images for metadata and stores it in a local database for fast retrieval and searching.
+
+
+
+# Features
+
+* Support for AUTOMATIC1111, InvokeAI, NovelAI and Stable Diffusion metadata formats
+* Supported image/metadata formats:
+   * JPG/JPEG + EXIF
+   * PNG
+   * WebP
+   * Any image + .TXT (part of filename must match)
+* Drag and Drop
+   * drag from thumbnail to Explorer to copy file
+   * drag from thumbnail to A1111 PNGInfo to copy metadata
+   * drag from thumbnail to Imgur/Google drive/web site to upload
+   * drag from thumbnail to Photoshop or any image editor to load
+   * drag from Explorer to Preview Pane to view any image metadata
+
+
+
 
 # Getting Started
 
 On first load, you will be shown the settings dialog, where you can add your image folders.
 
-![image](https://user-images.githubusercontent.com/1910659/210345314-e1e6a37c-94d0-47cc-994d-77a01ad712ee.png)
+![image](https://user-images.githubusercontent.com/1910659/213331016-43426782-92df-446b-8a77-264bbae066e4.png)
 
-If you have your images stored in several nested folders, don't add the nested folders, just add the topmost folder. Folders will be scanned recusively.
+## General Tab
 
-You can choose to Watch Folders for new images. See [Watch Folders](#watch-folders) for more information on this option.
+If you have your images stored in several nested folders, don't add the nested folders, just add the topmost folder to the **Diffusion Folders**. Folders will be scanned recusively.
 
-You may also add the checkpoint model root folder. This will allow the app to display the checkpoint filename based on model hash when previewing an image.
+You can choose to **Watch Folders** for new images. See [Watch Folders](#watch-folders) for more information on this option.
 
-You can set what file extensions to scan for. Don't include an asterisk, but do include the dot, and separate with commas e.g. `.png, .jpg`.
+You can set what **File Extensions** to scan for. Don't include an asterisk, but do include the dot, and separate with commas e.g. `.png, .jpg, .jpeg, .webp`.
 
-Diffusion Toolkit does not require you to click through folders to search for an image. Instead, search for a term or a parameter used in your PNGINfo and you will recieve a list of all matching images. As the number of matching images can be in the thousands or tens of thousands, the results arg paged.
+You may **Check for updates on startup** to be notified if there is a new version in Github.
 
-Here you can set the number of images to appear on a page.  
+## Checkpoints Tab
 
-You can also select the theme to use. System will use Light or Dark depending on your current system theme settings (tested on Windows 11).   You may also manually set to Light or Dark theme.
+Setting the checkpoint **Model Root** folder will allow Diffusion Toolkit to display the checkpoint filename based on the model hash found in the metadata.
+
+As of mid January 2023, AUTOMATIC1111 has changed they way hashes are calculated. In order to use the new hash, you need to set the path to the **A1111 cache (cache.json)** file.
+
+## Images Tab
+
+Diffusion Toolkit does not require you to click through folders to search for an image. Instead, you may search for a term or a parameter used in your PNGINfo and you will recieve a list of all matching images. As the number of matching images can be in the thousands or tens of thousands, the results are paged.
+
+Here you can set the number of **Thumbnails per page**.  
+
+You can also tell Diffusion Toolkit to **Scan for new images on startup** so you don't have to click **Scan folders for new images** when you run the application.
+
+## NSFW Tab
+
+Diffusion Toolkit can auto-tag your images based on prompt text on demand or when they are scanned in. To do this, add the list of tokens (may include spaces), one per line in the **NSFW Tags** text box, and check the option **Auto Tag NSFW**.
+
+## Themes Tab
+
+You can select the **Theme** to use. System will use Light or Dark depending on your current system theme settings (tested on Windows 11).   You may also manually set to Light or Dark theme.
+
+## Database Tab
+
+**Open Folder** will open the application data folder in explorer.
+
+You can **Backup** the database, and it will create a copy of the database in the application data folder with a unique filename containing the date and time of the backup.
+
+You can **Restore** a backup of the database.
+
+**NOTE: Do not perform a Backup or Restore while any query or database operation is running!**
 
 Settings will be applied and saved upon closing the Settings dialog.
 
-You will be prompted to scan your selected folders for images. All parsed information will be saved into a SQLite database at `%APPDATA%\DiffusionToolkit\diffusion-toolkit.db`.
-
-You will get a notice upon completion. You can now begin searching via prompt. 
-
-Pressing Enter with an empty search bar will list all images.
+You will be prompted to scan your selected folders for images. 
 
 # Updating your images
 
-## Rescan Folders
+## Scan folders for new images
 
-If you generate new images in your target folders, or add or remove images from them, you should click the **Rescan Folders** button to update your database with the latest changes.
+If you generate new images in your target folders, or add or remove images from them, you should click the **Scan folders for new images** button to update your database with the latest changes.
 
 It is not advised to move images outside Diffustion Toolkit, especially if you have favorited or rated them, as you will lost this information when you rescan.
 
 ## Watch folders
 
-The **Watch folders** setting will allow Diffusion Toolkit to recieve a notification everytime an image is added to one of the nested folders in your target folders.  The images will be added to the database without needing to click **Rescan Folders**.
+The **Watch folders** setting will allow Diffusion Toolkit to recieve a notification everytime an image is added to one of the nested folders in your target folders.  The images will be added to the database without needing to click **Scan folders for new images**.
 
 This is best used when generating images via a tool or webgui.  You will only be notified when the application has focus.  Your current search will not be updated when this occurs, to prevent from interrupting your work.
 
 **NOTE:** Be sure to turn this off if you are going to copy a lot of images into the target folders, as it is not optimized for this.
 
-## Rebuild Images
+## Rebuild Metadata
 
-**Rebuild Images** is intended for use when a new version of the application is released that supports new searchable parameters that need to be re-scanned from existing images.
+**Rebuild Metadata** is intended for use when a new version of the application is released that supports new metadata.
 
 Running this should not affect any existing favorites or ratings
 
 # Navigation
 
-The Search view is the default on startup.  Here you can enter your prompt, and press Enter to intitate the search. Matching images will be displayed in the thumbnail view. By default, results will be limited to 100 per page. This can be changed in settings.
+You will get a notice upon completion. You can now begin searching via prompt. 
+
+Pressing Enter with an empty search bar will list all images.
+
+The **Diffusions** view is the default on startup.  Here you can enter your prompt, and press Enter to intitate the search. Matching images will be displayed in the thumbnail view. By default, results will be limited to 100 per page. This can be changed in settings.
 
 Use the buttons at the bottom of the page to move between pages. The keyboard shortcuts are:
 
@@ -440,7 +495,7 @@ If you move your files to a different folder, but still under the target folders
 
 You will lose any Favorites, Ratings or other Toolkit-specific information. 
 
-## Where are my settings stored?
+## Where are my settings and database stored?
 
 Your settings and the database are stored in `%APPDATA%\DiffusionToolkit`.
 

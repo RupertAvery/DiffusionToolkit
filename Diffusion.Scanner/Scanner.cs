@@ -1,7 +1,6 @@
 ﻿using Dir = System.IO.Directory;
 using System.IO;
 using static System.Net.WebRequestMethods;
-using File = System.IO.File;
 
 namespace Diffusion.IO
 {

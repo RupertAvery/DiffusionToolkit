@@ -85,7 +85,7 @@
                       Width="5"
         />
 
-        <controls:PreviewPane Grid.Row="0" Grid.Column="2" NSFWBlur="{Binding NSFWBlur}" Image="{Binding CurrentImage}"  x:Name="PreviewPane"></controls:PreviewPane>
+        <controls:PreviewPane Grid.Row="0" Grid.Column="2" NSFWBlur="{Binding NSFWBlur}" Image="{Binding CurrentImage}" x:Name="PreviewPane" AllowDrop="True" Drop="PreviewPane_OnDrop"></controls:PreviewPane>
     </Grid>
 </Page>
  

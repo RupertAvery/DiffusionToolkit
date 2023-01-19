@@ -1,8 +1,10 @@
 ﻿using Diffusion.Database;
+using Diffusion.IO;
 using Diffusion.Toolkit.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +37,8 @@ namespace Diffusion.Toolkit
         {
             set => PreviewPane.OnPrev = value;
         }
+
+        public Action<string> OnDrop { get; set; }
 
         public Action<int> Changed { get; set; }
 
@@ -77,6 +81,17 @@ namespace Diffusion.Toolkit
         {
             _model.CurrentImage = value;
         }
+
+
+        private void PreviewPane_OnDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                OnDrop?.Invoke(files[0]);
+            }
+        }
+
     }
 
     

@@ -1,51 +1,20 @@
-﻿using Diffusion.IO;
-using System;
+﻿using System;
+using Diffusion.IO;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Diffusion.Database;
+using Model = Diffusion.IO.Model;
+using Path = System.IO.Path;
+using System.Security.Policy;
+using System.Text.Json;
 
 namespace Diffusion.Toolkit.Pages
 {
-    public class ModelViewModel
-    {
-        public string Path { get; set; }
-        public string Filename { get; set; }
-        public string Hash { get; set; }
-        public string Hashv2 { get; set; }
-        public string DisplayName => $"{Filename} ({Hash.ToLower()})";
-        public string HashInfo => $"Hash: {Hash.ToLower()} CRC32 Hash Sum: ({Hashv2.ToLower()})";
-    }
-
-    public class ModelsModel : BaseNotify
-    {
-        private IEnumerable<ModelViewModel> _models;
-        private ModelViewModel _selectedModel;
-
-        public IEnumerable<ModelViewModel> Models
-        {
-            get => _models;
-            set => SetField(ref _models, value);
-        }
-
-        public ModelViewModel SelectedModel
-        {
-            get => _selectedModel;
-            set => SetField(ref _selectedModel, value);
-        }
-    }
-
     /// <summary>
     /// Interaction logic for Models.xaml
     /// </summary>
@@ -62,24 +31,97 @@ namespace Diffusion.Toolkit.Pages
             InitializeComponent();
 
             _model = new ModelsModel();
-
-            LoadModels();
+            _model.PropertyChanged += ModelOnPropertyChanged;
 
             DataContext = _model;
         }
 
-        public void LoadModels()
+        public Action<Model> OnModelUpdated { get; set; }
+
+        private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (_settings.ModelRootPath != null && Directory.Exists(_settings.ModelRootPath))
+            if (e.PropertyName == nameof(ModelsModel.Search))
             {
-                _model.Models = ModelScanner.Scan(_settings.ModelRootPath).OrderBy(m => m.Filename).Select(m => new ModelViewModel
+                if (!string.IsNullOrEmpty(_model.Search))
                 {
-                    Hash = m.Hash,
-                    Filename = m.Filename,
-                    Hashv2 = m.Hashv2,
-                    Path = m.Path
-                }).ToList();
+                    var query = _model.Search.ToLower();
+                    _model.FilteredModels = _model.Models.Where(m =>
+                        m.Filename.ToLower().Contains(query) ||
+                        m.Hash.ToLower().Contains(query) ||
+                        (!string.IsNullOrEmpty(m.SHA256) && m.SHA256.ToLower().Contains(query))
+                        );
+                }
+                else
+                {
+                    _model.FilteredModels = _model.Models.ToList();
+                }
             }
         }
+
+        public void SetModels(ICollection<Model> modelsCollection)
+        {
+            _model.Models = modelsCollection.Select(m => new ModelViewModel
+            {
+                Path = m.Path,
+                Filename = m.Filename,
+                Hash = m.Hash,
+                SHA256 = m.SHA256,
+            }).ToList();
+
+            _model.FilteredModels = _model.Models;
+        }
+
+
+        private void ComputeSHA256_Click(object sender, RoutedEventArgs e)
+        {
+            var model = (ModelViewModel)((MenuItem)sender).DataContext;
+            var path = Path.Combine(_settings.ModelRootPath, model.Path);
+            model.SHA256 = "Calculating...";
+
+            Task.Run(() =>
+            {
+                var hash = HashFunctions.CalculateSHA256(path);
+                Dispatcher.Invoke(() =>
+                {
+                    model.SHA256 = hash;
+                    OnModelUpdated?.Invoke(new Model() { Path = model.Path, SHA256 = hash });
+                    if (!string.IsNullOrEmpty(_settings.HashCache) && File.Exists(_settings.HashCache))
+                    {
+                        var hashes = JsonSerializer.Deserialize<Hashes>(File.ReadAllText(_settings.HashCache));
+
+                        var info = new FileInfo(path);
+                        var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
+
+                        var mTime = info.LastWriteTime - baseTime;
+
+                        var key = "checkpoint/" + model.Path;
+
+                        if (hashes.hashes.TryGetValue(key, out var hashInfo))
+                        {
+                            hashInfo.sha256 = hash;
+                            hashInfo.mtime = mTime.TotalSeconds;
+                        }
+                        else
+                        {
+                            hashes.hashes.Add(key, new HashInfo()
+                            {
+                                sha256 = hash,
+                                mtime = mTime.TotalSeconds
+                            });
+                        }
+
+                        var json = JsonSerializer.Serialize(hashes, new JsonSerializerOptions()
+                        {
+                            WriteIndented = true,
+                            
+                        });
+
+                        File.WriteAllText(_settings.HashCache, json);
+                    }
+
+                });
+            });
+        }
+
     }
 }

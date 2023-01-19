@@ -24,12 +24,10 @@ public static class SQLiteConnectionExtensions
         cmd.ExecuteNonQuery();
     }
 
-    public static bool TableExists<T>(this SQLiteConnection db)
+    public static bool TableExist(this SQLiteConnection db, string name)
     {
-        var tableName = typeof(T).Name;
-
         var sql = $"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?;";
-        var cmd = db.CreateCommand(sql, tableName);
+        var cmd = db.CreateCommand(sql, name);
         var result = cmd.ExecuteScalar<int>();
 
         return result > 0;

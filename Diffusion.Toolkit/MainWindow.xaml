@@ -38,7 +38,9 @@
             <MenuItem Header="_Edit">
                 <MenuItem x:Name="EditMenu"  Header="_Settings" Command="{Binding Settings}"/>
                 <Separator></Separator>
-                <MenuItem Header="_Empty recycle bin" Command="{Binding RemoveMarked}"/>
+                <MenuItem Header="_Empty Recycle Bin" Command="{Binding RemoveMarked}"/>
+                <MenuItem Header="_Rebuild Metadata" Command="{Binding Rebuild}"/>
+                <MenuItem Header="_Reload Models" Command="{Binding ReloadHashes}"/>
             </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="Thumbnails">
@@ -56,6 +58,14 @@
                 <MenuItem Header="_Fit to Preview" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"/>
                 <MenuItem Header="_Show/Hide Preview" Command="{Binding TogglePreview}"/>
                 <MenuItem Header="_Popout Preview" Command="{Binding PoputPreview}"/>
+            </MenuItem>
+            <MenuItem Style="{DynamicResource MenuItemStyle1}" Header="_Tools">
+                <MenuItem Header="_Mark all matching files for Deletion" Command="{Binding MarkAllForDeletion}"/>
+                <MenuItem Header="_Unmark all matching files for Deletion" Command="{Binding UnmarkAllForDeletion}"/>
+                <Separator></Separator>
+                <MenuItem Header="_Remove all matching files from the database" Command="{Binding RemoveMatching}"/>
+                <Separator></Separator>
+                <MenuItem Header="_Auto tag NSFW" Command="{Binding AutoTagNSFW}"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="{Binding About}"/>
@@ -83,11 +93,7 @@
             </Button>
             <Separator></Separator>
             <Button Command="{Binding Rescan}">
-                <fa:ImageAwesome TextElement.FontFamily="pack://application:,,,/FontAwesome.WPF;component/#FontAwesome"  MinWidth="32" ToolTip="Rescan Folders" Icon="SearchPlus" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button Command="{Binding Rebuild}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Rebuild Images" Icon="Refresh" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Scan folders for new images" Icon="Refresh" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
             <Separator></Separator>

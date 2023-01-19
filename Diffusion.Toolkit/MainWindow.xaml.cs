@@ -5,10 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using Path = System.IO.Path;
@@ -22,8 +21,6 @@ using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Themes;
 using Microsoft.Win32;
 using Diffusion.Toolkit.Pages;
-using System.Windows.Forms;
-using System.Windows.Markup;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 using Model = Diffusion.IO.Model;
@@ -36,6 +33,11 @@ namespace Diffusion.Toolkit
     public static class AppInfo
     {
         public static SemanticVersion Version => SemanticVersionHelper.GetLocalVersion();
+    }
+
+    public partial class MainWindow
+    {
+
     }
 
     /// <summary>
@@ -88,6 +90,11 @@ namespace Diffusion.Toolkit
             _model = new MainModel();
             _model.Rescan = new AsyncCommand(RescanTask);
             _model.Rebuild = new AsyncCommand(RebuildTask);
+            _model.ReloadHashes = new AsyncCommand(async () =>
+            {
+                LoadModels();
+                await _messagePopupManager.Show("Models have been reloaded", "Diffusion Toolkit", PopupButtons.OK);
+            });
             _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
             _model.Settings = new RelayCommand<object>(ShowSettings);
             _model.CancelScan = new AsyncCommand(CancelScan);
@@ -100,6 +107,12 @@ namespace Diffusion.Toolkit
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
             _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
             _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview());
+
+            _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
+            _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
+            _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
+            _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
+
 
             _model.PropertyChanged += ModelOnPropertyChanged;
 
@@ -143,6 +156,7 @@ namespace Diffusion.Toolkit
                 _previewWindow.Owner = this;
                 _previewWindow.OnNext = () => _search.Next();
                 _previewWindow.OnPrev = () => _search.Prev();
+                _previewWindow.OnDrop = (s) => _search.LoadPreviewImage(s);
                 _previewWindow.Changed = (id) => _search.Update(id);
                 _previewWindow.Closed += (sender, args) =>
                 {
@@ -154,6 +168,156 @@ namespace Diffusion.Toolkit
                 {
                     _previewWindow?.SetCurrentImage(image);
                 };
+            }
+        }
+
+        private async void MarkAllForDeletion()
+        {
+            var prompt = _search.GetPrompt();
+
+            if (string.IsNullOrEmpty(prompt))
+            {
+                await _messagePopupManager.Show("Search text cannot be empty", "Mark images for deletion", PopupButtons.OK);
+                return;
+            }
+
+            var message = "This will mark all matching images for deletion.\r\n\r\n" + "Are you sure you want to continue?";
+
+            var result = await _messagePopupManager.Show(message, "Mark images for deletion", PopupButtons.YesNo);
+
+            if (result == PopupResult.Yes)
+            {
+                var matches = _dataStore.Query(_search.GetPrompt());
+
+                var ids = matches.Select(m => m.Id).ToList();
+
+                await Task.Run(() =>
+                {
+                    UpdateByBatch(ids, 50, subset => _dataStore.SetDeleted(subset, true));
+                });
+
+                await _search.ReloadMatches();
+            }
+        }
+
+        private async void UnmarkAllForDeletion()
+        {
+            var prompt = _search.GetPrompt();
+
+            if (string.IsNullOrEmpty(prompt))
+            {
+                await _messagePopupManager.Show("Search text cannot be empty", "Unmark images for deletion", PopupButtons.OK);
+                return;
+            }
+
+            var message = "This will unmark all matching images for deletion.\r\n\r\n" + "Are you sure you want to continue?";
+
+            var result = await _messagePopupManager.Show(message, "Unmark images for deletion", PopupButtons.YesNo);
+
+            if (result == PopupResult.Yes)
+            {
+                var matches = _dataStore.Query(prompt);
+
+                var ids = matches.Select(m => m.Id).ToList();
+
+                await Task.Run(() =>
+                {
+                    UpdateByBatch(ids, 50, subset => _dataStore.SetDeleted(subset, false));
+                });
+
+                await _search.ReloadMatches();
+            }
+        }
+
+        private async void AutoTagNSFW()
+        {
+            var message = "This will tag ALL images in the database that contain the NSFW Tags in Settings as NSFW.\r\n\r\n" + "Are you sure you want to continue?";
+
+            var result = await _messagePopupManager.ShowMedium(message, "Auto Tag NSFW", PopupButtons.YesNo);
+
+            if (result == PopupResult.Yes)
+            {
+                var matches = _dataStore.QueryAll();
+
+                var ids = matches.Where(m => _settings.NSFWTags.Any(t => m.Prompt != null && m.Prompt.ToLower().Contains(t.Trim().ToLower()))).Select(m => m.Id).ToList();
+
+                await Task.Run(() =>
+                {
+                    UpdateByBatch(ids, 50, subset => _dataStore.SetNSFW(subset, true));
+                });
+
+                message = $"{ids.Count} images were tagged as NSFW";
+
+                await _messagePopupManager.ShowMedium(message, "Auto Tag NSFW", PopupButtons.OK);
+
+                await _search.ReloadMatches();
+            }
+
+        }
+
+        private void UpdateByBatch(ICollection<int> ids, int size, Action<int[]> updateAction)
+        {
+            int processed = 0;
+            var oldStatus = _model.Status;
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.TotalFilesScan = ids.Count;
+                _model.CurrentPositionScan = processed;
+                _model.Status = $"Updating {_model.CurrentPositionScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+            });
+
+            foreach (var chunk in ids.Chunk(size))
+            {
+                updateAction(chunk);
+                processed += chunk.Length;
+                Dispatcher.Invoke(() =>
+                {
+                    _model.CurrentPositionScan = processed;
+                    _model.Status = $"Updating {_model.CurrentPositionScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+                });
+            }
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.TotalFilesScan = 999;
+                _model.CurrentPositionScan = 0;
+                _model.Status = oldStatus;
+            });
+        }
+
+        private async void RemoveFromDatabase()
+        {
+            var prompt = _search.GetPrompt();
+
+            if (string.IsNullOrEmpty(prompt))
+            {
+                await _messagePopupManager.Show("Search text cannot be empty", "Remove images from Database", PopupButtons.OK);
+                return;
+            }
+
+            var message = "This will remove all matching images from the database. No files will be deleted.\r\n\r\n" +
+                          "You should use this if you previously removed a folder and you want to remove the images associated with the folder\r\n\r\n" +
+                          "Are you sure you want to continue?";
+
+            var result = await _messagePopupManager.ShowCustom(message, "Remove images from Database", PopupButtons.YesNo, 500, 400);
+
+            if (result == PopupResult.Yes)
+            {
+                var matches = _dataStore.Query(prompt);
+
+                var ids = matches.Select(m => m.Id).ToList();
+
+                await Task.Run(() =>
+                {
+                    UpdateByBatch(ids, 50, subset => _dataStore.DeleteImages(subset));
+                });
+
+                message = $"{ids.Count} images were removed";
+
+                await _messagePopupManager.ShowMedium(message, "Remove images from Database", PopupButtons.OK);
+
+                await _search.ReloadMatches();
             }
         }
 
@@ -420,18 +584,8 @@ namespace Diffusion.Toolkit
 
                 ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
 
+                await TryScanFolders();
 
-                if (_settings.ImagePaths.Any())
-                {
-                    if (await _messagePopupManager.Show("Do you want Diffusion Toolkit to scan your configured folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
-                    {
-                        await Scan();
-                    };
-                }
-                else
-                {
-                    await _messagePopupManager.ShowMedium("You have not setup any image folders. You will not be able to search for anything yet.\r\n\r\nAdd folders first, then click the Rescan Folders icon in the toolbar to scan your images.", "Setup", PopupButtons.OK);
-                }
             }
             else
             {
@@ -442,6 +596,12 @@ namespace Diffusion.Toolkit
                     var welcome = new WelcomeWindow(_settings);
                     welcome.Owner = this;
                     welcome.ShowDialog();
+                }
+
+                if (_settings.IsDirty())
+                {
+                    _configuration.Save(_settings);
+                    _settings.SetPristine();
                 }
 
                 ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
@@ -471,6 +631,17 @@ namespace Diffusion.Toolkit
             Logger.Log($"Initializing pages");
 
             _models = new Pages.Models(_dataStore, _settings);
+
+            _models.OnModelUpdated = (model) =>
+            {
+                var updatedModel = _modelsCollection.FirstOrDefault(m => m.Path == model.Path);
+                if (updatedModel != null)
+                {
+                    updatedModel.SHA256 = model.SHA256;
+                    _search.SetModels(_modelsCollection);
+                }
+            };
+
             _search = new Search(_navigatorService, _dataStore, _messagePopupManager, _settings);
             _search.MoveFiles = (files) =>
             {
@@ -557,8 +728,6 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"{_modelsCollection.Count} models loaded");
 
-            _search.SetModels(_modelsCollection);
-
             if (_settings.CheckForUpdatesOnStartup)
             {
                 var checker = new UpdateChecker();
@@ -636,6 +805,36 @@ namespace Diffusion.Toolkit
             }
         }
 
+        private void CreateWatchers()
+        {
+            foreach (var path in _settings.ImagePaths)
+            {
+                if (Directory.Exists(path))
+                {
+                    var watcher = new FileSystemWatcher(path)
+                    {
+                        EnableRaisingEvents = true,
+                        IncludeSubdirectories = true,
+                    };
+                    watcher.Created += WatcherOnCreated;
+                    _watchers.Add(watcher);
+                }
+            }
+        }
+
+        private void RemoveWatchers()
+        {
+            if (_watchers != null)
+            {
+                foreach (var watcher in _watchers)
+                {
+                    watcher.Dispose();
+                }
+                _watchers.Clear();
+            }
+        }
+
+
         private List<FileSystemWatcher> _watchers = new List<FileSystemWatcher>();
 
         private List<string> detectedFiles;
@@ -698,10 +897,12 @@ namespace Diffusion.Toolkit
         }
 
 
-        private void ShowSettings(object obj)
+        private async void ShowSettings(object obj)
         {
             try
             {
+                var oldPathCount = _settings.ImagePaths.Count;
+
                 var settings = new SettingsWindow(_dataStore, _settings);
                 settings.Owner = this;
                 settings.ShowDialog();
@@ -718,10 +919,9 @@ namespace Diffusion.Toolkit
                         _search.SearchImages();
                     }
 
-                    if (_settings.IsPropertyDirty(nameof(Settings.ModelRootPath)))
+                    if (_settings.IsPropertyDirty(nameof(Settings.ModelRootPath)) || _settings.IsPropertyDirty(nameof(Settings.HashCache)))
                     {
                         LoadModels();
-                        _search.SetModels(_modelsCollection);
                     }
 
                     if (_settings.IsPropertyDirty(nameof(Settings.Theme)))
@@ -731,15 +931,25 @@ namespace Diffusion.Toolkit
 
                     if (_settings.IsPropertyDirty(nameof(Settings.WatchFolders)))
                     {
-                        if (_watchers != null)
+                        if (_settings.WatchFolders)
                         {
-                            foreach (var watcher in _watchers)
-                            {
-                                watcher.Dispose();
-                            }
-                            _watchers.Clear();
+                            CreateWatchers();
                         }
+                        else
+                        {
+                            RemoveWatchers();
+                        }
+                    }
 
+                    if (_settings.IsPropertyDirty(nameof(Settings.ImagePaths)))
+                    {
+                        await TryScanFolders();
+
+                        if (_settings.WatchFolders)
+                        {
+                            RemoveWatchers();
+                            CreateWatchers();
+                        }
                     }
 
                     _settings.SetPristine();
@@ -775,11 +985,11 @@ namespace Diffusion.Toolkit
         {
             if (_settings.ImagePaths.Any())
             {
-                var message = "This will update the metadata in the database with newly scanned metadata from the files.\r\n\r\n" +
-                              "You only need to do this if you think you're missing some metadata.\r\n\r\n" +
+                var message = "This will update the metadata of ALL existing files in the database with current metadata in actual files.\r\n\r\n" +
+                              "You only need to do this if you've updated the metadata in the files since they were added or if they contain metadata that an older version of this program didn't store.\r\n\r\n" +
                               "Are you sure you want to continue?";
 
-                var result = await _messagePopupManager.ShowMedium(message, "Rebuild Images", PopupButtons.YesNo);
+                var result = await _messagePopupManager.ShowCustom(message, "Rebuild Metadata", PopupButtons.YesNo, 500, 400);
                 if (result == PopupResult.Yes)
                 {
                     await Rebuild();
@@ -787,7 +997,7 @@ namespace Diffusion.Toolkit
             }
             else
             {
-                await _messagePopupManager.Show("No image paths configured!", "Rebuild Images");
+                await _messagePopupManager.Show("No image paths configured!", "Rebuild Metadata");
             }
         }
 
@@ -900,6 +1110,13 @@ namespace Diffusion.Toolkit
 
             var newImages = new List<Image>();
 
+            var includeProperties = new List<string>();
+
+            if (_settings.AutoTagNSFW)
+            {
+                includeProperties.Add(nameof(Image.NSFW));
+            }
+
             foreach (var file in Scanner.Scan(filesToScan))
             {
                 if (_scanCancellationTokenSource.IsCancellationRequested)
@@ -939,6 +1156,14 @@ namespace Diffusion.Toolkit
                         file.HyperNetworkStrength = 1;
                     }
 
+                    if (_settings.AutoTagNSFW)
+                    {
+                        if (_settings.NSFWTags.Any(t => image.Prompt != null && image.Prompt.ToLower().Contains(t.Trim().ToLower())))
+                        {
+                            image.NSFW = true;
+                        }
+                    }
+
                     newImages.Add(image);
                 }
 
@@ -946,14 +1171,15 @@ namespace Diffusion.Toolkit
                 {
                     if (updateImages)
                     {
-                        _dataStore.UpdateImagesByPath(newImages);
+
+                        added += _dataStore.UpdateImagesByPath(newImages, includeProperties);
                     }
                     else
                     {
-                        _dataStore.AddImages(newImages);
+                        _dataStore.AddImages(newImages, includeProperties);
+                        added += newImages.Count;
                     }
 
-                    added += newImages.Count;
                     newImages.Clear();
                 }
 
@@ -971,13 +1197,13 @@ namespace Diffusion.Toolkit
             {
                 if (updateImages)
                 {
-                    _dataStore.UpdateImagesByPath(newImages);
+                    added += _dataStore.UpdateImagesByPath(newImages, includeProperties);
                 }
                 else
                 {
-                    _dataStore.AddImages(newImages);
+                    _dataStore.AddImages(newImages, includeProperties);
+                    added += newImages.Count;
                 }
-                added += newImages.Count;
             }
 
             Dispatcher.Invoke(() =>
@@ -1109,12 +1335,24 @@ namespace Diffusion.Toolkit
             if (!string.IsNullOrEmpty(_settings.ModelRootPath) && Directory.Exists(_settings.ModelRootPath))
             {
                 _modelsCollection = ModelScanner.Scan(_settings.ModelRootPath).ToList();
+                if (!string.IsNullOrEmpty(_settings.HashCache))
+                {
+                    var hashes = JsonSerializer.Deserialize<Hashes>(File.ReadAllText(_settings.HashCache));
+                    foreach (var model in _modelsCollection)
+                    {
+                        if (hashes.hashes.TryGetValue("checkpoint/" + model.Path, out var hash))
+                        {
+                            model.SHA256 = hash.sha256;
+                        }
+                    }
+                }
             }
             else
             {
                 _modelsCollection = new List<Model>();
             }
-
+            _search.SetModels(_modelsCollection);
+            _models.SetModels(_modelsCollection);
         }
 
         private void MenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -1133,7 +1371,7 @@ namespace Diffusion.Toolkit
 
             var appDir = System.AppDomain.CurrentDomain.BaseDirectory;
 
-            if(appDir.EndsWith("\\"))
+            if (appDir.EndsWith("\\"))
             {
                 appDir = appDir.Substring(0, appDir.Length - 1);
             }
@@ -1159,6 +1397,32 @@ namespace Diffusion.Toolkit
 
             Process.Start(pi);
         }
+
+        private async Task TryScanFolders()
+        {
+            if (_settings.ImagePaths.Any())
+            {
+                if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
+                {
+                    await Scan();
+                };
+            }
+            else
+            {
+                await _messagePopupManager.ShowMedium("You have not setup any image folders. You will not be able to search for anything yet.\r\n\r\nAdd one or more folders first, then click the Scan Folders for new images icon in the toolbar.", "Setup", PopupButtons.OK);
+            }
+        }
+    }
+
+    public class Hashes
+    {
+        public Dictionary<string, HashInfo> hashes { get; set; }
+    }
+
+    public class HashInfo
+    {
+        public double mtime { get; set; }
+        public string sha256 { get; set; }
     }
 }
 
