@@ -219,6 +219,7 @@ namespace Diffusion.Toolkit.Controls
         public Action OnPopout { get; set; }
         public Action OnNext { get; set; }
         public Action OnPrev { get; set; }
+        public MainModel MainModel { get; set; }
 
         private void ScrollViewer_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {

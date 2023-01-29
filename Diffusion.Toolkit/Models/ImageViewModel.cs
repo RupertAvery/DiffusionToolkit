@@ -32,7 +32,6 @@ public class ImageViewModel : BaseNotify
     private bool _isParametersVisible;
     private long _seed;
     private string _modelHash;
-    private bool _fitToPreview;
     private ICommand _toggleParameters;
 
     public int Id { get; set; }
@@ -118,7 +117,6 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _copyNegativePromptCommand, value);
     }
 
-
     public ICommand CopyOthersCommand
     {
         get => _copyOthersCommand;
@@ -172,12 +170,6 @@ public class ImageViewModel : BaseNotify
     {
         get => _toggleParameters;
         set => SetField(ref _toggleParameters, value);
-    }
-
-    public bool FitToPreview
-    {
-        get => _fitToPreview;
-        set => SetField(ref _fitToPreview, value);
     }
 
     public long Seed

@@ -63,6 +63,48 @@ namespace Diffusion.Database
         }
 
 
+
+        public long CountFileSize(Filter filter)
+        {
+            using var db = OpenConnection();
+
+            if (filter.IsEmpty)
+            {
+                var allcount = db.ExecuteScalar<int>($"SELECT SUM(FileSize) FROM Image");
+                return allcount;
+            }
+
+            var q = QueryBuilder.Filter(filter);
+
+            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+
+            db.Close();
+
+            return size;
+        }
+
+
+        public int Count(Filter filter)
+        {
+            using var db = OpenConnection();
+
+            if (filter.IsEmpty)
+            {
+                var allcount = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image");
+                return allcount;
+            }
+
+            var q = QueryBuilder.Filter(filter);
+
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+
+            db.Close();
+
+            return count;
+        }
+
+
+
         public Image GetImage(int id)
         {
             using var db = OpenConnection();
@@ -112,6 +154,27 @@ namespace Diffusion.Database
             db.Close();
         }
 
+        public IEnumerable<Image> Query(Filter filter)
+        {
+            using var db = OpenConnection();
+
+            if (filter.IsEmpty)
+            {
+                throw new Exception("Query prompt cannot be empty!");
+            }
+
+            var q = QueryBuilder.Filter(filter);
+
+            var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+
+            db.Close();
+        }
+
         public IEnumerable<Image> Search(string? prompt, int pageSize, int offset)
         {
             using var db = OpenConnection();
@@ -136,6 +199,36 @@ namespace Diffusion.Database
             //ORDER BY title ASC LIMIT 10
 
             var q = QueryBuilder.Parse(prompt);
+
+            var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1} ORDER BY CreatedDate DESC LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+
+            db.Close();
+        }
+
+        public IEnumerable<Image> Search(Filter filter, int pageSize, int offset)
+        {
+            using var db = OpenConnection();
+
+            if (filter.IsEmpty)
+            {
+                var allimages = db.Query<Image>($"SELECT * FROM Image ORDER BY CreatedDate DESC LIMIT ? OFFSET ?", pageSize, offset);
+
+                foreach (var image in allimages)
+                {
+                    yield return image;
+                }
+
+                db.Close();
+
+                yield break;
+            }
+
+            var q = QueryBuilder.Filter(filter);
 
             var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1} ORDER BY CreatedDate DESC LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
 

@@ -6,7 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace Diffusion.Database;
 
-public static class QueryBuilder
+
+
+
+public static partial class QueryBuilder
 {
     public static readonly Regex DayRegex = new Regex("\\d+ day(?:s)? ago", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     public static readonly Regex MonthRegex = new Regex("(?:a|1|2|3) week(?:s)? ago", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -594,4 +597,6 @@ public static class QueryBuilder
                 throw new Exception($"Unknown date format {text}");
         }
     }
+
+
 }

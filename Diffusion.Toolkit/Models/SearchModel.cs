@@ -1,15 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit.Models;
 
 public class SearchModel : BaseNotify
 {
+    private readonly MainModel _mainModel;
     private ObservableCollection<ImageEntry>? _images;
     private ImageEntry? _selectedImage;
     //public object _rowLock = new object();
@@ -31,33 +34,33 @@ public class SearchModel : BaseNotify
     private bool _hideIcons;
     private ObservableCollection<string?> _searchHistory;
 
-    private ICommand _prevPage;
-    private ICommand _nextPage;
-    private ICommand _firstPage;
-    private ICommand _lastPage;
-    private ICommand _refresh;
-    private ICommand _focusSearch;
-    private bool _nextEnabled;
-    private bool _prevPageEnabled;
-    private bool _firstPageEnabled;
-    private bool _lastPageEnabled;
-    private string _modeName;
-    private ICommand _showDropDown;
-    private ICommand _hideDropDown;
-    private ICommand _copyFiles;
+    private ICommand? _refresh;
+    private ICommand? _focusSearch;
+    private string? _modeName;
+    private ICommand? _showDropDown;
+    private ICommand? _hideDropDown;
+    private ICommand? _copyFiles;
     private bool _nsfwBlur;
-    private bool _fitToPreview;
+    private ICommand _showFilter;
+    private bool _isFilterVisible;
+    private SearchControlModel _filter;
+    private ICommand _doFilter;
+    private ICommand _clearFilter;
 
-    public SearchModel()
+    public SearchModel(MainModel mainModel)
     {
+        _mainModel = mainModel;
         _images = new ObservableCollection<ImageEntry>();
         _searchHistory = new ObservableCollection<string>();
         _currentImage = new ImageViewModel();
+        _filter = new SearchControlModel();
         _imageOpacity = 1;
         _isEmpty = true;
         _resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
     }
+
+    public MainModel MainModel => _mainModel;
 
     public DataStore DataStore
     {
@@ -221,12 +224,102 @@ public class SearchModel : BaseNotify
         set => SetField(ref _copyFiles, value);
     }
 
-
-    public bool NSFWBlur
+    public ICommand ShowFilter
     {
-        get => _nsfwBlur;
-        set => SetField(ref _nsfwBlur, value);
+        get => _showFilter;
+        set => SetField(ref _showFilter, value);
     }
 
+    public bool IsFilterVisible
+    {
+        get => _isFilterVisible;
+        set => SetField(ref _isFilterVisible, value);
+    }
 
+    public SearchControlModel Filter
+    {
+        get => _filter;
+        set => SetField(ref _filter, value);
+    }
+
+    public ICommand DoFilter
+    {
+        get => _doFilter;
+        set => SetField(ref _doFilter, value);
+    }
+
+    public ICommand ClearFilter
+    {
+        get => _clearFilter;
+        set => SetField(ref _clearFilter, value);
+    }
+}
+
+public static class SearchControlModelExtensions
+{
+    public static Filter AsFilter(this SearchControlModel model)
+    {
+        var filter = new Filter();
+
+        filter.UsePrompt = model.UsePrompt;
+        filter.Prompt = model.Prompt;
+        filter.UseNegativePrompt = model.UseNegativePrompt;
+        filter.NegativePrompt = model.NegativePrompt;
+        filter.UseSteps = model.UseSteps;
+        filter.Steps = model.Steps;
+        filter.UseSampler = model.UseSampler;
+        filter.Sampler = model.Sampler;
+        filter.UseSeed = model.UseSeed;
+        filter.SeedStart = model.SeedStart;
+        filter.SeedEnd = model.SeedEnd;
+        filter.UseCFGScale = model.UseCFGScale;
+        filter.CFGScale = model.CFGScale;
+        filter.UseSize = model.UseSize;
+        filter.Width = model.Width;
+        filter.Height = model.Height;
+        filter.UseModelHash = model.UseModelHash;
+        filter.ModelHash = model.ModelHash;
+        filter.UseModelName = model.UseModelName;
+        filter.ModelName = model.ModelName;
+
+        filter.UseFavorite = model.UseFavorite;
+        filter.Favorite = model.Favorite;
+        filter.UseRating = model.UseRating;
+        filter.RatingOp = model.RatingOp;
+        filter.Rating = model.Rating;
+        filter.Unrated = model.Unrated;
+        filter.UseNSFW = model.UseNSFW;
+        filter.NSFW = model.NSFW;
+        filter.UseForDeletion = model.UseForDeletion;
+        filter.ForDeletion = model.ForDeletion;
+
+        filter.UseBatchSize = model.UseBatchSize;
+        filter.BatchSize = model.BatchSize;
+
+        filter.UseBatchPos = model.UseBatchPos;
+        filter.BatchPos = model.BatchPos;
+
+        filter.UseAestheticScore = model.UseAestheticScore;
+        filter.AestheticScoreOp = model.AestheticScoreOp;
+        filter.AestheticScore = model.AestheticScore;
+
+        filter.UsePath = model.UsePath;
+        filter.Path = model.Path;
+
+        filter.UseCreationDate = model.UseCreationDate;
+        filter.Start = model.Start;
+        filter.End = model.End;
+
+        filter.UseHyperNet = model.UseHyperNet;
+        filter.HyperNet = model.HyperNet;
+
+        filter.UseHyperNetStr = model.UseHyperNetStr;
+        filter.HyperNetStrOp = model.HyperNetStrOp;
+        filter.HyperNetStr = model.HyperNetStr;
+
+        filter.UseNoMetadata = model.UseNoMetadata;
+        filter.NoMetadata = model.NoMetadata;
+
+        return filter;
+    }
 }

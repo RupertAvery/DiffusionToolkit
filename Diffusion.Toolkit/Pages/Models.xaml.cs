@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Diffusion.Database;
-using Model = Diffusion.IO.Model;
+using Model = Diffusion.Common.Model;
 using Path = System.IO.Path;
 using System.Security.Policy;
 using System.Text.Json;

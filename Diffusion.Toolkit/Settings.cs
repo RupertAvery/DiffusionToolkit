@@ -18,7 +18,7 @@ public class Settings
         DontShowWelcomeOnStartup = false;
         ImagePaths = new List<string>();
         NSFWTags = new List<string>() { "nsfw", "nude", "naked" };
-        FileExtensions = ".png, .jpg";
+        FileExtensions = ".png, .jpg, .jpeg, .webp";
         Theme = "System";
         PageSize = 100;
         ThumbnailSize = 128;

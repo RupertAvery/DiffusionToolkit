@@ -169,7 +169,6 @@ namespace Diffusion.Toolkit.Controls
                         //_model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
                         thumbnailView.Model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => thumbnailView.DeleteSelected());
                         thumbnailView.Model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => thumbnailView.FavoriteSelected());
-
                         break;
                 }
             }

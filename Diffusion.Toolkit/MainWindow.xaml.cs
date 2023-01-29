@@ -23,7 +23,7 @@ using Microsoft.Win32;
 using Diffusion.Toolkit.Pages;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
-using Model = Diffusion.IO.Model;
+using Model = Diffusion.Common.Model;
 using Timer = System.Threading.Timer;
 using Diffusion.Updater;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -152,7 +152,7 @@ namespace Diffusion.Toolkit
                 _model.IsPreviewVisible = false;
                 _search.SetPreviewVisible(_model.IsPreviewVisible);
 
-                _previewWindow = new PreviewWindow(_dataStore);
+                _previewWindow = new PreviewWindow(_dataStore, _model);
                 _previewWindow.Owner = this;
                 _previewWindow.OnNext = () => _search.Next();
                 _previewWindow.OnPrev = () => _search.Prev();
@@ -173,21 +173,20 @@ namespace Diffusion.Toolkit
 
         private async void MarkAllForDeletion()
         {
-            var prompt = _search.GetPrompt();
-
-            if (string.IsNullOrEmpty(prompt))
+            
+            if (_search.IsQueryEmpty())
             {
-                await _messagePopupManager.Show("Search text cannot be empty", "Mark images for deletion", PopupButtons.OK);
+                await _messagePopupManager.Show("Query cannot be empty", "Mark images for deletion", PopupButtons.OK);
                 return;
             }
 
             var message = "This will mark all matching images for deletion.\r\n\r\n" + "Are you sure you want to continue?";
 
-            var result = await _messagePopupManager.Show(message, "Mark images for deletion", PopupButtons.YesNo);
+            var result = await _messagePopupManager.ShowMedium(message, "Mark images for deletion", PopupButtons.YesNo);
 
             if (result == PopupResult.Yes)
             {
-                var matches = _dataStore.Query(_search.GetPrompt());
+                var matches = _search.UseFilter ? _dataStore.Query(_search.Filter) : _dataStore.Query(_search.Prompt);
 
                 var ids = matches.Select(m => m.Id).ToList();
 
@@ -202,21 +201,19 @@ namespace Diffusion.Toolkit
 
         private async void UnmarkAllForDeletion()
         {
-            var prompt = _search.GetPrompt();
-
-            if (string.IsNullOrEmpty(prompt))
+            if (_search.IsQueryEmpty())
             {
-                await _messagePopupManager.Show("Search text cannot be empty", "Unmark images for deletion", PopupButtons.OK);
+                await _messagePopupManager.Show("Query cannot be empty", "Unmark images for deletion", PopupButtons.OK);
                 return;
             }
 
             var message = "This will unmark all matching images for deletion.\r\n\r\n" + "Are you sure you want to continue?";
 
-            var result = await _messagePopupManager.Show(message, "Unmark images for deletion", PopupButtons.YesNo);
+            var result = await _messagePopupManager.ShowMedium(message, "Unmark images for deletion", PopupButtons.YesNo);
 
             if (result == PopupResult.Yes)
             {
-                var matches = _dataStore.Query(prompt);
+                var matches = _search.UseFilter ? _dataStore.Query(_search.Filter) : _dataStore.Query(_search.Prompt);
 
                 var ids = matches.Select(m => m.Id).ToList();
 
@@ -288,11 +285,9 @@ namespace Diffusion.Toolkit
 
         private async void RemoveFromDatabase()
         {
-            var prompt = _search.GetPrompt();
-
-            if (string.IsNullOrEmpty(prompt))
+            if (_search.IsQueryEmpty())
             {
-                await _messagePopupManager.Show("Search text cannot be empty", "Remove images from Database", PopupButtons.OK);
+                await _messagePopupManager.Show("Query cannot be empty", "Remove images from Database", PopupButtons.OK);
                 return;
             }
 
@@ -304,7 +299,7 @@ namespace Diffusion.Toolkit
 
             if (result == PopupResult.Yes)
             {
-                var matches = _dataStore.Query(prompt);
+                var matches = _search.UseFilter ? _dataStore.Query(_search.Filter) : _dataStore.Query(_search.Prompt);
 
                 var ids = matches.Select(m => m.Id).ToList();
 
@@ -347,14 +342,12 @@ namespace Diffusion.Toolkit
         {
             _model.NSFWBlur = !_model.NSFWBlur;
             _settings.NSFWBlur = _model.NSFWBlur;
-            _search.SetNSFWBlur(_model.NSFWBlur);
         }
 
         private void ToggleFitToPreview()
         {
             _model.FitToPreview = !_model.FitToPreview;
             _settings.FitToPreview = _model.FitToPreview;
-            _search.SetFitToPreview(_model.FitToPreview);
         }
 
         private void MyHandler(object sender, UnhandledExceptionEventArgs e)
@@ -642,7 +635,7 @@ namespace Diffusion.Toolkit
                 }
             };
 
-            _search = new Search(_navigatorService, _dataStore, _messagePopupManager, _settings);
+            _search = new Search(_navigatorService, _dataStore, _messagePopupManager, _settings, _model);
             _search.MoveFiles = (files) =>
             {
                 using var dialog = new CommonOpenFileDialog();
@@ -655,8 +648,7 @@ namespace Diffusion.Toolkit
                 }
             };
             _prompts = new Prompts(_dataStore, _settings);
-            _search.SetNSFWBlur(_model.NSFWBlur);
-            _search.SetFitToPreview(_settings.FitToPreview);
+
 
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
             _search.SetThumbnailSize(_settings.ThumbnailSize);
@@ -1353,6 +1345,7 @@ namespace Diffusion.Toolkit
             }
             _search.SetModels(_modelsCollection);
             _models.SetModels(_modelsCollection);
+            QueryBuilder.SetModels(_modelsCollection);
         }
 
         private void MenuItem_OnClick(object sender, RoutedEventArgs e)

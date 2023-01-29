@@ -42,7 +42,7 @@ namespace Diffusion.Toolkit
 
         public Action<int> Changed { get; set; }
 
-        public PreviewWindow(DataStore dataStore)
+        public PreviewWindow(DataStore dataStore, MainModel mainModel)
         {
             _dataStore = dataStore;
             _model = new PreviewModel();
@@ -70,6 +70,7 @@ namespace Diffusion.Toolkit
                 _dataStore.SetDeleted(id, v);
                 Changed?.Invoke(id);
             };
+            PreviewPane.MainModel = mainModel;
         }
 
         public void SetNSFWBlur(bool value)

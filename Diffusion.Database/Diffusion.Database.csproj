@@ -11,4 +11,8 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
+  </ItemGroup>
+
 </Project>

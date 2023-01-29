@@ -34,11 +34,11 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="PreviewGrid" DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}">
+    <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}">
 
         <Grid.ContextMenu>
             <ContextMenu>
-                <MenuItem Header="Fit to Preview"></MenuItem>
+                <MenuItem Header="Fit to Preview" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
                 <!--<MenuItem Header="Favorite (F)" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
                 <MenuItem Header="Rate">
                     <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
@@ -87,20 +87,21 @@
                 <RowDefinition Height="32"/>
             </Grid.RowDefinitions>
             <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
-                              HorizontalScrollBarVisibility="{Binding FitToPreview, Converter={StaticResource scrollBarVisibility}}" 
-                              VerticalScrollBarVisibility="{Binding FitToPreview, Converter={StaticResource scrollBarVisibility}}"  
+                              HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
+                              VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"  
                               PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
                               KeyDown="UIElement_OnKeyDown"
                               >
                 <Image x:Name="Preview"
+                           DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
                            MouseWheel="UIElement_OnMouseWheel"  
                            RenderOptions.BitmapScalingMode="Fant"
-                           Stretch="{Binding FitToPreview, Converter={StaticResource stretch}}"
+                           Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
                            Source="{Binding Image}" >
                     <Image.Visibility>
                         <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
                             <Binding Path="NSFW"></Binding>
-                            <Binding Path="NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
+                            <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
                         </MultiBinding>
                     </Image.Visibility>
                     <Image.Effect>
@@ -108,7 +109,7 @@
                             <BlurEffect.Radius>
                                 <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
                                     <Binding Path="NSFW"></Binding>
-                                    <Binding Path="NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                                    <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
                                 </MultiBinding>
                             </BlurEffect.Radius>
                         </BlurEffect>
@@ -116,12 +117,14 @@
                 </Image>
             </ScrollViewer>
 
-            <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False">
+            <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
+                  DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                  >
                 <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
                     <fa:ImageAwesome.Visibility>
                         <MultiBinding Converter="{StaticResource boolToVisMulti}" ConverterParameter="20">
-                            <Binding Path="NSFW"></Binding>
-                            <Binding Path="NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                            <Binding Path="NSFW" ></Binding>
+                            <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
                         </MultiBinding>
                     </fa:ImageAwesome.Visibility>
                 </fa:ImageAwesome>
@@ -146,7 +149,9 @@
 
             <Grid  Grid.Row="0" RowSpan="3"  Margin="10"  Background="{x:Null}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 >
-                <Grid  Background="{x:Null}">
+                <Grid  Background="{x:Null}"
+                       DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                       >
                     <Grid.RowDefinitions>
                         <RowDefinition Height="48"/>
                         <RowDefinition Height="*"/>
@@ -274,7 +279,7 @@
 
                     </Grid>
 
-                    <StackPanel Orientation="Horizontal" Grid.Row="2" >
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}">
                         <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=ForDeletion, Converter={StaticResource boolToVisCol}}">
                             <Image.Effect>
                                 <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />

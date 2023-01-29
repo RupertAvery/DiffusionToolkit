@@ -1,4 +1,4 @@
-﻿namespace Diffusion.IO;
+﻿namespace Diffusion.Common;
 
 public class Model
 {

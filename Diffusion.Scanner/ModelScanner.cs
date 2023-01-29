@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using Diffusion.Common;
 
 namespace Diffusion.IO;
 

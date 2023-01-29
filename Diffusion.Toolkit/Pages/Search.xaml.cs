@@ -18,10 +18,14 @@ using Diffusion.Toolkit.Thumbnails;
 using File = System.IO.File;
 using Path = System.IO.Path;
 using Diffusion.Toolkit.Classes;
-using Model = Diffusion.IO.Model;
+using Model = Diffusion.Common.Model;
 using Task = System.Threading.Tasks.Task;
 using System.Windows.Media;
 using static System.String;
+using Diffusion.Toolkit.Controls;
+using System.Collections;
+using Image = Diffusion.Database.Image;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -35,8 +39,11 @@ namespace Diffusion.Toolkit.Pages
         public string LastQuery { get; set; }
         public List<string?> History { get; set; }
         public int LastPage { get; set; }
-        public string ExtraQuery { get; set; }
+        //public string ExtraQuery { get; set; }
         public string Name { get; set; }
+
+        public bool IsMarkedForDeletion { get; set; }
+        public bool IsFavorite { get; set; }
     }
 
     /// <summary>
@@ -48,6 +55,7 @@ namespace Diffusion.Toolkit.Pages
         private NavigatorService _navigatorService;
         private DataStore _dataStore;
         private Settings _settings;
+        private readonly MainModel _mainModel;
 
         private ModeSettings _currentModeSettings;
 
@@ -62,6 +70,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 _ = ThumbnailLoader.Instance.StartRun();
             });
+
 
 
 
@@ -114,7 +123,7 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public Search(NavigatorService navigatorService, DataStore dataStore, MessagePopupManager messagePopupManager, Settings settings) : this()
+        public Search(NavigatorService navigatorService, DataStore dataStore, MessagePopupManager messagePopupManager, Settings settings, MainModel mainModel) : this()
         {
             this._navigatorService = navigatorService;
             this._dataStore = dataStore;
@@ -127,9 +136,9 @@ namespace Diffusion.Toolkit.Pages
 
             _modeSettings = new Dictionary<string, ModeSettings>()
             {
-                { "search", new ModeSettings() { Name="Diffusions", ExtraQuery = "" } },
-                { "favorites", new ModeSettings() { Name="Favorites", ExtraQuery = "favorite: true" } },
-                { "deleted", new ModeSettings() { Name="Recycle Bin", ExtraQuery = "delete: true" } },
+                { "search", new ModeSettings() { Name="Diffusions" } },
+                { "favorites", new ModeSettings() { Name="Favorites", IsFavorite = true } },
+                { "deleted", new ModeSettings() { Name="Recycle Bin", IsMarkedForDeletion = true } },
             };
 
             if (_settings.MainGridWidth != null)
@@ -151,15 +160,21 @@ namespace Diffusion.Toolkit.Pages
             //heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[0], HeightChanged);
             //heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[2], HeightChanged2);
 
-            _model = new SearchModel();
-
+            _model = new SearchModel(mainModel);
             _model.DataStore = _dataStore;
             _model.Page = 0;
             _model.Pages = 0;
             _model.TotalFiles = 100;
             _model.Images = new ObservableCollection<ImageEntry>();
             _model.PropertyChanged += ModelOnPropertyChanged;
-            _model.SearchCommand = new RelayCommand<object>(SearchImages);
+            _model.SearchCommand = new RelayCommand<object>((o) =>
+            {
+                _model.IsFilterVisible = false;
+                _model.Filter.Clear();
+
+                UseFilter = false;
+                SearchImages(null);
+            });
 
             _model.Refresh = new RelayCommand<object>((o) => ReloadMatches());
             _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
@@ -168,12 +183,28 @@ namespace Diffusion.Toolkit.Pages
             _model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
             _model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
+
+            _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = !_model.IsFilterVisible);
+            _model.DoFilter = new RelayCommand<object>((o) =>
+            {
+                _model.IsFilterVisible = false;
+                _model.SearchText = "(filtered)";
+                UseFilter = true;
+                SearchImages(null);
+            });
+            _model.ClearFilter = new RelayCommand<object>((o) =>
+            {
+                _model.Filter.Clear();
+
+            });
             SetMode("search");
 
             DataContext = _model;
 
             ThumbnailListView.DataStore = dataStore;
             ThumbnailListView.MessagePopupManager = messagePopupManager;
+
+            PreviewPane.MainModel = mainModel;
 
             PreviewPane.NSFW = (id, b) =>
             {
@@ -197,7 +228,9 @@ namespace Diffusion.Toolkit.Pages
             };
             PreviewPane.OnNext = Next;
             PreviewPane.OnPrev = Prev;
+            GetRandomHint();
         }
+
 
         private void CopyFiles()
         {
@@ -262,6 +295,8 @@ namespace Diffusion.Toolkit.Pages
             return result;
         }
 
+        public bool UseFilter { get; private set; }
+
         public void SearchImages(object obj)
         {
             if (!_settings.ImagePaths.Any())
@@ -277,28 +312,61 @@ namespace Diffusion.Toolkit.Pages
                 Dispatcher.Invoke(() =>
                 {
                     //_model.Images!.Clear();
+                    int count = 0;
+                    long size = 0;
 
-                    if (!IsNullOrEmpty(_model.SearchText))
+                    if (UseFilter)
                     {
-                        if (_model.SearchHistory.Count == 0 || (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != _model.SearchText))
+                        var filter = _model.Filter.AsFilter();
+
+                        if (_currentModeSettings.IsFavorite)
                         {
-                            if (_model.SearchHistory.Count + 1 > 25)
-                            {
-                                _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
-                            }
-                            _model.SearchHistory.Insert(0, _model.SearchText);
-
-                            _currentModeSettings.History = _model.SearchHistory.ToList();
+                            filter.UseFavorite = true;
+                            filter.Favorite = true;
                         }
+                        else if (_currentModeSettings.IsMarkedForDeletion)
+                        {
+                            filter.ForDeletion = true;
+                            filter.UseForDeletion = true;
+                        }
+
+                        count = _dataStore.Count(filter);
+                        size = _dataStore.CountFileSize(filter);
                     }
+                    else
+                    {
+                        if (!IsNullOrEmpty(_model.SearchText))
+                        {
+                            if (_model.SearchHistory.Count == 0 || (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != _model.SearchText))
+                            {
+                                if (_model.SearchHistory.Count + 1 > 25)
+                                {
+                                    _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
+                                }
+                                _model.SearchHistory.Insert(0, _model.SearchText);
 
-                    _currentModeSettings.LastQuery = _model.SearchText;
+                                _currentModeSettings.History = _model.SearchHistory.ToList();
+                            }
+                        }
 
-                    // need a better way to do this... property?
-                    var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
+                        _currentModeSettings.LastQuery = _model.SearchText;
 
-                    var count = _dataStore.Count(query);
-                    var size = _dataStore.CountFileSize(query);
+                        // need a better way to do this... property?
+                        var query = _model.SearchText;
+
+                        if (_currentModeSettings.IsFavorite)
+                        {
+                            query = $"{query} favorite: true";
+                        }
+                        else if (_currentModeSettings.IsMarkedForDeletion)
+                        {
+                            query = $"{query} delete: true";
+                        }
+
+                        count = _dataStore.Count(query);
+                        size = _dataStore.CountFileSize(query);
+
+                    }
 
                     //_model.FileSize = size;
 
@@ -408,7 +476,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     var models = _modelLookup.Where(m =>
                         !IsNullOrEmpty(parameters.ModelHash) &&
-                        (String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase) 
+                        (String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase)
                          ||
                          (m.SHA256 != null && string.Equals(m.SHA256.Substring(0, parameters.ModelHash.Length), parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase))
                     ));
@@ -524,7 +592,17 @@ namespace Diffusion.Toolkit.Pages
             var rId = r.NextInt64();
             ThumbnailLoader.Instance.SetCurrentRequestId(rId);
 
-            var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
+            var query = _model.SearchText;
+
+            if (_currentModeSettings.IsFavorite)
+            {
+                query = $"{query} favorite: true";
+            }
+            else if (_currentModeSettings.IsMarkedForDeletion)
+            {
+                query = $"{query} delete: true";
+            }
+
 
             var matches = Time(() => _dataStore
                 .Search(query, _settings.PageSize,
@@ -580,11 +658,47 @@ namespace Diffusion.Toolkit.Pages
             var rId = r.NextInt64();
             ThumbnailLoader.Instance.SetCurrentRequestId(rId);
 
-            var query = _model.SearchText + " " + _currentModeSettings.ExtraQuery;
 
-            var matches = Time(() => _dataStore
-                .Search(query, _settings.PageSize,
-                    _settings.PageSize * (_model.Page - 1)));
+            IEnumerable<Image> matches;
+
+            if (UseFilter)
+            {
+                var filter = _model.Filter.AsFilter();
+
+                if (_currentModeSettings.IsFavorite)
+                {
+                    filter.UseFavorite = true;
+                    filter.Favorite = true;
+                }
+                else if (_currentModeSettings.IsMarkedForDeletion)
+                {
+                    filter.ForDeletion = true;
+                    filter.UseForDeletion = true;
+                }
+
+                matches = Time(() => _dataStore
+                    .Search(filter, _settings.PageSize,
+                        _settings.PageSize * (_model.Page - 1)));
+            }
+            else
+            {
+                var query = _model.SearchText;
+
+                if (_currentModeSettings.IsFavorite)
+                {
+                    query = $"{query} favorite: true";
+                }
+                else if (_currentModeSettings.IsMarkedForDeletion)
+                {
+                    query = $"{query} delete: true";
+                }
+
+
+                matches = Time(() => _dataStore
+                    .Search(query, _settings.PageSize,
+                        _settings.PageSize * (_model.Page - 1)));
+
+            }
 
             Dispatcher.Invoke(() =>
             {
@@ -673,6 +787,29 @@ namespace Diffusion.Toolkit.Pages
         private void SetMode(string mode)
         {
             _currentModeSettings = GetModeSettings(mode);
+            _model.IsFilterVisible = false;
+            if (_currentModeSettings.IsFavorite)
+            {
+                _model.Filter.UseFavorite = true;
+                _model.Filter.Favorite = true;
+                _model.Filter.UseForDeletion = false;
+                _model.Filter.ForDeletion = false;
+            }
+            else if (_currentModeSettings.IsMarkedForDeletion)
+            {
+                _model.Filter.UseFavorite = false;
+                _model.Filter.Favorite = false;
+                _model.Filter.UseForDeletion = true;
+                _model.Filter.ForDeletion = true;
+            }
+            else
+            {
+                _model.Filter.UseFavorite = false;
+                _model.Filter.Favorite = false;
+                _model.Filter.UseForDeletion = false;
+                _model.Filter.ForDeletion = false;
+            }
+
             _model.SearchText = _currentModeSettings.LastQuery;
             _model.SearchHistory = new ObservableCollection<string?>(_currentModeSettings.History);
             _model.ModeName = _currentModeSettings.Name;
@@ -715,16 +852,6 @@ namespace Diffusion.Toolkit.Pages
         public void ToggleInfo()
         {
             _model.CurrentImage.IsParametersVisible = !_model.CurrentImage.IsParametersVisible;
-        }
-
-        public void SetNSFWBlur(bool value)
-        {
-            _model.NSFWBlur = value;
-        }
-
-        public void SetFitToPreview(bool value)
-        {
-            _model.CurrentImage.FitToPreview = value;
         }
 
         private void ThumbnailListView_OnPageChangedEvent(object? sender, int e)
@@ -789,9 +916,20 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
-        public string? GetPrompt()
+        public string? Prompt => _model.SearchText;
+
+        public Filter Filter => _model.Filter.AsFilter();
+
+        public bool IsQueryEmpty()
         {
-            return _model.SearchText;
+            if (UseFilter)
+            {
+                return _model.Filter.AsFilter().IsEmpty;
+            }
+            else
+            {
+                return _model.SearchText == null || _model.SearchText.Trim().Length == 0;
+            }
         }
     }
 }

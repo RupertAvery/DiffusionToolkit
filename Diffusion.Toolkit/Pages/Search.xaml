@@ -14,6 +14,11 @@
       d:DataContext="{d:DesignInstance models:SearchModel, IsDesignTimeCreatable=True}"
       d:DesignHeight="615" d:DesignWidth="800"
       Title="Search">
+    <Page.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
+        </ResourceDictionary>
+    </Page.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
 
         <Grid.ColumnDefinitions>
@@ -22,7 +27,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
-            
+
         <Grid  Grid.Row="0" Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="38"></RowDefinition>
@@ -33,35 +38,47 @@
                 <Label FontSize="24" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
             </Grid>
             <Grid Grid.Row="1" Margin="2">
-                <ComboBox x:Name="SearchTermTextBox" 
-                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
-                          ItemsSource="{Binding SearchHistory}"
-                          PreviewKeyDown="SearchTermTextBox_OnPreviewKeyDown"
-                          IsEditable="True"
-                          Padding="5,0,0,0"
-                          HorizontalAlignment="Stretch" 
-                          VerticalContentAlignment="Center">
-                    <ComboBox.InputBindings>
-                        <KeyBinding Command="{Binding HideDropDown}" Key="Escape" />
-                        <KeyBinding Command="{Binding SearchCommand}" Key="Return" CommandParameter="ManualSearch" />
-                    </ComboBox.InputBindings>
-                </ComboBox>
-                <TextBlock IsHitTestVisible="False" 
-                           Text="{Binding SearchHint}" FontStyle="Italic" 
-                           VerticalAlignment="Center" 
-                           HorizontalAlignment="Left" 
-                           Padding="8,0,0,0" Foreground="DarkGray">
-                    <TextBlock.Style>
-                        <Style TargetType="{x:Type TextBlock}">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <DockPanel>
+                    <Button DockPanel.Dock="Left" Width="28" Command="{Binding ShowFilter}">
+                        <fa:ImageAwesome ToolTip="Show info (I)" Icon="Sliders" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        </fa:ImageAwesome>
+                    </Button>
+                    <Grid>
+                        <ComboBox x:Name="SearchTermTextBox" 
+                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                                  ItemsSource="{Binding SearchHistory}"
+                                  PreviewKeyDown="SearchTermTextBox_OnPreviewKeyDown"
+                                  IsEditable="True"
+                                  Padding="5,0,0,0"
+                                  HorizontalAlignment="Stretch" 
+                                  VerticalContentAlignment="Center">
+                            <ComboBox.InputBindings>
+                                <KeyBinding Command="{Binding HideDropDown}" Key="Escape" />
+                                <KeyBinding Command="{Binding SearchCommand}" Key="Return" CommandParameter="ManualSearch" />
+                            </ComboBox.InputBindings>
+                        </ComboBox>
+
+                        <TextBlock IsHitTestVisible="False" 
+                                   Text="{Binding SearchHint}" FontStyle="Italic" 
+                                   VerticalAlignment="Center" 
+                                   HorizontalAlignment="Left" 
+                                   Padding="8,0,0,0" Foreground="DarkGray">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=SearchTermTextBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+
+                    </Grid>
+                  
+                </DockPanel>
+
             </Grid>
 
             <controls:ThumbnailView Grid.Row="2" 
@@ -69,13 +86,29 @@
                                     Images="{Binding Images}" 
                                     Page="{Binding Page, Mode=TwoWay}" 
                                     Pages="{Binding Pages}" 
-                                    NSFWBlur="{Binding NSFWBlur}" 
+                                    NSFWBlur="{Binding MainModel.NSFWBlur}" 
                                     IsEmpty="{Binding IsEmpty}"
                                     Results="{Binding Results}"
                                     PageChangedEvent="ThumbnailListView_OnPageChangedEvent"
                                     SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}" 
                                     CurrentImage="{Binding CurrentImage}">
             </controls:ThumbnailView>
+            <Grid Visibility="{Binding IsFilterVisible, Converter={StaticResource boolToVis}}" Grid.Row="2" >
+                <ScrollViewer  VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <controls:Search  Filter="{Binding Filter}" SearchCommand="{Binding DoFilter}" VerticalAlignment="Stretch"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="1" Height="30" Command="{Binding DoFilter}">Filter</Button>
+                            <Button Grid.Column="0" Height="30" Command="{Binding ClearFilter}">Clear</Button>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
         </Grid>
 
         <GridSplitter x:Name="GridSplitter"  Grid.Row="0" Grid.Column="1"

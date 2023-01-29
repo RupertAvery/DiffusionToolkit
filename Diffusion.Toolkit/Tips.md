@@ -28,23 +28,27 @@ When AI Image Generators generate an image, it may also embed the parameters use
 
 Diffusion Toolkit scans your AI-Generated images for metadata and stores it in a local database for fast retrieval and searching.
 
-
-
 # Features
 
-* Support for AUTOMATIC1111, InvokeAI, NovelAI and Stable Diffusion metadata formats
+* Scan thousands of images metadata in seconds
 * Supported image/metadata formats:
    * JPG/JPEG + EXIF
    * PNG
    * WebP
    * Any image + .TXT (part of filename must match)
+* Search through prompt, seed, model hash / name, CFG, etc.
+* Support for AUTOMATIC1111, InvokeAI, NovelAI and Stable Diffusion metadata formats
+* Tag your images with a press of a button:
+   * Favorites
+   * Rate 1-10 
+   * NSFW
 * Drag and Drop
    * drag from thumbnail to Explorer to copy file
    * drag from thumbnail to A1111 PNGInfo to copy metadata
    * drag from thumbnail to Imgur/Google drive/web site to upload
    * drag from thumbnail to Photoshop or any image editor to load
    * drag from Explorer to Preview Pane to view any image metadata
-
+* Auto-tag NFSW
 
 
 
