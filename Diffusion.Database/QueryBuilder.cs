@@ -16,8 +16,10 @@ public static partial class QueryBuilder
 
     public static readonly Regex DateFormatRegex = new Regex("\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-
+    private static readonly Regex AlbumRegex = new Regex("\\balbum:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex FolderRegex = new Regex("\\bfolder:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex PathRegex = new Regex("\\bpath:\\s*(?:(?<criteria>starts with|contains|ends with)\\s+)?(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     private static readonly Regex DateRegex = new Regex("\\bdate:\\s*(?:(?<prep1>between|before|since|from)\\s+)?(?<date1>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})(?:\\s+(?<prep2>and|up to|to)\\s+(?<date2>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex SeedRegex = new Regex("\\bseed:\\s*(?<start>\\d+)(?:\\s*-\\s*(?<end>\\S+))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -48,10 +50,13 @@ public static partial class QueryBuilder
 
     public static bool HideNFSW { get; set; }
 
-    public static (string, IEnumerable<object>) Parse(string prompt)
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) Parse(string prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
+        var joins = new List<string>();
 
+        ParseAlbum(ref prompt, conditions, joins);
+        ParseFolder(ref prompt, conditions, joins);
         ParsePath(ref prompt, conditions);
         ParseDate(ref prompt, conditions);
         ParseSeed(ref prompt, conditions);
@@ -80,7 +85,38 @@ public static partial class QueryBuilder
                     IEnumerable<object> orConditions => orConditions.Select(o => o),
                     _ => new[] { c.Value }
                 };
-            }).Where(o => o != null));
+            }).Where(o => o != null),
+            joins
+            );
+    }
+
+    private static void ParseAlbum(ref string prompt, List<KeyValuePair<string, object>> conditions, List<string> joins)
+    {
+        var match = AlbumRegex.Match(prompt);
+
+        if (match.Success)
+        {
+            prompt = AlbumRegex.Replace(prompt, String.Empty);
+
+            var value = match.Groups["value"].Value;
+            conditions.Add(new KeyValuePair<string, object>("(Album.Name = ?)", value));
+            joins.Add("INNER JOIN AlbumImage ON Image.Id = AlbumImage.ImageId");
+            joins.Add("INNER JOIN Album ON AlbumImage.AlbumId = Album.Id");
+        }
+    }
+
+    private static void ParseFolder(ref string prompt, List<KeyValuePair<string, object>> conditions, List<string> joins)
+    {
+        var match = FolderRegex.Match(prompt);
+
+        if (match.Success)
+        {
+            prompt = FolderRegex.Replace(prompt, String.Empty);
+
+            var value = match.Groups["value"].Value;
+            conditions.Add(new KeyValuePair<string, object>("(Folder.Path = ?)", value));
+            joins.Add("INNER JOIN Folder ON Image.FolderId = Folder.Id");
+        }
     }
 
     private static void ParsePath(ref string prompt, List<KeyValuePair<string, object>> conditions)
@@ -112,7 +148,7 @@ public static partial class QueryBuilder
                 }
             }
 
-            conditions.Add(new KeyValuePair<string, object>("(Path GLOB ?)", value));
+            conditions.Add(new KeyValuePair<string, object>("(Image.Path GLOB ?)", value));
 
         }
     }

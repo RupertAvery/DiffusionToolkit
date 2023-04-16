@@ -78,6 +78,7 @@ namespace Diffusion.Database
 
             var query = "DELETE FROM Image WHERE ForDeletion = 1";
 
+
             var command = db.CreateCommand(query);
             var result = command.ExecuteNonQuery();
 
@@ -122,16 +123,51 @@ namespace Diffusion.Database
 
             foreach (var image in images)
             {
+                var dirName = Path.GetDirectoryName(image.Path);
+                var fileName = Path.GetFileName(image.Path);
+
+                image.FolderId = AddOrUpdateFolder(db, dirName);
+
                 foreach (var property in properties)
                 {
                     command.Bind($"@{property.Name}", property.GetValue(image));
                 }
+
                 updated += command.ExecuteNonQuery();
             }
 
             db.Commit();
 
             return updated;
+        }
+
+        private int AddOrUpdateFolder(SQLiteConnection db, string dirName)
+        {
+            var query = "SELECT Id FROM Folder WHERE Path = @Path";
+
+            var command = db.CreateCommand(query);
+
+            command.Bind("@Path", dirName);
+
+            var id = command.ExecuteScalar<int?>();
+
+            if (id.HasValue) return id.Value;
+
+            query = $"INSERT INTO {nameof(Folder)} (Path) VALUES (@Path)";
+
+            command = db.CreateCommand(query);
+
+            command.Bind("@Path", dirName);
+
+            command.ExecuteNonQuery();
+
+            var sql = "select last_insert_rowid();";
+
+            command = db.CreateCommand(sql);
+
+            id = command.ExecuteScalar<int>();
+
+            return id.Value;
         }
 
         public void AddImages(IEnumerable<Image> images, IEnumerable<string> includeProperties)

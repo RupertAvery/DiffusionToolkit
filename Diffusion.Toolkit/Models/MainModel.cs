@@ -44,6 +44,8 @@ public class MainModel : BaseNotify
     private ICommand _removeMatching;
     private ICommand _autoTagNsfw;
     private ICommand _reloadHashes;
+    private ICommand _showFolders;
+    private ICommand _showAlbums;
 
     public MainModel()
     {
@@ -135,6 +137,19 @@ public class MainModel : BaseNotify
     {
         get => _showSearch;
         set => SetField(ref _showSearch, value);
+    }
+
+    public ICommand ShowFolders
+    {
+        get => _showFolders;
+        set => SetField(ref _showFolders, value);
+    }
+
+
+    public ICommand ShowAlbums
+    {
+        get => _showAlbums;
+        set => SetField(ref _showAlbums, value);
     }
 
     public string Status

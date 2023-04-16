@@ -2,8 +2,10 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
+using System.Windows.Input;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Common;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -117,6 +119,68 @@ namespace Diffusion.Toolkit.Controls
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
+        public static readonly DependencyProperty OpenCommandProperty =
+            DependencyProperty.Register(
+                name: nameof(OpenCommand),
+                propertyType: typeof(ICommand),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: null,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
+        public static readonly DependencyProperty AddAlbumCommandProperty =
+            DependencyProperty.Register(
+                name: nameof(AddAlbumCommand),
+                propertyType: typeof(ICommand),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: null,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
+        public static readonly DependencyProperty AddToAlbumCommandProperty =
+            DependencyProperty.Register(
+                name: nameof(AddToAlbumCommand),
+                propertyType: typeof(ICommand),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: null,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
+        public static readonly DependencyProperty RemoveFromAlbumCommandProperty = 
+            DependencyProperty.Register(
+                nameof(RemoveFromAlbumCommand), 
+                typeof(ICommand), 
+                typeof(ThumbnailView), 
+                new PropertyMetadata(default(object)));
+
+        public static readonly DependencyProperty RenameAlbumCommandProperty =
+            DependencyProperty.Register(
+                nameof(RenameAlbumCommand),
+                typeof(ICommand),
+                typeof(ThumbnailView),
+                new PropertyMetadata(default(object)));
+
+        public static readonly DependencyProperty RemoveAlbumCommandProperty =
+            DependencyProperty.Register(
+                nameof(RemoveAlbumCommand),
+                typeof(ICommand),
+                typeof(ThumbnailView),
+                new PropertyMetadata(default(object)));
+
+        public static readonly DependencyProperty ViewModeProperty = 
+            DependencyProperty.Register(
+                nameof(ViewMode), 
+                typeof(ViewMode), 
+                typeof(ThumbnailView), 
+                new PropertyMetadata(default(ViewMode)));
+
+
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is ThumbnailView thumbnailView)
@@ -139,6 +203,9 @@ namespace Diffusion.Toolkit.Controls
 
                             break;
                         }
+                    case nameof(ViewMode):
+                        thumbnailView.ViewMode = (ViewMode)e.NewValue;
+                        break;
                     case nameof(NSFWBlur):
                         thumbnailView.Model.NSFWBlur = (bool)e.NewValue;
                         break;
@@ -174,12 +241,30 @@ namespace Diffusion.Toolkit.Controls
             }
 
         }
+
         public bool IsEmpty
         {
             get => (bool)GetValue(IsEmptyProperty);
             set => SetValue(IsEmptyProperty, value);
         }
 
+        public ICommand? AddAlbumCommand
+        {
+            get => (ICommand?)GetValue(AddAlbumCommandProperty);
+            set => SetValue(AddAlbumCommandProperty, value);
+        }
+
+        public ICommand? AddToAlbumCommand
+        {
+            get => (ICommand?)GetValue(AddToAlbumCommandProperty);
+            set => SetValue(AddToAlbumCommandProperty, value);
+        }
+
+        public ICommand? OpenCommand
+        {
+            get => (ICommand?)GetValue(OpenCommandProperty);
+            set => SetValue(OpenCommandProperty, value);
+        }
 
         public string ResultStatus
         {
@@ -228,6 +313,30 @@ namespace Diffusion.Toolkit.Controls
         {
             get => (ImageEntry)GetValue(SelectedImageEntryProperty);
             set => SetValue(SelectedImageEntryProperty, value);
+        }
+
+        public ICommand RemoveFromAlbumCommand
+        {
+            get => (ICommand)GetValue(RemoveFromAlbumCommandProperty);
+            set => SetValue(RemoveFromAlbumCommandProperty, value);
+        }
+
+        public ICommand RenameAlbumCommand
+        {
+            get => (ICommand)GetValue(RenameAlbumCommandProperty);
+            set => SetValue(RenameAlbumCommandProperty, value);
+        }
+
+        public ICommand RemoveAlbumCommand
+        {
+            get => (ICommand)GetValue(RemoveAlbumCommandProperty);
+            set => SetValue(RemoveAlbumCommandProperty, value);
+        }
+
+        public ViewMode ViewMode
+        {
+            get => (ViewMode)GetValue(ViewModeProperty);
+            set => SetValue(ViewModeProperty, value);
         }
 
         //public DataStore DataStore

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +12,7 @@ namespace Diffusion.Database
 
         public IEnumerable<Album> GetAlbums()
         {
-            var db = OpenConnection();
+            using var db = OpenConnection();
 
             var lists = db.Query<Album>($"SELECT * FROM {nameof(Album)}");
 
@@ -20,15 +21,48 @@ namespace Diffusion.Database
             return lists;
         }
 
-        public Album CreateAlbum(Album imageList)
+        public void RenameAlbum(int id, string name)
         {
-            var db = OpenConnection();
+            using var db = OpenConnection();
+
+            var query = $"UPDATE {nameof(Album)} SET Name = @Name WHERE Id = @Id";
+
+            var command = db.CreateCommand(query);
+
+            command.Bind("@Name", name);
+            command.Bind("@Id", id);
+
+            command.ExecuteNonQuery();
+
+            db.Close();
+        }
+
+        public Album GetAlbumByName(string name)
+        {
+            using var db = OpenConnection();
+
+            var query = $"SELECT * FROM {nameof(Album)} WHERE Name = @Name LIMIT 1";
+
+            var command = db.CreateCommand(query);
+
+            command.Bind("@Name", name);
+
+            var album = command.ExecuteQuery<Album>();
+
+            db.Close();
+
+            return album[0];
+        }
+
+        public Album CreateAlbum(Album album)
+        {
+            using var db = OpenConnection();
 
             var query = $"INSERT INTO {nameof(Album)} (Name) VALUES (@Name)";
 
             var command = db.CreateCommand(query);
 
-            command.Bind("@Name", imageList.Name);
+            command.Bind("@Name", album.Name);
 
             command.ExecuteNonQuery();
 
@@ -36,14 +70,14 @@ namespace Diffusion.Database
 
             command = db.CreateCommand(sql);
 
-            imageList.Id = command.ExecuteScalar<int>();
+            album.Id = command.ExecuteScalar<int>();
 
-            return imageList;
+            return album;
         }
 
         public void RemoveAlbum(int id)
         {
-            var db = OpenConnection();
+            using var db = OpenConnection();
 
             var query = $"DELETE FROM {nameof(AlbumImage)} WHERE AlbumId = @Id";
 
@@ -62,11 +96,11 @@ namespace Diffusion.Database
 
         public void AddImagesToAlbum(int albumId, IEnumerable<int> imageId)
         {
-            var db = OpenConnection();
+            using var db = OpenConnection();
 
             db.BeginTransaction();
 
-            var query = $"INSERT INTO {nameof(AlbumImage)} (AlbumId, ImageId) VALUES (@AlbumId, @ImageId)";
+            var query = $"INSERT OR IGNORE INTO {nameof(AlbumImage)} (AlbumId, ImageId) VALUES (@AlbumId, @ImageId)";
 
             var command = db.CreateCommand(query);
 
@@ -82,7 +116,7 @@ namespace Diffusion.Database
 
         public void RemoveImagesFromAlbum(int albumId, IEnumerable<int> imageId)
         {
-            var db = OpenConnection();
+            using var db = OpenConnection();
 
             db.BeginTransaction();
 

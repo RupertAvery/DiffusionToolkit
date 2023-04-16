@@ -75,6 +75,14 @@
             </MenuItem>
         </Menu>
         <ToolBar Grid.Row="1" Height="32">
+            <Button Command="{Binding ShowFolders}">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Folders" Icon="FolderOutlinepenOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
+            </Button>
+            <Button Command="{Binding ShowAlbums}">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Albums" Icon="FilePhotoOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                </fa:ImageAwesome>
+            </Button>
             <Button Command="{Binding ShowSearch}">
                 <fa:ImageAwesome MinWidth="32" ToolTip="Search" Icon="Search" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
@@ -120,4 +128,5 @@
         <Grid RowSpan="4" x:Name="PopupHost" Visibility="Hidden"  Background="#000000" Opacity="0.5">
         </Grid>
     </Grid>
+
 </Window>

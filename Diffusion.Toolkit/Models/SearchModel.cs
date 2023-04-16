@@ -6,7 +6,9 @@ using System.Windows;
 using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
+using Diffusion.Toolkit.Converters;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -46,6 +48,35 @@ public class SearchModel : BaseNotify
     private SearchControlModel _filter;
     private ICommand _doFilter;
     private ICommand _clearFilter;
+    private string _sortBy;
+    private string _sortDirection;
+    private ICommand _openCommand;
+    private ICommand _goHome;
+    private ViewMode _currentViewMode;
+    private string _folderPath;
+    private ICommand _goUp;
+    private ICommand _addAlbumCommand;
+    private ICommand _addToAlbumCommand;
+    private string _album;
+    private ICommand _removeFromAlbumCommand;
+    private ICommand _removeAlbumCommand;
+    private ICommand _renameAlbumCommand;
+
+    public SearchModel()
+    {
+        _mainModel = new MainModel();
+        _images = new ObservableCollection<ImageEntry>();
+        _searchHistory = new ObservableCollection<string>();
+        _currentImage = new ImageViewModel();
+        _filter = new SearchControlModel();
+        _imageOpacity = 1;
+        _isEmpty = true;
+        _resultStatus = "Type anything to begin";
+        _searchHint = "Search for the answer to the the question of life, the universe, and everything";
+        _sortBy = "Date Created";
+        _sortDirection = "Descending";
+        _isFilterVisible = false;
+    }
 
     public SearchModel(MainModel mainModel)
     {
@@ -58,6 +89,9 @@ public class SearchModel : BaseNotify
         _isEmpty = true;
         _resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
+        _sortBy = "Date Created";
+        _sortDirection = "Descending";
+        _isFilterVisible = false;
     }
 
     public MainModel MainModel => _mainModel;
@@ -252,6 +286,85 @@ public class SearchModel : BaseNotify
     {
         get => _clearFilter;
         set => SetField(ref _clearFilter, value);
+    }
+
+    public string SortBy
+    {
+        get => _sortBy;
+        set => SetField(ref _sortBy, value);
+    }
+
+
+    public string SortDirection
+    {
+        get => _sortDirection;
+        set => SetField(ref _sortDirection, value);
+    }
+
+    public ICommand OpenCommand
+    {
+        get => _openCommand;
+        set => SetField(ref _openCommand, value);
+    }
+
+    public ICommand AddAlbumCommand
+    {
+        get => _addAlbumCommand;
+        set => SetField(ref _addAlbumCommand, value);
+    }
+
+    public ICommand AddToAlbumCommand
+    {
+        get => _addToAlbumCommand;
+        set => SetField(ref _addToAlbumCommand, value);
+    }
+
+    public ICommand GoHome
+    {
+        get => _goHome;
+        set => SetField(ref _goHome, value);
+    }
+
+    public ICommand GoUp
+    {
+        get => _goUp;
+        set => SetField(ref _goUp, value);
+    }
+
+    public ViewMode CurrentViewMode
+    {
+        get => _currentViewMode;
+        set => SetField(ref _currentViewMode, value);
+    }
+
+    public string FolderPath
+    {
+        get => _folderPath;
+        set => SetField(ref _folderPath, value);
+    }
+
+    public string Album
+    {
+        get => _album;
+        set => SetField(ref _album, value);
+    }
+
+    public ICommand RemoveFromAlbumCommand
+    {
+        get => _removeFromAlbumCommand;
+        set => SetField(ref _removeFromAlbumCommand, value);
+    }
+
+    public ICommand RenameAlbumCommand
+    {
+        get => _renameAlbumCommand;
+        set => SetField(ref _renameAlbumCommand, value);
+    }
+
+    public ICommand RemoveAlbumCommand
+    {
+        get => _removeAlbumCommand;
+        set => SetField(ref _removeAlbumCommand, value);
     }
 }
 

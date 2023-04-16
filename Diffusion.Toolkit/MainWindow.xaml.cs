@@ -673,6 +673,18 @@ namespace Diffusion.Toolkit
                 _search.ShowSearch();
             });
 
+            _model.ShowFolders = new RelayCommand<object>((o) =>
+            {
+                _navigatorService.Goto("search");
+                _search.ShowFolders();
+            });
+
+            _model.ShowAlbums = new RelayCommand<object>((o) =>
+            {
+                _navigatorService.Goto("search");
+                _search.ShowAlbums();
+            });
+
             _model.ShowModels = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("models");

@@ -119,21 +119,60 @@ public class ThumbnailLoader
 
         while (await _channel.Reader.WaitToReadAsync(token))
         {
-            var job = await _channel.Reader.ReadAsync(token);
-
-            if (job.Data.RequestId != _requestId)
+            try
             {
-                continue;
-            }
+                var job = await _channel.Reader.ReadAsync(token);
 
-            if (_enableCache)
-            {
-                if (!ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path,
-                        out BitmapSource? thumbnail))
+                if (job.Data.RequestId != _requestId)
                 {
-                    // Debug.WriteLine($"Loading from disk");
+                    continue;
+                }
 
-                    thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
+                if (_enableCache)
+                {
+                    if (!ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path,
+                            out BitmapSource? thumbnail))
+                    {
+                        // Debug.WriteLine($"Loading from disk");
+                        if (job.Data.EntryType == EntryType.File)
+                        {
+                            thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
+                        }
+                        else
+                        {
+                            thumbnail = GetDefaultThumbnailImmediate();
+                        }
+
+                        ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
+
+                        _dispatcher.Invoke(() =>
+                        {
+                            job.Completion(thumbnail);
+                        });
+
+                    }
+                    else
+                    {
+                        _dispatcher.Invoke(() =>
+                        {
+                            job.Completion(thumbnail);
+                        });
+                    }
+                }
+                else
+                {
+                    BitmapImage thumbnail;
+
+                    // Debug.WriteLine($"Loading from disk");
+                    if (job.Data.EntryType == EntryType.File)
+                    {
+                        thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
+                    }
+                    else
+                    {
+                        thumbnail = GetDefaultThumbnailImmediate();
+                    }
+
                     ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
 
                     _dispatcher.Invoke(() =>
@@ -141,25 +180,12 @@ public class ThumbnailLoader
                         job.Completion(thumbnail);
                     });
                 }
-                else
-                {
-                    _dispatcher.Invoke(() =>
-                    {
-                        job.Completion(thumbnail);
-                    });
-                }
             }
-            else
+            catch (Exception e)
             {
-
-                var thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
-                ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
-
-                _dispatcher.Invoke(() =>
-                {
-                    job.Completion(thumbnail);
-                });
+                Console.WriteLine(e);
             }
+           
             
         }
     }
@@ -217,6 +243,17 @@ public class ThumbnailLoader
         bitmap.Freeze();
         return bitmap;
     }
+
+    private BitmapImage GetDefaultThumbnailImmediate()
+    {
+        var bitmap = new BitmapImage();
+        bitmap.BeginInit();
+        bitmap.StreamSource = _defaultStream;
+        bitmap.EndInit();
+        bitmap.Freeze();
+        return bitmap;
+    }
+
 
 
     private static BitmapImage GetThumbnail(string path, int width, int height)

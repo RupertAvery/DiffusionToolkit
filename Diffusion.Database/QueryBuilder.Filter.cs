@@ -16,10 +16,13 @@ namespace Diffusion.Database
             _models = models;
         }
 
-        public static (string, IEnumerable<object>) Filter(Filter filter)
+        public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<string> Joins) Filter(Filter filter)
         {
             var conditions = new List<KeyValuePair<string, object>>();
+            var joins = new List<string>();
 
+            FilterAlbum(filter, conditions, joins);
+            FilterFolder(filter, conditions, joins);
             FilterPath(filter, conditions);
             FilterDate(filter, conditions);
             FilterSeed(filter, conditions);
@@ -49,9 +52,33 @@ namespace Diffusion.Database
                         IEnumerable<object> orConditions => orConditions.Select(o => o),
                         _ => new[] { c.Value }
                     };
-                }).Where(o => o != null));
+                }).Where(o => o != null),
+                joins);
         }
 
+
+        private static void FilterFolder(Filter filter, List<KeyValuePair<string, object>> conditions, List<string> joins)
+        {
+            if (filter.Folder != null)
+            {
+                var value = filter.Folder;
+                conditions.Add(new KeyValuePair<string, object>("(Folder.Path = ?)", value));
+                joins.Add("INNER JOIN Folder ON Folder.Id = Image.FolderId");
+            }
+        }
+
+
+        private static void FilterAlbum(Filter filter, List<KeyValuePair<string, object>> conditions, List<string> joins)
+        {
+
+            if (filter.Album != null)
+            {
+                var value = filter.Album;
+                conditions.Add(new KeyValuePair<string, object>("(Album.Name = ?)", value));
+                joins.Add("INNER JOIN AlbumImage ON Image.Id = AlbumImage.ImageId");
+                joins.Add("INNER JOIN Album ON AlbumImage.AlbumId = Album.Id");
+            }
+        }
 
         private static void FilterPath(Filter filter, List<KeyValuePair<string, object>> conditions)
         {
@@ -79,7 +106,7 @@ namespace Diffusion.Database
                 //    }
                 //}
 
-                conditions.Add(new KeyValuePair<string, object>("(Path GLOB ?)", value));
+                conditions.Add(new KeyValuePair<string, object>("(Image.Path GLOB ?)", value));
 
             }
         }

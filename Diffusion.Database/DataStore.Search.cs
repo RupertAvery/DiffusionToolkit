@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +17,9 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var count = db.ExecuteScalar<int>("SELECT COUNT(*) FROM Image");
+            var query = "SELECT COUNT(*) FROM Image";
+
+            var count = db.ExecuteScalar<int>(query);
 
             db.Close();
 
@@ -27,15 +31,23 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
+
             if (string.IsNullOrEmpty(prompt))
             {
-                var allcount = db.ExecuteScalar<int>($"SELECT SUM(FileSize) FROM Image");
+                var query = $"SELECT SUM(FileSize) FROM Image";
+
+                if (QueryBuilder.HideNFSW)
+                {
+                    query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                }
+
+                var allcount = db.ExecuteScalar<int>(query);
                 return allcount;
             }
 
             var q = QueryBuilder.Parse(prompt);
 
-            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
 
             db.Close();
 
@@ -49,13 +61,20 @@ namespace Diffusion.Database
 
             if (string.IsNullOrEmpty(prompt))
             {
-                var allcount = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image");
+                var query = "SELECT COUNT(*) FROM Image";
+                
+                if (QueryBuilder.HideNFSW)
+                {
+                    query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                }
+
+                var allcount = db.ExecuteScalar<int>(query);
                 return allcount;
             }
 
             var q = QueryBuilder.Parse(prompt);
 
-            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
 
             db.Close();
 
@@ -70,13 +89,21 @@ namespace Diffusion.Database
 
             if (filter.IsEmpty)
             {
-                var allcount = db.ExecuteScalar<int>($"SELECT SUM(FileSize) FROM Image");
+                var query = $"SELECT SUM(FileSize) FROM Image";
+
+                if (QueryBuilder.HideNFSW)
+                {
+                    query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                }
+
+                var allcount = db.ExecuteScalar<int>(query);
+
                 return allcount;
             }
 
             var q = QueryBuilder.Filter(filter);
 
-            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
 
             db.Close();
 
@@ -90,7 +117,15 @@ namespace Diffusion.Database
 
             if (filter.IsEmpty)
             {
-                var allcount = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image");
+                var query = "SELECT COUNT(*) FROM Image";
+
+                if (QueryBuilder.HideNFSW)
+                {
+                    query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                }
+
+                var allcount = db.ExecuteScalar<int>(query);
+
                 return allcount;
             }
 
@@ -110,7 +145,7 @@ namespace Diffusion.Database
             using var db = OpenConnection();
             
 
-            var image = db.FindWithQuery<Image>($"SELECT * FROM Image WHERE Id = ?", id);
+            var image = db.FindWithQuery<Image>($"SELECT Image.* FROM Image WHERE Id = ?", id);
 
             db.Close();
 
@@ -122,7 +157,7 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var images = db.Query<Image>($"SELECT * FROM Image");
+            var images = db.Query<Image>($"SELECT Image.* FROM Image");
 
             foreach (var image in images)
             {
@@ -144,7 +179,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Parse(prompt);
 
-            var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+            var images = db.Query<Image>($"SELECT Image.* FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
 
             foreach (var image in images)
             {
@@ -165,7 +200,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Filter(filter);
 
-            var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+            var images = db.Query<Image>($"SELECT Image.* FROM Image WHERE {q.Item1}", q.Item2.ToArray());
 
             foreach (var image in images)
             {
@@ -175,13 +210,35 @@ namespace Diffusion.Database
             db.Close();
         }
 
-        public IEnumerable<Image> Search(string? prompt, int pageSize, int offset)
+        public IEnumerable<Image> Search(string? prompt, int pageSize, int offset, string sortBy, string sortDirection)
         {
             using var db = OpenConnection();
+            
+            var sortField = sortBy switch
+            {
+                "Date Created" => nameof(Image.CreatedDate),
+                "Rating" => nameof(Image.Rating),
+                "Aesthetic Score" => nameof(Image.AestheticScore),
+                _ => nameof(Image.CreatedDate),
+            };
+
+            var sortDir = sortDirection switch
+            {
+                "Ascending" => "ASC",
+                "Descending" => "DESC",
+                _ => "DESC",
+            };
 
             if (string.IsNullOrEmpty(prompt))
             {
-                var allimages = db.Query<Image>($"SELECT * FROM Image ORDER BY CreatedDate DESC LIMIT ? OFFSET ?", pageSize, offset);
+                var query = "SELECT Image.* FROM Image ";
+
+                if (QueryBuilder.HideNFSW)
+                {
+                    query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                }
+
+                var allimages = db.Query<Image>($"{query} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", pageSize, offset);
 
                 foreach (var image in allimages)
                 {
@@ -200,7 +257,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Parse(prompt);
 
-            var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1} ORDER BY CreatedDate DESC LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
+            var images = db.Query<Image>($"SELECT Image.* FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {
@@ -210,13 +267,35 @@ namespace Diffusion.Database
             db.Close();
         }
 
-        public IEnumerable<Image> Search(Filter filter, int pageSize, int offset)
+        public IEnumerable<Image> Search(Filter filter, int pageSize, int offset, string sortBy, string sortDirection)
         {
             using var db = OpenConnection();
 
+            var sortField = sortBy switch
+            {
+                "Date Created" => nameof(Image.CreatedDate),
+                "Rating" => nameof(Image.Rating),
+                "Aesthetic Score" => nameof(Image.AestheticScore),
+                _ => nameof(Image.CreatedDate),
+            };
+
+            var sortDir = sortDirection switch
+            {
+                "Ascending" => "ASC",
+                "Descending" => "DESC",
+                _ => "DESC",
+            };
+
             if (filter.IsEmpty)
             {
-                var allimages = db.Query<Image>($"SELECT * FROM Image ORDER BY CreatedDate DESC LIMIT ? OFFSET ?", pageSize, offset);
+                var query = "SELECT Image.* FROM Image ";
+
+                if (QueryBuilder.HideNFSW)
+                {
+                    query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                }
+
+                var allimages = db.Query<Image>($"{query} ORDER BY {sortField} {sortDir}  LIMIT ? OFFSET ?", pageSize, offset);
 
                 foreach (var image in allimages)
                 {
@@ -230,7 +309,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Filter(filter);
 
-            var images = db.Query<Image>($"SELECT * FROM Image WHERE {q.Item1} ORDER BY CreatedDate DESC LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
+            var images = db.Query<Image>($"SELECT Image.* FROM Image WHERE {q.Item1} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {
@@ -297,7 +376,7 @@ namespace Diffusion.Database
                 {
                     var q = QueryBuilder.Parse(prompt);
 
-                    results = db.Query<UsedPrompt>($"SELECT Prompt, COUNT(*) AS Usage  FROM Image WHERE {q.Item1} GROUP BY Prompt ORDER BY Usage DESC", q.Item2.ToArray());
+                    results = db.Query<UsedPrompt>($"SELECT Prompt, COUNT(*) AS Usage  FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause} GROUP BY Prompt ORDER BY Usage DESC", q.Bindings.ToArray());
 
                     foreach (var result in results)
                     {
@@ -368,7 +447,7 @@ namespace Diffusion.Database
                 {
                     var q = QueryBuilder.Parse(prompt);
 
-                    results = db.Query<UsedPrompt>($"SELECT NegativePrompt AS Prompt, COUNT(*) AS Usage  FROM Image WHERE {q.Item1} GROUP BY NegativePrompt ORDER BY Usage DESC", q.Item2.ToArray());
+                    results = db.Query<UsedPrompt>($"SELECT NegativePrompt AS Prompt, COUNT(*) AS Usage  FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause} GROUP BY NegativePrompt ORDER BY Usage DESC", q.Bindings.ToArray());
 
                     foreach (var result in results)
                     {

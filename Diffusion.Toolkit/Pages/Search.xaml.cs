@@ -26,6 +26,12 @@ using Diffusion.Toolkit.Controls;
 using System.Collections;
 using Image = Diffusion.Database.Image;
 using Diffusion.Common;
+using Diffusion.Toolkit.Converters;
+using MdXaml.LinkActions;
+using SQLite;
+using static System.Net.WebRequestMethods;
+using System.Windows.Navigation;
+using Diffusion.Toolkit.Common;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -44,6 +50,9 @@ namespace Diffusion.Toolkit.Pages
 
         public bool IsMarkedForDeletion { get; set; }
         public bool IsFavorite { get; set; }
+        public ViewMode ViewMode { get; set; }
+        public string CurrentFolder { get; set; }
+        public string CurrentAlbum { get; set; }
     }
 
     /// <summary>
@@ -136,9 +145,11 @@ namespace Diffusion.Toolkit.Pages
 
             _modeSettings = new Dictionary<string, ModeSettings>()
             {
-                { "search", new ModeSettings() { Name="Diffusions" } },
-                { "favorites", new ModeSettings() { Name="Favorites", IsFavorite = true } },
-                { "deleted", new ModeSettings() { Name="Recycle Bin", IsMarkedForDeletion = true } },
+                { "search", new ModeSettings() { Name="Diffusions", ViewMode = ViewMode.Search } },
+                { "folders", new ModeSettings() { Name="Folders", ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
+                { "albums", new ModeSettings() { Name="Albums", ViewMode = ViewMode.Album, CurrentAlbum = "$" } },
+                { "favorites", new ModeSettings() { Name="Favorites", ViewMode = ViewMode.Search, IsFavorite = true } },
+                { "deleted", new ModeSettings() { Name="Recycle Bin", ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
             };
 
             if (_settings.MainGridWidth != null)
@@ -146,6 +157,7 @@ namespace Diffusion.Toolkit.Pages
                 MainGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.MainGridWidth);
                 MainGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.MainGridWidth2);
             }
+
             //if (_settings.PreviewGridHeight != null)
             //{
             //    PreviewGrid.RowDefinitions[0].Height = GetGridLength(_settings.PreviewGridHeight);
@@ -197,6 +209,91 @@ namespace Diffusion.Toolkit.Pages
                 _model.Filter.Clear();
 
             });
+            _model.OpenCommand = new RelayCommand<object>(async (o) =>
+            {
+                if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.SelectedImageEntry.EntryType == EntryType.Folder)
+                {
+                    _currentModeSettings.CurrentFolder = Path.GetFullPath(_model.SelectedImageEntry.Path);
+
+                    _model.FolderPath = _currentModeSettings.CurrentFolder;
+
+                    SearchImages(null);
+                }
+                else if (_currentModeSettings.ViewMode == ViewMode.Album && _model.SelectedImageEntry.EntryType == EntryType.Album)
+                {
+                    _currentModeSettings.CurrentAlbum = _model.SelectedImageEntry.Name;
+
+                    _model.Album = _currentModeSettings.CurrentAlbum;
+
+                    SearchImages(null);
+                }
+                else
+                {
+                    ShowInExplorer(o);
+                }
+
+            });
+
+            _model.GoHome = new RelayCommand<object>((o) =>
+            {
+                if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                {
+                    _model.FolderPath = "Watched Folders";
+                    _currentModeSettings.CurrentFolder = "$";
+                    SearchImages(null);
+                }
+                else if (_currentModeSettings.ViewMode == ViewMode.Album)
+                {
+                    _model.Album = "Albums";
+                    _currentModeSettings.CurrentAlbum = "$";
+                    SearchImages(null);
+                }
+            });
+
+            _model.GoUp = new RelayCommand<object>((o) =>
+            {
+                _currentModeSettings.CurrentFolder = Path.GetFullPath(Path.Combine(_currentModeSettings.CurrentFolder, ".."));
+                _model.FolderPath = _currentModeSettings.CurrentFolder;
+                SearchImages(null);
+            });
+
+
+            _model.AddAlbumCommand = new RelayCommand<object>((o) =>
+            {
+                NewAlbumName.Text = null;
+                AddAlbumPopup.IsOpen = true;
+                NewAlbumName.Focus();
+            });
+
+            _model.AddToAlbumCommand = new RelayCommand<object>((o) =>
+            {
+                var album = (Album)((MenuItem)o).Tag;
+                var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
+                _dataStore.AddImagesToAlbum(album.Id, images);
+            });
+
+            _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
+            {
+                var name = _currentModeSettings.CurrentAlbum;
+                var album = _dataStore.GetAlbumByName(name);
+                var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
+                _dataStore.RemoveImagesFromAlbum(album.Id, images);
+            });
+
+            _model.RemoveAlbumCommand = new RelayCommand<object>((o) =>
+            {
+                RemoveAlbumMessage.Text = $"Are you sure you want to remove the Album \"{ThumbnailListView.SelectedImageEntry.Name}\"?";
+                RemoveAlbumPopup.IsOpen = true;
+            });
+
+            _model.RenameAlbumCommand = new RelayCommand<object>((o) =>
+            {
+                RenewAlbumName.Text = ThumbnailListView.SelectedImageEntry.Name;
+                RenameAlbumPopup.IsOpen = true;
+                RenewAlbumName.Focus();
+            });
+
+
             SetMode("search");
 
             DataContext = _model;
@@ -288,10 +385,10 @@ namespace Diffusion.Toolkit.Pages
         static T Time<T>(Func<T> action)
         {
             Stopwatch t = new Stopwatch();
-            T result = action();
             t.Start();
-            Debug.WriteLine($"{t.ElapsedMilliseconds}ms");
+            T result = action();
             t.Stop();
+            Debug.WriteLine($"{t.ElapsedMilliseconds}ms");
             return result;
         }
 
@@ -329,6 +426,20 @@ namespace Diffusion.Toolkit.Pages
                             filter.ForDeletion = true;
                             filter.UseForDeletion = true;
                         }
+                        else if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                        {
+                            if (_currentModeSettings.CurrentFolder != "$")
+                            {
+                                filter.Folder = _currentModeSettings.CurrentFolder;
+                            }
+                        }
+                        else if (_currentModeSettings.ViewMode == ViewMode.Album)
+                        {
+                            if (_currentModeSettings.CurrentAlbum != "$")
+                            {
+                                filter.Album = _currentModeSettings.CurrentAlbum;
+                            }
+                        }
 
                         count = _dataStore.Count(filter);
                         size = _dataStore.CountFileSize(filter);
@@ -361,6 +472,20 @@ namespace Diffusion.Toolkit.Pages
                         else if (_currentModeSettings.IsMarkedForDeletion)
                         {
                             query = $"{query} delete: true";
+                        }
+                        else if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                        {
+                            if (_currentModeSettings.CurrentFolder != "$")
+                            {
+                                query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                            }
+                        }
+                        else if (_currentModeSettings.ViewMode == ViewMode.Album)
+                        {
+                            if (_currentModeSettings.CurrentAlbum != "$")
+                            {
+                                query = $"{query} album: \"{_currentModeSettings.CurrentAlbum}\"";
+                            }
                         }
 
                         count = _dataStore.Count(query);
@@ -396,14 +521,24 @@ namespace Diffusion.Toolkit.Pages
 
                     _model.Results = $"{count:###,###,##0} results found ({ssize})";
 
-                    if (_model.IsEmpty)
+                    if (_currentModeSettings.ViewMode == ViewMode.Folder)
                     {
-                        _model.Page = 0;
-                        _model.ResultStatus = "No results found";
-                        //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
-                        //    MessageBoxButton.OK,
-                        //    MessageBoxImage.Information);
-                        return;
+                        if (_model.Pages == 0)
+                        {
+                            _model.Pages = 1;
+                        }
+                    }
+                    else
+                    {
+                        if (_model.IsEmpty)
+                        {
+                            _model.Page = 0;
+                            _model.ResultStatus = "No results found";
+                            //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
+                            //    MessageBoxButton.OK,
+                            //    MessageBoxImage.Information);
+                            return;
+                        }
                     }
                     _model.Page = 1;
 
@@ -431,6 +566,15 @@ namespace Diffusion.Toolkit.Pages
                     LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
                 }
             }
+            else if (e.PropertyName == nameof(SearchModel.SortBy))
+            {
+                ReloadMatches(true);
+            }
+            else if (e.PropertyName == nameof(SearchModel.SortDirection))
+            {
+                ReloadMatches(true);
+            }
+
             //else if (e.PropertyName == nameof(SearchModel.Page))
             //{
             //    ReloadMatches(true);
@@ -447,6 +591,8 @@ namespace Diffusion.Toolkit.Pages
 
         public void LoadPreviewImage(string path, ImageEntry? image = null)
         {
+            if (image != null && image.EntryType != EntryType.File) return;
+
             var parameters = Metadata.ReadFromFile(path);
 
             try
@@ -587,83 +733,152 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private async Task LoadMatchesAsync()
+        //private async Task LoadMatchesAsync()
+        //{
+        //    var rId = r.NextInt64();
+        //    ThumbnailLoader.Instance.SetCurrentRequestId(rId);
+
+        //    var query = _model.SearchText;
+
+        //    if (_currentModeSettings.IsFavorite)
+        //    {
+        //        query = $"{query} favorite: true";
+        //    }
+        //    else if (_currentModeSettings.IsMarkedForDeletion)
+        //    {
+        //        query = $"{query} delete: true";
+        //    }
+
+
+        //    var matches = Time(() => _dataStore
+        //        .Search(query, _settings.PageSize,
+        //            _settings.PageSize * (_model.Page - 1),
+        //            _model.SortBy,
+        //            _model.SortDirection
+        //            ));
+
+        //    Dispatcher.Invoke(() =>
+        //    {
+        //        _model.Images.Clear();
+        //    });
+
+        //    var images = new List<ImageEntry>();
+
+        //    var sw = new Stopwatch();
+        //    sw.Start();
+
+
+        //    var count = 0;
+        //    foreach (var file in matches)
+        //    {
+        //        images.Add(new ImageEntry(rId)
+        //        {
+        //            Id = file.Id,
+        //            Favorite = file.Favorite,
+        //            ForDeletion = file.ForDeletion,
+        //            Rating = file.Rating,
+        //            Path = file.Path,
+        //            CreatedDate = file.CreatedDate,
+        //            FileName = Path.GetFileName(file.Path),
+        //            NSFW = file.NSFW
+        //        });
+
+
+        //        count++;
+        //    }
+
+        //    Dispatcher.Invoke(() =>
+        //    {
+        //        _model.Images = new ObservableCollection<ImageEntry>(images);
+        //    });
+
+        //    sw.Stop();
+
+        //    Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
+
+        //    foreach (var image in _model.Images)
+        //    {
+        //        await image.LoadThumbnail();
+        //    }
+        //}
+
+        private async Task LoadMatchesOnThread()
         {
-            var rId = r.NextInt64();
-            ThumbnailLoader.Instance.SetCurrentRequestId(rId);
-
-            var query = _model.SearchText;
-
-            if (_currentModeSettings.IsFavorite)
-            {
-                query = $"{query} favorite: true";
-            }
-            else if (_currentModeSettings.IsMarkedForDeletion)
-            {
-                query = $"{query} delete: true";
-            }
-
-
-            var matches = Time(() => _dataStore
-                .Search(query, _settings.PageSize,
-                    _settings.PageSize * (_model.Page - 1)));
-
             Dispatcher.Invoke(() =>
             {
                 _model.Images.Clear();
             });
 
-            var images = new List<ImageEntry>();
-
-            var sw = new Stopwatch();
-            sw.Start();
-
-
-            var count = 0;
-            foreach (var file in matches)
-            {
-                images.Add(new ImageEntry(rId)
-                {
-                    Id = file.Id,
-                    Favorite = file.Favorite,
-                    ForDeletion = file.ForDeletion,
-                    Rating = file.Rating,
-                    Path = file.Path,
-                    CreatedDate = file.CreatedDate,
-                    FileName = Path.GetFileName(file.Path),
-                    NSFW = file.NSFW
-                });
-
-
-                count++;
-            }
-
-            Dispatcher.Invoke(() =>
-            {
-                _model.Images = new ObservableCollection<ImageEntry>(images);
-            });
-
-            sw.Stop();
-
-            Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
-
-            foreach (var image in _model.Images)
-            {
-                await image.LoadThumbnail();
-            }
-        }
-
-        private async Task LoadMatchesOnThread()
-        {
             var rId = r.NextInt64();
             ThumbnailLoader.Instance.SetCurrentRequestId(rId);
 
+            if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
+            {
+                IEnumerable<string> folders = Enumerable.Empty<string>();
 
-            IEnumerable<Image> matches;
+                if (_currentModeSettings.CurrentFolder == "$")
+                {
+                    folders = _settings.ImagePaths;
+                }
+                else
+                {
+                    folders = new[] { Path.Combine(_currentModeSettings.CurrentFolder, "..") }.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolder));
+                }
+
+                foreach (var folder in folders)
+                {
+                    var imageEntry = new ImageEntry(rId)
+                    {
+                        Id = 0,
+                        Path = folder,
+                        FileName = Path.GetFileName(folder),
+                        Name = Path.GetFileName(folder),
+                        EntryType = EntryType.Folder
+                    };
+
+                    Dispatcher.Invoke(() =>
+                    {
+                        _model.Images.Add(imageEntry);
+                    });
+
+                }
+            }
+
+            if (_currentModeSettings.ViewMode == ViewMode.Album)
+            {
+
+                if (_currentModeSettings.CurrentAlbum == "$")
+                {
+                    IEnumerable<Album> albums = _dataStore.GetAlbums();
+
+                    foreach (var album in albums)
+                    {
+                        var imageEntry = new ImageEntry(rId)
+                        {
+                            Id = album.Id,
+                            Path = "",
+                            FileName = "",
+                            Name = album.Name,
+                            EntryType = EntryType.Album
+                        };
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.Images.Add(imageEntry);
+                        });
+
+                    }
+                }
+
+            }
+
+
+            IEnumerable<Image> matches = Enumerable.Empty<Image>();
 
             if (UseFilter)
             {
                 var filter = _model.Filter.AsFilter();
+                bool showImages = true;
 
                 if (_currentModeSettings.IsFavorite)
                 {
@@ -675,14 +890,42 @@ namespace Diffusion.Toolkit.Pages
                     filter.ForDeletion = true;
                     filter.UseForDeletion = true;
                 }
+                else if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                {
+                    if (_currentModeSettings.CurrentFolder != "$")
+                    {
+                        filter.Folder = _currentModeSettings.CurrentFolder;
+                    }
+                    else
+                    {
+                        showImages = false;
+                    }
+                }
+                else if (_currentModeSettings.ViewMode == ViewMode.Album)
+                {
+                    if (_currentModeSettings.CurrentAlbum != "$")
+                    {
+                        filter.Album = _currentModeSettings.CurrentAlbum;
+                    }
+                    else
+                    {
+                        showImages = false;
+                    }
+                }
 
-                matches = Time(() => _dataStore
-                    .Search(filter, _settings.PageSize,
-                        _settings.PageSize * (_model.Page - 1)));
+                if (showImages)
+                {
+                    matches = Time(() => _dataStore
+                        .Search(filter, _settings.PageSize,
+                            _settings.PageSize * (_model.Page - 1),
+                            _model.SortBy,
+                            _model.SortDirection));
+                }
             }
             else
             {
                 var query = _model.SearchText;
+                bool showImages = true;
 
                 if (_currentModeSettings.IsFavorite)
                 {
@@ -692,26 +935,51 @@ namespace Diffusion.Toolkit.Pages
                 {
                     query = $"{query} delete: true";
                 }
+                else if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                {
+                    if (_currentModeSettings.CurrentFolder != "$")
+                    {
+                        query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                    }
+                    else
+                    {
+                        showImages = false;
+                    }
+                }
+                else if (_currentModeSettings.ViewMode == ViewMode.Album)
+                {
+                    if (_currentModeSettings.CurrentFolder != "$")
+                    {
+                        query = $"{query} album: \"{_currentModeSettings.CurrentAlbum}\"";
+                    }
+                    else
+                    {
+                        showImages = false;
+                    }
+                }
 
-
-                matches = Time(() => _dataStore
-                    .Search(query, _settings.PageSize,
-                        _settings.PageSize * (_model.Page - 1)));
+                if (showImages)
+                {
+                    matches = Time(() => _dataStore
+                        .Search(query, _settings.PageSize,
+                            _settings.PageSize * (_model.Page - 1),
+                            _model.SortBy,
+                            _model.SortDirection
+                        ));
+                }
 
             }
 
-            Dispatcher.Invoke(() =>
-            {
-                _model.Images.Clear();
-            });
-
-            var images = new List<ImageEntry>();
+            //var images = new List<ImageEntry>();
 
             var sw = new Stopwatch();
             sw.Start();
 
 
             var count = 0;
+
+
+
             foreach (var file in matches)
             {
                 var imageEntry = new ImageEntry(rId)
@@ -723,7 +991,8 @@ namespace Diffusion.Toolkit.Pages
                     Path = file.Path,
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
-                    NSFW = file.NSFW
+                    NSFW = file.NSFW,
+                    EntryType = EntryType.File
                 };
 
                 Dispatcher.Invoke(() =>
@@ -788,6 +1057,8 @@ namespace Diffusion.Toolkit.Pages
         {
             _currentModeSettings = GetModeSettings(mode);
             _model.IsFilterVisible = false;
+
+
             if (_currentModeSettings.IsFavorite)
             {
                 _model.Filter.UseFavorite = true;
@@ -810,6 +1081,7 @@ namespace Diffusion.Toolkit.Pages
                 _model.Filter.ForDeletion = false;
             }
 
+            _model.CurrentViewMode = _currentModeSettings.ViewMode;
             _model.SearchText = _currentModeSettings.LastQuery;
             _model.SearchHistory = new ObservableCollection<string?>(_currentModeSettings.History);
             _model.ModeName = _currentModeSettings.Name;
@@ -818,6 +1090,18 @@ namespace Diffusion.Toolkit.Pages
         public void ShowSearch()
         {
             SetMode("search");
+            SearchImages(null);
+        }
+
+        public void ShowFolders()
+        {
+            SetMode("folders");
+            SearchImages(null);
+        }
+
+        public void ShowAlbums()
+        {
+            SetMode("albums");
             SearchImages(null);
         }
 
@@ -929,6 +1213,131 @@ namespace Diffusion.Toolkit.Pages
             else
             {
                 return _model.SearchText == null || _model.SearchText.Trim().Length == 0;
+            }
+        }
+
+        private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (_model.FolderPath != null && Directory.Exists(_model.FolderPath))
+                {
+                    _currentModeSettings.CurrentFolder = _model.FolderPath;
+
+                    SearchImages(null);
+                }
+            }
+        }
+
+        private void AddImagesToNewAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            AddImagesToAlbum();
+        }
+
+        private void AddImagesToAlbum()
+        {
+            var name = NewAlbumName.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                NewAlbumPopup.IsOpen = true;
+                NewAlbumMessage.Text = "Album name cannot be empty.";
+                return;
+            }
+
+            try
+            {
+                var album = _dataStore.CreateAlbum(new Album() { Name = name });
+                var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
+                _dataStore.AddImagesToAlbum(album.Id, images);
+                ThumbnailListView.ReloadAlbums();
+            }
+            catch (SQLiteException ex)
+            {
+                NewAlbumPopup.IsOpen = true;
+                NewAlbumMessage.Text = $"Album {name} already exists! \r\n Please use another name.";
+            }
+            AddAlbumPopup.IsOpen = false;
+        }
+
+        private void CancelNewAlbum_Click(object sender, RoutedEventArgs e)
+        {
+            AddAlbumPopup.IsOpen = false;
+        }
+
+        private void NewAlbumMessageOK_Click(object sender, RoutedEventArgs e)
+        {
+            NewAlbumPopup.IsOpen = false;
+        }
+
+        private void RemoveAlbumYes_Click(object sender, RoutedEventArgs e)
+        {
+            var album = _dataStore.GetAlbumByName(ThumbnailListView.SelectedImageEntry.Name);
+            _dataStore.RemoveAlbum(album.Id);
+            RemoveAlbumPopup.IsOpen = false;
+
+            SearchImages(null);
+            ThumbnailListView.ReloadAlbums();
+        }
+
+        private void RemoveAlbumNo_Click(object sender, RoutedEventArgs e)
+        {
+            RemoveAlbumPopup.IsOpen = false;
+        }
+
+        private void RenameAlbumOK_Click(object sender, RoutedEventArgs e)
+        {
+            RenameAlbum();
+        }
+
+        private void RenameAlbum()
+        {
+            var name = RenewAlbumName.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                NewAlbumPopup.IsOpen = true;
+                NewAlbumMessage.Text = "Album name cannot be empty.";
+                return;
+            }
+
+            try
+            {
+                var album = _dataStore.GetAlbumByName(ThumbnailListView.SelectedImageEntry.Name);
+                _dataStore.RenameAlbum(album.Id, name);
+                ThumbnailListView.ReloadAlbums();
+
+                SearchImages(null);
+            }
+            catch (SQLiteException ex)
+            {
+                NewAlbumPopup.IsOpen = true;
+                NewAlbumMessage.Text = $"Album {name} already exists! \r\n Please use another name.";
+            }
+
+            RenameAlbumPopup.IsOpen = false;
+        }
+
+        private void RenameAlbumCancel_Click(object sender, RoutedEventArgs e)
+        {
+            RenameAlbumPopup.IsOpen = false;
+        }
+
+        private void RenewAlbumName_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                RenameAlbum();
+                e.Handled = true;
+            }
+        }
+
+        private void NewAlbumName_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                AddImagesToAlbum();
+                e.Handled = true;
             }
         }
     }

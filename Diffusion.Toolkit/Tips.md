@@ -24,7 +24,9 @@
 
 # Diffusion Toolkit
 
-When AI Image Generators generate an image, it may also embed the parameters used to generate that image in the image as metadata, or store it in a separate text file.
+Diffusion Toolkit is an Image viewer and metadata (prompt) searcher for your AI generated images.
+
+AI image generators embed the parameters used to generate that image in the image as metadata, or store it in a separate text file.
 
 Diffusion Toolkit scans your AI-Generated images for metadata and stores it in a local database for fast retrieval and searching.
 

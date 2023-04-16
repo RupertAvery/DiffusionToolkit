@@ -6,6 +6,7 @@ public class Image
 {
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
+    public int FolderId { get; set; }
     public string Path { get; set; }
     public string? Prompt { get; set; }
     public string? NegativePrompt { get; set; }

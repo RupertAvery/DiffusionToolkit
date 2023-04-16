@@ -84,4 +84,6 @@ public class Filter
                             UseHyperNetStr ||
                             UseNoMetadata);
 
+    public string? Folder { get; set; }
+    public string? Album { get; set; }
 }

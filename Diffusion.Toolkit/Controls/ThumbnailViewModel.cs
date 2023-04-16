@@ -1,6 +1,9 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Models;
 using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
@@ -59,6 +62,8 @@ public class ThumbnailViewModel : BaseNotify
     private ICommand _removeEntryCommand;
     private ICommand _moveCommand;
     private int _thumbnailSize;
+    private ObservableCollection<Control> _albumMenuItems;
+    private ViewMode _viewMode;
 
     public ThumbnailViewModel()
     {
@@ -355,5 +360,17 @@ public class ThumbnailViewModel : BaseNotify
     {
         get => _thumbnailSize;
         set => SetField(ref _thumbnailSize, value);
+    }
+
+    public ViewMode ViewMode
+    {
+        get => _viewMode;
+        set => SetField(ref _viewMode, value);
+    }
+
+    public ObservableCollection<Control> AlbumMenuItems
+    {
+        get => _albumMenuItems;
+        set => SetField(ref _albumMenuItems, value);
     }
 }

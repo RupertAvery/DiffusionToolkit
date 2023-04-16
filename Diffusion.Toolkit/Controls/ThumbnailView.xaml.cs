@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls
@@ -20,16 +21,56 @@ namespace Diffusion.Toolkit.Controls
     /// </summary>
     public partial class ThumbnailView : UserControl
     {
-     
+        private IEnumerable<Album> _albums;
+
         public ThumbnailViewModel Model { get; set; }
 
-        public DataStore DataStore { get; set; }
+        public DataStore DataStore
+        {
+            get => _dataStore;
+            set
+            {
+                _dataStore = value;
+                ReloadAlbums();
+            }
+        }
+
+        public void ReloadAlbums()
+        {
+            var albumMenuItem = new MenuItem()
+            {
+                Header = "_New Album",
+            };
+
+            albumMenuItem.Click += CreateAlbum_OnClick;
+
+            Model.AlbumMenuItems = new ObservableCollection<Control>(new List<Control>()
+            {
+                albumMenuItem
+            });
+
+            var albums = _dataStore.GetAlbums();
+
+            Model.AlbumMenuItems.Add(new Separator());
+
+            foreach (var album in albums)
+            {
+                var menuItem = new MenuItem() { Header = album.Name, Tag = album };
+                menuItem.Click += AddToAlbum_OnClick;
+                Model.AlbumMenuItems.Add(menuItem);
+            }
+        }
+
+        //private void AlbumMenuItem_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var menuItem = (MenuItem)sender;
+        //    AddToAlbumCommand?.Execute(null);
+        //}
 
         public MessagePopupManager MessagePopupManager { get; set; }
 
         public ThumbnailView()
         {
-
             InitializeComponent();
 
             Model = new ThumbnailViewModel();
@@ -38,8 +79,18 @@ namespace Diffusion.Toolkit.Controls
             Model.Pages = 0;
             Model.TotalFiles = 100;
 
-            Model.PropertyChanged += ModelOnPropertyChanged;
+            var albumMenuItem = new MenuItem()
+            {
+                Header = "_New Album",
+            };
 
+            albumMenuItem.Click += CreateAlbum_OnClick;
+
+            Model.PropertyChanged += ModelOnPropertyChanged;
+            Model.AlbumMenuItems = new ObservableCollection<Control>(new List<Control>()
+            {
+                albumMenuItem
+            });
 
             Model.CopyPathCommand = new RelayCommand<object>(CopyPath);
             Model.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
@@ -87,7 +138,8 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
-
+        public IEnumerable<ImageEntry> SelectedImages => ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+        
         private void Control_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             OpenSelected();
@@ -364,13 +416,14 @@ namespace Diffusion.Toolkit.Controls
 
         private void OpenSelected()
         {
-            using Process fileopener = new Process();
+            //using Process fileopener = new Process();
 
             if (Model.SelectedImageEntry != null)
             {
-                fileopener.StartInfo.FileName = "explorer";
-                fileopener.StartInfo.Arguments = "\"" + Model.SelectedImageEntry.Path + "\"";
-                fileopener.Start();
+                OpenCommand?.Execute(Model.SelectedImageEntry);
+                //fileopener.StartInfo.FileName = "explorer";
+                //fileopener.StartInfo.Arguments = "\"" + Model.SelectedImageEntry.Path + "\"";
+                //fileopener.Start();
             }
         }
 
@@ -519,10 +572,36 @@ namespace Diffusion.Toolkit.Controls
         }
 
         public Action<IList<ImageEntry>> MoveFiles;
+        private DataStore _dataStore;
 
         public void SetThumbnailSize(int thumbnailSize)
         {
             Model.ThumbnailSize = thumbnailSize;
+        }
+
+        private void CreateAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+            AddAlbumCommand?.Execute(null);
+        }
+
+        private void AddToAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+            AddToAlbumCommand?.Execute(sender);
+        }
+        
+        private void RemoveFromAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+            RemoveFromAlbumCommand?.Execute(null);
+        }
+
+        private void RenameAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+            RenameAlbumCommand?.Execute(null);
+        }
+
+        private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+           RemoveAlbumCommand?.Execute(null);
         }
     }
 }

@@ -6,6 +6,14 @@ using Diffusion.Toolkit.Thumbnails;
 
 namespace Diffusion.Toolkit;
 
+
+public enum EntryType
+{
+    File,
+    Folder,
+    Album
+}
+
 public class ImageEntry : BaseNotify
 {
     private BitmapSource? _thumbnail;
@@ -16,6 +24,10 @@ public class ImageEntry : BaseNotify
     private int? _rating;
     private long _requestId;
     private bool _nsfw;
+    private string _name;
+    private bool _isAlbum;
+    private bool _isFolder;
+    private EntryType _entryType;
 
     public ImageEntry(long requestId)
     {
@@ -27,6 +39,18 @@ public class ImageEntry : BaseNotify
     {
         get => _id;
         set => SetField(ref _id, value);
+    }
+
+    public EntryType EntryType
+    {
+        get => _entryType;
+        set => SetField(ref _entryType, value);
+    }
+
+    public string Name
+    {
+        get => _name;
+        set => SetField(ref _name, value);
     }
 
     public bool ForDeletion
@@ -70,6 +94,7 @@ public class ImageEntry : BaseNotify
         var job = new ThumbnailJob()
         {
             RequestId = _requestId,
+            EntryType = _entryType,
             Path = Path,
             Height = Height,
             Width = Width

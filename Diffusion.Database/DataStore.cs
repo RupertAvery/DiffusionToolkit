@@ -1,9 +1,4 @@
 ﻿using SQLite;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Reflection.PortableExecutable;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Diffusion.Database;
 
@@ -14,7 +9,12 @@ public partial class DataStore
 
     public SQLiteConnection OpenConnection()
     {
-        return new SQLiteConnection(DatabasePath);
+        var db= new SQLiteConnection(DatabasePath);
+
+        //db.EnableLoadExtension(true);
+        //db.Execute("SELECT load_extension(?)", "dlls/path0");
+
+        return db;
     }
 
     public DataStore(string databasePath)
@@ -74,14 +74,18 @@ public partial class DataStore
 
         using var db = OpenConnection();
 
-
         db.CreateTable<Album>();
+        db.CreateIndex<Album>(album => album.Name, true);
+
         db.CreateTable<AlbumImage>();
-        db.CreateIndex<AlbumImage>(image => image.AlbumId);
+
+        db.CreateTable<Folder>();
+        db.CreateIndex<Folder>(folder => folder.ParentId);
 
         //db.CreateTable<File>();
         db.CreateTable<Image>();
 
+        db.CreateIndex<Image>(image => image.FolderId);
         db.CreateIndex<Image>(image => image.Path);
         db.CreateIndex<Image>(image => image.ModelHash);
         db.CreateIndex<Image>(image => image.Seed);

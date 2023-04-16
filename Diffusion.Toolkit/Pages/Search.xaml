@@ -17,6 +17,8 @@
     <Page.Resources>
         <ResourceDictionary>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
+            <converters:FolderModeVisibilityConverter x:Key="addrVis"></converters:FolderModeVisibilityConverter>
+            <converters:AlbumModeVisibilityConverter x:Key="albVis"></converters:AlbumModeVisibilityConverter>
         </ResourceDictionary>
     </Page.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -35,12 +37,30 @@
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MinWidth="200"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="52"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="140"/>
+                </Grid.ColumnDefinitions>
                 <Label FontSize="24" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
+                <Label Grid.Column="2" FontSize="12" VerticalContentAlignment="Center">Sort by:</Label>
+                <ComboBox Height="28" SelectedValue="{Binding SortBy}" SelectedValuePath="Content"  Grid.Column="3" Margin="0,0,10,0">
+                    <ComboBoxItem>Date Created</ComboBoxItem>
+                    <ComboBoxItem>Rating</ComboBoxItem>
+                    <ComboBoxItem>Aesthetic Score</ComboBoxItem>
+                </ComboBox>
+                <ComboBox Height="28" SelectedValue="{Binding SortDirection}" SelectedValuePath="Content" Grid.Column="4" Margin="0,0,10,0">
+                    <ComboBoxItem>Ascending</ComboBoxItem>
+                    <ComboBoxItem>Descending</ComboBoxItem>
+                </ComboBox>
+
             </Grid>
             <Grid Grid.Row="1" Margin="2">
                 <DockPanel>
                     <Button DockPanel.Dock="Left" Width="28" Command="{Binding ShowFilter}">
-                        <fa:ImageAwesome ToolTip="Show info (I)" Icon="Sliders" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <fa:ImageAwesome ToolTip="Advanced Filter" Icon="Sliders" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         </fa:ImageAwesome>
                     </Button>
                     <Grid>
@@ -80,20 +100,63 @@
                 </DockPanel>
 
             </Grid>
-
-            <controls:ThumbnailView Grid.Row="2" 
-                                    x:Name="ThumbnailListView" 
-                                    Images="{Binding Images}" 
-                                    Page="{Binding Page, Mode=TwoWay}" 
-                                    Pages="{Binding Pages}" 
-                                    NSFWBlur="{Binding MainModel.NSFWBlur}" 
-                                    IsEmpty="{Binding IsEmpty}"
-                                    Results="{Binding Results}"
-                                    PageChangedEvent="ThumbnailListView_OnPageChangedEvent"
-                                    SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}" 
-                                    CurrentImage="{Binding CurrentImage}">
-            </controls:ThumbnailView>
-            <Grid Visibility="{Binding IsFilterVisible, Converter={StaticResource boolToVis}}" Grid.Row="2" >
+            <Grid Grid.Row="2"  Margin="2">
+                <DockPanel>
+                    <DockPanel Visibility="{Binding CurrentViewMode, Converter={StaticResource addrVis}}" DockPanel.Dock="Top">
+                        <Button DockPanel.Dock="Left" Width="28" Command="{Binding GoHome}">
+                            <fa:ImageAwesome ToolTip="Home" Icon="Home" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button DockPanel.Dock="Left" Width="28" Command="{Binding GoUp}">
+                            <fa:ImageAwesome ToolTip="Up one level" Icon="ArrowUp" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <TextBox  Height="24"
+                                  Padding="5,0,0,0"
+                                  HorizontalAlignment="Stretch" 
+                                  VerticalContentAlignment="Center"
+                                  Text="{Binding FolderPath}"
+                                  KeyDown="FolderPath_OnKeyDown"
+                        ></TextBox>
+                    </DockPanel>
+                    <DockPanel Visibility="{Binding CurrentViewMode, Converter={StaticResource albVis}}" DockPanel.Dock="Top">
+                        <Button DockPanel.Dock="Left" Width="28" Command="{Binding GoHome}">
+                            <fa:ImageAwesome ToolTip="Home" Icon="Home" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <TextBox  Height="24"
+                                  Padding="5,0,0,0"
+                                  HorizontalAlignment="Stretch" 
+                                  VerticalContentAlignment="Center"
+                                  Text="{Binding Album}"
+                                  KeyDown="FolderPath_OnKeyDown"
+                        ></TextBox>
+                    </DockPanel>
+                    <controls:ThumbnailView 
+                        DockPanel.Dock="Bottom"
+                        x:Name="ThumbnailListView" 
+                        Images="{Binding Images}" 
+                        Page="{Binding Page, Mode=TwoWay}" 
+                        Pages="{Binding Pages}" 
+                        NSFWBlur="{Binding MainModel.NSFWBlur}" 
+                        IsEmpty="{Binding IsEmpty}"
+                        Results="{Binding Results}"
+                        PageChangedEvent="ThumbnailListView_OnPageChangedEvent"
+                        SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
+                        OpenCommand="{Binding OpenCommand}"
+                        AddAlbumCommand="{Binding AddAlbumCommand}"
+                        AddToAlbumCommand="{Binding AddToAlbumCommand}"
+                        RemoveFromAlbumCommand="{Binding RemoveFromAlbumCommand}"
+                        RemoveAlbumCommand="{Binding RemoveAlbumCommand}"
+                        RenameAlbumCommand="{Binding RenameAlbumCommand}"
+                        ViewMode="{Binding CurrentViewMode}"
+                        CurrentImage="{Binding CurrentImage}">
+                    </controls:ThumbnailView>
+                </DockPanel>
+             
+            </Grid>
+            
+            <Grid  Visibility="{Binding IsFilterVisible, Converter={StaticResource boolToVis}}" Grid.Row="2" >
                 <ScrollViewer  VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <controls:Search  Filter="{Binding Filter}" SearchCommand="{Binding DoFilter}" VerticalAlignment="Stretch"/>
@@ -119,6 +182,144 @@
         />
 
         <controls:PreviewPane Grid.Row="0" Grid.Column="2" NSFWBlur="{Binding NSFWBlur}" Image="{Binding CurrentImage}" x:Name="PreviewPane" AllowDrop="True" Drop="PreviewPane_OnDrop"></controls:PreviewPane>
+
+        <Popup x:Name="AddAlbumPopup" Placement="Center" Width="400" Height="250"
+           AllowsTransparency="True" PopupAnimation="Fade"
+           >
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid>
+                    <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="46"/>
+                            <RowDefinition Height="60"/>
+                            <RowDefinition Height="36"/>
+                        </Grid.RowDefinitions>
+                        <Label FontWeight="Bold" Grid.Row="0" Content="Add Album" HorizontalAlignment="Center" FontSize="16"></Label>
+                        <TextBlock TextWrapping="WrapWithOverflow" Grid.Row="1" Text="Enter a name for the new album" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <TextBox x:Name="NewAlbumName" KeyDown="NewAlbumName_OnKeyDown" Grid.Row="2" FontSize="16" Height="32" VerticalContentAlignment="Center"></TextBox>
+                        <Grid Grid.Row="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <Button Width="80" Height="30" Margin="0,0,10,0" Click="AddImagesToNewAlbum_Click">OK</Button>
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="CancelNewAlbum_Click">Cancel</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="NewAlbumPopup" Placement="Center" Width="400" Height="250"
+           AllowsTransparency="True" PopupAnimation="Fade"
+           >
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid>
+                    <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="46"/>
+                            <RowDefinition Height="36"/>
+                        </Grid.RowDefinitions>
+                        <Label FontWeight="Bold" Grid.Row="0" Content="Add Album" HorizontalAlignment="Center" FontSize="16"></Label>
+                        <TextBlock x:Name="NewAlbumMessage" TextWrapping="WrapWithOverflow" Grid.Row="1" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <Grid Grid.Row="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="NewAlbumMessageOK_Click">OK</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="RenameAlbumPopup" Placement="Center" Width="400" Height="250"
+           AllowsTransparency="True" PopupAnimation="Fade"
+           >
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid>
+                    <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="46"/>
+                            <RowDefinition Height="60"/>
+                            <RowDefinition Height="36"/>
+                        </Grid.RowDefinitions>
+                        <Label FontWeight="Bold" Grid.Row="0" Content="Rename Album" HorizontalAlignment="Center" FontSize="16"></Label>
+                        <TextBlock TextWrapping="WrapWithOverflow" Grid.Row="1" Text="Enter a new name for the album" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <TextBox x:Name="RenewAlbumName" Grid.Row="2" FontSize="16" Height="32" VerticalContentAlignment="Center"
+                                 KeyDown="RenewAlbumName_OnKeyDown"
+                                 ></TextBox>
+                        <Grid Grid.Row="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <Button Width="80" Height="30" Margin="0,0,10,0" Click="RenameAlbumOK_Click">OK</Button>
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="RenameAlbumCancel_Click">Cancel</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="RemoveAlbumPopup" Placement="Center" Width="400" Height="250"
+               AllowsTransparency="True" PopupAnimation="Fade"
+        >
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid>
+                    <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="36"/>
+                        </Grid.RowDefinitions>
+                        <Label FontWeight="Bold" Grid.Row="0" Content="Remove Album" HorizontalAlignment="Center" FontSize="16"></Label>
+                        <TextBlock x:Name="RemoveAlbumMessage" TextWrapping="WrapWithOverflow" Grid.Row="1" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        </TextBlock>
+                        <Grid Grid.Row="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="RemoveAlbumYes_Click">Yes</Button>
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="RemoveAlbumNo_Click">No</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
     </Grid>
 </Page>
  
