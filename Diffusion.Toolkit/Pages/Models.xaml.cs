@@ -12,6 +12,7 @@ using Model = Diffusion.Common.Model;
 using Path = System.IO.Path;
 using System.Security.Policy;
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -24,7 +25,7 @@ namespace Diffusion.Toolkit.Pages
 
         private ModelsModel _model;
 
-        public Models(DataStore dataStore, Settings settings)
+        public Models(IOptions<DataStore> dataStoreOptions, Settings settings)
         {
             _settings = settings;
 

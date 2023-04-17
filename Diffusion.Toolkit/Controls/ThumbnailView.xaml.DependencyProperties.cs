@@ -173,13 +173,15 @@ namespace Diffusion.Toolkit.Controls
                 typeof(ThumbnailView),
                 new PropertyMetadata(default(object)));
 
-        public static readonly DependencyProperty ViewModeProperty = 
+        public static readonly DependencyProperty ViewModeProperty =
             DependencyProperty.Register(
-                nameof(ViewMode), 
-                typeof(ViewMode), 
-                typeof(ThumbnailView), 
-                new PropertyMetadata(default(ViewMode)));
-
+                name: nameof(ViewMode),
+                propertyType: typeof(ViewMode),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: ViewMode.Search,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback));
 
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -204,7 +206,7 @@ namespace Diffusion.Toolkit.Controls
                             break;
                         }
                     case nameof(ViewMode):
-                        thumbnailView.ViewMode = (ViewMode)e.NewValue;
+                        thumbnailView.Model.ViewMode = (ViewMode)e.NewValue;
                         break;
                     case nameof(NSFWBlur):
                         thumbnailView.Model.NSFWBlur = (bool)e.NewValue;

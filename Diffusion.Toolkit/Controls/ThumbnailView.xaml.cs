@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Models;
+using Microsoft.Extensions.Options;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -22,18 +23,22 @@ namespace Diffusion.Toolkit.Controls
     public partial class ThumbnailView : UserControl
     {
         private IEnumerable<Album> _albums;
+        private IOptions<DataStore> _dataStoreOptions;
 
         public ThumbnailViewModel Model { get; set; }
 
-        public DataStore DataStore
+
+        public IOptions<DataStore> DataStoreOptions
         {
-            get => _dataStore;
+            get => _dataStoreOptions;
             set
             {
-                _dataStore = value;
+                _dataStoreOptions = value;
                 ReloadAlbums();
             }
         }
+
+        public DataStore DataStore => _dataStoreOptions.Value;
 
         public void ReloadAlbums()
         {
@@ -49,7 +54,7 @@ namespace Diffusion.Toolkit.Controls
                 albumMenuItem
             });
 
-            var albums = _dataStore.GetAlbums();
+            var albums = DataStore.GetAlbums();
 
             Model.AlbumMenuItems.Add(new Separator());
 
@@ -572,7 +577,7 @@ namespace Diffusion.Toolkit.Controls
         }
 
         public Action<IList<ImageEntry>> MoveFiles;
-        private DataStore _dataStore;
+
 
         public void SetThumbnailSize(int thumbnailSize)
         {

@@ -81,6 +81,8 @@
                         </Grid>
                      
                         <CheckBox IsChecked="{Binding CheckForUpdatesOnStartup}" Margin="0,10,0,0">Check for updates on startup</CheckBox>
+
+                        <CheckBox IsChecked="{Binding PortableMode}" Margin="0,10,0,0">Portable Mode</CheckBox>
                     </StackPanel>
 
                 </TabItem>

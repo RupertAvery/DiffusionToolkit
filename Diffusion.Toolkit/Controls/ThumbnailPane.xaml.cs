@@ -38,13 +38,13 @@ namespace Diffusion.Toolkit.Controls
             new PropertyMetadata(default(ImageEntry))
             );
 
-        public DataStore DataStore
-        {
-            set
-            {
-                ThumbnailListView.DataStore = value;
-            }
-        }
+        //public DataStore DataStore
+        //{
+        //    set
+        //    {
+        //        ThumbnailListView.DataStore = value;
+        //    }
+        //}
 
         public MessagePopupManager MessagePopupManager
         {

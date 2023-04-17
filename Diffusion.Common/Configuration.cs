@@ -10,13 +10,12 @@ namespace Diffusion.Common
     public class Configuration<T>
     {
         private readonly string _settingsPath;
+        public bool Portable { get; }
 
-        public string SettingsPath => _settingsPath;
-
-        public Configuration(string appName, string configName = "config.json")
+        public Configuration(string settingsPath, bool portable)
         {
-            var local = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            _settingsPath = Path.Combine(local, appName, configName);
+            _settingsPath = settingsPath;
+            Portable = portable;
         }
 
         public bool TryLoad(out T? obj)

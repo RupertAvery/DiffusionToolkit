@@ -61,6 +61,7 @@ public class SearchModel : BaseNotify
     private ICommand _removeFromAlbumCommand;
     private ICommand _removeAlbumCommand;
     private ICommand _renameAlbumCommand;
+    private ObservableCollection<Album> _albums;
 
     public SearchModel()
     {
@@ -74,7 +75,7 @@ public class SearchModel : BaseNotify
         _resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
         _sortBy = "Date Created";
-        _sortDirection = "Descending";
+        _sortDirection = "Z-A";
         _isFilterVisible = false;
     }
 
@@ -90,17 +91,17 @@ public class SearchModel : BaseNotify
         _resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
         _sortBy = "Date Created";
-        _sortDirection = "Descending";
+        _sortDirection = "Z-A";
         _isFilterVisible = false;
     }
 
     public MainModel MainModel => _mainModel;
 
-    public DataStore DataStore
-    {
-        get;
-        set;
-    }
+    //public DataStore DataStore
+    //{
+    //    get;
+    //    set;
+    //}
 
 
     public ObservableCollection<ImageEntry>? Images
@@ -365,6 +366,12 @@ public class SearchModel : BaseNotify
     {
         get => _removeAlbumCommand;
         set => SetField(ref _removeAlbumCommand, value);
+    }
+
+    public ObservableCollection<Album> Albums
+    {
+        get => _albums;
+        set => SetField(ref _albums, value);
     }
 }
 

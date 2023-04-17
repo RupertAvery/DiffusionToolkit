@@ -44,6 +44,8 @@ public class Metadata
 
                     var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
 
+                    var isComfyUI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("prompt: ")));
+
                     if (isInvokeAINew)
                     {
                         fileParameters = ReadInvokeAIParametersNew(file, directories);
@@ -55,6 +57,10 @@ public class Metadata
                     else if (isNovelAI)
                     {
                         fileParameters = ReadNovelAIParameters(file, directories);
+                    }
+                    else if (isComfyUI)
+                    {
+                        fileParameters = ReadComfyUIParameters(file, directories);
                     }
                     else
                     {
@@ -176,6 +182,87 @@ public class Metadata
                         break;
                 }
             }
+
+            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Size: {fp.Width}x{fp.Height}";
+
+            return fp;
+        }
+
+        return null;
+    }
+
+    private static FileParameters ReadComfyUIParameters(string file, IEnumerable<Directory> directories)
+    {
+        if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("prompt: "), out var tag))
+        {
+            var fp = new FileParameters();
+            var json = tag.Description.Substring("prompt: ".Length);
+
+            var root = JsonDocument.Parse(json);
+            var nodes = root.RootElement.EnumerateObject().ToDictionary(o => o.Name, o => o.Value);
+            
+            var ksampler = nodes.Values.SingleOrDefault(o =>
+            {
+                if (o.TryGetProperty("class_type", out var element))
+                {
+                    return element.GetString() == "KSampler";
+                }
+
+                return false;
+            });
+
+            //"seed": 1102676403634909,
+            //"steps": 20,
+            //"cfg": 8.0,
+            //"sampler_name": "dpmpp_2m",
+            //"scheduler": "normal",
+            //"denoise": 1.0,
+            //"model": [
+            //"4",
+            //0
+            //    ],
+            //"positive": [
+            //"6",
+            //0
+            //    ],
+            //"negative": [
+            //"7",
+            //0
+            //    ],
+            //"latent_image": [
+            //"14",
+            //0
+            //    ]
+
+
+            var image = ksampler.GetProperty("inputs");
+
+            if (image.TryGetProperty("positive", out var positive))
+            {
+                var promptIndex = positive.EnumerateArray().First().GetString();
+                var promptObject = nodes[promptIndex].GetProperty("inputs");
+                fp.Prompt = promptObject.GetProperty("text").GetString();
+            }
+
+            if (image.TryGetProperty("negative", out var negative))
+            {
+                var promptIndex = negative.EnumerateArray().First().GetString();
+                var promptObject = nodes[promptIndex].GetProperty("inputs");
+                fp.NegativePrompt = promptObject.GetProperty("text").GetString();
+            }
+
+            if (image.TryGetProperty("latent_image", out var latent_image))
+            {
+                var index = latent_image.EnumerateArray().First().GetString();
+                var promptObject = nodes[index].GetProperty("inputs");
+                fp.Height = promptObject.GetProperty("height").GetInt32();
+                fp.Width = promptObject.GetProperty("width").GetInt32();
+            }
+
+            fp.Steps = image.GetProperty("steps").GetInt32();
+            fp.CFGScale = image.GetProperty("cfg").GetDecimal();
+            fp.Seed = image.GetProperty("seed").GetInt64();
+            fp.Sampler = image.GetProperty("sampler_name").GetString();
 
             fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Size: {fp.Width}x{fp.Height}";
 

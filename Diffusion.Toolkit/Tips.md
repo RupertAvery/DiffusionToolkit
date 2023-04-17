@@ -39,7 +39,12 @@ Diffusion Toolkit scans your AI-Generated images for metadata and stores it in a
    * WebP
    * Any image + .TXT (part of filename must match)
 * Search through prompt, seed, model hash / name, CFG, etc.
-* Support for AUTOMATIC1111, InvokeAI, NovelAI and Stable Diffusion metadata formats
+* Supported metadata formats: 
+   * AUTOMATIC1111
+   * InvokeAI
+   * NovelAI
+   * Stable Diffusion
+   * ComfyUI
 * Tag your images with a press of a button:
    * Favorites
    * Rate 1-10 
@@ -51,8 +56,11 @@ Diffusion Toolkit scans your AI-Generated images for metadata and stores it in a
    * drag from thumbnail to Photoshop or any image editor to load
    * drag from Explorer to Preview Pane to view any image metadata
 * Auto-tag NFSW
-
-
+   * Set a list of tokens that will be used to detect if an image is NSFW
+   * Auto-tag on scan, or auto-tag existing images.
+* Folders and Albums
+   * Add images to one or more albums to manage your images
+   * Browse from your selected folders if you prefer
 
 # Getting Started
 

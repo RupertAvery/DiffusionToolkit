@@ -26,7 +26,9 @@ using MessageBox = System.Windows.MessageBox;
 using Model = Diffusion.Common.Model;
 using Timer = System.Threading.Timer;
 using Diffusion.Updater;
+using Microsoft.Extensions.Options;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Configuration;
 
 namespace Diffusion.Toolkit
 {
@@ -40,16 +42,34 @@ namespace Diffusion.Toolkit
 
     }
 
+    public class DataStoreOptions : IOptions<DataStore>
+    {
+        public DataStoreOptions(DataStore value)
+        {
+            Value = value;
+        }
+
+        public void UpdateValue(DataStore value)
+        {
+            Value = value;
+        }
+
+        public DataStore Value { get; private set; }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
         private readonly MainModel _model;
-        private readonly DataStore _dataStore;
         private NavigatorService _navigatorService;
+        private DataStoreOptions _dataStoreOptions;
+
         private string AppDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DiffusionToolkit");
-        private Configuration<Settings> _configuration = new("DiffusionToolkit");
+
+
+        private Configuration<Settings> _configuration;
         private Settings? _settings = new Settings();
         private CancellationTokenSource _scanCancellationTokenSource = new CancellationTokenSource();
 
@@ -58,10 +78,42 @@ namespace Diffusion.Toolkit
         private bool _tipsOpen;
         private MessagePopupManager _messagePopupManager;
 
+        private const string AppName = "DiffusionToolkit";
+
+        private DataStore _dataStore => _dataStoreOptions.Value;
+
         public MainWindow()
         {
             Logger.Log("===========================================");
             Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
+
+
+            var appDir = AppDomain.CurrentDomain.BaseDirectory;
+
+            if (appDir.EndsWith("\\"))
+            {
+                appDir = appDir.Substring(0, appDir.Length - 1);
+            }
+
+            var settingsPath = Path.Combine(appDir, "config.json");
+            var dbPath = Path.Combine(appDir, "diffusion-toolkit.db");
+
+            var isPortable = true;
+
+            if (!File.Exists(settingsPath))
+            {
+                isPortable = false;
+                settingsPath = Path.Combine(AppDataPath, "config.json");
+                dbPath = Path.Combine(AppDataPath, "diffusion-toolkit.db");
+            }
+
+            _configuration = new Configuration<Settings>(settingsPath, isPortable);
+
+            Logger.Log($"Opening database at {dbPath}");
+
+            var dataStore = new DataStore(dbPath);
+
+            _dataStoreOptions = new DataStoreOptions(dataStore);
 
             InitializeComponent();
 
@@ -81,11 +133,6 @@ namespace Diffusion.Toolkit
 
             SystemEvents.UserPreferenceChanged += SystemEventsOnUserPreferenceChanged;
 
-            var dbPath = Path.Combine(AppDataPath, "diffusion-toolkit.db");
-
-            Logger.Log($"Opening database at {dbPath}");
-
-            _dataStore = new DataStore(dbPath);
 
             _model = new MainModel();
             _model.Rescan = new AsyncCommand(RescanTask);
@@ -173,7 +220,7 @@ namespace Diffusion.Toolkit
 
         private async void MarkAllForDeletion()
         {
-            
+
             if (_search.IsQueryEmpty())
             {
                 await _messagePopupManager.Show("Query cannot be empty", "Mark images for deletion", PopupButtons.OK);
@@ -589,13 +636,16 @@ namespace Diffusion.Toolkit
                     var welcome = new WelcomeWindow(_settings);
                     welcome.Owner = this;
                     welcome.ShowDialog();
+
+                    if (_settings.IsDirty())
+                    {
+                        _configuration.Save(_settings);
+                        _settings.SetPristine();
+                    }
                 }
 
-                if (_settings.IsDirty())
-                {
-                    _configuration.Save(_settings);
-                    _settings.SetPristine();
-                }
+                _settings.PortableMode = _configuration.Portable;
+                _settings.SetPristine();
 
                 ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
             }
@@ -623,7 +673,7 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Initializing pages");
 
-            _models = new Pages.Models(_dataStore, _settings);
+            _models = new Pages.Models(_dataStoreOptions, _settings);
 
             _models.OnModelUpdated = (model) =>
             {
@@ -635,7 +685,7 @@ namespace Diffusion.Toolkit
                 }
             };
 
-            _search = new Search(_navigatorService, _dataStore, _messagePopupManager, _settings, _model);
+            _search = new Search(_navigatorService, _dataStoreOptions, _messagePopupManager, _settings, _model);
             _search.MoveFiles = (files) =>
             {
                 using var dialog = new CommonOpenFileDialog();
@@ -764,7 +814,10 @@ namespace Diffusion.Toolkit
                 await ScanInternal(_settings.ImagePaths, false, false);
             }
 
-
+            if (_settings.ImagePaths.Any())
+            {
+                _search.SearchImages(null);
+            }
 
             Logger.Log($"Init completed");
 
@@ -956,6 +1009,19 @@ namespace Diffusion.Toolkit
                         }
                     }
 
+
+                    if (_settings.IsPropertyDirty(nameof(Settings.PortableMode)))
+                    {
+                        if (_settings.PortableMode)
+                        {
+                            GoPortable();
+                        }
+                        else
+                        {
+                            GoLocal();
+                        }
+                    }
+
                     _settings.SetPristine();
 
                 }
@@ -966,6 +1032,126 @@ namespace Diffusion.Toolkit
             }
 
         }
+
+        private string AppDir
+        {
+            get
+            {
+                var appDir = AppDomain.CurrentDomain.BaseDirectory;
+
+                if (appDir.EndsWith("\\"))
+                {
+                    appDir = appDir.Substring(0, appDir.Length - 1);
+                }
+
+                return appDir;
+            }
+        }
+
+        private void GoPortable()
+        {
+            SwitchConfig("portable", AppDataPath, AppDir);
+        }
+
+        private void GoLocal()
+        {
+            SwitchConfig("application settings", AppDir, AppDataPath);
+        }
+
+        private void SwitchConfig(string target, string sourcePath, string targetPath)
+        {
+            string sourceSettingsPath = Path.Combine(sourcePath, "config.json");
+            string sourceDbPath = Path.Combine(sourcePath, "diffusion-toolkit.db");
+
+            string targetSettingsPath = Path.Combine(targetPath, "config.json");
+            string targetDbPath = Path.Combine(targetPath, "diffusion-toolkit.db");
+
+
+            if (!File.Exists(targetSettingsPath) && !File.Exists(targetDbPath))
+            {
+                File.Copy(sourceSettingsPath, targetSettingsPath);
+                File.Copy(sourceDbPath, targetDbPath);
+
+                File.Delete(sourceSettingsPath);
+                File.Delete(sourceDbPath);
+            }
+            else
+            {
+                var existsDialogResult = MessageBox.Show(this, $"A configuration or database file was found in the {target} folder. Do you want to use it?", "Diffusion Toolkit", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning, MessageBoxResult.Cancel);
+
+                if (existsDialogResult == MessageBoxResult.No)
+                {
+                    var confirmResult = MessageBox.Show(this, $"Are you sure you want to overwrite the files in the {target} folder?", "Diffusion Toolkit", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                    if (confirmResult == MessageBoxResult.Yes)
+                    {
+                        if (File.Exists(sourceSettingsPath))
+                        {
+                            File.Copy(sourceSettingsPath, targetSettingsPath, true);
+                        }
+                        if (File.Exists(sourceDbPath))
+                        {
+                            File.Copy(sourceDbPath, targetDbPath, true);
+                        }
+                    }
+                }
+
+                if (existsDialogResult == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+
+
+
+                if (existsDialogResult == MessageBoxResult.Yes)
+                {
+                    if (target == "application settings")
+                    {
+                        // rename portable files so that DT doesn't try to load them on startup
+
+                        var bSettingsPath = Path.Combine(sourcePath, "config.backup");
+                        var bDbPath = Path.Combine(sourcePath, "diffusion-toolkit.backup");
+
+                        var moved = false;
+
+                        if (File.Exists(sourceSettingsPath))
+                        {
+                            File.Move(sourceSettingsPath, bSettingsPath, true);
+                            moved = true;
+                        }
+
+                        if (File.Exists(sourceDbPath))
+                        {
+                            File.Move(sourceDbPath, bDbPath, true);
+                            moved = true;
+                        }
+
+                        if (moved)
+                        {
+                            MessageBox.Show(this, "Your portable files have been renamed to .backup", "Diffusion Toolkit", MessageBoxButton.OK);
+                        }
+                    }
+                   
+                }
+
+            }
+
+
+
+            _configuration = new Configuration<Settings>(targetSettingsPath, false);
+
+            if (_configuration.TryLoad(out var settings))
+            {
+                _settings.Apply(settings);
+                _settings.PortableMode = _configuration.Portable;
+                _settings.SetPristine();
+            }
+
+            Logger.Log($"Opening database at {targetDbPath}");
+
+            _dataStoreOptions.UpdateValue(new DataStore(targetDbPath));
+        }
+
 
         private void UpdateTheme()
         {
@@ -1112,6 +1298,8 @@ namespace Diffusion.Toolkit
                 _model.CurrentPositionScan = 0;
             });
 
+            var folderIdCache = new Dictionary<string, int>();
+
             var newImages = new List<Image>();
 
             var includeProperties = new List<string>();
@@ -1176,7 +1364,7 @@ namespace Diffusion.Toolkit
                     if (updateImages)
                     {
 
-                        added += _dataStore.UpdateImagesByPath(newImages, includeProperties);
+                        added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache);
                     }
                     else
                     {
@@ -1201,7 +1389,7 @@ namespace Diffusion.Toolkit
             {
                 if (updateImages)
                 {
-                    added += _dataStore.UpdateImagesByPath(newImages, includeProperties);
+                    added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache);
                 }
                 else
                 {

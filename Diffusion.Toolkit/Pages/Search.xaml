@@ -52,15 +52,15 @@
                     <ComboBoxItem>Aesthetic Score</ComboBoxItem>
                 </ComboBox>
                 <ComboBox Height="28" SelectedValue="{Binding SortDirection}" SelectedValuePath="Content" Grid.Column="4" Margin="0,0,10,0">
-                    <ComboBoxItem>Ascending</ComboBoxItem>
-                    <ComboBoxItem>Descending</ComboBoxItem>
+                    <ComboBoxItem>A-Z</ComboBoxItem>
+                    <ComboBoxItem>Z-A</ComboBoxItem>
                 </ComboBox>
 
             </Grid>
             <Grid Grid.Row="1" Margin="2">
                 <DockPanel>
                     <Button DockPanel.Dock="Left" Width="28" Command="{Binding ShowFilter}">
-                        <fa:ImageAwesome ToolTip="Advanced Filter" Icon="Sliders" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <fa:ImageAwesome ToolTip="Advanced Filter" Icon="Sliders" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         </fa:ImageAwesome>
                     </Button>
                     <Grid>
@@ -96,19 +96,19 @@
                         </TextBlock>
 
                     </Grid>
-                  
+
                 </DockPanel>
 
             </Grid>
             <Grid Grid.Row="2"  Margin="2">
                 <DockPanel>
-                    <DockPanel Visibility="{Binding CurrentViewMode, Converter={StaticResource addrVis}}" DockPanel.Dock="Top">
+                    <DockPanel Margin="0,0,0,5" Visibility="{Binding CurrentViewMode, Converter={StaticResource addrVis}}" DockPanel.Dock="Top">
                         <Button DockPanel.Dock="Left" Width="28" Command="{Binding GoHome}">
-                            <fa:ImageAwesome ToolTip="Home" Icon="Home" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <fa:ImageAwesome ToolTip="Home" Icon="Home" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button DockPanel.Dock="Left" Width="28" Command="{Binding GoUp}">
-                            <fa:ImageAwesome ToolTip="Up one level" Icon="ArrowUp" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <fa:ImageAwesome ToolTip="Up one level" Icon="ArrowUp" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <TextBox  Height="24"
@@ -119,43 +119,65 @@
                                   KeyDown="FolderPath_OnKeyDown"
                         ></TextBox>
                     </DockPanel>
-                    <DockPanel Visibility="{Binding CurrentViewMode, Converter={StaticResource albVis}}" DockPanel.Dock="Top">
+                    <DockPanel Margin="0,0,0,5" Visibility="{Binding CurrentViewMode, Converter={StaticResource albVis}}" DockPanel.Dock="Top">
                         <Button DockPanel.Dock="Left" Width="28" Command="{Binding GoHome}">
-                            <fa:ImageAwesome ToolTip="Home" Icon="Home" Width="16" Margin="2"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <fa:ImageAwesome ToolTip="Home" Icon="Home" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <TextBox  Height="24"
+                        <Label  Height="24"
                                   Padding="5,0,0,0"
                                   HorizontalAlignment="Stretch" 
                                   VerticalContentAlignment="Center"
-                                  Text="{Binding Album}"
-                                  KeyDown="FolderPath_OnKeyDown"
-                        ></TextBox>
+                                  Content="{Binding Album}"
+                        ></Label>
                     </DockPanel>
-                    <controls:ThumbnailView 
-                        DockPanel.Dock="Bottom"
-                        x:Name="ThumbnailListView" 
-                        Images="{Binding Images}" 
-                        Page="{Binding Page, Mode=TwoWay}" 
-                        Pages="{Binding Pages}" 
-                        NSFWBlur="{Binding MainModel.NSFWBlur}" 
-                        IsEmpty="{Binding IsEmpty}"
-                        Results="{Binding Results}"
-                        PageChangedEvent="ThumbnailListView_OnPageChangedEvent"
-                        SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
-                        OpenCommand="{Binding OpenCommand}"
-                        AddAlbumCommand="{Binding AddAlbumCommand}"
-                        AddToAlbumCommand="{Binding AddToAlbumCommand}"
-                        RemoveFromAlbumCommand="{Binding RemoveFromAlbumCommand}"
-                        RemoveAlbumCommand="{Binding RemoveAlbumCommand}"
-                        RenameAlbumCommand="{Binding RenameAlbumCommand}"
-                        ViewMode="{Binding CurrentViewMode}"
-                        CurrentImage="{Binding CurrentImage}">
-                    </controls:ThumbnailView>
+                    <Grid DockPanel.Dock="Bottom">
+                        <DockPanel>
+                            <TabControl Background="Transparent" DockPanel.Dock="Left">
+                                <TabItem Header="Albums">
+                                    <DockPanel>
+                                        <ListBox DockPanel.Dock="Top" ItemsSource="{Binding Albums}" Width="150">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border AllowDrop="True" Drop="DropImagesOnAlbum" HorizontalAlignment="Stretch"   MouseDown="OpenAlbum_Click">
+                                                        <Label Content="{Binding Name}" Tag="{Binding .}"></Label>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
+                                    </DockPanel>
+                                </TabItem>
+                            </TabControl>
+
+                            <controls:ThumbnailView 
+                                DockPanel.Dock="Right" 
+                                x:Name="ThumbnailListView" 
+                                Images="{Binding Images}" 
+                                Page="{Binding Page, Mode=TwoWay}" 
+                                Pages="{Binding Pages}" 
+                                NSFWBlur="{Binding MainModel.NSFWBlur}" 
+                                IsEmpty="{Binding IsEmpty}"
+                                Results="{Binding Results}"
+                                PageChangedEvent="ThumbnailListView_OnPageChangedEvent"
+                                SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
+                                OpenCommand="{Binding OpenCommand}"
+                                AddAlbumCommand="{Binding AddAlbumCommand}"
+                                AddToAlbumCommand="{Binding AddToAlbumCommand}"
+                                RemoveFromAlbumCommand="{Binding RemoveFromAlbumCommand}"
+                                RemoveAlbumCommand="{Binding RemoveAlbumCommand}"
+                                RenameAlbumCommand="{Binding RenameAlbumCommand}"
+                                ViewMode="{Binding CurrentViewMode}"
+                                CurrentImage="{Binding CurrentImage}">
+                            </controls:ThumbnailView>
+                        </DockPanel>
+
+
+                    </Grid>
+
                 </DockPanel>
-             
+
             </Grid>
-            
+
             <Grid  Visibility="{Binding IsFilterVisible, Converter={StaticResource boolToVis}}" Grid.Row="2" >
                 <ScrollViewer  VerticalScrollBarVisibility="Auto">
                     <StackPanel>
@@ -312,7 +334,7 @@
                         </TextBlock>
                         <Grid Grid.Row="3">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="RemoveAlbumYes_Click">Yes</Button>
+                                <Button Width="80" Height="30" Margin="0,0,10,0" Click="RemoveAlbumYes_Click">Yes</Button>
                                 <Button Width="80" Height="30" Margin="0,0,0,0" Click="RemoveAlbumNo_Click">No</Button>
                             </StackPanel>
                         </Grid>

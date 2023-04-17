@@ -224,8 +224,8 @@ namespace Diffusion.Database
 
             var sortDir = sortDirection switch
             {
-                "Ascending" => "ASC",
-                "Descending" => "DESC",
+                "A-Z" => "ASC",
+                "Z-A" => "DESC",
                 _ => "DESC",
             };
 
@@ -281,8 +281,8 @@ namespace Diffusion.Database
 
             var sortDir = sortDirection switch
             {
-                "Ascending" => "ASC",
-                "Descending" => "DESC",
+                "A-Z" => "ASC",
+                "Z-A" => "DESC",
                 _ => "DESC",
             };
 

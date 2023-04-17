@@ -85,7 +85,7 @@ namespace Diffusion.Database
             return result;
         }
 
-        public int UpdateImagesByPath(IEnumerable<Image> images, IEnumerable<string> includeProperties)
+        public int UpdateImagesByPath(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, int> folderIdCache)
         {
             var updated = 0;
 
@@ -102,6 +102,7 @@ namespace Diffusion.Database
                 nameof(Image.ForDeletion),
                 nameof(Image.NSFW)
             };
+
 
             exclude = exclude.Except(includeProperties).ToArray();
 
@@ -126,7 +127,14 @@ namespace Diffusion.Database
                 var dirName = Path.GetDirectoryName(image.Path);
                 var fileName = Path.GetFileName(image.Path);
 
-                image.FolderId = AddOrUpdateFolder(db, dirName);
+                if(!folderIdCache.TryGetValue(dirName, out var id))
+                {
+                    id = AddOrUpdateFolder(db, dirName);
+                    folderIdCache.Add(dirName, id);
+                }
+
+                image.FolderId = id;
+
 
                 foreach (var property in properties)
                 {

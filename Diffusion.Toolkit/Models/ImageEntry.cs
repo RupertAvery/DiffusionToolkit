@@ -28,6 +28,7 @@ public class ImageEntry : BaseNotify
     private bool _isAlbum;
     private bool _isFolder;
     private EntryType _entryType;
+    private string? _score;
 
     public ImageEntry(long requestId)
     {
@@ -69,6 +70,12 @@ public class ImageEntry : BaseNotify
     {
         get => _rating;
         set => SetField(ref _rating, value);
+    }
+
+    public string? Score
+    {
+        get => _score;
+        set => SetField(ref _score, value);
     }
 
     public bool NSFW

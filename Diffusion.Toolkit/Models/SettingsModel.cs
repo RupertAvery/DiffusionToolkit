@@ -15,6 +15,8 @@ public class SettingsModel : BaseNotify
     private bool _autoTagNsfw;
     private string _nsfwTags;
     private string _hashCache;
+    private bool _portableMode;
+    private bool _watchFolders;
 
     public SettingsModel()
     {
@@ -59,8 +61,8 @@ public class SettingsModel : BaseNotify
 
     public bool WatchFolders
     {
-        get;
-        set;
+        get => _watchFolders;
+        set => SetField(ref _watchFolders, value);
     }
 
     public bool CheckForUpdatesOnStartup
@@ -69,6 +71,11 @@ public class SettingsModel : BaseNotify
         set => SetField(ref _checkForUpdatesOnStartup, value);
     }
 
+    public bool PortableMode
+    {
+        get => _portableMode;
+        set => SetField(ref _portableMode, value);
+    }
     public bool ScanForNewImagesOnStartup
     {
         get => _scanForNewImagesOnStartup;

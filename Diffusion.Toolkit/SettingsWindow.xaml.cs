@@ -53,6 +53,7 @@ namespace Diffusion.Toolkit
             _model.AutoTagNSFW = settings.AutoTagNSFW;
             _model.NSFWTags = string.Join("\r\n", settings.NSFWTags);
             _model.HashCache = settings.HashCache;
+            _model.PortableMode = settings.PortableMode;
 
             DataContext = _model;
 
@@ -70,6 +71,7 @@ namespace Diffusion.Toolkit
                 settings.AutoTagNSFW = _model.AutoTagNSFW;
                 settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
                 settings.HashCache = _model.HashCache;
+                settings.PortableMode = _model.PortableMode;
             };
 
             var str = new System.Text.StringBuilder();
@@ -173,13 +175,13 @@ namespace Diffusion.Toolkit
                 if (dialog.FileName == _dataStore.DatabasePath)
                 {
                     MessageBox.Show(this,
-                    "The selectd file is the current database. Please try another file.",
+                    "The selected file is the current database. Please try another file.",
                     "Restore Database", MessageBoxButton.OK,
                     MessageBoxImage.Exclamation);
 
                     return;
                 }
-                
+
                 var result = MessageBox.Show(this,
                     $"Are you sure you want to restore the file {dialog.FileName}? Your current database will be overwritten!",
                     "Restore Database", MessageBoxButton.YesNo,

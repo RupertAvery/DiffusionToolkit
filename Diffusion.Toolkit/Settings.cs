@@ -50,14 +50,9 @@ public class Settings
     private bool _autoTagNSFW;
     private List<string> _nsfwTags;
     private string _hashCache;
+    private bool _portableMode;
 
-    public List<string> NSFWTags
-    {
-        get => _nsfwTags;
-        set => UpdateList(ref _nsfwTags, value);
-    }
-
-
+    
     public bool IsPropertyDirty(string name)
     {
         return _isPropertyDirty.TryGetValue(name, out bool val) && val;
@@ -69,37 +64,10 @@ public class Settings
         _isPropertyDirty.Clear();
     }
 
-    private void UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    public List<string> NSFWTags
     {
-        if (EqualityComparer<T>.Default.Equals(field, value)) return;
-        field = value;
-        _isPropertyDirty[propertyName] = true;
-        _isDirty = true;
-    }
-
-    private void UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")
-    {
-        bool hasDiff = false;
-        if (field != null && value != null)
-        {
-            var firstNotSecond = field.Except(value).ToList();
-            var secondNotFirst = value.Except(field).ToList();
-
-            hasDiff = firstNotSecond.Any() || secondNotFirst.Any();
-        }
-        else if (field == null && value != null)
-        {
-            hasDiff = true;
-        }
-        else
-        {
-            hasDiff = value != null || value!.Any();
-        }
-
-        if (!hasDiff) return;
-        field = value;
-        _isPropertyDirty[propertyName] = true;
-        _isDirty = true;
+        get => _nsfwTags;
+        set => UpdateList(ref _nsfwTags, value);
     }
 
     public List<string> ImagePaths
@@ -216,4 +184,55 @@ public class Settings
         get => _hashCache;
         set => UpdateValue(ref _hashCache, value);
     }
+
+    public bool PortableMode
+    {
+        get => _portableMode;
+        set => UpdateValue(ref _portableMode, value);
+    }
+
+    public void Apply(Settings settings)
+    {
+      var props = typeof(Settings).GetProperties();
+
+      foreach (var prop in props)
+      {
+          var value = prop.GetValue(settings);
+          prop.SetValue(this, value);
+      }
+    }
+
+    private void UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return;
+        field = value;
+        _isPropertyDirty[propertyName] = true;
+        _isDirty = true;
+    }
+
+    private void UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")
+    {
+        bool hasDiff = false;
+        if (field != null && value != null)
+        {
+            var firstNotSecond = field.Except(value).ToList();
+            var secondNotFirst = value.Except(field).ToList();
+
+            hasDiff = firstNotSecond.Any() || secondNotFirst.Any();
+        }
+        else if (field == null && value != null)
+        {
+            hasDiff = true;
+        }
+        else
+        {
+            hasDiff = value != null || value!.Any();
+        }
+
+        if (!hasDiff) return;
+        field = value;
+        _isPropertyDirty[propertyName] = true;
+        _isDirty = true;
+    }
+
 }

@@ -32,6 +32,7 @@ using SQLite;
 using static System.Net.WebRequestMethods;
 using System.Windows.Navigation;
 using Diffusion.Toolkit.Common;
+using Microsoft.Extensions.Options;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -62,7 +63,9 @@ namespace Diffusion.Toolkit.Pages
     {
         private readonly SearchModel _model;
         private NavigatorService _navigatorService;
-        private DataStore _dataStore;
+        private IOptions<DataStore> _dataStoreOptions;
+        private DataStore DataStore => _dataStoreOptions.Value;
+
         private Settings _settings;
         private readonly MainModel _mainModel;
 
@@ -81,14 +84,13 @@ namespace Diffusion.Toolkit.Pages
             });
 
 
-
-
             //var str = new System.Text.StringBuilder();
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(MyContextMenu.Template, writer);
             //System.Diagnostics.Debug.Write(str);
 
         }
+
 
 
         private Random r = new Random();
@@ -132,10 +134,11 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public Search(NavigatorService navigatorService, DataStore dataStore, MessagePopupManager messagePopupManager, Settings settings, MainModel mainModel) : this()
+        public Search(NavigatorService navigatorService, IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, Settings settings, MainModel mainModel) : this()
         {
             this._navigatorService = navigatorService;
-            this._dataStore = dataStore;
+            this._dataStoreOptions = dataStoreOptions;
+
             _settings = settings;
 
             navigatorService.Host.Closed += async (sender, args) =>
@@ -173,7 +176,7 @@ namespace Diffusion.Toolkit.Pages
             //heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[2], HeightChanged2);
 
             _model = new SearchModel(mainModel);
-            _model.DataStore = _dataStore;
+            //_model.DataStore = _dataStoreOptions;
             _model.Page = 0;
             _model.Pages = 0;
             _model.TotalFiles = 100;
@@ -269,15 +272,16 @@ namespace Diffusion.Toolkit.Pages
             {
                 var album = (Album)((MenuItem)o).Tag;
                 var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
-                _dataStore.AddImagesToAlbum(album.Id, images);
+                DataStore.AddImagesToAlbum(album.Id, images);
             });
 
             _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
             {
                 var name = _currentModeSettings.CurrentAlbum;
-                var album = _dataStore.GetAlbumByName(name);
+                var album = DataStore.GetAlbumByName(name);
                 var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
-                _dataStore.RemoveImagesFromAlbum(album.Id, images);
+                DataStore.RemoveImagesFromAlbum(album.Id, images);
+                SearchImages(null);
             });
 
             _model.RemoveAlbumCommand = new RelayCommand<object>((o) =>
@@ -293,34 +297,38 @@ namespace Diffusion.Toolkit.Pages
                 RenewAlbumName.Focus();
             });
 
+            var albums = DataStore.GetAlbums();
+
+            _model.Albums = new ObservableCollection<Album>(albums);
+
 
             SetMode("search");
 
             DataContext = _model;
 
-            ThumbnailListView.DataStore = dataStore;
+            ThumbnailListView.DataStoreOptions = _dataStoreOptions;
             ThumbnailListView.MessagePopupManager = messagePopupManager;
 
             PreviewPane.MainModel = mainModel;
 
             PreviewPane.NSFW = (id, b) =>
             {
-                _dataStore.SetNSFW(id, b);
+                DataStore.SetNSFW(id, b);
                 Update(id);
             };
             PreviewPane.Favorite = (id, b) =>
             {
-                _dataStore.SetFavorite(id, b);
+                DataStore.SetFavorite(id, b);
                 Update(id);
             };
             PreviewPane.Rate = (id, b) =>
             {
-                _dataStore.SetRating(id, b);
+                DataStore.SetRating(id, b);
                 Update(id);
             };
             PreviewPane.Delete = (id, b) =>
             {
-                _dataStore.SetDeleted(id, b);
+                DataStore.SetDeleted(id, b);
                 Update(id);
             };
             PreviewPane.OnNext = Next;
@@ -441,8 +449,8 @@ namespace Diffusion.Toolkit.Pages
                             }
                         }
 
-                        count = _dataStore.Count(filter);
-                        size = _dataStore.CountFileSize(filter);
+                        count = DataStore.Count(filter);
+                        size = DataStore.CountFileSize(filter);
                     }
                     else
                     {
@@ -488,8 +496,8 @@ namespace Diffusion.Toolkit.Pages
                             }
                         }
 
-                        count = _dataStore.Count(query);
-                        size = _dataStore.CountFileSize(query);
+                        count = DataStore.Count(query);
+                        size = DataStore.CountFileSize(query);
 
                     }
 
@@ -750,7 +758,7 @@ namespace Diffusion.Toolkit.Pages
         //    }
 
 
-        //    var matches = Time(() => _dataStore
+        //    var matches = Time(() => DataStore
         //        .Search(query, _settings.PageSize,
         //            _settings.PageSize * (_model.Page - 1),
         //            _model.SortBy,
@@ -849,7 +857,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (_currentModeSettings.CurrentAlbum == "$")
                 {
-                    IEnumerable<Album> albums = _dataStore.GetAlbums();
+                    IEnumerable<Album> albums = DataStore.GetAlbums();
 
                     foreach (var album in albums)
                     {
@@ -915,7 +923,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (showImages)
                 {
-                    matches = Time(() => _dataStore
+                    matches = Time(() => DataStore
                         .Search(filter, _settings.PageSize,
                             _settings.PageSize * (_model.Page - 1),
                             _model.SortBy,
@@ -960,7 +968,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (showImages)
                 {
-                    matches = Time(() => _dataStore
+                    matches = Time(() => DataStore
                         .Search(query, _settings.PageSize,
                             _settings.PageSize * (_model.Page - 1),
                             _model.SortBy,
@@ -988,6 +996,7 @@ namespace Diffusion.Toolkit.Pages
                     Favorite = file.Favorite,
                     ForDeletion = file.ForDeletion,
                     Rating = file.Rating,
+                    Score = $"{file.AestheticScore:0.0}",
                     Path = file.Path,
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
@@ -1177,7 +1186,7 @@ namespace Diffusion.Toolkit.Pages
 
         public void Update(int id)
         {
-            var imageData = _dataStore.GetImage(id);
+            var imageData = DataStore.GetImage(id);
             var image = _model.Images.FirstOrDefault(i => i.Id == id);
 
             image.NSFW = imageData.NSFW;
@@ -1247,10 +1256,11 @@ namespace Diffusion.Toolkit.Pages
 
             try
             {
-                var album = _dataStore.CreateAlbum(new Album() { Name = name });
+                var album = DataStore.CreateAlbum(new Album() { Name = name });
                 var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
-                _dataStore.AddImagesToAlbum(album.Id, images);
+                DataStore.AddImagesToAlbum(album.Id, images);
                 ThumbnailListView.ReloadAlbums();
+                _model.Albums = new ObservableCollection<Album>(DataStore.GetAlbums());
             }
             catch (SQLiteException ex)
             {
@@ -1272,8 +1282,8 @@ namespace Diffusion.Toolkit.Pages
 
         private void RemoveAlbumYes_Click(object sender, RoutedEventArgs e)
         {
-            var album = _dataStore.GetAlbumByName(ThumbnailListView.SelectedImageEntry.Name);
-            _dataStore.RemoveAlbum(album.Id);
+            var album = DataStore.GetAlbumByName(ThumbnailListView.SelectedImageEntry.Name);
+            DataStore.RemoveAlbum(album.Id);
             RemoveAlbumPopup.IsOpen = false;
 
             SearchImages(null);
@@ -1303,8 +1313,8 @@ namespace Diffusion.Toolkit.Pages
 
             try
             {
-                var album = _dataStore.GetAlbumByName(ThumbnailListView.SelectedImageEntry.Name);
-                _dataStore.RenameAlbum(album.Id, name);
+                var album = DataStore.GetAlbumByName(ThumbnailListView.SelectedImageEntry.Name);
+                DataStore.RenameAlbum(album.Id, name);
                 ThumbnailListView.ReloadAlbums();
 
                 SearchImages(null);
@@ -1339,6 +1349,22 @@ namespace Diffusion.Toolkit.Pages
                 AddImagesToAlbum();
                 e.Handled = true;
             }
+        }
+
+        private void DropImagesOnAlbum(object sender, DragEventArgs e)
+        {
+            var album = (Album)((Border)sender).DataContext;
+            var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
+            DataStore.AddImagesToAlbum(album.Id, images);
+        }
+
+        private void OpenAlbum_Click(object sender, MouseButtonEventArgs e)
+        {
+            var album = (Album)((Border)sender).DataContext;
+            SetMode("albums");
+            _currentModeSettings.CurrentAlbum = album.Name;
+            _model.Album = album.Name;
+            SearchImages(null);
         }
     }
 }
