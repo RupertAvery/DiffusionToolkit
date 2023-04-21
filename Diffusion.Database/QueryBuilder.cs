@@ -27,6 +27,7 @@ public static partial class QueryBuilder
 
     private static readonly Regex SamplerRegex = new Regex("sampler:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
+    private static readonly Regex ModelNameRegex = new Regex("\\bmodel:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex HashRegex = new Regex("\\b(?:model_hash|model hash):\\s*([0-9a-f]+)(?:\\s*\\|\\s*([0-9a-f]+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex CfgRegex = new Regex("\\b(?:cfg|cfg_scale|cfg scale):\\s*(\\d+(?:\\.\\d+)?)(?:\\s*\\|\\s*(\\d+(?:\\.\\d+)?))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex SizeRegex = new Regex("\\bsize:\\s*((?:(?<width>\\d+|\\?)\\s*x\\s*(?<height>\\d+|\\?))|(?:(?<width>\\d+|\\?)\\s*:\\s*(?<height>\\d+|\\?)))[\\b]?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -63,6 +64,7 @@ public static partial class QueryBuilder
         ParseSteps(ref prompt, conditions);
         ParseSampler(ref prompt, conditions);
         ParseHash(ref prompt, conditions);
+        ParseModelName(ref prompt, conditions);
         ParseCFG(ref prompt, conditions);
         ParseSize(ref prompt, conditions);
         ParseAestheticScore(ref prompt, conditions);
@@ -431,6 +433,47 @@ public static partial class QueryBuilder
             var values = orConditions.Select(c => c.Value);
 
             conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
+        }
+    }
+
+    private static void ParseModelName(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        var match = ModelNameRegex.Match(prompt);
+        if (match.Success)
+        {
+            prompt = ModelNameRegex.Replace(prompt, String.Empty);
+            var orConditions = new List<KeyValuePair<string, object>>();
+
+            var names = match.Groups[1].Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            foreach (var name in names)
+            {
+                foreach (var model in _models)
+                {
+                    if (model.Filename.Contains(name, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ?)", model.Hash));
+                        if (!string.IsNullOrEmpty(model.SHA256))
+                        {
+                            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ?)", model.SHA256.Substring(0, 10)));
+                        }
+                    }
+                }
+
+                orConditions.Add(new KeyValuePair<string, object>("(Model LIKE ?)", name.Replace("*", "%")));
+            }
+
+            if (orConditions.Any())
+            {
+                var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
+                var values = orConditions.Select(c => c.Value);
+
+                conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
+            }
+            else
+            {
+                conditions.Add(new KeyValuePair<string, object>($"(0 == 1)", null));
+            }
         }
     }
 

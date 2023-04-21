@@ -582,6 +582,9 @@ public class Metadata
                             case "Model hash":
                                 fileParameters.ModelHash = kvp[1].Trim();
                                 break;
+                            case "Model":
+                                fileParameters.Model = kvp[1].Trim();
+                                break;
                             case "Batch size":
                                 fileParameters.BatchSize = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;

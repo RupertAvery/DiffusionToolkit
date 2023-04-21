@@ -412,6 +412,12 @@ You can query `seed`, with a number, a range, or wildcards.
 
 * `model_hash: <hash>`
 
+## Model Name
+
+Wildcards (`?`, `*`) are supported
+
+* `model: <term>`
+
 ## Aesthetic Score
 
 Aesthetic score is a tag added by the [Aesthetic Image Scorer Extension](https://github.com/tsngo/stable-diffusion-webui-aesthetic-image-scorer) for AUTOMATIC111 Web UI.

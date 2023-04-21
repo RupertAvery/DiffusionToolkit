@@ -317,7 +317,7 @@ namespace Diffusion.Database
                 {
                     foreach (var model in _models)
                     {
-                        if (model.Filename.Contains(name))
+                        if (model.Filename.Contains(name, StringComparison.InvariantCultureIgnoreCase))
                         {
                             orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ?)", model.Hash));
                             if (!string.IsNullOrEmpty(model.SHA256))
@@ -327,7 +327,7 @@ namespace Diffusion.Database
                         }
                     }
 
-                    //orConditions.Add(new KeyValuePair<string, object>("(ModelName = ?)", names[i]));
+                    orConditions.Add(new KeyValuePair<string, object>("(Model LIKE ?)", name.Replace("*", "%")));
                 }
 
                 if (orConditions.Any())

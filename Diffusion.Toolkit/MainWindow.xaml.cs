@@ -1391,6 +1391,7 @@ namespace Diffusion.Toolkit
                         Width = file.Width,
                         Height = file.Height,
                         ModelHash = file.ModelHash,
+                        Model = file.Model,
                         Steps = file.Steps,
                         Sampler = file.Sampler,
                         CFGScale = file.CFGScale,

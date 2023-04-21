@@ -18,6 +18,7 @@ public class Image
     public int Width { get; set; }
     public int Height { get; set; }
     public string ModelHash { get; set; }
+    public string? Model { get; set; }
     public int BatchSize { get; set; }
     public int BatchPos { get; set; }
     //public string OtherParameters { get; set; }

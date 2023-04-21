@@ -643,6 +643,7 @@ namespace Diffusion.Toolkit.Pages
 
                 _model.CurrentImage.ModelHash = parameters.ModelHash;
                 _model.CurrentImage.Seed = parameters.Seed;
+                _model.CurrentImage.AestheticScore = $"{parameters.AestheticScore}";
 
                 if (_modelLookup != null)
                 {

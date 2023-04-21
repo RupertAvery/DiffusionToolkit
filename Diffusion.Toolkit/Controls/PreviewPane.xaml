@@ -22,6 +22,7 @@
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
+            <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
             <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
 
             <Style x:Key="ShowOnHover" TargetType="Grid">
@@ -165,7 +166,7 @@
                         <Grid Margin="-20" Background="Transparent"></Grid>
 
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <StackPanel Background="#5F000000">
+                            <StackPanel Background="#AF000000">
 
                                 <Grid  Background="Transparent" >
                                     <Grid.ColumnDefinitions>
@@ -352,6 +353,10 @@
                                 <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
                             </Image.Effect>
                         </Image>
+
+                        <Border Height="40" Width="40" CornerRadius="5" Background="#90000000" Visibility="{Binding Path=AestheticScore, Converter={StaticResource strToVis}, ConverterParameter=10}">
+                            <Label FontSize="18" FontWeight="Bold" Content="{Binding AestheticScore}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+                        </Border>
 
                     </StackPanel>
                 </Grid>

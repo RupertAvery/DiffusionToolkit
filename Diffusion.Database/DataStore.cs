@@ -89,6 +89,7 @@ public partial class DataStore
         db.CreateIndex<Image>(image => image.FolderId);
         db.CreateIndex<Image>(image => image.Path);
         db.CreateIndex<Image>(image => image.ModelHash);
+        db.CreateIndex<Image>(image => image.Model);
         db.CreateIndex<Image>(image => image.Seed);
         db.CreateIndex<Image>(image => image.Sampler);
         db.CreateIndex<Image>(image => image.Height);

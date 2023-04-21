@@ -61,8 +61,8 @@
             </MenuItem>
             <MenuItem Style="{DynamicResource MenuItemStyle1}" Header="_Tools">
                 <MenuItem Header="_Query">
-                    <MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
-                    <Separator></Separator>
+                    <!--<MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
+                    <Separator></Separator>-->
                     <MenuItem Header="_Mark all matching files for Deletion" Command="{Binding MarkAllForDeletion}"/>
                     <MenuItem Header="_Unmark all matching files for Deletion" Command="{Binding UnmarkAllForDeletion}"/>
                     <Separator></Separator>

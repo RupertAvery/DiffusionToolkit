@@ -33,6 +33,7 @@ public class ImageViewModel : BaseNotify
     private long _seed;
     private string _modelHash;
     private ICommand _toggleParameters;
+    private string? _aestheticScore;
 
     public int Id { get; set; }
 
@@ -182,5 +183,11 @@ public class ImageViewModel : BaseNotify
     {
         get => _modelHash;
         set => SetField(ref _modelHash, value);
+    }
+
+    public string? AestheticScore
+    {
+        get => _aestheticScore;
+        set => SetField(ref _aestheticScore, value);
     }
 }

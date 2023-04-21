@@ -35,8 +35,8 @@
                         <RowDefinition Height="36"/>
                     </Grid.RowDefinitions>
                     <Label FontWeight="Bold" Grid.Row="0" Content="{Binding Title}" HorizontalAlignment="Center" FontSize="16"></Label>
-                    <StackPanel>
-                        <TextBlock TextWrapping="WrapWithOverflow" Grid.Row="1" Text="{Binding Message}" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                    <StackPanel Grid.Row="1" >
+                        <TextBlock TextWrapping="WrapWithOverflow" Text="{Binding Message}" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
                         <TextBox Visibility="{Binding ShowInput, Converter={StaticResource boolToVisCol}}" Text="{Binding Input}"></TextBox>
                     </StackPanel>
                     <Grid Grid.Row="2">

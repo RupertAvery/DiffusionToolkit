@@ -45,6 +45,7 @@ public class MessagePopupModel : BaseNotify
     private int _width;
     private UIElement _placementTarget;
     private string _input;
+    private bool _showInput;
 
 
     public MessagePopupModel()
@@ -141,5 +142,11 @@ public class MessagePopupModel : BaseNotify
     {
         get => _input;
         set => SetField(ref _input, value);
+    }
+
+    public bool ShowInput
+    {
+        get => _showInput;
+        set => SetField(ref _showInput, value);
     }
 }
