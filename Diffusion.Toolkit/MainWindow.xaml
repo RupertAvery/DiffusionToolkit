@@ -23,7 +23,7 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <Grid>
+    <Grid x:Name="Host">
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
             <RowDefinition Height="48"/>
@@ -115,6 +115,7 @@
                 </fa:ImageAwesome>
             </Button>
         </ToolBar>
+
         <Frame x:Name="Frame" Grid.Row="2" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
         <Grid Grid.Row="3" ColumnSpan="3">
             <DockPanel HorizontalAlignment="Stretch">
@@ -127,6 +128,29 @@
         </Grid>
         <Grid RowSpan="4" x:Name="PopupHost" Visibility="Hidden"  Background="#000000" Opacity="0.5">
         </Grid>
+        <Popup  x:Name="ToastPopup"  Width="300" Height="100" Placement="Custom"  
+                PlacementTarget="{Binding ElementName=Host}"
+                CustomPopupPlacementCallback="GetPopupPlacement"
+                AllowsTransparency="True" PopupAnimation="Fade"
+        >
+            <Grid Background="Transparent" MouseDown="CloseToast">
+                <Border         
+                    BorderBrush="{DynamicResource SecondaryBrush}"
+                    Background="{DynamicResource PrimaryBrush}"
+                    BorderThickness="2"
+                    CornerRadius="2"
+                    Opacity="0.75"
+                    Margin="15"
+                    Padding="2">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                    </Border.Effect>
+                </Border>
+                <Grid Background="Transparent" Margin="10,25,10,20" IsHitTestVisible="False">
+                    <Label x:Name="ToastMessage"  Width="280" HorizontalContentAlignment="Center"></Label>
+                </Grid>
+            </Grid>
+        </Popup>
     </Grid>
 
 </Window>

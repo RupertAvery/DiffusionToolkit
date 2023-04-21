@@ -227,7 +227,24 @@ public class ThumbnailLoader
         return ministream;
     }
 
-    private BitmapImage GetThumbnailImmediate(string path, int width, int height, int size)
+    public BitmapImage GetThumbnailDirect(string path, int width, int height)
+    {
+        var bitmap = new BitmapImage();
+        bitmap.BeginInit();
+        if (File.Exists(path))
+        {
+            bitmap.StreamSource = GenerateThumbnail(path, width, height, Size);
+        }
+        else
+        {
+            bitmap.StreamSource = null;
+        }
+        bitmap.EndInit();
+        bitmap.Freeze();
+        return bitmap;
+    }
+
+    public BitmapImage GetThumbnailImmediate(string path, int width, int height, int size)
     {
         var bitmap = new BitmapImage();
         bitmap.BeginInit();
@@ -237,7 +254,7 @@ public class ThumbnailLoader
         }
         else
         {
-            bitmap.StreamSource = _defaultStream;
+            bitmap.StreamSource = null;
         }
         bitmap.EndInit();
         bitmap.Freeze();

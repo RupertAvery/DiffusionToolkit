@@ -22,7 +22,7 @@ public static partial class QueryBuilder
 
     private static readonly Regex DateRegex = new Regex("\\bdate:\\s*(?:(?<prep1>between|before|since|from)\\s+)?(?<date1>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})(?:\\s+(?<prep2>and|up to|to)\\s+(?<date2>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex SeedRegex = new Regex("\\bseed:\\s*(?<start>\\d+)(?:\\s*-\\s*(?<end>\\S+))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex SeedRegex = new Regex("\\bseed:\\s*(?<start>[0-9?*]+)(?:\\s*-\\s*(?<end>\\S+))?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex StepsRegex = new Regex("\\bsteps:\\s*(\\d+)(?:\\|(\\d+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex SamplerRegex = new Regex("sampler:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -527,7 +527,15 @@ public static partial class QueryBuilder
             }
             else
             {
-                conditions.Add(new KeyValuePair<string, object>("(Seed = ?)", long.Parse(match.Groups["start"].Value, CultureInfo.InvariantCulture)));
+                var start = match.Groups["start"].Value;
+
+                if (start.Contains("?") || start.Contains("*"))
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(Seed LIKE ?)", start.Replace("*", "%")));
+                    return;
+                }
+
+                conditions.Add(new KeyValuePair<string, object>("(Seed = ?)", long.Parse(start, CultureInfo.InvariantCulture)));
             }
         }
     }

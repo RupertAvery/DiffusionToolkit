@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 
 namespace Diffusion.Database
 {
     public static partial class QueryBuilder
     {
-        private static ICollection<Diffusion.Common.Model> _models;
+        private static ICollection<Common.Model> _models;
 
-        public static void SetModels(ICollection<Diffusion.Common.Model> models)
+        public static void SetModels(ICollection<Common.Model> models)
         {
             _models = models;
         }
@@ -424,6 +419,13 @@ namespace Diffusion.Database
                 }
                 else
                 {
+
+                    if (filter.SeedStart.Contains("?") || filter.SeedStart.Contains("*"))
+                    {
+                        conditions.Add(new KeyValuePair<string, object>("(Seed LIKE ?)", filter.SeedStart.Replace("*", "%")));
+                        return;
+                    }
+
                     conditions.Add(new KeyValuePair<string, object>("(Seed = ?)", filter.SeedStart));
                 }
             }

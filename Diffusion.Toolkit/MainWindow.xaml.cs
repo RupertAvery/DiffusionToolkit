@@ -29,9 +29,15 @@ using Diffusion.Updater;
 using Microsoft.Extensions.Options;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Configuration;
+using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Interop;
 
 namespace Diffusion.Toolkit
 {
+   
     public static class AppInfo
     {
         public static SemanticVersion Version => SemanticVersionHelper.GetLocalVersion();
@@ -190,6 +196,11 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(EditMenu.Template, writer);
             //System.Diagnostics.Debug.Write(str);
+
+            //var str = new System.Text.StringBuilder();
+            //using (var writer = new System.IO.StringWriter(str))
+            //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
+            //System.Diagnostics.Debug.Write(str);
         }
 
         private void PopoutPreview()
@@ -242,7 +253,9 @@ namespace Diffusion.Toolkit
                     UpdateByBatch(ids, 50, subset => _dataStore.SetDeleted(subset, true));
                 });
 
-                await _search.ReloadMatches();
+                _search.ReloadMatches();
+
+                //await _search.ReloadMatches();
             }
         }
 
@@ -269,7 +282,9 @@ namespace Diffusion.Toolkit
                     UpdateByBatch(ids, 50, subset => _dataStore.SetDeleted(subset, false));
                 });
 
-                await _search.ReloadMatches();
+                _search.ReloadMatches();
+
+                //await _search.ReloadMatches();
             }
         }
 
@@ -294,7 +309,9 @@ namespace Diffusion.Toolkit
 
                 await _messagePopupManager.ShowMedium(message, "Auto Tag NSFW", PopupButtons.OK);
 
-                await _search.ReloadMatches();
+                _search.ReloadMatches();
+
+                //await _search.ReloadMatches();
             }
 
         }
@@ -359,7 +376,9 @@ namespace Diffusion.Toolkit
 
                 await _messagePopupManager.ShowMedium(message, "Remove images from Database", PopupButtons.OK);
 
-                await _search.ReloadMatches();
+                _search.ReloadMatches();
+
+                //await _search.ReloadMatches();
             }
         }
 
@@ -561,7 +580,7 @@ namespace Diffusion.Toolkit
                                 _model.TotalFilesScan = 100;
                                 _model.CurrentPositionScan = 0;
 
-                                _messagePopupManager.Show($"{count} images were deleted", "Delete images");
+                                Toast($"{count} images were deleted", "Delete images");
                             });
 
                         }
@@ -571,7 +590,9 @@ namespace Diffusion.Toolkit
 
                             SetTotalFilesStatus();
 
-                            await _search.ReloadMatches();
+                            _search.ReloadMatches();
+
+                            //await _search.ReloadMatches();
 
                         }
                     });
@@ -686,6 +707,7 @@ namespace Diffusion.Toolkit
             };
 
             _search = new Search(_navigatorService, _dataStoreOptions, _messagePopupManager, _settings, _model);
+
             _search.MoveFiles = (files) =>
             {
                 using var dialog = new CommonOpenFileDialog();
@@ -694,9 +716,31 @@ namespace Diffusion.Toolkit
                 if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
                 {
                     var path = dialog.FileName;
-                    Task.Run(async () => await MoveFiles(files, path));
+
+                    var isInPath = false;
+                    foreach (var imagePath in _settings.ImagePaths)
+                    {
+                        if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
+                        {
+                            isInPath = true;
+                            break;
+                        }
+                    }
+
+                    Task.Run(async () =>
+                    {
+                        await MoveFiles(files, path, !isInPath);
+
+
+                        if (!isInPath)
+                        {
+                            _search.SearchImages();
+                        }
+                    });
+
                 }
             };
+
             _prompts = new Prompts(_dataStore, _settings);
 
 
@@ -757,6 +801,7 @@ namespace Diffusion.Toolkit
                             IncludeSubdirectories = true,
                         };
                         watcher.Created += WatcherOnCreated;
+                        watcher.Renamed += WatcherOnCreated;
                         _watchers.Add(watcher);
                     }
                 }
@@ -828,12 +873,12 @@ namespace Diffusion.Toolkit
 
         }
 
-        private async void OnActivated(object? sender, EventArgs e)
+        private void OnActivated(object? sender, EventArgs e)
         {
 
             if (addedTotal > 0)
             {
-                await Report(addedTotal, 0, 0, false);
+                Report(addedTotal, 0, 0, false);
                 lock (_lock)
                 {
                     addedTotal = 0;
@@ -918,7 +963,7 @@ namespace Diffusion.Toolkit
 
         private int addedTotal = 0;
 
-        private async void Callback(object? state)
+        private  void Callback(object? state)
         {
             int added;
             float elapsed;
@@ -932,12 +977,12 @@ namespace Diffusion.Toolkit
 
             if (added > 0)
             {
-                await Dispatcher.Invoke(async () =>
+                Dispatcher.Invoke(() =>
                 {
                     var currentWindow = Application.Current.Windows.OfType<Window>().First();
                     if (currentWindow.IsActive)
                     {
-                        await Report(added, 0, elapsed, false);
+                        Report(added, 0, elapsed, false);
                     }
                     else
                     {
@@ -1220,8 +1265,8 @@ namespace Diffusion.Toolkit
                 }
             });
         }
-
-        private async Task MoveFiles(IList<ImageEntry> images, string path)
+        
+        private async Task MoveFiles(IList<ImageEntry> images, string path, bool remove)
         {
 
             foreach (var watcher in _watchers)
@@ -1245,7 +1290,14 @@ namespace Diffusion.Toolkit
                 {
                     File.Move(image.Path, newPath);
 
-                    _dataStore.MoveImage(image.Id, newPath);
+                    if (remove)
+                    {
+                        _dataStore.DeleteImage(image.Id);
+                    }
+                    else
+                    {
+                        _dataStore.MoveImage(image.Id, newPath);
+                    }
 
                     var moved1 = moved;
                     Dispatcher.Invoke(() =>
@@ -1268,7 +1320,7 @@ namespace Diffusion.Toolkit
                 _model.Status = $"Moving {_model.TotalFilesScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
                 _model.TotalFilesScan = Int32.MaxValue;
                 _model.CurrentPositionScan = 0;
-                await _messagePopupManager.Show($"{moved} files were moved.", "Move images", PopupButtons.OK);
+                Toast($"{moved} files were moved.", "Move images");
             });
 
             //await _search.ReloadMatches();
@@ -1459,7 +1511,7 @@ namespace Diffusion.Toolkit
 
                 if ((added + removed == 0 && reportIfNone) || added + removed > 0)
                 {
-                    await Report(added, removed, elapsedTime, updateImages);
+                    Report(added, removed, elapsedTime, updateImages);
                 }
             }
             catch (Exception ex)
@@ -1478,13 +1530,13 @@ namespace Diffusion.Toolkit
             return added + removed > 0;
         }
 
-        private async Task Report(int added, int removed, float elapsedTime, bool updateImages)
+        private void Report(int added, int removed, float elapsedTime, bool updateImages)
         {
-            await Dispatcher.Invoke(async () =>
+            Dispatcher.Invoke(() =>
             {
                 if (added == 0 && removed == 0)
                 {
-                    await _messagePopupManager.Show($"No new images found", "Scan Complete");
+                    Toast($"No new images found", "Scan Complete");
                 }
                 else
                 {
@@ -1500,11 +1552,11 @@ namespace Diffusion.Toolkit
 
                     if (updateImages)
                     {
-                        await _messagePopupManager.Show(message, "Rebuild Complete");
+                        Toast(message, "Rebuild Complete");
                     }
                     else
                     {
-                        await _messagePopupManager.Show(message, "Scan Complete", 10);
+                        Toast(message, "Scan Complete", 10);
                     }
                 }
 
@@ -1605,7 +1657,33 @@ namespace Diffusion.Toolkit
                 await _messagePopupManager.ShowMedium("You have not setup any image folders. You will not be able to search for anything yet.\r\n\r\nAdd one or more folders first, then click the Scan Folders for new images icon in the toolbar.", "Setup", PopupButtons.OK);
             }
         }
+
+        private void Toast(string message, string caption, int timeout = 5)
+        {
+            ToastPopup.IsOpen = true;
+            ToastMessage.Content = message;
+            Task.Delay(timeout * 1000).ContinueWith((_) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    ToastPopup.IsOpen = false;
+                });
+            });
+        }
+
+        public CustomPopupPlacement[] GetPopupPlacement(Size popupSize, Size targetSize, Point offset)
+        {
+            var point = new Point(ActualWidth - popupSize.Width, ActualHeight - popupSize.Height - 50);
+            return new[] { new CustomPopupPlacement(point, PopupPrimaryAxis.None) };
+        }
+
+        private void CloseToast(object sender, MouseButtonEventArgs e)
+        {
+            ToastPopup.IsOpen = false;
+        }
     }
+
+
 
     public class Hashes
     {
@@ -1616,6 +1694,57 @@ namespace Diffusion.Toolkit
     {
         public double mtime { get; set; }
         public string sha256 { get; set; }
+    }
+
+    static class WindowExtensions
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+
+        public static double ActualTop(this Window window)
+        {
+            switch (window.WindowState)
+            {
+                case WindowState.Normal:
+                    return window.Top;
+                case WindowState.Minimized:
+                    return window.RestoreBounds.Top;
+                case WindowState.Maximized:
+                {
+                    RECT rect;
+                    GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
+                    return rect.Top;
+                }
+            }
+            return 0;
+        }
+        public static double ActualLeft(this Window window)
+        {
+            switch (window.WindowState)
+            {
+                case WindowState.Normal:
+                    return window.Left;
+                case WindowState.Minimized:
+                    return window.RestoreBounds.Left;
+                case WindowState.Maximized:
+                {
+                    RECT rect;
+                    GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
+                    return rect.Left;
+                }
+            }
+            return 0;
+        }
     }
 }
 

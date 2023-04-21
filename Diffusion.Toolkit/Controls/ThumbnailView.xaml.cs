@@ -51,12 +51,13 @@ namespace Diffusion.Toolkit.Controls
 
             Model.AlbumMenuItems = new ObservableCollection<Control>(new List<Control>()
             {
-                albumMenuItem
+                albumMenuItem,
+                new Separator()
             });
 
-            var albums = DataStore.GetAlbums();
 
-            Model.AlbumMenuItems.Add(new Separator());
+            var albums = DataStore.GetAlbumsByLastUpdated(10);
+
 
             foreach (var album in albums)
             {
@@ -144,7 +145,7 @@ namespace Diffusion.Toolkit.Controls
         }
 
         public IEnumerable<ImageEntry> SelectedImages => ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
-        
+
         private void Control_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             OpenSelected();
@@ -250,7 +251,7 @@ namespace Diffusion.Toolkit.Controls
                 _ => 0
             };
 
-            if (delta != 0) 
+            if (delta != 0)
             {
                 var wrapPanel = GetChildOfType<WrapPanel>(this)!;
                 var item = wrapPanel.Children[0] as ListViewItem;
@@ -524,20 +525,23 @@ namespace Diffusion.Toolkit.Controls
 
         public void ResetView(bool focus)
         {
-            if (Model.Images is { Count: > 0 })
+            Dispatcher.Invoke(() =>
             {
-                ThumbnailListView.ScrollIntoView(Model.Images[0]);
-                ThumbnailListView.SelectedItem = Model.Images[0];
-
-                if (focus)
+                if (Model.Images is { Count: > 0 })
                 {
-                    if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(0) is ListViewItem item)
-                    {
-                        item.Focus();
-                    }
+                    ThumbnailListView.ScrollIntoView(Model.Images[0]);
+                    ThumbnailListView.SelectedItem = Model.Images[0];
 
+                    if (focus)
+                    {
+                        if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(0) is ListViewItem item)
+                        {
+                            item.Focus();
+                        }
+
+                    }
                 }
-            }
+            });
         }
 
         private void ShowInExplorer(object obj)
@@ -546,7 +550,7 @@ namespace Diffusion.Toolkit.Controls
             var p = Model.CurrentImage.Path;
             Process.Start("explorer.exe", $"/select,\"{p}\"");
         }
-        
+
         private void FirstPage_OnClick(object sender, RoutedEventArgs e)
         {
             GoFirstPage();
@@ -593,7 +597,7 @@ namespace Diffusion.Toolkit.Controls
         {
             AddToAlbumCommand?.Execute(sender);
         }
-        
+
         private void RemoveFromAlbum_OnClick(object sender, RoutedEventArgs e)
         {
             RemoveFromAlbumCommand?.Execute(null);
@@ -606,7 +610,7 @@ namespace Diffusion.Toolkit.Controls
 
         private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
         {
-           RemoveAlbumCommand?.Execute(null);
+            RemoveAlbumCommand?.Execute(null);
         }
     }
 }

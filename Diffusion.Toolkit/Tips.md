@@ -10,6 +10,8 @@
 * [Navigation](#navigation)
 * [Preview](#preview)
    * [Displaying Metadata (PNGInfo)](#displaying-metadata-pnginfo)
+* [Folders](#folders)
+* [Albums](#albums)
 * [Drag and Drop](#drag-and-drop)
 * [Tagging](#tagging)
    * [Favorites](#favorites)
@@ -114,53 +116,52 @@ Settings will be applied and saved upon closing the Settings dialog.
 
 You will be prompted to scan your selected folders for images. 
 
-# Updating your images
+# Indexing your images
+
+Diffusion Toolkit is designed to find your images fast. To do this it needs to scan each image and read in the metadata and store it in a local database.
 
 ## Scan folders for new images
 
-If you generate new images in your target folders, or add or remove images from them, you should click the **Scan folders for new images** button to update your database with the latest changes.
+If you generate new images in your Diffusion folders, or add or remove images from them, you should click the **Scan folders for new images** button to update your database with the latest changes.
 
-It is not advised to move images outside Diffustion Toolkit, especially if you have favorited or rated them, as you will lost this information when you rescan.
+It is not advised to move images outside of Diffustion Toolkit (e.g. cut-paste using Explorer), especially if you have favorited or rated them, as you will lose this information when you rescan.
 
 ## Watch folders
 
-The **Watch folders** setting will allow Diffusion Toolkit to recieve a notification everytime an image is added to one of the nested folders in your target folders.  The images will be added to the database without needing to click **Scan folders for new images**.
+The **Watch folders** setting will allow Diffusion Toolkit to recieve a notification everytime an image is added to your Diffusion folders.  The images will be added to the database without needing to click **Scan folders for new images**.
 
 This is best used when generating images via a tool or webgui.  You will only be notified when the application has focus.  Your current search will not be updated when this occurs, to prevent from interrupting your work.
 
-**NOTE:** Be sure to turn this off if you are going to copy a lot of images into the target folders, as it is not optimized for this.
+**NOTE:** Be sure to turn this off if you are going to copy a lot of images into the Diffusion folders, as it is not optimized for this.
 
 ## Rebuild Metadata
 
-**Rebuild Metadata** is intended for use when a new version of the application is released that supports new metadata.
+**Edit > Rebuild Metadata** is intended for use when a new version of the application is released that supports new metadata.
 
-Running this should not affect any existing favorites or ratings
+Running this should not affect any existing favorites or ratings.
 
 # Navigation
 
-You will get a notice upon completion. You can now begin searching via prompt. 
 
-Pressing Enter with an empty search bar will list all images.
-
-The **Diffusions** view is the default on startup.  Here you can enter your prompt, and press Enter to intitate the search. Matching images will be displayed in the thumbnail view. By default, results will be limited to 100 per page. This can be changed in settings.
+The **Diffusions** view is the default on startup.  Here you can enter your query and press `Enter` to intitate the search. Matching images will be displayed in the thumbnail view. By default, results are limited to 100 per page. This can be changed in **Settings**.
 
 Use the buttons at the bottom of the page to move between pages. The keyboard shortcuts are:
 
-* First Page - Alt + Home
-* Previous Page - Alt + Page Up 
-* Next Page - Alt + Page Down
-* Last Page - Alt + End
-* F6 - Focus on search bar
+* First Page - `Alt + Home`
+* Previous Page - `Alt + Page Up` 
+* Next Page - `Alt + Page Down`
+* Last Page - `Alt + End`
+* F6 - Set focus on search bar
 
-Double-clicking an image or pressing Enter with an image selected will launch your default image viewer.
+Double-clicking an image or pressing `Enter` with an image selected will launch your default image viewer.
 
 ## Thumbnail Size
 
-Click View > Thumbnails to select the thumbnail size.
+Click **View > Thumbnails** to select the thumbnail size.
 
 # Tagging
 
-You can tag your files with additional metadata (only in Diffusion Toolkit) to help you organize and manage your images further.
+You can tag your files with additional metadata (stored in the Diffusion Toolkit database) to help you organize and manage your images further.
 
 ## Favorites
 
@@ -250,6 +251,42 @@ When the Preview Pane is in popped out, you can still use the same shortcut keys
 
 You can also use the left and right cursor keys to move between images.
 
+# Folders
+
+Click on the **Folders** icon in the menu bar to browse your images using folders. A Home button, Up button, and an address bar will appear below the search bar.
+
+You will initially be presented with your home location, containing the list of root Diffusion folders.  Clicking on a folder will navigate to the folder, and display subfolders and images inside the folder.
+
+Pressing the Home button will bring you back to the list of Diffusion folders.
+
+Pressing Up will bring you to the current folder's parent.
+
+Currently only indexed images will be displayed in Folder view.  If you navigate to a location outside your Diffusion folders, images will not be displayed.
+
+You can still use the search function to filter images in Folder view.
+
+# Albums
+
+Albums offer an alternative to folders for image grouping. To create an ALbum, you can use the Create Album button in the Albums panel, or select one or more images and right-click and select **Add to Album > New Album.**
+
+Click on the **Albums** icon in the menu bar to display the list of Albums. A Home button will appear below the search bar, and the current Album name will be displayed next to to.
+
+Pressing the Home button will bring you back to the list of Albums.
+
+Clicking on an Album in the thumbnail view or on the Album panel will open the Album and display
+
+Youu can right click on an Album in the thumbnail view or in the Albums panel to access the Album context menu, which allows you to rename or remove an Album.
+
+If you remove an Album, only the Album will be removed. The images added to the album will still be available in Search.
+
+To add an image to an existing Album, right click an image and select **Add to Album** then select one of the Albums from a list of last 10 updated Albums.
+
+You can also drag and drop an image to an Album in the Album panel to add the images to the Album.
+
+To remove an image from an Album, while in the Album, right click an image and select **Remove from Album**. You will not be prompted for confirmation.
+
+You can still use the search function to filter images in Album view.
+
 # Drag and Drop
 
 You can drag an image from the thumbnail to another app, such as the PNGInfo tab in a WebUI to transfer the metadata, or to an explorer folder to copy the image to the target folder
@@ -322,7 +359,7 @@ The way the query is parsed is, each possible parameter is matched and then remo
 
 * `sampler: <name>` 
 
-	To seaerch for a sampler name, use whatever is stored in the metadata.
+	To search for a sampler name, use whatever is stored in the metadata.
 	Sometimes, this will vary from tool to tool.  Also, for sampler names that use
 	spaces, put quotes around the name.
 
@@ -354,8 +391,14 @@ The way the query is parsed is, each possible parameter is matched and then remo
 
 ## Seed
 
+You can query `seed`, with a number, a range, or wildcards.
+
 * `seed: <number>`
 * `seed: <start>-<end>`
+* `seed: 123*` 
+   * will show all images have a seed that starts with `123`
+* `seed: 123456???000` 
+   * will show all images have a seed that starts with `123456`, matches any 3 digits, and ends with `000`
 
 ## Size
 
@@ -505,7 +548,11 @@ No, you only need to Rebuild Images if a new version of Diffusion Toolkit comes 
 
 ## Can I move my files to a different folder?
 
-If you move your files to a different folder, but still under the target folders, when you Rescan Folders or Rebuild Images Diffusion Toolkit will detect that the images have been removed, and will detect new files added.
+I you want to move your files to a different folder, but still within a Diffusion folder, you should use the right-click menu > Move command. This allows Diffusion Toolkit to handle the movement, and know to keep all the metadata intact while moving.
+
+If you use Explorer or some other application to move the files, 
+
+, but still under the Diffusion folders, when you Rescan Folders or Rebuild Images Diffusion Toolkit will detect that the images have been removed, and will detect new files added.
 
 You will lose any Favorites, Ratings or other Toolkit-specific information. 
 

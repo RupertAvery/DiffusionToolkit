@@ -96,7 +96,7 @@ public class ImageEntry : BaseNotify
         set => SetField(ref _thumbnail, value);
     }
 
-    public async Task LoadThumbnail()
+    public void LoadThumbnail()
     {
         var job = new ThumbnailJob()
         {
@@ -107,7 +107,20 @@ public class ImageEntry : BaseNotify
             Width = Width
         };
 
-        await ThumbnailLoader.Instance.QueueAsync(job, (d) =>
+        //await ThumbnailLoader.Instance.QueueAsync(job, (d) =>
+        //{
+        //    Thumbnail = d;
+        //    OnPropertyChanged(nameof(Thumbnail));
+        //});
+
+
+        //Task.Run(() =>
+        //{
+        //    Thumbnail = ThumbnailLoader.Instance.GetThumbnailDirect(Path, Width, Height);
+        //    OnPropertyChanged(nameof(Thumbnail));
+        //});
+
+        _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
         {
             Thumbnail = d;
             OnPropertyChanged(nameof(Thumbnail));

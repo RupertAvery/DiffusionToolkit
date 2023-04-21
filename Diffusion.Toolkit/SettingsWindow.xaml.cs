@@ -74,10 +74,10 @@ namespace Diffusion.Toolkit
                 settings.PortableMode = _model.PortableMode;
             };
 
-            var str = new System.Text.StringBuilder();
-            using (var writer = new System.IO.StringWriter(str))
-                System.Windows.Markup.XamlWriter.Save(TabItem.Template, writer);
-            System.Diagnostics.Debug.Write(str);
+            //var str = new System.Text.StringBuilder();
+            //using (var writer = new System.IO.StringWriter(str))
+            //    System.Windows.Markup.XamlWriter.Save(TabItem.Template, writer);
+            //System.Diagnostics.Debug.Write(str);
         }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -21,6 +21,17 @@ namespace Diffusion.Database
             return lists;
         }
 
+        public IEnumerable<Album> GetAlbumsByLastUpdated(int limit)
+        {
+            using var db = OpenConnection();
+
+            var lists = db.Query<Album>($"SELECT * FROM {nameof(Album)} ORDER BY LastUpdated DESC LIMIT ?", limit);
+
+            db.Close();
+
+            return lists;
+        }
+
         public void RenameAlbum(int id, string name)
         {
             using var db = OpenConnection();
@@ -37,15 +48,15 @@ namespace Diffusion.Database
             db.Close();
         }
 
-        public Album GetAlbumByName(string name)
+        public Album GetAlbum(int id)
         {
             using var db = OpenConnection();
 
-            var query = $"SELECT * FROM {nameof(Album)} WHERE Name = @Name LIMIT 1";
+            var query = $"SELECT * FROM {nameof(Album)} WHERE Id = @Id LIMIT 1";
 
             var command = db.CreateCommand(query);
 
-            command.Bind("@Name", name);
+            command.Bind("@Id", id);
 
             var album = command.ExecuteQuery<Album>();
 
@@ -53,6 +64,24 @@ namespace Diffusion.Database
 
             return album[0];
         }
+
+
+        //public Album GetAlbumByName(string name)
+        //{
+        //    using var db = OpenConnection();
+
+        //    var query = $"SELECT * FROM {nameof(Album)} WHERE Name = @Name LIMIT 1";
+
+        //    var command = db.CreateCommand(query);
+
+        //    command.Bind("@Name", name);
+
+        //    var album = command.ExecuteQuery<Album>();
+
+        //    db.Close();
+
+        //    return album[0];
+        //}
 
         public Album CreateAlbum(Album album)
         {
@@ -110,6 +139,15 @@ namespace Diffusion.Database
                 command.Bind("@ImageId", id);
                 command.ExecuteNonQuery();
             }
+
+            query = $"UPDATE {nameof(Album)} SET LastUpdated = @LastUpdated WHERE Id = @Id";
+
+            command = db.CreateCommand(query);
+
+            command.Bind("@LastUpdated", DateTime.Now);
+            command.Bind("@Id", albumId);
+
+            command.ExecuteNonQuery();
 
             db.Commit();
         }

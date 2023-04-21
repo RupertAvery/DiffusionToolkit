@@ -154,8 +154,8 @@
                                             </MenuItem>
                                             <MenuItem Visibility="{Binding ViewMode, Converter={StaticResource albumModeVis}}" Header="_Remove from Album" Click="RemoveFromAlbum_OnClick"></MenuItem>
                                             <Separator />
-                                            <MenuItem Header="Favorite (F)" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
-                                            <MenuItem Header="Rate">
+                                            <MenuItem Header="_Favorite" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
+                                            <MenuItem Header="_Rate">
                                                 <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
                                                 <MenuItem Header="2" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
                                                 <MenuItem Header="3" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
@@ -167,26 +167,29 @@
                                                 <MenuItem Header="9" Command="{Binding RatingCommand}" CommandParameter="9"></MenuItem>
                                                 <MenuItem Header="10" Command="{Binding RatingCommand}" CommandParameter="10"></MenuItem>
                                                 <Separator></Separator>
-                                                <MenuItem Header="Remove rating" Click="Unrate_OnClick"></MenuItem>
+                                                <MenuItem Header="_Remove rating" Click="Unrate_OnClick"></MenuItem>
                                             </MenuItem>
-                                            <MenuItem Header="NSFW (N)" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
+                                            <MenuItem Header="_NSFW" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
                                             <Separator />
-                                            <MenuItem Header="Copy prompt"  Command="{Binding CopyPromptCommand}"/>
-                                            <MenuItem Header="Copy negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
-                                            <MenuItem Header="Copy seed"  Command="{Binding CopySeedCommand}"/>
-                                            <MenuItem Header="Copy hash"  Command="{Binding CopyHashCommand}"/>
-                                            <MenuItem Header="Copy all parameters"  Command="{Binding CopyParametersCommand}"/>
+                                            <MenuItem Header="_Copy Parameter">
+                                                <MenuItem Header="_Prompt"  Command="{Binding CopyPromptCommand}"/>
+                                                <MenuItem Header="_Negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
+                                                <MenuItem Header="_Seed"  Command="{Binding CopySeedCommand}"/>
+                                                <MenuItem Header="_Hash"  Command="{Binding CopyHashCommand}"/>
+                                                <MenuItem Header="_All parameters"  Command="{Binding CopyParametersCommand}"/>
+                                            </MenuItem>
                                             <Separator />
-                                            <MenuItem Header="Move"  Command="{Binding MoveCommand}"/>
+                                            <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
+                                            <MenuItem Header="_Move" Command="{Binding MoveCommand}"/>
                                             <Separator />
                                             <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
                                             <!--<Separator />
                                             <MenuItem Header="Add to Album" />
                                             <MenuItem Header="Remove from Album" />-->
                                             <Separator />
-                                            <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash (X/Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
-                                            <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore (X/Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
-                                            <MenuItem Header="Remove Entry (CTRL+X/Del)"  Command="{Binding RemoveEntryCommand}"/>
+                                            <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
+                                            <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
+                                            <MenuItem Header="Remove Entry" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
                                         </ContextMenu>
                                     </local:Thumbnail.ContextMenu>
                                     <local:Thumbnail.Effect>

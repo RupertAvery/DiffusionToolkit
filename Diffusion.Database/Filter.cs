@@ -11,8 +11,8 @@ public class Filter
     public bool UseSampler { get; set; }
     public string Sampler { get; set; }
     public bool UseSeed { get; set; }
-    public long? SeedStart { get; set; }
-    public long? SeedEnd { get; set; }
+    public string? SeedStart { get; set; }
+    public string? SeedEnd { get; set; }
     public bool UseCFGScale { get; set; }
     public string CFGScale { get; set; }
     public bool UseSize { get; set; }

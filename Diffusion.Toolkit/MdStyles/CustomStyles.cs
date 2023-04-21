@@ -15,7 +15,7 @@ namespace Diffusion.Toolkit.MdStyles
             return (ResourceDictionary)Application.LoadComponent(new Uri("/MdStyles/Styles.xaml", UriKind.RelativeOrAbsolute));
         }
 
-        private static Style LoadXaml(string name) => (Style)CustomStyles.LoadDictionary()[(object)name];
+        private static Style LoadXaml(string name) => (Style)LoadDictionary()[(object)name];
 
 
         public static Style BetterGithub => LoadXaml("DocumentStyleBetterGithub");

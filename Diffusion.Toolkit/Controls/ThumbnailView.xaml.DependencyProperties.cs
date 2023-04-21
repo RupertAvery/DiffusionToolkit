@@ -183,6 +183,16 @@ namespace Diffusion.Toolkit.Controls
                     FrameworkPropertyMetadataOptions.None,
                     propertyChangedCallback: PropertyChangedCallback));
 
+        public static readonly DependencyProperty CopyCommandProperty =
+            DependencyProperty.Register(
+                name: nameof(CopyCommand),
+                propertyType: typeof(ICommand),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: null,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback));
+
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is ThumbnailView thumbnailView)
@@ -205,6 +215,9 @@ namespace Diffusion.Toolkit.Controls
 
                             break;
                         }
+                    case nameof(CopyCommand):
+                        thumbnailView.Model.CopyFiles = (ICommand)e.NewValue;
+                        break;
                     case nameof(ViewMode):
                         thumbnailView.Model.ViewMode = (ViewMode)e.NewValue;
                         break;
@@ -333,6 +346,12 @@ namespace Diffusion.Toolkit.Controls
         {
             get => (ICommand)GetValue(RemoveAlbumCommandProperty);
             set => SetValue(RemoveAlbumCommandProperty, value);
+        }
+
+        public ICommand CopyCommand
+        {
+            get => (ICommand)GetValue(CopyCommandProperty);
+            set => SetValue(CopyCommandProperty, value);
         }
 
         public ViewMode ViewMode

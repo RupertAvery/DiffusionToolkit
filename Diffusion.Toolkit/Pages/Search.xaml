@@ -136,12 +136,24 @@
                             <TabControl Background="Transparent" DockPanel.Dock="Left">
                                 <TabItem Header="Albums">
                                     <DockPanel>
-                                        <ListBox DockPanel.Dock="Top" ItemsSource="{Binding Albums}" Width="150">
+                                        <Button DockPanel.Dock="Top" Width="135" Height="26" Click="CreateAlbum_Click" Margin="0,10,0,15">
+                                            Create Album
+                                        </Button>
+                                        <ListBox Background="Transparent"
+                                                 BorderBrush="Transparent"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                                 DockPanel.Dock="Top" ItemsSource="{Binding Albums}" Width="150">
                                             <ListBox.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Border AllowDrop="True" Drop="DropImagesOnAlbum" HorizontalAlignment="Stretch"   MouseDown="OpenAlbum_Click">
-                                                        <Label Content="{Binding Name}" Tag="{Binding .}"></Label>
-                                                    </Border>
+                                                <DataTemplate >
+                                                    <Button Tag="{Binding Path=.}" Background="Transparent" AllowDrop="True" Drop="DropImagesOnAlbum" Width="135" HorizontalAlignment="Stretch" Click="OpenAlbumButton_Click">
+                                                        <Button.ContextMenu>
+                                                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                                <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>
+                                                                <MenuItem Header="Remove Album" Click="RemoveAlbum_OnClick"></MenuItem>
+                                                            </ContextMenu>
+                                                        </Button.ContextMenu>
+                                                        <Label  Content="{Binding Name}" Tag="{Binding .}"></Label>
+                                                    </Button>
                                                 </DataTemplate>
                                             </ListBox.ItemTemplate>
                                         </ListBox>
@@ -166,6 +178,7 @@
                                 RemoveFromAlbumCommand="{Binding RemoveFromAlbumCommand}"
                                 RemoveAlbumCommand="{Binding RemoveAlbumCommand}"
                                 RenameAlbumCommand="{Binding RenameAlbumCommand}"
+                                CopyCommand="{Binding CopyFiles}"
                                 ViewMode="{Binding CurrentViewMode}"
                                 CurrentImage="{Binding CurrentImage}">
                             </controls:ThumbnailView>

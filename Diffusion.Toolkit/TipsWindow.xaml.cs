@@ -23,6 +23,7 @@ namespace Diffusion.Toolkit
             RichTextBox.Document = document;
         }
 
+
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process.Start("explorer", "https://github.com/RupertAvery/DiffusionToolkit/blob/master/Diffusion.Toolkit/Tips.md");

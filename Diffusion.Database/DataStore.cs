@@ -76,6 +76,7 @@ public partial class DataStore
 
         db.CreateTable<Album>();
         db.CreateIndex<Album>(album => album.Name, true);
+        db.CreateIndex<Album>(album => album.LastUpdated);
 
         db.CreateTable<AlbumImage>();
 

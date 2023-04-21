@@ -14,8 +14,8 @@ public class SearchControlModel : BaseNotify
     private bool _useSampler;
     private string _sampler;
     private bool _useSeed;
-    private long? _seedStart;
-    private long? _seedEnd;
+    private string? _seedStart;
+    private string? _seedEnd;
     private bool _useCfgScale;
     private string _cfgScale;
     private bool _useSize;
@@ -109,13 +109,13 @@ public class SearchControlModel : BaseNotify
         set => SetField(ref _useSeed, value);
     }
 
-    public long? SeedStart
+    public string? SeedStart
     {
         get => _seedStart;
         set => SetField(ref _seedStart, value);
     }
 
-    public long? SeedEnd
+    public string? SeedEnd
     {
         get => _seedEnd;
         set => SetField(ref _seedEnd, value);

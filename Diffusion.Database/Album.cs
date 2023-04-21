@@ -8,4 +8,13 @@ public class Album
     public int Id { get; set; }
     public string Name { get; set; }
     public int Order { get; set; }
+    public DateTime LastUpdated { get; set; }
+
+}
+
+public class AlbumDTO
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int Images { get; set; }
 }
