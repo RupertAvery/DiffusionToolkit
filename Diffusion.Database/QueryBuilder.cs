@@ -137,18 +137,18 @@ public static partial class QueryBuilder
                 switch (match.Groups["criteria"].Value.ToLower())
                 {
                     case "starts with":
-                        value = $"{value}**";
+                        value = $"{value}*";
                         break;
                     case "contains":
-                        value = $"**{value}**";
+                        value = $"*{value}*";
                         break;
                     case "ends with":
-                        value = $"**{value}";
+                        value = $"*{value}";
                         break;
                 }
             }
 
-            conditions.Add(new KeyValuePair<string, object>("(Image.Path GLOB ?)", value));
+            conditions.Add(new KeyValuePair<string, object>("(Image.Path LIKE ?)", value.Replace("*", "%")));
 
         }
     }

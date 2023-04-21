@@ -60,10 +60,14 @@
                 <MenuItem Header="_Popout Preview" Command="{Binding PoputPreview}"/>
             </MenuItem>
             <MenuItem Style="{DynamicResource MenuItemStyle1}" Header="_Tools">
-                <MenuItem Header="_Mark all matching files for Deletion" Command="{Binding MarkAllForDeletion}"/>
-                <MenuItem Header="_Unmark all matching files for Deletion" Command="{Binding UnmarkAllForDeletion}"/>
-                <Separator></Separator>
-                <MenuItem Header="_Remove all matching files from the database" Command="{Binding RemoveMatching}"/>
+                <MenuItem Header="_Query">
+                    <MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_Mark all matching files for Deletion" Command="{Binding MarkAllForDeletion}"/>
+                    <MenuItem Header="_Unmark all matching files for Deletion" Command="{Binding UnmarkAllForDeletion}"/>
+                    <Separator></Separator>
+                    <MenuItem Header="_Remove all matching files from the database" Command="{Binding RemoveMatching}"/>
+                </MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="_Auto tag NSFW" Command="{Binding AutoTagNSFW}"/>
             </MenuItem>

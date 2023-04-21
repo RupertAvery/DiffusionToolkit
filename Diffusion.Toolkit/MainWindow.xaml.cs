@@ -165,6 +165,7 @@ namespace Diffusion.Toolkit
             _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
             _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
             _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
+            _model.AddMatchingToAlbum = new RelayCommand<object>((o) => AddMatchingToAlbum());
 
 
             _model.PropertyChanged += ModelOnPropertyChanged;
@@ -201,6 +202,16 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private async void AddMatchingToAlbum()
+        {
+            if (_search.IsQueryEmpty())
+            {
+                await _messagePopupManager.Show("Query cannot be empty", "Unmark images for deletion", PopupButtons.OK);
+                return;
+            }
+
         }
 
         private void PopoutPreview()

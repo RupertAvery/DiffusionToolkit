@@ -46,6 +46,7 @@ public class MainModel : BaseNotify
     private ICommand _reloadHashes;
     private ICommand _showFolders;
     private ICommand _showAlbums;
+    private ICommand _addMatchingToAlbum;
 
     public MainModel()
     {
@@ -288,5 +289,11 @@ public class MainModel : BaseNotify
     {
         get => _autoTagNsfw;
         set => SetField(ref _autoTagNsfw, value);
+    }
+
+    public ICommand AddMatchingToAlbum
+    {
+        get => _addMatchingToAlbum;
+        set => SetField(ref _addMatchingToAlbum, value);
     }
 }

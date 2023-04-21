@@ -72,6 +72,24 @@ public class MessagePopupManager
         });
     }
 
+    public Task<(PopupResult, string)> ShowInput(string message, string title, int timeout = 0)
+    {
+        _host.Visibility = Visibility.Visible;
+        var popup = new MessagePopup(this, _placementTarget, timeout, true);
+        _popups.Add(popup);
+        _host.Children.Add(popup);
+        return popup.Show(message, title, PopupButtons.OkCancel)
+            .ContinueWith(t =>
+            {
+                _dispatcher.Invoke(() =>
+                {
+                    _host.Visibility = Visibility.Hidden;
+                });
+                return (t.Result, popup.Text);
+            });
+    }
+
+
     public Task<PopupResult> Show(string message, string title, int timeout = 0)
     {
         _host.Visibility = Visibility.Visible;

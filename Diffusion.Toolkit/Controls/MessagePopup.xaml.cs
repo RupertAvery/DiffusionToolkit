@@ -25,6 +25,12 @@ namespace Diffusion.Toolkit.Controls
             t = new Timer(Callback, null, 1000, Timeout.Infinite);
         }
 
+        public string Text
+        {
+            get => _model.Input;
+            set => _model.Input = value;
+        }
+
         private void Callback(object? state)
         {
             t?.Dispose();
@@ -45,7 +51,12 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
-        public MessagePopup(MessagePopupManager manager, UIElement placementTarget, int timeout)
+        public MessagePopup(MessagePopupManager manager, UIElement placementTarget, int timeout) : this(manager, placementTarget, timeout, false)
+        {
+        }
+
+
+        public MessagePopup(MessagePopupManager manager, UIElement placementTarget, int timeout, bool showInput)
         {
             _manager = manager;
             _timeout = timeout;
@@ -59,6 +70,8 @@ namespace Diffusion.Toolkit.Controls
             _model = new MessagePopupModel();
 
             _tcs = new TaskCompletionSource<PopupResult>();
+
+            _model.ShowInput = showInput;
 
             _model.PlacementTarget = placementTarget;
 
@@ -172,7 +185,7 @@ namespace Diffusion.Toolkit.Controls
 
             return _tcs.Task;
         }
-        
+
         public void Show()
         {
             _model.IsVisible = true;

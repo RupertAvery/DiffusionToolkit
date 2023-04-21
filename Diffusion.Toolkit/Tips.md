@@ -118,7 +118,7 @@ You will be prompted to scan your selected folders for images.
 
 # Indexing your images
 
-Diffusion Toolkit is designed to find your images fast. To do this it needs to scan each image and read in the metadata and store it in a local database.
+Diffusion Toolkit is designed to find your images fast. To do this it needs to scan each image and read in the metadata and store it in a local database. It can typically index around 10,000 images in seconds on an SSD.
 
 ## Scan folders for new images
 
@@ -211,7 +211,7 @@ To permanently remove all images marked For Deletion, click **Edit > Empty Recyc
 
 # Preview
 
-On the right is the Preview Pane, where the image preview will be displayed when an thumbnail is selected.
+On the right is the **Preview Pane**, where the image preview will be displayed when an thumbnail is selected.
 
 ![image](https://user-images.githubusercontent.com/1910659/210345752-d0a2deef-174d-4bae-b191-393387a8fce6.png)
 
@@ -265,9 +265,11 @@ Currently only indexed images will be displayed in Folder view.  If you navigate
 
 You can still use the search function to filter images in Folder view.
 
+If coming from a pre-1.0 version of Diffusion Toolkit, you must Rebuild Images to update the folder information. 
+
 # Albums
 
-Albums offer an alternative to folders for image grouping. To create an ALbum, you can use the Create Album button in the Albums panel, or select one or more images and right-click and select **Add to Album > New Album.**
+Albums offer an alternative to folders for image grouping. To create an Album, you can use the **Create Album** button in the Albums panel, or select one or more images and right-click and select **Add to Album > New Album.**
 
 Click on the **Albums** icon in the menu bar to display the list of Albums. A Home button will appear below the search bar, and the current Album name will be displayed next to to.
 
@@ -277,11 +279,11 @@ Clicking on an Album in the thumbnail view or on the Album panel will open the A
 
 Youu can right click on an Album in the thumbnail view or in the Albums panel to access the Album context menu, which allows you to rename or remove an Album.
 
-If you remove an Album, only the Album will be removed. The images added to the album will still be available in Search.
+If you remove an Album, only the Album will be removed. The images added to the album will still be available in Search, and in other albums they may have been added to.
 
 To add an image to an existing Album, right click an image and select **Add to Album** then select one of the Albums from a list of last 10 updated Albums.
 
-You can also drag and drop an image to an Album in the Album panel to add the images to the Album.
+You can also drag and drop one or more selected images to an Album in the Album panel to add images to the Album.
 
 To remove an image from an Album, while in the Album, right click an image and select **Remove from Album**. You will not be prompted for confirmation.
 
@@ -289,8 +291,7 @@ You can still use the search function to filter images in Album view.
 
 # Drag and Drop
 
-You can drag an image from the thumbnail to another app, such as the PNGInfo tab in a WebUI to transfer the metadata, or to an explorer folder to copy the image to the target folder
-
+You can drag an image from the thumbnail to another app, such as the PNGInfo tab in a WebUI to transfer the metadata, or to an explorer folder to copy the image to the target folder, or into Photoshop to begin editing your masterpiece.
 
 # Searching
 
@@ -458,13 +459,13 @@ This filter will show images that do not have metadata.
 
 ## For Deletion
 
-For Deletion is a Diffusion Toolkit metadata with a value of true or false, entered by the user. See [Deleting](#deleting)
+**For Deletion** is a Diffusion Toolkit metadata with a value of true or false, entered by the user. See [Deleting](#deleting)
 
 * `delete: [true|false]` - Filters by files marked for deletion
 
-## File Creation Date
+## Date Created
 
-File Creation Date is a Diffusion Toolkit metadata taken from the image file's attributes during scanning.
+ **Date Created** is a Diffusion Toolkit metadata taken from the image file's attributes during scanning.
 
 Allows you to search by the file's created date
 
@@ -483,17 +484,21 @@ Allows you to search by the file's created date
    * `XX-XX-XXXX` dates will be parsed using your computer's date format, i.e. 
 `MM-DD-YYYY` for US and similar regions, `DD-MM-YYYY` for European regions.
 
-## File Path
+## Path
+ 
+ **Path** is a Diffusion Toolkit metadata taken from the image file's attributes during scanning.
 
-File Creation Date is a Diffusion Toolkit metadata taken from the image file's path during scanning.
+You can use wildcards (`?`, `*`), or the criteria `starts with`, `contains`, or `ends with`. 
 
-You can use [globs](https://www.sqlitetutorial.net/sqlite-glob/), or the criteria `starts with`, `contains`, or `ends with`. 
+Path will match the full path, i.e. including the filename, so you will usually want to use wildcards.
 
-* `path: <term>`  
+Path with wildcards will return matches in subfolders. If you want to search a specific folder, use [Folder](#folder)
 
-   * using globs:
-      * `path: D:\diffusion\images**`      
-      * `path: **img2img**`      
+* `path: [criteria] <search-term>`  
+
+   * using wildcards:
+      * `path: D:\diffusion\images*`      
+      * `path: *img2img*`      
       * `path: *.jpg`      
 
    * using criteria:
@@ -509,6 +514,12 @@ You can use [globs](https://www.sqlitetutorial.net/sqlite-glob/), or the criteri
    * using criteria:
       * `path: starts with "D:\My pics\images"`      
       * `path: contains "funny cats"`      
+
+## Folder
+ 
+ **Folder** is a Diffusion Toolkit metadata taken from the image file's attributes during scanning.  Searching by folder limits your result to a specific folder, unlike path, which will include images in subfolders.
+
+* `folder: <folder>`  
 
 # Notes about Search
 
@@ -542,19 +553,15 @@ The Similarity Slider will try to do a fuzzy match by applying a Hamming Distanc
 
 # FAQ
 
-## Do I need to Rebuild Images?
+## When do I need to Rebuild Images?
 
-No, you only need to Rebuild Images if a new version of Diffusion Toolkit comes out with support for metadata that exists in your existing images.
+You only need to Rebuild Images if a new version of Diffusion Toolkit comes out with support for metadata that exists in your existing images.
 
-## Can I move my files to a different folder?
+## Can I move my images to a different folder?
 
-I you want to move your files to a different folder, but still within a Diffusion folder, you should use the right-click menu > Move command. This allows Diffusion Toolkit to handle the movement, and know to keep all the metadata intact while moving.
+I you want to move your images to a different folder, but still within a Diffusion folder, you should use the **right-click > Move** command. This allows Diffusion Toolkit to handle the moving of images, and know to keep all the Diffusion Toolkit metadata (Favorites, Rating, NSFW) intact while moving.
 
-If you use Explorer or some other application to move the files, 
-
-, but still under the Diffusion folders, when you Rescan Folders or Rebuild Images Diffusion Toolkit will detect that the images have been removed, and will detect new files added.
-
-You will lose any Favorites, Ratings or other Toolkit-specific information. 
+If you use Explorer or some other application to move the files, but still under the Diffusion folders, when you Rescan Folders or Rebuild Images Diffusion Toolkit will detect that the images have been removed, then will detect new files added. You will lose any Favorites, Ratings or other Toolkit-specific information. 
 
 ## Where are my settings and database stored?
 

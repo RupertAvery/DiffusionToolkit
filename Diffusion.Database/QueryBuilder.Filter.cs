@@ -81,27 +81,7 @@ namespace Diffusion.Database
             {
                 var value = filter.Path;
 
-                //var match = PathRegex.Match(value);
-                //if (match.Success)
-                //{
-                //    if (match.Groups["criteria"].Success)
-                //    {
-                //        switch (match.Groups["criteria"].Value.ToLower())
-                //        {
-                //            case "starts with":
-                //                value = $"{value}**";
-                //                break;
-                //            case "contains":
-                //                value = $"**{value}**";
-                //                break;
-                //            case "ends with":
-                //                value = $"**{value}";
-                //                break;
-                //        }
-                //    }
-                //}
-
-                conditions.Add(new KeyValuePair<string, object>("(Image.Path GLOB ?)", value));
+                conditions.Add(new KeyValuePair<string, object>("(Image.Path LIKE ?)", value.Replace("*", "%")));
 
             }
         }
@@ -413,7 +393,7 @@ namespace Diffusion.Database
         {
             if (filter.UseSeed)
             {
-                if (filter.SeedEnd.HasValue)
+                if (!string.IsNullOrEmpty(filter.SeedEnd))
                 {
                     conditions.Add(new KeyValuePair<string, object>("(Seed BETWEEN ? AND ?)", new object[] { filter.SeedStart, filter.SeedEnd }));
                 }
