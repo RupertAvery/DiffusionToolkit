@@ -91,11 +91,11 @@
                               HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
                               VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"  
                               PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
+                              PreviewMouseWheel="UIElement_OnMouseWheel"  
                               KeyDown="UIElement_OnKeyDown"
                               >
                 <Image x:Name="Preview"
                            DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
-                           MouseWheel="UIElement_OnMouseWheel"  
                            RenderOptions.BitmapScalingMode="Fant"
                            Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
                            Source="{Binding Image}" >
@@ -131,7 +131,7 @@
                 </fa:ImageAwesome>
             </Grid>
 
-            <Grid  Grid.Row="0" Background="Transparent" IsHitTestVisible="true">
+            <Grid  Grid.Row="0" Background="{x:Null}"  IsHitTestVisible="true">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="40"/>
@@ -245,7 +245,7 @@
                         </ScrollViewer>
                     </Grid>
 
-                    <Grid Grid.Row="2" Background="Transparent"  IsHitTestVisible="true">
+                    <Grid Grid.Row="2" Background="{x:Null}" IsHitTestVisible="true">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="40"/>
