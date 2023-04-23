@@ -213,7 +213,7 @@
         <GridSplitter x:Name="GridSplitter"  Grid.Row="0" Grid.Column="1"
                       HorizontalAlignment="Center"
                       VerticalAlignment="Stretch"
-                      ShowsPreview="True"
+                      ShowsPreview="False"
                       Width="5"
         />
 
