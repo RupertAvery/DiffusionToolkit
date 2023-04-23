@@ -20,22 +20,13 @@ using Path = System.IO.Path;
 using Diffusion.Toolkit.Classes;
 using Model = Diffusion.Common.Model;
 using Task = System.Threading.Tasks.Task;
-using System.Windows.Media;
 using static System.String;
 using Diffusion.Toolkit.Controls;
-using System.Collections;
 using System.Collections.Specialized;
-using System.Windows.Documents;
 using Image = Diffusion.Database.Image;
-using Diffusion.Common;
-using Diffusion.Toolkit.Converters;
-using MdXaml.LinkActions;
 using SQLite;
-using static System.Net.WebRequestMethods;
-using System.Windows.Navigation;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
-using System.Windows.Shapes;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -184,7 +175,8 @@ namespace Diffusion.Toolkit.Pages
             _model.Pages = 0;
             _model.TotalFiles = 100;
             _model.Images = new ObservableCollection<ImageEntry>();
-            _model.PropertyChanged += ModelOnPropertyChanged;
+            _model.ShowAlbumPanel = settings.ShowAlbumPanel.GetValueOrDefault(true);
+                _model.PropertyChanged += ModelOnPropertyChanged;
             _model.SearchCommand = new RelayCommand<object>((o) =>
             {
                 _model.IsFilterVisible = false;
@@ -317,6 +309,11 @@ namespace Diffusion.Toolkit.Pages
                 RenewAlbumName.Focus();
             });
 
+            _model.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
+            {
+                ReloadMatches(true, o.GotoEnd);
+            });
+
             var albums = DataStore.GetAlbums();
 
             _model.Albums = new ObservableCollection<Album>(albums);
@@ -400,7 +397,17 @@ namespace Diffusion.Toolkit.Pages
         {
             if (_model.CurrentImage == null) return;
             var p = _model.CurrentImage.Path;
-            Process.Start("explorer.exe", $"/select,\"{p}\"");
+
+            var processInfo = new ProcessStartInfo()
+            {
+                FileName = "explorer.exe",
+                Arguments = $"/select,\"{p}\"",
+                UseShellExecute = true
+            };
+
+            Process.Start(processInfo);
+
+            //Process.Start("explorer.exe", $"/select,\"{p}\"");
         }
 
         public void SearchImages()
@@ -668,7 +675,7 @@ namespace Diffusion.Toolkit.Pages
                     _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
                 }
 
-                PreviewPane.ZoomPreview();
+                PreviewPane.ResetZoom();
 
                 OnCurrentImageChange?.Invoke(_model.CurrentImage);
             }
@@ -708,17 +715,17 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        public void ReloadMatches(bool focus = true)
+        public void ReloadMatches(bool focus = true, bool gotoEnd = false)
         {
             Task.Run(() =>
             {
                 LoadMatches();
-                ThumbnailListView.ResetView(focus);
+                ThumbnailListView.ResetView(focus, gotoEnd);
             });
         }
 
 
-        public Task ReloadMatchesAsync(bool focus = true)
+        public Task ReloadMatchesAsync(bool focus = true, bool gotoEnd = false)
         {
             //await LoadMatchesAsync();
 
@@ -730,7 +737,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            //ThumbnailListView.ResetView(focus);
+                            ThumbnailListView.ResetView(focus, gotoEnd);
                         });
                     }
                 });
@@ -842,10 +849,10 @@ namespace Diffusion.Toolkit.Pages
 
         private void LoadMatches()
         {
-            //Dispatcher.Invoke(() =>
-            //{
-            //    _model.Images.Clear();
-            //});
+            Dispatcher.Invoke(() =>
+            {
+                _model.Images?.Clear();
+            });
 
             var images = new List<ImageEntry>();
 
@@ -1074,10 +1081,10 @@ namespace Diffusion.Toolkit.Pages
 
         private async Task LoadMatchesAsync()
         {
-            //Dispatcher.Invoke(() =>
-            //{
-            //    _model.Images.Clear();
-            //});
+            Dispatcher.Invoke(() =>
+            {
+                _model.Images.Clear();
+            });
 
             var images = new List<ImageEntry>();
 
@@ -1416,11 +1423,6 @@ namespace Diffusion.Toolkit.Pages
             _model.CurrentImage.IsParametersVisible = !_model.CurrentImage.IsParametersVisible;
         }
 
-        private void ThumbnailListView_OnPageChangedEvent(object? sender, int e)
-        {
-            ReloadMatches(true);
-        }
-
         public void SetThumbnailSize(int thumbnailSize)
         {
             ThumbnailListView.SetThumbnailSize(thumbnailSize);
@@ -1691,6 +1693,11 @@ namespace Diffusion.Toolkit.Pages
             AddAlbumPopup.Tag = "NoImages";
             AddAlbumPopup.IsOpen = true;
             NewAlbumName.Focus();
+        }
+
+        public void SetShowAlbumPanel(bool showAlbumPanel)
+        {
+            _model.ShowAlbumPanel = showAlbumPanel;
         }
     }
 }

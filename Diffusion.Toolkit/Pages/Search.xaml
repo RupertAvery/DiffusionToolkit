@@ -17,6 +17,7 @@
     <Page.Resources>
         <ResourceDictionary>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
+            <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
             <converters:FolderModeVisibilityConverter x:Key="addrVis"></converters:FolderModeVisibilityConverter>
             <converters:AlbumModeVisibilityConverter x:Key="albVis"></converters:AlbumModeVisibilityConverter>
         </ResourceDictionary>
@@ -133,7 +134,7 @@
                     </DockPanel>
                     <Grid DockPanel.Dock="Bottom">
                         <DockPanel>
-                            <TabControl Background="Transparent" DockPanel.Dock="Left">
+                            <TabControl Visibility="{Binding ShowAlbumPanel, Converter={StaticResource boolToVisCol}}" Background="Transparent" DockPanel.Dock="Left">
                                 <TabItem Header="Albums">
                                     <DockPanel>
                                         <Button DockPanel.Dock="Top" Width="135" Height="26" Click="CreateAlbum_Click" Margin="0,10,0,15">
@@ -170,7 +171,7 @@
                                 NSFWBlur="{Binding MainModel.NSFWBlur}" 
                                 IsEmpty="{Binding IsEmpty}"
                                 Results="{Binding Results}"
-                                PageChangedEvent="ThumbnailListView_OnPageChangedEvent"
+                                PageChangedCommand="{Binding PageChangedCommand}"
                                 SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
                                 OpenCommand="{Binding OpenCommand}"
                                 AddAlbumCommand="{Binding AddAlbumCommand}"
