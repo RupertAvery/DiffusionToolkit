@@ -1,28 +1,34 @@
-﻿using Dir = System.IO.Directory;
-using System.IO;
-using static System.Net.WebRequestMethods;
+﻿using static System.IO.Directory;
 
 namespace Diffusion.IO
 {
     public class Scanner
     {
-        public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles)
+        public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, IEnumerable<string>? excludePaths)
         {
             var files = Enumerable.Empty<string>();
 
-            foreach (var extension in extensions.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            if (Exists(path))
             {
-                if (Directory.Exists(path))
+
+                foreach (var extension in extensions.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
-                    files = files.Concat(Dir.EnumerateFiles(path, $"*{extension}",
-                        SearchOption.AllDirectories));
+                    files = files.Concat(EnumerateFiles(path, $"*{extension}",
+                        recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
                 }
+
+                if (ignoreFiles != null)
+                {
+                    files = files.Where(f => !ignoreFiles.Contains(f));
+                }
+
+                if (recursive && excludePaths != null)
+                {
+                    files = files.Where(f => excludePaths.Any(p => !f.StartsWith(p)));
+                }
+
             }
 
-            if (ignoreFiles != null)
-            {
-                files = files.Where(f => !ignoreFiles.Contains(f));
-            }
 
             return files;
         }

@@ -6,12 +6,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using Diffusion.Toolkit.Classes;
-using Diffusion.IO;
 using System.Text.RegularExpressions;
-using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Themes;
-using Diffusion.Toolkit.Pages;
 using System.Diagnostics;
 using System.IO;
 
@@ -43,6 +40,7 @@ namespace Diffusion.Toolkit
             _model = new SettingsModel();
             _model.PropertyChanged += ModelOnPropertyChanged;
             _model.ImagePaths = new ObservableCollection<string>(settings.ImagePaths);
+            _model.ExcludePaths = new ObservableCollection<string>(settings.ExcludePaths);
             _model.ModelRootPath = settings.ModelRootPath;
             _model.FileExtensions = settings.FileExtensions;
             _model.PageSize = settings.PageSize;
@@ -54,6 +52,7 @@ namespace Diffusion.Toolkit
             _model.NSFWTags = string.Join("\r\n", settings.NSFWTags);
             _model.HashCache = settings.HashCache;
             _model.PortableMode = settings.PortableMode;
+            _model.RecurseFolders = settings.RecurseFolders;
 
             DataContext = _model;
 
@@ -61,6 +60,7 @@ namespace Diffusion.Toolkit
             {
                 settings.SetPristine();
                 settings.ImagePaths = _model.ImagePaths.ToList();
+                settings.ExcludePaths = _model.ExcludePaths.ToList();
                 settings.ModelRootPath = _model.ModelRootPath;
                 settings.FileExtensions = _model.FileExtensions;
                 settings.Theme = _model.Theme;
@@ -72,6 +72,7 @@ namespace Diffusion.Toolkit
                 settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
                 settings.HashCache = _model.HashCache;
                 settings.PortableMode = _model.PortableMode;
+                settings.RecurseFolders = _model.RecurseFolders;
             };
 
             //var str = new System.Text.StringBuilder();
@@ -127,6 +128,41 @@ namespace Diffusion.Toolkit
                 _model.ImagePaths.RemoveAt(_model.SelectedIndex);
             }
         }
+
+
+        private void ExcludedAddFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new CommonOpenFileDialog();
+            dialog.IsFolderPicker = true;
+            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            {
+                if (_model.ImagePaths.All(d => !dialog.FileName.StartsWith(d)))
+                {
+                    MessageBox.Show(this,
+                        "The selected folder must be on the path of one of the included folders",
+                        "Add Excluded folder", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+
+                _model.ExcludePaths.Add(dialog.FileName);
+            }
+
+        }
+
+        private void ExcludedRemoveFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(this,
+                "Are you sure you want to remove this folder?",
+                "Remove Excluded folder", MessageBoxButton.YesNo,
+                MessageBoxImage.Question, MessageBoxResult.No);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                _model.ExcludePaths.RemoveAt(_model.ExcludedSelectedIndex);
+            }
+        }
+
 
         private void Close_OnClick(object sender, RoutedEventArgs e)
         {

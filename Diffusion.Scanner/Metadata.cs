@@ -27,7 +27,7 @@ public class Metadata
 
     public static FileParameters? ReadFromFile(string file)
     {
-        FileParameters fileParameters = null;
+        FileParameters? fileParameters = null;
 
 
         var ext = Path.GetExtension(file).ToLower();
@@ -67,6 +67,24 @@ public class Metadata
                         fileParameters = ReadAutomatic1111Parameters(file, directories);
                     }
 
+                    if (fileParameters != null && (fileParameters.Width == 0 || fileParameters.Height == 0))
+                    {
+                        var imageMetaData = directories.FirstOrDefault(d => d.Name == "PNG-IHDR");
+
+                        foreach (var tag in imageMetaData.Tags)
+                        {
+                            if (tag.Name == "Image Width")
+                            {
+                                fileParameters.Width = int.Parse(tag.Description);
+                            }
+                            else if (tag.Name == "Image Height")
+                            {
+                                fileParameters.Height = int.Parse(tag.Description);
+                            }
+                        }
+                    }
+
+
                     break;
                 }
             case ".jpg" or ".jpeg":
@@ -78,13 +96,13 @@ public class Metadata
                     break;
                 }
             case ".webp":
-            {
-                IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(file);
+                {
+                    IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(file);
 
-                fileParameters = ReadAutomatic1111Parameters(file, directories);
+                    fileParameters = ReadAutomatic1111Parameters(file, directories);
 
-                break;
-            }
+                    break;
+                }
         }
 
         if (fileParameters == null)
@@ -102,7 +120,7 @@ public class Metadata
                 var textFiles = GetDirectoryTextFileCache(currPath);
 
                 var matchingFile = textFiles.FirstOrDefault(t => Path.GetFileNameWithoutExtension(parameterFile).StartsWith(Path.GetFileNameWithoutExtension(t)));
-                
+
                 if (matchingFile != null)
                 {
                     var parameters = File.ReadAllText(matchingFile);
@@ -200,7 +218,7 @@ public class Metadata
 
             var root = JsonDocument.Parse(json);
             var nodes = root.RootElement.EnumerateObject().ToDictionary(o => o.Name, o => o.Value);
-            
+
             var ksampler = nodes.Values.SingleOrDefault(o =>
             {
                 if (o.TryGetProperty("class_type", out var element))
@@ -255,8 +273,14 @@ public class Metadata
             {
                 var index = latent_image.EnumerateArray().First().GetString();
                 var promptObject = nodes[index].GetProperty("inputs");
-                fp.Height = promptObject.GetProperty("height").GetInt32();
-                fp.Width = promptObject.GetProperty("width").GetInt32();
+                var hasWidth = promptObject.TryGetProperty("width", out var widthObject);
+                var hasHeight = promptObject.TryGetProperty("height", out var heightObject);
+
+                if (hasWidth && hasHeight)
+                {
+                    fp.Width = widthObject.GetInt32();
+                    fp.Height = heightObject.GetInt32();
+                }
             }
 
             fp.Steps = image.GetProperty("steps").GetInt32();
@@ -508,7 +532,7 @@ public class Metadata
 
         fileParameters.Prompt = "";
         fileParameters.NegativePrompt = "";
- 
+
         foreach (var part in parts)
         {
             var isNegativePrompt = part.StartsWith(negativePromptKey, StringComparison.InvariantCultureIgnoreCase);

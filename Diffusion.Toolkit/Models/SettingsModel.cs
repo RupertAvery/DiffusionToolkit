@@ -7,6 +7,7 @@ public class SettingsModel : BaseNotify
     private string _modelRootPath;
     private ObservableCollection<string> _imagePaths;
     private int _selectedIndex;
+    private int _excludedSelectedIndex;
     private string _fileExtensions;
     private int _pageSize;
     private string _theme;
@@ -17,6 +18,8 @@ public class SettingsModel : BaseNotify
     private string _hashCache;
     private bool _portableMode;
     private bool _watchFolders;
+    private ObservableCollection<string> _excludePaths;
+    private bool? _recurseFolders;
 
     public SettingsModel()
     {
@@ -33,6 +36,12 @@ public class SettingsModel : BaseNotify
     {
         get => _selectedIndex;
         set => SetField(ref _selectedIndex, value);
+    }
+
+    public int ExcludedSelectedIndex
+    {
+        get => _excludedSelectedIndex;
+        set => SetField(ref _excludedSelectedIndex, value);
     }
 
     public string FileExtensions
@@ -76,6 +85,7 @@ public class SettingsModel : BaseNotify
         get => _portableMode;
         set => SetField(ref _portableMode, value);
     }
+
     public bool ScanForNewImagesOnStartup
     {
         get => _scanForNewImagesOnStartup;
@@ -98,5 +108,17 @@ public class SettingsModel : BaseNotify
     {
         get => _hashCache;
         set => SetField(ref _hashCache, value);
+    }
+
+    public ObservableCollection<string> ExcludePaths
+    {
+        get => _excludePaths;
+        set => SetField(ref _excludePaths, value);
+    }
+
+    public bool? RecurseFolders
+    {
+        get => _recurseFolders;
+        set => SetField(ref _recurseFolders, value);
     }
 }

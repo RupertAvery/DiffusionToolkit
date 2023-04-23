@@ -1,6 +1,5 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Input;
-using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -47,6 +46,9 @@ public class MainModel : BaseNotify
     private ICommand _showFolders;
     private ICommand _showAlbums;
     private ICommand _addMatchingToAlbum;
+    private bool _showAlbumPanel;
+    private ICommand _toggleAlbum;
+    private ICommand _refresh;
 
     public MainModel()
     {
@@ -295,5 +297,23 @@ public class MainModel : BaseNotify
     {
         get => _addMatchingToAlbum;
         set => SetField(ref _addMatchingToAlbum, value);
+    }
+
+    public bool ShowAlbumPanel
+    {
+        get => _showAlbumPanel;
+        set => SetField(ref _showAlbumPanel, value);
+    }
+
+    public ICommand ToggleAlbum
+    {
+        get => _toggleAlbum;
+        set => SetField(ref _toggleAlbum, value);
+    }
+
+    public ICommand Refresh
+    {
+        get => _refresh;
+        set => SetField(ref _refresh, value);
     }
 }

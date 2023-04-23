@@ -5,8 +5,9 @@
     <Style TargetType="FlowDocument" x:Key="DocumentStyleBetterGithub">
         <Setter Property="FontFamily"    Value="Calibri" />
         <Setter Property="TextAlignment" Value="Left" />
-        <Setter Property="PagePadding"   Value="0"/>
-        <Setter Property="FontSize"      Value="14"/>
+        <Setter Property="PagePadding"   Value="10"/>
+        <Setter Property="FontSize"      Value="16"/>
+        <Setter Property="Background"    Value="White"/>
 
         <Style.Resources>
             <Style TargetType="Section">
@@ -91,7 +92,7 @@
             </Style>
 
             <Style TargetType="Hyperlink">
-                <Setter Property="TextDecorations"    Value="Underline" />
+                <Setter Property="TextDecorations" Value="None" />
             </Style>
 
             <Style TargetType="Image">

@@ -125,6 +125,9 @@ namespace Diffusion.Toolkit
             _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
             _model.AddMatchingToAlbum = new RelayCommand<object>((o) => AddMatchingToAlbum());
 
+            _model.ToggleAlbum = new RelayCommand<object>((o) => ToggleAlbum());
+
+            _model.Refresh = new RelayCommand<object>((o) => Refresh());
 
             _model.PropertyChanged += ModelOnPropertyChanged;
 
@@ -245,7 +248,7 @@ namespace Diffusion.Toolkit
             {
                 Logger.Log($"Opening Settings for first time");
 
-                _settings = new Settings();
+                _settings = new Settings(true);
 
                 UpdateTheme();
 
@@ -270,6 +273,9 @@ namespace Diffusion.Toolkit
             }
             else
             {
+                _settings.ShowAlbumPanel ??= true;
+                _settings.RecurseFolders ??= true;
+
                 UpdateTheme();
 
                 if (!_settings.DontShowWelcomeOnStartup)
@@ -307,6 +313,8 @@ namespace Diffusion.Toolkit
             QueryBuilder.HideNFSW = _model.HideNSFW;
             _model.NSFWBlur = _settings.NSFWBlur;
             _model.FitToPreview = _settings.FitToPreview;
+
+            _model.ShowAlbumPanel = _settings.ShowAlbumPanel.GetValueOrDefault(true);
 
             Activated += OnActivated;
             StateChanged += OnStateChanged;

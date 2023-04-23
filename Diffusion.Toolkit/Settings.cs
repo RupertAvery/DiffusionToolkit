@@ -1,41 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
 namespace Diffusion.Toolkit;
 
-public class Settings
+public interface IScanOptions
+{
+
+    List<string> ImagePaths {  get; set; }
+
+    List<string> ExcludePaths { get; set; }
+
+    bool? RecurseFolders { get; set; }
+
+    string FileExtensions { get; set; }
+
+}
+
+public class Settings : IScanOptions
 {
     private List<string> _imagePaths;
+    private List<string> _excludePaths;
     private string _modelRootPath;
     private string _fileExtensions;
     private int _pageSize;
-
-    public Settings()
-    {
-        DontShowWelcomeOnStartup = false;
-        ImagePaths = new List<string>();
-        NSFWTags = new List<string>() { "nsfw", "nude", "naked" };
-        FileExtensions = ".png, .jpg, .jpeg, .webp";
-        Theme = "System";
-        PageSize = 100;
-        ThumbnailSize = 128;
-    }
-
-    private bool _isDirty;
-
-    public bool IsDirty()
-    {
-        return _isDirty;
-    }
-
-    private readonly Dictionary<string, bool> _isPropertyDirty = new Dictionary<string, bool>();
     private string _mainGridWidth;
-    private string _previewGridHeight;
     private string _mainGridWidth2;
-    private string _previewGridHeight2;
     private WindowState? _windowState;
     private Size? _windowSize;
     private bool _dontShowWelcomeOnStartup;
@@ -51,8 +42,40 @@ public class Settings
     private List<string> _nsfwTags;
     private string _hashCache;
     private bool _portableMode;
+    private bool? _showAlbumPanel;
+    private bool? _recurseFolders;
+    private readonly Dictionary<string, bool> _isPropertyDirty = new Dictionary<string, bool>();
+    private bool _isDirty;
 
+    public bool IsDirty()
+    {
+        return _isDirty;
+    }
+
+    public Settings() : this(false)
+    {
+
+    }
     
+    public Settings(bool initialize)
+    {
+        DontShowWelcomeOnStartup = false;
+        ImagePaths = new List<string>();
+        ExcludePaths = new List<string>();
+        NSFWTags = new List<string>() { "nsfw", "nude", "naked" };
+        FileExtensions = ".png, .jpg, .jpeg, .webp";
+        Theme = "System";
+        PageSize = 100;
+        ThumbnailSize = 128;
+        if (initialize)
+        {
+            ShowAlbumPanel = true;
+            RecurseFolders = true;
+        }
+    }
+
+  
+ 
     public bool IsPropertyDirty(string name)
     {
         return _isPropertyDirty.TryGetValue(name, out bool val) && val;
@@ -64,11 +87,6 @@ public class Settings
         _isPropertyDirty.Clear();
     }
 
-    public List<string> NSFWTags
-    {
-        get => _nsfwTags;
-        set => UpdateList(ref _nsfwTags, value);
-    }
 
     public List<string> ImagePaths
     {
@@ -76,10 +94,10 @@ public class Settings
         set => UpdateList(ref _imagePaths, value);
     }
 
-    public string ModelRootPath
+    public List<string> ExcludePaths
     {
-        get => _modelRootPath;
-        set => UpdateValue(ref _modelRootPath, value);
+        get => _excludePaths;
+        set => UpdateList(ref _excludePaths, value);
     }
 
     public string FileExtensions
@@ -88,12 +106,32 @@ public class Settings
         set => UpdateValue(ref _fileExtensions, value);
     }
 
+    public bool? RecurseFolders
+    {
+        get => _recurseFolders;
+        set => UpdateValue(ref _recurseFolders, value);
+    }
+
+    public List<string> NSFWTags
+    {
+        get => _nsfwTags;
+        set => UpdateList(ref _nsfwTags, value);
+    }
+
+    public string ModelRootPath
+    {
+        get => _modelRootPath;
+        set => UpdateValue(ref _modelRootPath, value);
+    }
+
     public int PageSize
     {
         get => _pageSize;
         set => UpdateValue(ref _pageSize, value);
     }
 
+
+    #region Window State
     public string MainGridWidth
     {
         get => _mainGridWidth;
@@ -117,13 +155,8 @@ public class Settings
         get => _windowSize;
         set => UpdateValue(ref _windowSize, value);
     }
+    #endregion
 
-
-    public bool DontShowWelcomeOnStartup
-    {
-        get => _dontShowWelcomeOnStartup;
-        set => UpdateValue(ref _dontShowWelcomeOnStartup, value);
-    }
 
     public string Theme
     {
@@ -147,6 +180,11 @@ public class Settings
     {
         get => _nsfwBlur;
         set => UpdateValue(ref _nsfwBlur, value);
+    }
+    public bool DontShowWelcomeOnStartup
+    {
+        get => _dontShowWelcomeOnStartup;
+        set => UpdateValue(ref _dontShowWelcomeOnStartup, value);
     }
 
     public bool CheckForUpdatesOnStartup
@@ -185,6 +223,12 @@ public class Settings
         set => UpdateValue(ref _hashCache, value);
     }
 
+    public bool? ShowAlbumPanel
+    {
+        get => _showAlbumPanel;
+        set => UpdateValue(ref _showAlbumPanel, value);
+    }
+
     public bool PortableMode
     {
         get => _portableMode;
@@ -193,13 +237,13 @@ public class Settings
 
     public void Apply(Settings settings)
     {
-      var props = typeof(Settings).GetProperties();
+        var props = typeof(Settings).GetProperties();
 
-      foreach (var prop in props)
-      {
-          var value = prop.GetValue(settings);
-          prop.SetValue(this, value);
-      }
+        foreach (var prop in props)
+        {
+            var value = prop.GetValue(settings);
+            prop.SetValue(this, value);
+        }
     }
 
     private void UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")

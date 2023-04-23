@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Diffusion.Database;
-using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
-using Diffusion.Toolkit.Converters;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -62,6 +56,8 @@ public class SearchModel : BaseNotify
     private ICommand _removeAlbumCommand;
     private ICommand _renameAlbumCommand;
     private ObservableCollection<Album> _albums;
+    private bool _showAlbumPanel;
+    private ICommand _pageChangedCommand;
 
     public SearchModel()
     {
@@ -372,6 +368,18 @@ public class SearchModel : BaseNotify
     {
         get => _albums;
         set => SetField(ref _albums, value);
+    }
+
+    public bool ShowAlbumPanel
+    {
+        get => _showAlbumPanel;
+        set => SetField(ref _showAlbumPanel, value);
+    }
+
+    public ICommand PageChangedCommand
+    {
+        get => _pageChangedCommand;
+        set => SetField(ref _pageChangedCommand, value);
     }
 }
 

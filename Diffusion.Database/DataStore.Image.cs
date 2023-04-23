@@ -85,14 +85,13 @@ namespace Diffusion.Database
             return result;
         }
 
-        public int UpdateImagesByPath(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, int> folderIdCache)
+        public int UpdateImagesByPath(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, int> folderIdCache, CancellationToken cancellationToken)
         {
             var updated = 0;
 
             using var db = OpenConnection();
 
             db.BeginTransaction();
-
             var exclude = new string[]
             {
                 nameof(Image.Id),
@@ -124,10 +123,14 @@ namespace Diffusion.Database
 
             foreach (var image in images)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
                 var dirName = Path.GetDirectoryName(image.Path);
                 var fileName = Path.GetFileName(image.Path);
 
-                if(!folderIdCache.TryGetValue(dirName, out var id))
+                if (!folderIdCache.TryGetValue(dirName, out var id))
                 {
                     id = AddOrUpdateFolder(db, dirName);
                     folderIdCache.Add(dirName, id);
