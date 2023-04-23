@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
-using static SQLite.SQLite3;
 
 namespace Diffusion.Toolkit.Converters;
 

@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
-using Diffusion.IO;
 using Diffusion.Toolkit.Thumbnails;
 
 namespace Diffusion.Toolkit;

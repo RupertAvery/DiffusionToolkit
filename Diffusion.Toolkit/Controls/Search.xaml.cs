@@ -1,12 +1,9 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using Diffusion.Toolkit.Models;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Diffusion.Database;
 
 namespace Diffusion.Toolkit.Controls
 {

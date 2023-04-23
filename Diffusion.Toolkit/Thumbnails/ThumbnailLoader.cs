@@ -1,7 +1,5 @@
-﻿using Diffusion.Toolkit.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Channels;
@@ -29,6 +27,8 @@ public class ThumbnailLoader
         _dispatcher = dispatcher;
 
         _defaultStream = new MemoryStream();
+
+        _enableCache = true;
 
         StreamResourceInfo sri = Application.GetResourceStream(new Uri("Images/thumbnail.png", UriKind.Relative));
         if (sri != null)
