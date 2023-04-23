@@ -53,7 +53,7 @@ public class ThumbnailPaneModel : BaseNotify
         _currentImage = new ImageViewModel();
         _imageOpacity = 1;
         _isEmpty = true;
-        _resultStatus = "Type anything to begin";
+        //_resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
     }
 

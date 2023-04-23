@@ -1,37 +1,67 @@
-﻿using System;
-
-namespace Diffusion.Toolkit.Controls
+﻿namespace Diffusion.Toolkit.Controls
 {
+    public class PageChangedEventArgs
+    {
+        public int Page { get; set; }
+        public bool GotoEnd { get; set; }
+    }
+
     public partial class ThumbnailView
     {
-        public event EventHandler<int>? PageChangedEvent;
-
         public void GoFirstPage()
         {
             Model.Page = 1;
 
-            PageChangedEvent?.Invoke(this, Model.Page);
+            var args = new PageChangedEventArgs()
+            {
+                Page = Model.Page
+            };
+
+            PageChangedCommand?.Execute(args);
         }
 
         public void GoLastPage()
         {
             Model.Page = Model.Pages;
+            
+            var args = new PageChangedEventArgs()
+            {
+                Page = Model.Page
+            };
 
-            PageChangedEvent?.Invoke(this, Model.Page);
+            PageChangedCommand?.Execute(args);
         }
 
-        public void GoPrevPage()
+        public void GoPrevPage(bool gotoEnd = false)
         {
-            Model.Page--;
+            if (Model.Page > 1)
+            {
+                Model.Page--;
 
-            PageChangedEvent?.Invoke(this, Model.Page);
+                var args = new PageChangedEventArgs()
+                {
+                    Page = Model.Page,
+                    GotoEnd = gotoEnd
+                };
+
+                PageChangedCommand?.Execute(args);
+            }
+
         }
 
         public void GoNextPage()
         {
-            Model.Page++;
+            if (Model.Page < Model.Pages)
+            {
+                Model.Page++;
 
-            PageChangedEvent?.Invoke(this, Model.Page);
+                var args = new PageChangedEventArgs()
+                {
+                    Page = Model.Page
+                };
+
+                PageChangedCommand?.Execute(args);
+            }
         }
 
         public void SetPagingEnabled()

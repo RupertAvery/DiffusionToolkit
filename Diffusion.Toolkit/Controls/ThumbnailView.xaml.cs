@@ -3,7 +3,6 @@ using Diffusion.Toolkit.Classes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +10,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Models;
 using Microsoft.Extensions.Options;
 
@@ -234,40 +232,71 @@ namespace Diffusion.Toolkit.Controls
             //wrapPanel.Children[ThumbnailListView.SelectedIndex];
         }
 
+
+
         /// <summary>
         /// Handle wrapping around if an arrow key is pressed at the edge of the <see cref="ListView"/>.
         /// </summary>
         private void ThumbnailListView_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1)
+            if (e.Key is Key.Left or Key.Right)
             {
-                return;
+
+                if (ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1)
+                {
+                    return;
+                }
+
+                if (!_keyPressed)
+                {
+                    _startIndex = ThumbnailListView.SelectedIndex;
+                    _keyPressed = true;
+                }
+
+
+                var delta = e.Key switch
+                {
+                    Key.Left => -1,
+                    Key.Right => 1,
+                    _ => 0
+                };
+
+                if (delta == -1 && _startIndex == 0)
+                {
+                    GoPrevPage(true);
+                    e.Handled = true;
+                    return;
+                }
+
+
+                if (delta == 1 && _startIndex == Model.Images.Count - 1)
+                {
+                    GoNextPage();
+                    e.Handled = true;
+                    return;
+                }
+
+
+                if (delta != 0)
+                {
+                    var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+                    var item = wrapPanel.Children[0] as ListViewItem;
+                    var columns = (int)(wrapPanel.ActualWidth / item.ActualWidth);
+
+                    if (ThumbnailListView.SelectedIndex + delta < 0 || ThumbnailListView.SelectedIndex + delta >= wrapPanel.Children.Count)
+                    {
+                        e.Handled = true;
+                    }
+                    else if ((ThumbnailListView.SelectedIndex + delta) % columns == (delta == 1 ? 0 : columns - 1))
+                    {
+                        ThumbnailListView.SelectedIndex += delta;
+                        wrapPanel.Children[ThumbnailListView.SelectedIndex].Focus();
+                        e.Handled = true;
+                    }
+                }
+
             }
 
-            var delta = e.Key switch
-            {
-                Key.Left => -1,
-                Key.Right => 1,
-                _ => 0
-            };
-
-            if (delta != 0)
-            {
-                var wrapPanel = GetChildOfType<WrapPanel>(this)!;
-                var item = wrapPanel.Children[0] as ListViewItem;
-                var columns = (int)(wrapPanel.ActualWidth / item.ActualWidth);
-
-                if (ThumbnailListView.SelectedIndex + delta < 0 || ThumbnailListView.SelectedIndex + delta >= wrapPanel.Children.Count)
-                {
-                    e.Handled = true;
-                }
-                else if ((ThumbnailListView.SelectedIndex + delta) % columns == (delta == 1 ? 0 : columns - 1))
-                {
-                    ThumbnailListView.SelectedIndex += delta;
-                    wrapPanel.Children[ThumbnailListView.SelectedIndex].Focus();
-                    e.Handled = true;
-                }
-            }
         }
 
         private void RateSelected(int rating)
@@ -422,20 +451,17 @@ namespace Diffusion.Toolkit.Controls
 
         private void OpenSelected()
         {
-            //using Process fileopener = new Process();
-
             if (Model.SelectedImageEntry != null)
             {
                 OpenCommand?.Execute(Model.SelectedImageEntry);
-                //fileopener.StartInfo.FileName = "explorer";
-                //fileopener.StartInfo.Arguments = "\"" + Model.SelectedImageEntry.Path + "\"";
-                //fileopener.Start();
             }
         }
 
         private List<ImageEntry> _selItems = new List<ImageEntry>();
         private Point _start;
         private bool _restoreSelection;
+        private bool _dragStarted;
+
         private void ThumbnailListView_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             //if (ThumbnailListView.SelectedItems.Count == 0)
@@ -445,11 +471,20 @@ namespace Diffusion.Toolkit.Controls
             Point pt = e.GetPosition(ThumbnailListView);
             var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
 
-            var thumbnail = item.VisualHit as Thumbnail;
+            if (item != null)
+            {
+                var thumbnail = item.VisualHit as Thumbnail;
 
-            this._start = e.GetPosition(null);
-            _selItems.Clear();
-            _selItems.AddRange(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
+                if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border))
+                {
+                    _dragStarted = true;
+                }
+
+                this._start = e.GetPosition(null);
+                _selItems.Clear();
+                _selItems.AddRange(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
+
+            }
 
             //_restoreSelection = false;
 
@@ -464,9 +499,9 @@ namespace Diffusion.Toolkit.Controls
             Point mpos = e.GetPosition(null);
             Vector diff = this._start - mpos;
 
-            if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail) &&
+            if (_dragStarted && e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border) &&
                 (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+                 Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
             {
                 if (this.ThumbnailListView.SelectedItems.Count == 0)
                 {
@@ -523,22 +558,23 @@ namespace Diffusion.Toolkit.Controls
             UnrateSelected();
         }
 
-        public void ResetView(bool focus)
+        public void ResetView(bool focus, bool gotoEnd = false)
         {
             Dispatcher.Invoke(() =>
             {
                 if (Model.Images is { Count: > 0 })
                 {
-                    ThumbnailListView.ScrollIntoView(Model.Images[0]);
-                    ThumbnailListView.SelectedItem = Model.Images[0];
+                    var index = gotoEnd ? Model.Images.Count - 1 : 0;
+
+                    ThumbnailListView.ScrollIntoView(Model.Images[index]);
+                    ThumbnailListView.SelectedItem = Model.Images[index];
 
                     if (focus)
                     {
-                        if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(0) is ListViewItem item)
+                        if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(index) is ListViewItem item)
                         {
                             item.Focus();
                         }
-
                     }
                 }
             });
@@ -548,7 +584,16 @@ namespace Diffusion.Toolkit.Controls
         {
             if (Model.CurrentImage == null) return;
             var p = Model.CurrentImage.Path;
-            Process.Start("explorer.exe", $"/select,\"{p}\"");
+            var processInfo = new ProcessStartInfo()
+            {
+                FileName = "explorer.exe",
+                Arguments = $"/select,\"{p}\"",
+                UseShellExecute = true
+            };
+
+            Process.Start(processInfo);
+
+            //Process.Start("explorer.exe", $"/select,\"{p}\"");
         }
 
         private void FirstPage_OnClick(object sender, RoutedEventArgs e)
@@ -575,7 +620,12 @@ namespace Diffusion.Toolkit.Controls
         {
             if (e.Key == Key.Enter)
             {
-                PageChangedEvent?.Invoke(this, Model.Page);
+                var args = new PageChangedEventArgs()
+                {
+                    Page = Model.Page
+                };
+
+                PageChangedCommand?.Execute(args);
                 e.Handled = true;
             }
         }
@@ -611,6 +661,25 @@ namespace Diffusion.Toolkit.Controls
         private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
         {
             RemoveAlbumCommand?.Execute(null);
+        }
+
+        private int _startIndex;
+        private bool _keyPressed;
+
+        private void ThumbnailListView_OnKeyUp(object sender, KeyEventArgs e)
+        {
+            _keyPressed = false;
+            _startIndex = -1;
+        }
+
+        private void ThumbnailListView_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            _dragStarted = false;
+        }
+
+        private void ThumbnailListView_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            _dragStarted = false;
         }
     }
 }

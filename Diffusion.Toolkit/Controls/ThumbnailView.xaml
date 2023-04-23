@@ -46,8 +46,11 @@
                   SelectedItem="{Binding SelectedImageEntry}" 
                   KeyDown="ThumbnailListView_OnKeyDown"
                   PreviewKeyDown="ThumbnailListView_OnPreviewKeyDown"
+                  KeyUp="ThumbnailListView_OnKeyUp"
                   PreviewMouseLeftButtonDown="ThumbnailListView_OnPreviewMouseLeftButtonDown"
                   MouseDown="ThumbnailListView_OnMouseDown"
+                  MouseUp="ThumbnailListView_OnMouseUp"
+                  PreviewMouseLeftButtonUp="ThumbnailListView_OnPreviewMouseLeftButtonUp"
                   MouseMove="ThumbnailListView_OnMouseMove"
                   MouseDoubleClick="Control_OnMouseDoubleClick"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
@@ -73,12 +76,11 @@
                 </Style>
             </ListView.Resources>
             <ListView.InputBindings>
-                <KeyBinding Command="{Binding PrevPage}" Key="PageUp" Modifiers="Alt"  Gesture="ALT+PageUp"></KeyBinding>
-                <KeyBinding Command="{Binding NextPage}"  Key="PageDown" Modifiers="Alt" Gesture="ALT+PageDown"></KeyBinding>
-                <KeyBinding Command="{Binding FirstPage}"  Key="Home" Modifiers="Alt" Gesture="ALT+Home"></KeyBinding>
-                <KeyBinding Command="{Binding LastPage}"  Key="End" Modifiers="Alt" Gesture="ALT+End"></KeyBinding>
-                <KeyBinding Command="{Binding CopyFiles}" Key="C" Modifiers="Control"  Gesture="Control+C"></KeyBinding>
-                <KeyBinding Command="{Binding Refresh}" Key="F5" Modifiers="Control"  Gesture="Control+F5"></KeyBinding>
+                <KeyBinding Command="{Binding PrevPage}" Key="PageUp" Modifiers="Alt" Gesture="ALT+PageUp"></KeyBinding>
+                <KeyBinding Command="{Binding NextPage}" Key="PageDown" Modifiers="Alt" Gesture="ALT+PageDown"></KeyBinding>
+                <KeyBinding Command="{Binding FirstPage}" Key="Home" Modifiers="Alt" Gesture="ALT+Home"></KeyBinding>
+                <KeyBinding Command="{Binding LastPage}" Key="End" Modifiers="Alt" Gesture="ALT+End"></KeyBinding>
+                <KeyBinding Command="{Binding CopyFiles}" Key="C" Modifiers="Control" Gesture="Control+C"></KeyBinding>
                 <KeyBinding Command="{Binding FocusSearch}" Key="F6" Gesture="F6"></KeyBinding>
                 <KeyBinding Command="{Binding ToggleParameters}" Key="I"></KeyBinding>
             </ListView.InputBindings>
@@ -102,26 +104,24 @@
                             <RowDefinition></RowDefinition>
                         </Grid.RowDefinitions>
                         <Border CornerRadius="5" BorderBrush="Transparent" BorderThickness="0" Visibility="{Binding EntryType, Converter={StaticResource folderEntryTypeVis}}"
-                                Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12">
+                            Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                            Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12">
                             <fa:ImageAwesome Icon="FolderOutlinepenOutline"
-                                             
-                                             Foreground="{DynamicResource ForegroundBrush}" 
-                                             Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                             MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                             HorizontalAlignment="Center" VerticalAlignment="Center"></fa:ImageAwesome>
+                                 Foreground="{DynamicResource ForegroundBrush}" 
+                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"></fa:ImageAwesome>
 
                         </Border>
 
                         <Border CornerRadius="5" BorderBrush="Transparent" BorderThickness="0" Visibility="{Binding EntryType, Converter={StaticResource albumEntryTypeVis}}"
-                                Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12" >
+                            Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                            Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12" >
                             <fa:ImageAwesome Icon="FilePhotoOutline"
-                                             
-                                             Foreground="{DynamicResource ForegroundBrush}" 
-                                             Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                             MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                             HorizontalAlignment="Center" VerticalAlignment="Center">
+                                 Foreground="{DynamicResource ForegroundBrush}" 
+                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <fa:ImageAwesome.ContextMenu>
                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                         <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>

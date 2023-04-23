@@ -1,5 +1,4 @@
-﻿using Diffusion.Database;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
@@ -193,6 +192,16 @@ namespace Diffusion.Toolkit.Controls
                     FrameworkPropertyMetadataOptions.None,
                     propertyChangedCallback: PropertyChangedCallback));
 
+        public static readonly DependencyProperty PageChangedCommandProperty =
+            DependencyProperty.Register(
+                name: nameof(PageChangedCommand),
+                propertyType: typeof(ICommand),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: null,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback));
+
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is ThumbnailView thumbnailView)
@@ -336,22 +345,28 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(RemoveFromAlbumCommandProperty, value);
         }
 
-        public ICommand RenameAlbumCommand
+        public ICommand? RenameAlbumCommand
         {
             get => (ICommand)GetValue(RenameAlbumCommandProperty);
             set => SetValue(RenameAlbumCommandProperty, value);
         }
 
-        public ICommand RemoveAlbumCommand
+        public ICommand? RemoveAlbumCommand
         {
             get => (ICommand)GetValue(RemoveAlbumCommandProperty);
             set => SetValue(RemoveAlbumCommandProperty, value);
         }
 
-        public ICommand CopyCommand
+        public ICommand? CopyCommand
         {
             get => (ICommand)GetValue(CopyCommandProperty);
             set => SetValue(CopyCommandProperty, value);
+        }
+
+        public ICommand? PageChangedCommand
+        {
+            get => (ICommand)GetValue(PageChangedCommandProperty);
+            set => SetValue(PageChangedCommandProperty, value);
         }
 
         public ViewMode ViewMode

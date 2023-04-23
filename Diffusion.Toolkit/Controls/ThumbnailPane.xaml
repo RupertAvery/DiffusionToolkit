@@ -55,7 +55,6 @@
                                     NSFWBlur="{Binding NSFWBlur}" 
                                     IsEmpty="{Binding IsEmpty}"
                                     Results="{Binding Results}"
-                                    PageChangedEvent="ThumbnailListView_OnPageChangedEvent"
                                     SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}" 
                                     CurrentImage="{Binding CurrentImage}">
         </local:ThumbnailView>
