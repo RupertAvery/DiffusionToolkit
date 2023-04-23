@@ -9,6 +9,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Themes/Light.xaml"/>
                 <ResourceDictionary Source="/Themes/Common.xaml"/>
+                <ResourceDictionary Source="/Themes/SWStyles.xaml"/>
                 <ResourceDictionary Source="/Themes/Window.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

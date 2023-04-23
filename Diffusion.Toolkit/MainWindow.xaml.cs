@@ -32,7 +32,7 @@ namespace Diffusion.Toolkit
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : SWWindow
     {
         private readonly MainModel _model;
         private NavigatorService _navigatorService;

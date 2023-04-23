@@ -5,6 +5,7 @@
     <Color x:Key="ControlBackground">#295275</Color>
     <Color x:Key="Splitter">#3E5E7C</Color>
     <Color x:Key="Highlight">#3E5E7C</Color>
+    <Color x:Key="BgHighlight">#7E3E5E7C</Color>
     <Color x:Key="DisabledForeground">#3E5E7C</Color>
     <Color x:Key="DisabledBackground">#797979</Color>
     <Color x:Key="Foreground">Azure</Color>

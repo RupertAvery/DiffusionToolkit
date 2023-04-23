@@ -246,7 +246,7 @@
                     <ColumnDefinition Width="20"/>
                 </Grid.ColumnDefinitions>
                 <ContentPresenter x:Name="Icon" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Margin="3" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" Width="16"/>
-                <Border x:Name="GlyphPanel" Background="{StaticResource MenuItem.Highlight.Background}" BorderBrush="{StaticResource MenuItem.Highlight.Border}" BorderThickness="1" Height="22" Margin="-1,0,0,0" VerticalAlignment="Center" Visibility="Hidden" Width="22">
+                <Border x:Name="GlyphPanel" Background="{DynamicResource HighlightBrush}" BorderBrush="{StaticResource MenuItem.Highlight.Border}" BorderThickness="1" Height="22" Margin="-1,0,0,0" VerticalAlignment="Center" Visibility="Hidden" Width="22">
                     <Path x:Name="Glyph" Data="{DynamicResource Checkmark}" FlowDirection="LeftToRight" Fill="{DynamicResource ForegroundBrush}" Height="11" Width="9"/>
                 </Border>
                 <ContentPresenter ContentSource="Header" Grid.Column="2" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
@@ -363,7 +363,7 @@
                     <ColumnDefinition Width="20"/>
                 </Grid.ColumnDefinitions>
                 <ContentPresenter x:Name="Icon" ContentSource="Icon" HorizontalAlignment="Center" Height="16" Margin="3" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center" Width="16"/>
-                <Border x:Name="GlyphPanel" Background="{StaticResource MenuItem.Selected.Background}" BorderBrush="{StaticResource MenuItem.Selected.Border}" BorderThickness="1" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Margin="-1,0,0,0" VerticalAlignment="Center" Visibility="Hidden" Width="22">
+                <Border x:Name="GlyphPanel" Background="{DynamicResource HighlightBrush}" BorderBrush="{StaticResource MenuItem.Selected.Border}" BorderThickness="1" ClipToBounds="False" HorizontalAlignment="Center" Height="22" Margin="-1,0,0,0" VerticalAlignment="Center" Visibility="Hidden" Width="22">
                     <Path x:Name="Glyph" Data="{StaticResource Checkmark}" FlowDirection="LeftToRight" Fill="{StaticResource Menu.Static.Foreground}" Height="11" Width="10"/>
                 </Border>
                 <ContentPresenter x:Name="menuHeaderContainer" ContentSource="Header" Grid.Column="2" HorizontalAlignment="Left" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
@@ -379,8 +379,8 @@
                 <Setter Property="Visibility" TargetName="Icon" Value="Collapsed"/>
             </Trigger>
             <Trigger Property="IsHighlighted" Value="True">
-                <Setter Property="Background" TargetName="templateRoot" Value="{DynamicResource HighlightBrush}"/>
-                <Setter Property="BorderBrush" TargetName="templateRoot" Value="{StaticResource MenuItem.Highlight.Border}"/>
+                <Setter Property="Panel.Background" TargetName="templateRoot" Value="{DynamicResource HighlightBrush}"/>
+                <Setter Property="Border.BorderBrush" TargetName="templateRoot" Value="{StaticResource MenuItem.Highlight.Border}"/>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="TextElement.Foreground" TargetName="templateRoot" Value="{StaticResource Menu.Disabled.Foreground}"/>
@@ -412,14 +412,14 @@
     </Style>
 
     <Style TargetType="MenuItem">
-        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+        <!--<Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
         <Setter Property="BorderBrush" Value="Transparent"></Setter>
-        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>-->
         <Style.Triggers>
-            <Trigger Property="IsHighlighted" Value="True">
-                <Setter Property="Background"  Value="{DynamicResource HighlightBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource HighlightBrush}"/>
-            </Trigger>
+            <!--<Trigger Property="IsHighlighted" Value="True">
+                <Setter Property="Panel.Background"  Value="{DynamicResource HighlightBrush}"/>
+                <Setter Property="Border.BorderBrush" Value="{DynamicResource HighlightBrush}"/>
+            </Trigger>-->
             <Trigger Property="Role"
                      Value="TopLevelHeader">
                 <Setter Property="Template"

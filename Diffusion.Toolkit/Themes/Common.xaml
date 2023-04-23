@@ -8,6 +8,7 @@
     <SolidColorBrush x:Key="SecondaryBrush" Color="{DynamicResource Splitter}"/>
     <SolidColorBrush x:Key="SplitterBrush" Color="{DynamicResource Splitter}"/>
     <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource Highlight}"/>
+    <SolidColorBrush x:Key="BgHighlightBrush" Color="{DynamicResource BgHighlight}"/>
     <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource Foreground}"/>
     <SolidColorBrush x:Key="DisabledForegroundBrush" Color="{DynamicResource DisabledForeground}"/>
     <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="{DynamicResource DisabledBackground}"/>
@@ -651,8 +652,6 @@
                 Value="true" />
         <Setter Property="OverridesDefaultStyle"
                 Value="true" />
-        <Setter Property="FocusVisualStyle"
-                Value="{DynamicResource CheckBoxFocusVisual}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
