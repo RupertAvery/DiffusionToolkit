@@ -1,11 +1,27 @@
 ﻿using System.IO;
-using MdXaml;
 using System.Windows;
-using System.Windows.Documents;
 using Diffusion.Toolkit.MdStyles;
 
 namespace Diffusion.Toolkit
 {
+    public class TipsModel : BaseNotify
+    {
+        private string _markdown;
+        private Style _style;
+
+        public string Markdown
+        {
+            get => _markdown;
+            set => SetField(ref _markdown, value);
+        }
+
+        public Style Style
+        {
+            get => _style;
+            set => SetField(ref _style, value);
+        }
+    }
+
 
     /// <summary>
     /// Interaction logic for Tips.xaml
@@ -16,11 +32,15 @@ namespace Diffusion.Toolkit
         public TipsWindow()
         {
             InitializeComponent();
-            Markdown engine = new Markdown();
-            var markdown = File.ReadAllText("Tips.md");
-            engine.DocumentStyle = CustomStyles.BetterGithub;
-            FlowDocument document = engine.Transform(markdown);
-            RichTextBox.Document = document;
+            var tips = new TipsModel();
+            tips.Markdown = File.ReadAllText("Tips.md");
+            tips.Style = CustomStyles.BetterGithub;
+
+            //Markdown engine = new Markdown();
+            //engine.DocumentStyle = CustomStyles.BetterGithub;
+            //FlowDocument document = engine.Transform(markdown);
+            //RichTextBox.Document = document;
+            DataContext = tips;
         }
 
 

@@ -54,7 +54,6 @@
 
   <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-    <PackageReference Include="MdXaml" Version="1.16.2" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
     <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
   </ItemGroup>
@@ -64,6 +63,18 @@
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
     <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
     <ProjectReference Include="..\Diffusion.Updater\Diffusion.Updater.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>..\lib\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="MdXaml">
+      <HintPath>..\lib\MdXaml.dll</HintPath>
+    </Reference>
+    <Reference Include="MdXaml.Plugins">
+      <HintPath>..\lib\MdXaml.Plugins.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

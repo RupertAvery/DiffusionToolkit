@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:Diffusion.Toolkit"
         xmlns:mdXaml="clr-namespace:MdXaml;assembly=MdXaml"
         mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance local:TipsModel, IsDesignTimeCreatable=True}"
         ShowInTaskbar="False"
         Title="Getting Started" Height="600" Width="800">
     <Grid Background="{StaticResource PrimaryBrush}">
@@ -13,7 +14,20 @@
             <RowDefinition/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-        <RichTextBox Margin="10,10,10,0" Padding="20" BorderBrush="Transparent" x:Name="RichTextBox" IsReadOnly="True" IsDocumentEnabled="True" VerticalScrollBarVisibility="Auto"></RichTextBox>
+        <Border 
+            Margin="10"
+            BorderBrush="{StaticResource SecondaryBrush}" BorderThickness="1"
+            >
+            <mdXaml:MarkdownScrollViewer 
+                VerticalAlignment="Stretch"
+                HorizontalAlignment="Stretch"
+                Background="White"
+                ClickAction="OpenBrowser"
+                MarkdownStyle="{Binding Style}"
+                Markdown="{Binding Markdown}">
+            </mdXaml:MarkdownScrollViewer>
+        </Border>
+
         <Button Grid.Row="1" Width="160" Click="ButtonBase_OnClick" Margin="5">View Help Online</Button>
     </Grid>
 </Window>

@@ -7,9 +7,10 @@
    * [Rescan Folders](#rescan-folders)
    * [Watch Folders](#watch-folders)
    * [Rebuild Images](#rebuild-images)
-* [Navigation](#navigation)
-* [Preview](#preview)
-   * [Displaying Metadata (PNGInfo)](#displaying-metadata-pnginfo)
+* [Usage](#usage)
+* [Preview Pane](#preview-pane)
+   * [Zoom](#zoom)
+   * [Viewing Metadata (PNGInfo)](#viewing-metadata-pnginfo)
 * [Folders](#folders)
 * [Albums](#albums)
 * [Drag and Drop](#drag-and-drop)
@@ -21,8 +22,11 @@
 * [Searching](#searching)
 * [Advanced Searching](#advanced-searching)
 * [Supported Parameters](#supported-parameters)
-* [Notes](#notes)
-* [Search on Multiple Values](#search-on-multiple-values)
+* [Notes About Search](#notes-about-search)
+* [Searching on Multiple Values](#searching-on-multiple-values)
+* [Prompts View](#prompts-view)
+* [Keyboard Shortcuts](#keyboard-shortcuts)
+* [FAQ](#faq)
 
 # Diffusion Toolkit
 
@@ -47,7 +51,7 @@ Diffusion Toolkit scans your AI-Generated images for metadata and stores it in a
    * NovelAI
    * Stable Diffusion
    * ComfyUI
-* Tag your images with a press of a button:
+* Tag your images with a press of a key:
    * Favorites
    * Rate 1-10 
    * NSFW
@@ -72,9 +76,11 @@ On first load, you will be shown the settings dialog, where you can add your ima
 
 ## General Tab
 
-If you have your images stored in several nested folders, don't add the nested folders, just add the topmost folder to the **Diffusion Folders**. Folders will be scanned recusively.
+If you have your images stored in several nested folders, don't add the nested folders, just add the topmost folder to the **Diffusion Folders**. 
 
 You can choose to **Watch Folders** for new images. See [Watch Folders](#watch-folders) for more information on this option.
+
+You can choose **Recursive** to let Diffusion Toolkit recursively scan your Diffusion Folders. This is enabled by default.
 
 You can set what **File Extensions** to scan for. Don't include an asterisk, but do include the dot, and separate with commas e.g. `.png, .jpg, .jpeg, .webp`.
 
@@ -118,30 +124,31 @@ You will be prompted to scan your selected folders for images.
 
 # Indexing your images
 
-Diffusion Toolkit is designed to find your images fast. To do this it needs to scan each image and read in the metadata and store it in a local database. It can typically index around 10,000 images in seconds on an SSD.
+Diffusion Toolkit is designed to help you find your images quickly and easily using theie metadata. To do this it needs to scan your images once to read in the metadata and store it in a local database. It can typically index around 10,000 images in seconds on an SSD.
 
 ## Scan folders for new images
 
-If you generate new images in your Diffusion folders, or add or remove images from them, you should click the **Scan folders for new images** button to update your database with the latest changes.
+If you generate new images in your Diffusion folders, or copy images into them, or remove images from them, you should click the **Scan folders for new images** button or press `CTRL+R` to update your database with the latest changes.
 
-It is not advised to move images outside of Diffustion Toolkit (e.g. cut-paste using Explorer), especially if you have favorited or rated them, as you will lose this information when you rescan.
+It is not advised to move images (e.g. cut-paste using Explorer), even moving them within the Diffusion folders once you have indexed them, especially if you have favorited or rated them, as you will lose this information when you rescan.
+
+To make sure your favorites and ratings are kept, use **right-click > Move** to move your images.
 
 ## Watch folders
 
 The **Watch folders** setting will allow Diffusion Toolkit to recieve a notification everytime an image is added to your Diffusion folders.  The images will be added to the database without needing to click **Scan folders for new images**.
 
-This is best used when generating images via a tool or webgui.  You will only be notified when the application has focus.  Your current search will not be updated when this occurs, to prevent from interrupting your work.
+This is best used when generating images via a tool or webgui.  You will only be notified when the application has focus.  Your current view will not be reloaded when this occurs to prevent from interrupting your work.
 
-**NOTE:** Be sure to turn this off if you are going to copy a lot of images into the Diffusion folders, as it is not optimized for this.
+**NOTE:** Be sure to turn this feature off if you are going to copy a lot of images into the Diffusion folders, as it is not optimized for this. Instead, use **Scan folders for new images**.
 
 ## Rebuild Metadata
 
-**Edit > Rebuild Metadata** is intended for use when a new version of the application is released that supports new metadata.
+**Edit > Rebuild Metadata** is intended for use when a new version of the application is released that supports new metadata. This will rescan all the images in your Diffusion folders and update the database with the metadata.
 
-Running this should not affect any existing favorites or ratings.
+Running this will not affect any existing favorites or ratings you may have tagged.
 
-# Navigation
-
+# Usage
 
 The **Diffusions** view is the default on startup.  Here you can enter your query and press `Enter` to intitate the search. Matching images will be displayed in the thumbnail view. By default, results are limited to 100 per page. This can be changed in **Settings**.
 
@@ -165,7 +172,7 @@ You can tag your files with additional metadata (stored in the Diffusion Toolkit
 
 ## Favorites
 
-When inside the thumbnail viewer, press `F` to toggle **Favorite** on the selected image.  A blue heart will indicate that the image has been tagged as Favorite. This will also be indicated in the Preview Pane.
+While browsing via the thumbnail viewer, or with the Preview in focus, press `F` to toggle **Favorite** on the selected image.  A blue heart will indicate that the image has been tagged as Favorite. This will also be indicated in the Preview Pane.
 
 You can favorite multiple selected images.
 
@@ -177,7 +184,7 @@ You can use the Favorite search parameter to filter images by favorites. See [Ad
 
 ## Rating
 
-When inside the thumbnail viewer, press `1-5` to set the **Rating** on the selected image. A star will indicate that the image has been rated. An equivalent number of yellow stars in the Preview Pane will indicate the rating of the image.  Press the same number again to remove the rating.
+While browsing via the thumbnail viewer, or with the Preview in focus, press the keys `1-9`, or `0` for 10 to set the **Rating** on the selected image. A star with a number inside will indicate on the thumbnail that the image has been rated. An equivalent number of yellow stars in the Preview Pane will indicate the rating of the image.  Press the same number again to remove the rating.
 
 You can rate multiple selected images.
 
@@ -185,7 +192,7 @@ You can use the Rating search parameter to filter images by rating. See [Advance
 
 ## NSFW Tag
 
-When inside the thumbnail viewer, press `N` to toggle **NSFW** Tag on the selected image. If the **View > Blur NSFW** option is checked, the image will be blurred to indicate NSFW on the image.  Otherwise there no visible indicator that the image is tagged as NSFW.
+While browsing via the thumbnail viewer, or with the Preview in focus, press `N` to toggle **NSFW** Tag on the selected image. If the **View > Blur NSFW** option is checked, the image will be blurred to indicate NSFW on the image.  Otherwise there no visible indicator that the image is tagged as NSFW.
 
 Images tagged as NSFW will not be displayed in the Preview Pane if **View > Blur NSFW** is checked.
 
@@ -209,7 +216,7 @@ When in the **Recycle Bin View**, toggling an image delete off will cause the im
 
 To permanently remove all images marked For Deletion, click **Edit > Empty Recycle Bin**.
 
-# Preview
+# Preview Pane
 
 On the right is the **Preview Pane**, where the image preview will be displayed when an thumbnail is selected.
 
@@ -227,15 +234,13 @@ You can also use the left and right cursor keys to move between images.
 
 ## Zoom
 
-With the Preview Pane in focus, hold CTRL and press - or + to zoom in and out of the image.
+With the Preview Pane in focus, hold `CTRL` and press `-` or `+` to zoom in and out of the image.
 
-You may also hold CTRL and use the mouse scroller to zoom in and out of the image.
+You can also hold `CTRL` and use mouse scroller to zoom in and out of the image.
 
 Click and drag the image to pan the view when the image or zoom is larger than the Preview Pane.
 
 Zoom will be reset when you select another image.
-
-Zoom functionality is a bit basic, and it will not zoom in where your cursor is when zooming with the mouse scroll button.
 
 ## Displaying Metadata (PNGInfo)
 
@@ -527,7 +532,7 @@ Path with wildcards will return matches in subfolders. If you want to search a s
 
 * `folder: <folder>`  
 
-# Notes about Search
+## Notes About Search
 
 * The parameters e.g. `steps:`, `sampler:` are not case sensitive. You can use `Steps:`, `Sampler:`, so you can copy it from a prompt.
 * You can have 0 or more spaces *after* the colon (`:`) and before the parameter value.
@@ -545,7 +550,7 @@ You can search on multiple values on most parameters. The results will be ORed, 
   * e.g. `cfg: 4.5|7|9|12`
   * e.g. `model_hash: aabbccdd | deadbeef | 12345678`
 
-# Prompt Search
+# Prompts View
 
 The Prompts button in the toolbar will bring you to the Prompts tab.
 
@@ -556,6 +561,34 @@ You can search specifically on prompts here, using the same query language for s
 If you check **Full Text**, the entire text will be used as a search term, instead of eing broken up by commas.  This will also enable the Similarity slider.
 
 The Similarity Slider will try to do a fuzzy match by applying a Hamming Distance to all prompts. This may be useful for searching for prompts generated using Dynamic Prompts plugin.
+
+# Keyboard Shortcuts
+
+| Shortcut       | Action         |
+|----------------|----------------|
+| `1..9, 0` | Rate 1 - 10 | 
+| `I` | Show/Hide Info |  
+| `F` | Tag Favorite |  
+| `N` | Tag NSFW |
+| `B` | Toggle Blur NSFW |
+| `X/DEL` | Tag for Deletion |
+| `CTRL + X/DEL` | Remove Entry |
+| `CTRL + C` | Copy File to Clipboard |
+| `CTRL + Shift + A` | Show/Hide Album Pane |
+| `CTRL + Shift + P` | Show/Hide Preview |
+| `CTRL + 1` | Folders View |
+| `CTRL + 2` | Album View |
+| `CTRL + 3` | Diffusions View |
+| `CTRL + 4` | Favorites Page |
+| `CTRL + 5` | Recycle Bin |
+| `CTRL + 6` | Prompts View |
+| `CTRL + R` | Scan folders for new images |
+| `Alt + Home` | First Page |
+| `Alt + PageUp` | Previous Page |   
+| `Alt + PageDown` | Next Page |
+| `Alt + End` | Last Page |
+| `F6` | Set focus on search bar |
+
 
 # FAQ
 
