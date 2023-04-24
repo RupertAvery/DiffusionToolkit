@@ -10,7 +10,9 @@
 * [Usage](#usage)
 * [Preview Pane](#preview-pane)
    * [Zoom](#zoom)
-   * [Viewing Metadata (PNGInfo)](#viewing-metadata-pnginfo)
+   * [Displaying Metadata (PNGInfo)](#displaying-metadata-pnginfo)
+   * [Popout](#popout)
+* [Image Viewer](#image-viewer)
 * [Folders](#folders)
 * [Albums](#albums)
 * [Drag and Drop](#drag-and-drop)
@@ -128,7 +130,7 @@ Diffusion Toolkit is designed to help you find your images quickly and easily us
 
 ## Scan folders for new images
 
-If you generate new images in your Diffusion folders, or copy images into them, or remove images from them, you should click the **Scan folders for new images** button or press `CTRL+R` to update your database with the latest changes.
+If you generate new images in your Diffusion folders, or copy images into them, or remove images from them, you should click the **Scan folders for new images** button or press `Ctrl+R` to update your database with the latest changes.
 
 It is not advised to move images (e.g. cut-paste using Explorer), even moving them within the Diffusion folders once you have indexed them, especially if you have favorited or rated them, as you will lose this information when you rescan.
 
@@ -210,7 +212,7 @@ The shortcut for **View > Blur NSFW** is `B`
 
 When inside the thumbnail viewer, press `Del` or `X` to toggle **For Deletion** on the selected image.  The thumbnail will become transparent, indicating that the image has been tagged as For Deletion.
 
-If you click on the **Recycle Bin Icon **in the toolbar, you will be presented with all images tagged as For Deletion.  
+If you click on the **Recycle Bin Icon** in the toolbar, you will be presented with all images tagged as For Deletion.  
 
 When in the **Recycle Bin View**, toggling an image delete off will cause the image to be removed from the list and it will not be displayed the next time you visit the Recycle Bin View.
 
@@ -234,11 +236,13 @@ You can also use the left and right cursor keys to move between images.
 
 ## Zoom
 
-With the Preview Pane in focus, hold `CTRL` and press `-` or `+` to zoom in and out of the image.
+With the Preview Pane in focus and Fit to Preview unchecked, hold `Ctrl` and press `-` or `+` to zoom in and out of the image.
 
-You can also hold `CTRL` and use mouse scroller to zoom in and out of the image.
+You can also hold `Ctrl` and use mouse scroller to zoom in and out of the image.
 
-Click and drag the image to pan the view when the image or zoom is larger than the Preview Pane.
+Click and drag the image to pan the view when the image is larger than the Preview Pane.
+
+Press `Ctrl + 0` to reset zoom to actual pixels (100%).
 
 Zoom will be reset when you select another image.
 
@@ -250,11 +254,17 @@ To display the prompt and other metadata associated with the image (i.e. PNGInfo
 
 ## Popout
 
-Pressing the Popout button at the top-right of the preview pane will pop out the preview pane into it's own window. This will allow you to arrange the thumbnail and preview as you like, or even move them to separate desktops.
+Pressing the **Popout** button at the top-right of the preview pane will pop out the preview pane into it's own window. This will allow you to arrange the thumbnail and preview as you like, or even move them to separate desktops.
 
 When the Preview Pane is in popped out, you can still use the same shortcut keys to tag the current image.
 
 You can also use the left and right cursor keys to move between images.
+
+Pressing **Escape** will close the Popout.
+
+# Image Viewer
+
+Double-clicking an image, or pressing Enter on a selected image will display the image in a maximized view of the popout.
 
 # Folders
 
@@ -571,26 +581,31 @@ The Similarity Slider will try to do a fuzzy match by applying a Hamming Distanc
 | `F` | Tag Favorite |  
 | `N` | Tag NSFW |
 | `B` | Toggle Blur NSFW |
-| `X/DEL` | Tag for Deletion |
-| `CTRL + X/DEL` | Remove Entry |
-| `CTRL + C` | Copy File to Clipboard |
-| `CTRL + Shift + A` | Show/Hide Album Pane |
-| `CTRL + Shift + P` | Show/Hide Preview |
-| `CTRL + 1` | Folders View |
-| `CTRL + 2` | Album View |
-| `CTRL + 3` | Diffusions View |
-| `CTRL + 4` | Favorites Page |
-| `CTRL + 5` | Recycle Bin |
-| `CTRL + 6` | Prompts View |
-| `CTRL + R` | Scan folders for new images |
-| `Alt + Home` | First Page |
-| `Alt + PageUp` | Previous Page |   
-| `Alt + PageDown` | Next Page |
-| `Alt + End` | Last Page |
+| `X/Del` | Tag for Deletion |
+| `Ctrl+X/Del` | Remove Entry |
+| `Ctrl+C` | Copy File to Clipboard |
+| `Ctrl+Shift+A` | Show/Hide Album Pane |
+| `Ctrl+Shift+P` | Show/Hide Preview |
+| `Ctrl+Shift+F` | Toggle Fit to Preview |
+| `Ctrl+1` | Folders View |
+| `Ctrl+2` | Album View |
+| `Ctrl+3` | Diffusions View |
+| `Ctrl+4` | Favorites Page |
+| `Ctrl+5` | Recycle Bin |
+| `Ctrl+6` | Prompts View |
+| `Ctrl+R` | Scan folders for new images |
+| `Alt+Home` | First Page |
+| `Alt+PageUp` | Previous Page |   
+| `Alt+PageDown` | Next Page |
+| `Alt+End` | Last Page |
 | `F6` | Set focus on search bar |
 
 
 # FAQ
+
+## How do I view my image's metadata (PNGInfo)?
+
+With the Preview Pane visible, press I in the thumbnail view or with the Preview Pane in focus to show or hide the metadata.  You can also click the eye icon at the botton right of the Preview Pane.
 
 ## When do I need to Rebuild Images?
 
