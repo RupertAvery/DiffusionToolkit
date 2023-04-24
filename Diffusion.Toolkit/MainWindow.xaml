@@ -50,8 +50,8 @@
                 <MenuItem Header="_Close" Command="{Binding Close}"/>
             </MenuItem>
             <MenuItem Header="_Edit">
-                <MenuItem Header="_Quick Copy" Command="{Binding QuickCopy}"/>
-                <Separator></Separator>
+                <!--<MenuItem Header="_Quick Copy" Command="{Binding QuickCopy}"/>
+                <Separator></Separator>-->
                 <MenuItem x:Name="EditMenu"  Header="_Settings" Command="{Binding Settings}"/>
                 <Separator></Separator>
                 <MenuItem Header="_Empty Recycle Bin" Command="{Binding RemoveMarked}"/>
