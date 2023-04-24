@@ -129,7 +129,12 @@ namespace Diffusion.Toolkit
             _model.ToggleAlbum = new RelayCommand<object>((o) => ToggleAlbum());
 
             _model.Refresh = new RelayCommand<object>((o) => Refresh());
-
+            _model.QuickCopy = new RelayCommand<object>((o) =>
+            {
+                var win = new QuickCopy(_settings);
+                win.Owner = this;
+                win.ShowDialog();
+            });
             _model.PropertyChanged += ModelOnPropertyChanged;
 
             var total = _dataStore.GetTotal();

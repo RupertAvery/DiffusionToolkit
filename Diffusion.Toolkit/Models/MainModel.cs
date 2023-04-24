@@ -49,6 +49,7 @@ public class MainModel : BaseNotify
     private bool _showAlbumPanel;
     private ICommand _toggleAlbum;
     private ICommand _refresh;
+    private ICommand _quickCopy;
 
     public MainModel()
     {
@@ -315,5 +316,11 @@ public class MainModel : BaseNotify
     {
         get => _refresh;
         set => SetField(ref _refresh, value);
+    }
+
+    public ICommand QuickCopy
+    {
+        get => _quickCopy;
+        set => SetField(ref _quickCopy, value);
     }
 }

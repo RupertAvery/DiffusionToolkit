@@ -1,0 +1,19 @@
+﻿<local:BorderlessWindow x:Class="Diffusion.Toolkit.QuickCopy"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:local="clr-namespace:Diffusion.Toolkit"
+                  mc:Ignorable="d"        
+                  WindowStartupLocation="CenterOwner"
+                  ShowInTaskbar="False"
+                  WindowStyle="ToolWindow"
+                  MenuWidth="0"
+                  TitleWidth="*"
+                  Style="{StaticResource BorderlessWindowStyle}"
+                  ResizeMode="NoResize"
+                  Title="QuickCopy" Height="450" Width="800">
+    <Grid>
+        
+    </Grid>
+</local:BorderlessWindow>
