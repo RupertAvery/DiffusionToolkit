@@ -230,7 +230,7 @@ namespace Diffusion.Toolkit
                     }
                     else
                     {
-                        _dataStore.AddImages(newImages, includeProperties);
+                        _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
                         added += newImages.Count;
                     }
 
@@ -255,7 +255,7 @@ namespace Diffusion.Toolkit
                 }
                 else
                 {
-                    _dataStore.AddImages(newImages, includeProperties);
+                    _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
                     added += newImages.Count;
                 }
             }

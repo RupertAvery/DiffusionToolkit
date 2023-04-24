@@ -24,7 +24,7 @@ namespace Diffusion.IO
 
                 if (recursive && excludePaths != null)
                 {
-                    files = files.Where(f => excludePaths.Any(p => !f.StartsWith(p)));
+                    files = files.Where(f => !excludePaths.Any(p => f.StartsWith(p)));
                 }
 
             }

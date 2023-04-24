@@ -181,7 +181,7 @@ namespace Diffusion.Database
             return id.Value;
         }
 
-        public void AddImages(IEnumerable<Image> images, IEnumerable<string> includeProperties)
+        public void AddImages(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, int> folderIdCache, CancellationToken cancellationToken)
         {
             using var db = OpenConnection();
 
@@ -218,6 +218,22 @@ namespace Diffusion.Database
 
             foreach (var image in images)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                var dirName = Path.GetDirectoryName(image.Path);
+                var fileName = Path.GetFileName(image.Path);
+
+                if (!folderIdCache.TryGetValue(dirName, out var id))
+                {
+                    id = AddOrUpdateFolder(db, dirName);
+                    folderIdCache.Add(dirName, id);
+                }
+
+                image.FolderId = id;
+
+
                 foreach (var property in properties)
                 {
                     command.Bind($"@{property.Name}", property.GetValue(image));

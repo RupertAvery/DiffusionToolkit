@@ -109,7 +109,7 @@ namespace Diffusion.Toolkit
             {
                 t?.Dispose();
                 t = null;
-                (added, elapsed) = ScanFiles(detectedFiles.ToList(), false, CancellationToken.None);
+                (added, elapsed) = ScanFiles(detectedFiles.Where(f => !_settings.ExcludePaths.Any(p => f.StartsWith(p))).ToList(), false, CancellationToken.None);
             }
 
             if (added > 0)
