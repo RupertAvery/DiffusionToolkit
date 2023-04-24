@@ -43,7 +43,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="52"/>
                     <ColumnDefinition Width="140"/>
-                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="70"/>
                 </Grid.ColumnDefinitions>
                 <Label FontSize="24" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
                 <Label Grid.Column="2" FontSize="12" VerticalContentAlignment="Center">Sort by:</Label>
@@ -52,7 +52,7 @@
                     <ComboBoxItem>Rating</ComboBoxItem>
                     <ComboBoxItem>Aesthetic Score</ComboBoxItem>
                 </ComboBox>
-                <ComboBox Height="28" VerticalContentAlignment="Center" SelectedValue="{Binding SortDirection}" SelectedValuePath="Content" Grid.Column="4" Margin="0,0,10,0">
+                <ComboBox Height="28" Width="60" VerticalContentAlignment="Center" SelectedValue="{Binding SortDirection}" SelectedValuePath="Content" Grid.Column="4" Margin="0,0,10,0">
                     <ComboBoxItem>A-Z</ComboBoxItem>
                     <ComboBoxItem>Z-A</ComboBoxItem>
                 </ComboBox>
