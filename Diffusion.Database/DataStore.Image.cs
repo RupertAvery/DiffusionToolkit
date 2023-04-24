@@ -92,6 +92,7 @@ namespace Diffusion.Database
             using var db = OpenConnection();
 
             db.BeginTransaction();
+
             var exclude = new string[]
             {
                 nameof(Image.Id),
@@ -112,7 +113,14 @@ namespace Diffusion.Database
 
             foreach (var property in properties.Where(p => p.Name != nameof(Image.Path)))
             {
-                setList.Add($"{property.Name} = @{property.Name}");
+                if (property.Name == nameof(Image.NSFW))
+                {
+                    setList.Add($"{property.Name} = {property.Name} OR {property.Name}");
+                }
+                else
+                {
+                    setList.Add($"{property.Name} = @{property.Name}");
+                }
             }
 
             query += string.Join(", ", setList);
