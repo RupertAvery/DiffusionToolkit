@@ -20,7 +20,7 @@ namespace Diffusion.Toolkit.Controls
                 propertyType: typeof(ImageViewModel),
                 ownerType: typeof(PreviewPane),
                 typeMetadata: new FrameworkPropertyMetadata(
-                    defaultValue: null,
+                    defaultValue: default(ImageViewModel),
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
@@ -241,6 +241,11 @@ namespace Diffusion.Toolkit.Controls
             }
 
 
+        }
+
+        private void PreviewPane_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            ScrollViewer.Focus();
         }
     }
 }

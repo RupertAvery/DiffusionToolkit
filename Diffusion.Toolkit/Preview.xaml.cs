@@ -1,4 +1,5 @@
 ﻿using Diffusion.Database;
+using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using System;
 using System.Windows;
@@ -28,6 +29,12 @@ namespace Diffusion.Toolkit
 
         public Action<int> Changed { get; set; }
 
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            PreviewPane.Focus();
+            base.OnSourceInitialized(e);
+        }
+
         public PreviewWindow(DataStore dataStore, MainModel mainModel)
         {
             _dataStore = dataStore;
@@ -35,6 +42,10 @@ namespace Diffusion.Toolkit
             InitializeComponent();
             DataContext = _model;
 
+            _model.Close = new RelayCommand<object>(o =>
+            {
+                Close();
+            });
             PreviewPane.IsPopout = true;
             PreviewPane.NSFW = (id, v) =>
             {

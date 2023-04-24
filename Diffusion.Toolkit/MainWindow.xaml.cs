@@ -26,6 +26,7 @@ using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
+using System.Diagnostics;
 
 namespace Diffusion.Toolkit
 {
@@ -171,14 +172,18 @@ namespace Diffusion.Toolkit
         }
 
 
-        private void PopoutPreview()
+        private void PopoutPreview(bool hidePreview = true, bool maximized = false)
         {
             if (_previewWindow == null)
             {
-                _model.IsPreviewVisible = false;
-                _search.SetPreviewVisible(_model.IsPreviewVisible);
+                if (hidePreview)
+                {
+                    _model.IsPreviewVisible = false;
+                    _search.SetPreviewVisible(_model.IsPreviewVisible);
+                }
 
                 _previewWindow = new PreviewWindow(_dataStore, _model);
+                _previewWindow.WindowState = maximized ? WindowState.Maximized : WindowState.Normal;
                 _previewWindow.Owner = this;
                 _previewWindow.OnNext = () => _search.Next();
                 _previewWindow.OnPrev = () => _search.Prev();
@@ -186,6 +191,7 @@ namespace Diffusion.Toolkit
                 _previewWindow.Changed = (id) => _search.Update(id);
                 _previewWindow.Closed += (sender, args) =>
                 {
+                    _search.OnCurrentImageChange = null;
                     _previewWindow = null;
                 };
                 _previewWindow.SetCurrentImage(_search.CurrentImage);
@@ -194,7 +200,10 @@ namespace Diffusion.Toolkit
                     _previewWindow?.SetCurrentImage(image);
                 };
                 _previewWindow.Show();
-
+            }
+            else
+            {
+                _previewWindow.SetCurrentImage(_search.CurrentImage);
             }
         }
 
@@ -376,7 +385,8 @@ namespace Diffusion.Toolkit
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
             _search.SetThumbnailSize(_settings.ThumbnailSize);
 
-            _search.OnPopout = PopoutPreview;
+            _search.OnPopout = () => PopoutPreview();
+            _search.OnCurrentImageOpen = OnCurrentImageOpen;
 
             _model.ShowFavorite = new RelayCommand<object>((o) =>
             {
@@ -501,6 +511,26 @@ namespace Diffusion.Toolkit
             //_previewWindow.ShowInTaskbar = false;
             //_previewWindow.Owner = this;
             //_previewWindow.Show();
+
+        }
+
+        private void OnCurrentImageOpen(ImageViewModel obj)
+        {
+            //if (obj == null) return;
+            //var p = obj.Path;
+
+            //var processInfo = new ProcessStartInfo()
+            //{
+            //    FileName = "explorer.exe",
+            //    Arguments = $"/select,\"{p}\"",
+            //    UseShellExecute = true
+            //};
+
+            //Process.Start(processInfo);
+
+            PopoutPreview(false, true);
+
+            //Process.Start("explorer.exe", $"/select,\"{p}\"");
 
         }
 

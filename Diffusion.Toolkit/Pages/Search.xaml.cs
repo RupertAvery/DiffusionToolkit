@@ -232,7 +232,7 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else
                 {
-                    ShowInExplorer(o);
+                    OpenImage(o);
                 }
 
             });
@@ -393,21 +393,11 @@ namespace Diffusion.Toolkit.Pages
 
         public ImageViewModel? CurrentImage => _model.CurrentImage;
 
-        private void ShowInExplorer(object obj)
+        public Action<ImageViewModel> OnCurrentImageOpen { get; set; }
+
+        private void OpenImage(object obj)
         {
-            if (_model.CurrentImage == null) return;
-            var p = _model.CurrentImage.Path;
-
-            var processInfo = new ProcessStartInfo()
-            {
-                FileName = "explorer.exe",
-                Arguments = $"/select,\"{p}\"",
-                UseShellExecute = true
-            };
-
-            Process.Start(processInfo);
-
-            //Process.Start("explorer.exe", $"/select,\"{p}\"");
+            OnCurrentImageOpen?.Invoke(_model.CurrentImage);
         }
 
         public void SearchImages()

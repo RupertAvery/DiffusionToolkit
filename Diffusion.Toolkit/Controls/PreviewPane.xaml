@@ -8,6 +8,8 @@
              xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              mc:Ignorable="d" 
+             Focusable="True"
+             GotFocus="PreviewPane_OnGotFocus"
              d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -158,9 +160,11 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="56"/>
                     </Grid.RowDefinitions>
-
+                    <!--
+                        Remove Fade effect as showing the preview causes it to flicker on momentarily
+                        classes:VisibilityAnimation.AnimationType="Fade" 
+                    -->
                     <Grid  Grid.Row="1"
-                           classes:VisibilityAnimation.AnimationType="Fade" 
                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
                     >
                         <Grid Margin="-20" Background="Transparent"></Grid>

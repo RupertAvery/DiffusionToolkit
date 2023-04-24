@@ -1,4 +1,5 @@
-﻿using Diffusion.Toolkit.Models;
+﻿using System.Windows.Input;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit;
 
@@ -26,5 +27,5 @@ public class PreviewModel : BaseNotify
         set => SetField(ref _nsfwBlur, value);
     }
 
-
+    public ICommand Close { get; set;  }
 }
