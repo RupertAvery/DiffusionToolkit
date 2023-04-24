@@ -54,6 +54,7 @@
                   MouseMove="ThumbnailListView_OnMouseMove"
                   MouseDoubleClick="Control_OnMouseDoubleClick"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  local:ScrollSpeed.ScrollSpeed="11.5"
                   Tag="{Binding Path=.}"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <ListView.Resources>
