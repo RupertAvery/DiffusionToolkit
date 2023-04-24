@@ -74,7 +74,7 @@
                 <!--<Separator />
                 <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash (X/Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
                 <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore (X/Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
-                <MenuItem Header="Remove Entry (CTRL+X/Del)"  Command="{Binding RemoveEntryCommand}"/>-->
+                <MenuItem Header="Remove Entry (Ctrl+X/Del)"  Command="{Binding RemoveEntryCommand}"/>-->
             </ContextMenu>
         </Grid.ContextMenu>
 
@@ -94,7 +94,8 @@
                               VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"  
                               PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
                               PreviewMouseWheel="UIElement_OnMouseWheel"  
-                              KeyDown="UIElement_OnKeyDown"
+                              PreviewKeyUp="ScrollViewer_OnPreviewKeyUp"
+                              KeyDown="ScrollViewer_OnKeyDown"
                               >
                 <Image x:Name="Preview"
                            DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
@@ -121,7 +122,7 @@
             </ScrollViewer>
 
             <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
-                  DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                  DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
                   >
                 <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
                     <fa:ImageAwesome.Visibility>
@@ -140,7 +141,7 @@
                     <ColumnDefinition Width="16"/>
                 </Grid.ColumnDefinitions>
                 <Grid Visibility="{Binding IsPopout, Converter={StaticResource invBoolToVis}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" Grid.Column="1" Background="Transparent" >
-                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Click="ButtonBase_OnClick">
+                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Click="Popout_OnClick">
                         <fa:ImageAwesome ToolTip="Pop out" Icon="WindowRestore" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <fa:ImageAwesome.Effect>
                                 <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>

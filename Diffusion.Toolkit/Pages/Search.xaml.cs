@@ -176,7 +176,7 @@ namespace Diffusion.Toolkit.Pages
             _model.TotalFiles = 100;
             _model.Images = new ObservableCollection<ImageEntry>();
             _model.ShowAlbumPanel = settings.ShowAlbumPanel.GetValueOrDefault(true);
-                _model.PropertyChanged += ModelOnPropertyChanged;
+            _model.PropertyChanged += ModelOnPropertyChanged;
             _model.SearchCommand = new RelayCommand<object>((o) =>
             {
                 _model.IsFilterVisible = false;
@@ -264,7 +264,7 @@ namespace Diffusion.Toolkit.Pages
             _model.AddAlbumCommand = new RelayCommand<object>((o) =>
             {
                 NewAlbumName.Text = null;
-                AddAlbumPopup.Tag = "AddImages"; 
+                AddAlbumPopup.Tag = "AddImages";
                 AddAlbumPopup.IsOpen = true;
                 NewAlbumName.Focus();
             });
@@ -348,8 +348,8 @@ namespace Diffusion.Toolkit.Pages
                 DataStore.SetDeleted(id, b);
                 Update(id);
             };
-            PreviewPane.OnNext = Next;
-            PreviewPane.OnPrev = Prev;
+            //PreviewPane.OnNext = Next;
+            //PreviewPane.OnPrev = Prev;
             GetRandomHint();
         }
 
@@ -733,10 +733,28 @@ namespace Diffusion.Toolkit.Pages
                 });
         }
 
-        public void Next()
+        private int _startIndex = -1;
+
+        public void StartNavigateCursor()
+        {
+            if (_startIndex == -1 && _model.SelectedImageEntry != null)
+            {
+                _startIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
+            }
+        }
+
+        public void EndNavigateCursor()
+        {
+            _startIndex = -1;
+        }
+
+
+        public void NavigateCursorNext()
         {
             if (_model.Images == null) return;
+
             int currentIndex = 0;
+
             if (_model.SelectedImageEntry != null)
             {
                 currentIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
@@ -748,10 +766,17 @@ namespace Diffusion.Toolkit.Pages
 
                 ThumbnailListView.SelectItem(currentIndex + 1);
             }
+            else
+            {
+                if (_startIndex == _model.Images.Count - 1)
+                {
+                    ThumbnailListView.GoNextPage();
+                }
+            }
 
         }
 
-        public void Prev()
+        public void NavigateCursorPrevious()
         {
             if (_model.Images == null) return;
             int currentIndex = 0;
@@ -766,6 +791,14 @@ namespace Diffusion.Toolkit.Pages
 
                 ThumbnailListView.SelectItem(currentIndex - 1);
             }
+            else
+            {
+                if (_startIndex == 0)
+                {
+                    ThumbnailListView.GoPrevPage(true);
+                }
+            }
+
         }
 
         //private async Task LoadMatchesAsync()
@@ -1688,6 +1721,35 @@ namespace Diffusion.Toolkit.Pages
         public void SetShowAlbumPanel(bool showAlbumPanel)
         {
             _model.ShowAlbumPanel = showAlbumPanel;
+        }
+
+        public void ExtOnKeyUp(object sender, KeyEventArgs e)
+        {
+            EndNavigateCursor();
+        }
+
+
+        public void ExtOnKeyDown(object sender, KeyEventArgs e)
+        {
+            StartNavigateCursor();
+            if (e.Key == Key.Left)
+            {
+                NavigateCursorPrevious();
+            }
+            else if (e.Key == Key.Right)
+            {
+                NavigateCursorNext();
+            }
+        }
+
+        private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            ExtOnKeyUp(this, e);
+        }
+
+        private void PreviewPane_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            ExtOnKeyDown(this, e);
         }
     }
 }

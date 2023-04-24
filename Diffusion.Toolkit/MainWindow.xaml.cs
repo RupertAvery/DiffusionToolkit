@@ -190,8 +190,9 @@ namespace Diffusion.Toolkit
                 _previewWindow = new PreviewWindow(_dataStore, _model);
                 _previewWindow.WindowState = maximized ? WindowState.Maximized : WindowState.Normal;
                 _previewWindow.Owner = this;
-                _previewWindow.OnNext = () => _search.Next();
-                _previewWindow.OnPrev = () => _search.Prev();
+
+                _previewWindow.PreviewKeyUp += _search.ExtOnKeyUp;
+                _previewWindow.PreviewKeyDown += _search.ExtOnKeyDown;
                 _previewWindow.OnDrop = (s) => _search.LoadPreviewImage(s);
                 _previewWindow.Changed = (id) => _search.Update(id);
                 _previewWindow.Closed += (sender, args) =>

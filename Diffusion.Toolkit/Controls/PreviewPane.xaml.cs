@@ -104,6 +104,22 @@ namespace Diffusion.Toolkit.Controls
 
                 e.Handled = true;
             }
+            else
+            {
+                Key vkey = e.Delta > 0 ? Key.Left : e.Delta < 0 ? Key.Right : Key.None;
+
+                var ps = PresentationSource.FromVisual((ScrollViewer)sender);
+
+                if (vkey == Key.None)
+                {
+                    OnPreviewKeyUp(new KeyEventArgs(null, ps, 0, vkey));
+                }
+                else
+                {
+                    OnPreviewKeyDown(new KeyEventArgs(null, ps, 0, vkey));
+                }
+
+            }
         }
         
         public void ZoomPreview(double zoomDelta)
@@ -146,9 +162,9 @@ namespace Diffusion.Toolkit.Controls
         public Action<int, int?> Rate { get; set; }
         public Action<int, bool> Delete { get; set; }
 
-        private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
+        private void ScrollViewer_OnKeyDown(object sender, KeyEventArgs e)
         {
-            if ((e.Key == Key.X || e.Key == Key.Delete) && e.KeyboardDevice.Modifiers == ModifierKeys.None)
+            if (e.Key is Key.X or Key.Delete && e.KeyboardDevice.Modifiers == ModifierKeys.None)
             {
                 Image.ForDeletion = !Image.ForDeletion;
                 Delete?.Invoke(Image.Id, Image.ForDeletion);
@@ -167,6 +183,10 @@ namespace Diffusion.Toolkit.Controls
             {
                 Image.IsParametersVisible = !Image.IsParametersVisible;
             }
+            //if (e.Key == Key.F && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control) && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Shift))
+            //{
+            //    MainModel.FitToPreview = !MainModel.FitToPreview;
+            //}
             if (_ratings.Contains(e.Key) && e.KeyboardDevice.Modifiers == ModifierKeys.None)
             {
                 int? rating = e.Key switch
@@ -197,7 +217,7 @@ namespace Diffusion.Toolkit.Controls
                 ResetZoom();
                 e.Handled = true;
             }
-            if (e.Key == Key.OemPlus && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+            else if (e.Key == Key.OemPlus && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
             {
                 ZoomPreview(0.1);
                 e.Handled = true;
@@ -214,7 +234,7 @@ namespace Diffusion.Toolkit.Controls
             Image.IsParametersVisible = !Image.IsParametersVisible;
         }
 
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void Popout_OnClick(object sender, RoutedEventArgs e)
         {
             OnPopout?.Invoke();
         }
@@ -222,30 +242,34 @@ namespace Diffusion.Toolkit.Controls
         public bool IsPopout { get; set; }
 
         public Action OnPopout { get; set; }
-        public Action OnNext { get; set; }
-        public Action OnPrev { get; set; }
+        //public Action OnNext { get; set; }
+        //public Action OnPrev { get; set; }
         public MainModel MainModel { get; set; }
 
         private void ScrollViewer_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Left)
-            {
-                OnPrev?.Invoke();
-                e.Handled = true;
-            }
+            //if (e.Key == Key.Left)
+            //{
+            //    OnPrev?.Invoke();
+            //    e.Handled = true;
+            //}
 
-            if (e.Key == Key.Right)
-            {
-                OnNext?.Invoke();
-                e.Handled = true;
-            }
-
-
+            //if (e.Key == Key.Right)
+            //{
+            //    OnNext?.Invoke();
+            //    e.Handled = true;
+            //}
+            OnPreviewKeyDown(e);
         }
 
         private void PreviewPane_OnGotFocus(object sender, RoutedEventArgs e)
         {
             ScrollViewer.Focus();
+        }
+
+        private void ScrollViewer_OnPreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            OnPreviewKeyUp(e);
         }
     }
 }

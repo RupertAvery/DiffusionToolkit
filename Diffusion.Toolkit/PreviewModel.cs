@@ -28,4 +28,5 @@ public class PreviewModel : BaseNotify
     }
 
     public ICommand Close { get; set;  }
+    public ICommand ToggleFitToPreview { get; set; }
 }

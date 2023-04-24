@@ -210,14 +210,21 @@
 
         </Grid>
 
-        <GridSplitter x:Name="GridSplitter"  Grid.Row="0" Grid.Column="1"
+        <GridSplitter x:Name="GridSplitter"  
+                      Grid.Row="0" Grid.Column="1"
                       HorizontalAlignment="Center"
                       VerticalAlignment="Stretch"
                       ShowsPreview="False"
                       Width="5"
         />
 
-        <controls:PreviewPane Grid.Row="0" Grid.Column="2" NSFWBlur="{Binding NSFWBlur}" Image="{Binding CurrentImage}" x:Name="PreviewPane" AllowDrop="True" Drop="PreviewPane_OnDrop"></controls:PreviewPane>
+        <controls:PreviewPane x:Name="PreviewPane" Grid.Row="0" Grid.Column="2" 
+                              NSFWBlur="{Binding NSFWBlur}" 
+                              Image="{Binding CurrentImage}" 
+                              AllowDrop="True" 
+                              PreviewKeyUp="PreviewPane_OnPreviewKeyUp"
+                              PreviewKeyDown="PreviewPane_OnPreviewKeyDown"
+                              Drop="PreviewPane_OnDrop"></controls:PreviewPane>
 
         <Popup x:Name="AddAlbumPopup" Placement="Center" Width="400" Height="250"
            AllowsTransparency="True" PopupAnimation="Fade"

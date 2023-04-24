@@ -226,10 +226,10 @@ namespace Diffusion.Toolkit.Controls
         {
             ThumbnailListView.SelectedIndex = index;
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;
-            //var item = wrapPanel.Children[0] as ListViewItem;
-            var item = wrapPanel.Children[ThumbnailListView.SelectedIndex];
-            ThumbnailListView.ScrollIntoView(item as ListViewItem);
-            //wrapPanel.Children[ThumbnailListView.SelectedIndex];
+            var item = wrapPanel.Children[index] as ListViewItem;
+            //var item = wrapPanel.Children[ThumbnailListView.SelectedIndex];
+            ThumbnailListView.ScrollIntoView(item);
+            item.BringIntoView();
         }
 
 
@@ -566,16 +566,24 @@ namespace Diffusion.Toolkit.Controls
                 {
                     var index = gotoEnd ? Model.Images.Count - 1 : 0;
 
-                    ThumbnailListView.ScrollIntoView(Model.Images[index]);
-                    ThumbnailListView.SelectedItem = Model.Images[index];
+                    SelectItem(index);
 
-                    if (focus)
-                    {
-                        if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(index) is ListViewItem item)
-                        {
-                            item.Focus();
-                        }
-                    }
+                    //ThumbnailListView.SelectedIndex = index;
+                    //var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+                    //var item = wrapPanel.Children[index] as ListViewItem;
+
+                    //ThumbnailListView.ScrollIntoView(item);
+                    ////ThumbnailListView.SelectedItem = item;
+
+                    //if (focus)
+                    //{
+                    //    item.BringIntoView();
+
+                    //    //if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(index) is ListViewItem item)
+                    //    //{
+                    //    //    item.Focus();
+                    //    //}
+                    //}
                 }
             });
         }

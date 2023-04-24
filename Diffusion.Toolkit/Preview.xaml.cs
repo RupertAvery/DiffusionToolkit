@@ -3,6 +3,7 @@ using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using System;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Diffusion.Toolkit
 {
@@ -14,16 +15,6 @@ namespace Diffusion.Toolkit
         private readonly DataStore _dataStore;
         private PreviewModel _model;
         private Action _onNext;
-
-        public Action OnNext
-        {
-            set => PreviewPane.OnNext = value;
-        }
-
-        public Action OnPrev
-        {
-            set => PreviewPane.OnPrev = value;
-        }
 
         public Action<string> OnDrop { get; set; }
 
@@ -68,6 +59,7 @@ namespace Diffusion.Toolkit
                 Changed?.Invoke(id);
             };
             PreviewPane.MainModel = mainModel;
+            _model.ToggleFitToPreview = PreviewPane.MainModel.ToggleFitToPreview;
         }
 
         public void SetNSFWBlur(bool value)
@@ -90,6 +82,15 @@ namespace Diffusion.Toolkit
             }
         }
 
+        private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            OnPreviewKeyUp(e);
+        }
+
+        private void PreviewPane_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            OnPreviewKeyDown(e);
+        }
     }
 
     

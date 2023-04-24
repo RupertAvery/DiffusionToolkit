@@ -13,9 +13,17 @@
         Height="450" Width="800">
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Close}"></KeyBinding>
+        <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding ToggleFitToPreview}"></KeyBinding>
     </Window.InputBindings>
     <Grid>
-        <controls:PreviewPane NSFWBlur="{Binding NSFWBlur}" Image="{Binding CurrentImage}"  x:Name="PreviewPane" AllowDrop="True" Drop="PreviewPane_OnDrop"></controls:PreviewPane>
+        <controls:PreviewPane 
+            NSFWBlur="{Binding NSFWBlur}" 
+            Image="{Binding CurrentImage}"
+            PreviewKeyUp="PreviewPane_OnPreviewKeyUp"
+            PreviewKeyDown="PreviewPane_OnPreviewKeyDown"
+            x:Name="PreviewPane" 
+            AllowDrop="True" 
+            Drop="PreviewPane_OnDrop"></controls:PreviewPane>
 
     </Grid>
 </local:BorderlessWindow>
