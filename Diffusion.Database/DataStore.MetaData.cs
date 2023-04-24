@@ -92,13 +92,15 @@ namespace Diffusion.Database
         }
 
 
-        public void SetNSFW(IEnumerable<int> ids, bool nsfw)
+        public void SetNSFW(IEnumerable<int> ids, bool nsfw, bool preserve = false)
         {
             using var db = OpenConnection();
 
             db.BeginTransaction();
 
-            var query = "UPDATE Image SET NSFW = @NSFW WHERE Id = @Id";
+            var update = preserve ? "NSFW = NSFW OR @NSFW" : "NSFW = @NSFW";
+
+            var query = $"UPDATE Image SET {update} WHERE Id = @Id";
             var command = db.CreateCommand(query);
 
             foreach (var id in ids)

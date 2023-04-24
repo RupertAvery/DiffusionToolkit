@@ -79,7 +79,7 @@
                 <Separator/>
                 <MenuItem Header="_Album Pane" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
             </MenuItem>
-            <MenuItem Style="{DynamicResource MenuItemStyle1}" Header="_Tools">
+            <MenuItem Header="_Tools">
                 <MenuItem Header="_Query">
                     <!--<MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
                     <Separator></Separator>-->

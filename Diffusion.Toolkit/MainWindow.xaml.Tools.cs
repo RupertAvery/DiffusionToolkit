@@ -126,7 +126,7 @@ namespace Diffusion.Toolkit
 
                 await Task.Run(() =>
                 {
-                    UpdateByBatch(ids, 50, subset => _dataStore.SetNSFW(subset, true));
+                    UpdateByBatch(ids, 50, subset => _dataStore.SetNSFW(subset, true, true));
                 });
 
                 message = $"{ids.Count} images were tagged as NSFW";
