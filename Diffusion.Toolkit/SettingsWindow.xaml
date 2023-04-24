@@ -1,4 +1,4 @@
-﻿<Window x:Class="Diffusion.Toolkit.SettingsWindow"
+﻿<local:BorderlessWindow x:Class="Diffusion.Toolkit.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -8,7 +8,10 @@
         d:DataContext="{d:DesignInstance local:SettingsModel, IsDesignTimeCreatable = True}"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
-        WindowStyle="SingleBorderWindow"
+        MenuWidth="0"
+        TitleWidth="*"
+        WindowStyle="ToolWindow"
+        Style="{StaticResource BorderlessWindowStyle}"
         ResizeMode="NoResize"
         Title="Settings" Height="540" Width="600">
     <Grid>
@@ -172,4 +175,4 @@
         </Grid>
         <Label Grid.Row="1" HorizontalAlignment="Center">Settings will be applied on exit</Label>
     </Grid>
-</Window>
+</local:BorderlessWindow>

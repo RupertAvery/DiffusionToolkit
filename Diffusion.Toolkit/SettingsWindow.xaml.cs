@@ -17,7 +17,7 @@ namespace Diffusion.Toolkit
     /// <summary>
     /// Interaction logic for Window1.xaml
     /// </summary>
-    public partial class SettingsWindow : Window
+    public partial class SettingsWindow : BorderlessWindow
     {
         private readonly DataStore _dataStore;
         private readonly SettingsModel _model;
@@ -31,6 +31,7 @@ namespace Diffusion.Toolkit
         protected override void OnSourceInitialized(EventArgs e)
         {
             IconHelper.RemoveIcon(this);
+            base.OnSourceInitialized(e);
         }
 
         public SettingsWindow(DataStore dataStore, Settings settings) : this()
