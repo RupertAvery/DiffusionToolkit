@@ -26,7 +26,7 @@ namespace Diffusion.Toolkit
     /// <summary>
     /// Interaction logic for Tips.xaml
     /// </summary>
-    public partial class WelcomeWindow : Window
+    public partial class WelcomeWindow : BorderlessWindow
     {
         private readonly Settings _settings;
         private readonly WelcomeModel _model;
