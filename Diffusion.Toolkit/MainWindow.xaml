@@ -1,4 +1,4 @@
-﻿<local:SWWindow x:Class="Diffusion.Toolkit.MainWindow"
+﻿<local:BorderlessWindow x:Class="Diffusion.Toolkit.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,7 +10,7 @@
         xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
         mc:Ignorable="d"
         ResizeMode="CanResizeWithGrip"
-        Style="{StaticResource SWWindowStyle}"
+        Style="{StaticResource BorderlessWindowStyle}"
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         MenuWidth="200"
         TitleWidth="*"
@@ -49,6 +49,8 @@
                 <MenuItem Header="_Close" Command="{Binding Close}"/>
             </MenuItem>
             <MenuItem Header="_Edit">
+                <MenuItem Header="_Quick Copy" Command="{Binding QuickCopy}"/>
+                <Separator></Separator>
                 <MenuItem x:Name="EditMenu"  Header="_Settings" Command="{Binding Settings}"/>
                 <Separator></Separator>
                 <MenuItem Header="_Empty Recycle Bin" Command="{Binding RemoveMarked}"/>
@@ -174,4 +176,4 @@
         </Popup>
     </Grid>
 
-</local:SWWindow>
+</local:BorderlessWindow>

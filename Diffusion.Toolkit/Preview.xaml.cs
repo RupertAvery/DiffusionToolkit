@@ -8,7 +8,7 @@ namespace Diffusion.Toolkit
     /// <summary>
     /// Interaction logic for Preview.xaml
     /// </summary>
-    public partial class PreviewWindow : SWWindow
+    public partial class PreviewWindow : BorderlessWindow
     {
         private readonly DataStore _dataStore;
         private PreviewModel _model;

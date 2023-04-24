@@ -41,7 +41,7 @@
         </Style.Triggers>
     </Style>
 
-    <Style TargetType="local:SWWindow" x:Key="SWWindowStyle">
+    <Style TargetType="local:BorderlessWindow" x:Key="BorderlessWindowStyle">
         <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="MinHeight" Value="320"/>
@@ -57,7 +57,7 @@
         </Setter>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type local:SWWindow}">
+                <ControlTemplate TargetType="{x:Type local:BorderlessWindow}">
 
                     <Grid Background="Transparent" x:Name="WindowRoot">
 
@@ -65,7 +65,7 @@
                               Background="{TemplateBinding Background}">
 
                             <!--TitleBar-->
-                          
+
                             <Grid Margin="8" x:Name="PART_MainContentGrid">
                                 <ContentPresenter x:Name="PART_MainContentPresenter"/>
                             </Grid>
@@ -87,14 +87,14 @@
                                     </Grid.ColumnDefinitions>
 
                                     <Button x:Name="MinimizeButton" 
-                                        Style="{StaticResource WindowButtonStyle}" 
+                                            Style="{StaticResource WindowButtonStyle}" 
                                             fa:Awesome.Content="WindowMinimize" 
                                             TextElement.FontFamily="pack://application:,,,
                                                  /FontAwesome.WPF;component/#FontAwesome"
                                             Grid.Column="0"/>
 
-                                    <Button x:Name="MaximizeButton" Style="{StaticResource 
-                                                                 WindowButtonStyle}" 
+                                    <Button x:Name="MaximizeButton" 
+                                            Style="{StaticResource WindowButtonStyle}" 
                                             fa:Awesome.Content="WindowMaximize" 
                                             TextElement.FontFamily="pack://application:,,,
                                                /FontAwesome.WPF;component/#FontAwesome"
@@ -129,7 +129,7 @@
                                 <Border Visibility="Hidden" BorderBrush="Red" BorderThickness="1" Grid.Column="0">
                                 </Border>
                                 <Grid x:Name="PART_TitleBar" Background="Transparent" Grid.Column="1">
-                                </Grid>    
+                                </Grid>
                             </Grid>
 
                             <Grid Background="{x:Null}" Height="36" IsHitTestVisible="False" VerticalAlignment="Top">

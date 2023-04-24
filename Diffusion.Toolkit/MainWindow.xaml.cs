@@ -32,7 +32,7 @@ namespace Diffusion.Toolkit
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : SWWindow
+    public partial class MainWindow : BorderlessWindow
     {
         private readonly MainModel _model;
         private NavigatorService _navigatorService;
@@ -188,12 +188,13 @@ namespace Diffusion.Toolkit
                 {
                     _previewWindow = null;
                 };
-                _previewWindow.Show();
                 _previewWindow.SetCurrentImage(_search.CurrentImage);
                 _search.OnCurrentImageChange = (image) =>
                 {
                     _previewWindow?.SetCurrentImage(image);
                 };
+                _previewWindow.Show();
+
             }
         }
 

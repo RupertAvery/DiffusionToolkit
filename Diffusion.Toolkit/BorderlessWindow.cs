@@ -20,7 +20,7 @@ using System.Windows.Media;
 
 namespace Diffusion.Toolkit
 {
-    public partial class SWWindow : Window
+    public partial class BorderlessWindow : Window
     {
         private bool isMouseButtonDown;
         private Point mouseDownPosition;
@@ -39,7 +39,7 @@ namespace Diffusion.Toolkit
             DependencyProperty.Register(
                 name: nameof(MenuWidth),
                 propertyType: typeof(GridLength),
-                ownerType: typeof(SWWindow), new FrameworkPropertyMetadata(new GridLength(1, GridUnitType.Star)));
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(new GridLength(1, GridUnitType.Star)));
 
         public GridLength MenuWidth
         {
@@ -52,7 +52,7 @@ namespace Diffusion.Toolkit
             DependencyProperty.Register(
                 name: nameof(TitleWidth),
                 propertyType: typeof(GridLength),
-                ownerType: typeof(SWWindow), new FrameworkPropertyMetadata(GridLength.Auto));
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(GridLength.Auto));
 
         private Point previousScreenBounds;
         private bool isManualDrag;
@@ -87,7 +87,7 @@ namespace Diffusion.Toolkit
             //}
         }
 
-        public SWWindow()
+        public BorderlessWindow()
         {
             //double currentDPIScaleFactor =
             //    (double)SystemHelper.GetCurrentDPIScaleFactor();
