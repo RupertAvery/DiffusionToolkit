@@ -1,22 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
-using Microsoft.Win32;
 using Button = System.Windows.Controls.Button;
-using Control = System.Windows.Controls.Control;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using MouseEventHandler = System.Windows.Input.MouseEventHandler;
 using Point = System.Windows.Point;
-using System.Windows.Media;
 
 namespace Diffusion.Toolkit
 {
@@ -25,6 +18,7 @@ namespace Diffusion.Toolkit
         private bool isMouseButtonDown;
         private Point mouseDownPosition;
         private Point positionBeforeDrag;
+
         public Grid WindowRoot { get; private set; }
         public Grid LayoutRoot { get; private set; }
         public Button MinimizeButton { get; private set; }
@@ -33,8 +27,7 @@ namespace Diffusion.Toolkit
         public Button CloseButton { get; private set; }
         public Grid HeaderBar { get; private set; }
         public Grid TitleBar { get; private set; }
-
-
+        
         public static readonly DependencyProperty MenuWidthProperty =
             DependencyProperty.Register(
                 name: nameof(MenuWidth),
@@ -95,8 +88,9 @@ namespace Diffusion.Toolkit
             //    Screen.FromHandle((new WindowInteropHelper(this)).Handle);
             SizeChanged +=
                 new SizeChangedEventHandler(OnSizeChanged);
-            //StateChanged += new EventHandler(OnStateChanged);
-            //Loaded += new RoutedEventHandler(OnLoaded);
+            StateChanged += new EventHandler(OnStateChanged);
+            
+            Loaded += new RoutedEventHandler(OnLoaded);
             //Rectangle workingArea = screen.WorkingArea;
             //MaxHeight =
             //    (double)(workingArea.Height + 16) / currentDPIScaleFactor;
@@ -340,6 +334,8 @@ namespace Diffusion.Toolkit
             Rectangle workingArea = screen.WorkingArea;
             previousScreenBounds = new Point(width,
                                      (double)workingArea.Height);
+
+            SetMaximizeButtonsVisibility(true, false);
         }
 
         private void SystemEvents_DisplaySettingsChanged(object sender, EventArgs e)
@@ -393,7 +389,7 @@ namespace Diffusion.Toolkit
 
                 if (WindowState != WindowState.Maximized)
                 {
-                    //this.SetMaximizeButtonsVisibility(Visibility.Visible, Visibility.Collapsed);
+                    this.SetMaximizeButtonsVisibility(true, false);
                 }
             }
             else
@@ -407,11 +403,25 @@ namespace Diffusion.Toolkit
                     thickness = GetFromMinimizedMarginForDpi();
                 }
 
-                //this.SetMaximizeButtonsVisibility(Visibility.Collapsed, Visibility.Visible);
+                this.SetMaximizeButtonsVisibility(false, true);
             }
 
             //LayoutRoot.Margin = thickness;
             PreviousState = WindowState;
+        }
+
+        private void SetMaximizeButtonsVisibility(bool maximizeButton, bool restoreButton, bool minimizeButton = true)
+        {
+            if (WindowStyle == WindowStyle.ToolWindow)
+            {
+                maximizeButton = false;
+                restoreButton = false;
+                minimizeButton = false;
+            }
+
+            RestoreButton.Visibility = restoreButton ? Visibility.Visible : Visibility.Collapsed;
+            MaximizeButton.Visibility = maximizeButton ? Visibility.Visible : Visibility.Collapsed;
+            MinimizeButton.Visibility = minimizeButton ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public WindowState PreviousState { get; set; }
