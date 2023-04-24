@@ -28,6 +28,7 @@
         <KeyBinding Modifiers="Control" Key="R" Command="{Binding Rescan}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleAlbum}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="P" Command="{Binding TogglePreview}"></KeyBinding>
+        <KeyBinding Modifiers="Control+Shift" Key="F" Command="{Binding ToggleFitToPreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="N" Command="{Binding ToggleHideNSFW}"></KeyBinding>
     </Window.InputBindings>
     <Window.Resources>
@@ -70,13 +71,13 @@
                 <Separator/>
                 <MenuItem Header="Show/Hide _Info" Command="{Binding ToggleInfo}" InputGestureText="I"/>
                 <MenuItem Header="_Blur NSFW" IsChecked="{Binding NSFWBlur}" InputGestureText="B" Command="{Binding ToggleNSFWBlur}"/>
-                <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFW}" Command="{Binding ToggleHideNSFW}" InputGestureText="CTRL+Shift+N"/>
+                <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFW}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
                 <Separator/>
-                <MenuItem Header="_Fit to Preview" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"/>
-                <MenuItem Header="Show/Hide Preview" Command="{Binding TogglePreview}" InputGestureText="CTRL+Shift+P"/>
+                <MenuItem Header="_Fit to Preview" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
+                <MenuItem Header="Show/Hide Preview" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
                 <MenuItem Header="_Popout Preview" Command="{Binding PoputPreview}"/>
                 <Separator/>
-                <MenuItem Header="_Album Pane" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="CTRL+Shift+A"/>
+                <MenuItem Header="_Album Pane" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
             </MenuItem>
             <MenuItem Style="{DynamicResource MenuItemStyle1}" Header="_Tools">
                 <MenuItem Header="_Query">
@@ -99,32 +100,32 @@
         </Menu>
         <ToolBar Grid.Row="1" Height="32" OverflowMode="Never">
             <Button Command="{Binding ShowFolders}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Folders (CTRL+1)" Icon="FolderOutlinepenOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
             <Button Command="{Binding ShowAlbums}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Albums (CTRL+2)" Icon="FilePhotoOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Albums (Ctrl+2)" Icon="FilePhotoOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
             <Button Command="{Binding ShowSearch}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Search (CTRL+3)" Icon="Search" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Search (Ctrl+3)" Icon="Search" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
             <Button Command="{Binding ShowFavorite}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Favorites (CTRL+4)" Icon="HeartOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Favorites (Ctrl+4)" Icon="HeartOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
             <Button  Command="{Binding ShowMarked}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Recycle bin (CTRL+5)" Icon="TrashOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
             <Button  Command="{Binding ShowPrompts}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Prompts (CTRL+6)" Icon="FileTextOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Prompts (Ctrl+6)" Icon="FileTextOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
             <Separator></Separator>
             <Button Command="{Binding Rescan}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Scan folders for new images (CTRL+R)" Icon="Refresh" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <fa:ImageAwesome MinWidth="32" ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
             <Separator></Separator>
