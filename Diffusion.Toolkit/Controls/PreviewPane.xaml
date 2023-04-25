@@ -89,9 +89,14 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="32"/>
             </Grid.RowDefinitions>
+
             <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
                               HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
                               VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"  
+                              MouseMove="ScrollViewer_OnMouseMove"
+                              MouseLeave="ScrollViewer_OnMouseLeave"
+                              MouseDown="ScrollViewer_OnMouseDown"
+                              MouseUp="ScrollViewer_OnMouseUp"
                               PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
                               PreviewMouseWheel="UIElement_OnMouseWheel"  
                               PreviewKeyUp="ScrollViewer_OnPreviewKeyUp"

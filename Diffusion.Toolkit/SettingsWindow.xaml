@@ -115,6 +115,10 @@
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding ModelRootPath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
                             <Button Height="26" Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
                         </Grid>
+                        <TextBlock Margin="10" TextWrapping="Wrap">
+                            Set the Model Root to the path of the AUTOMATIC111 models\Stable-diffusion folder to list 
+                            all your models in the Model Tab 
+                        </TextBlock>
                         <Label>A1111 Cache (cache.json)</Label>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -124,6 +128,10 @@
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding HashCache, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
                             <Button Height="26" Grid.Column="1" Click="BrowseHashCache_OnClick">Browse</Button>
                         </Grid>
+                        <TextBlock Margin="10" TextWrapping="Wrap">
+                            Set the A1111 Cache to the path of the AUTOMATIC111 cache.json file to allow model name searches 
+                            if your metadata contains only the hash. SHA256 model hashes are also read from this file.
+                        </TextBlock>
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="Images">

@@ -34,6 +34,8 @@
     <Window.Resources>
         <ResourceDictionary>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
+            <converters:ThumbnailSizeCheckedConverter x:Key="thumbSizeChecked"></converters:ThumbnailSizeCheckedConverter>
+            
         </ResourceDictionary>
     </Window.Resources>
 
@@ -62,11 +64,11 @@
                 <MenuItem Header="Refresh" Command="{Binding Refresh}" InputGestureText="F5"/>
                 <Separator/>
                 <MenuItem Header="Thumbnails">
-                    <MenuItem Header="128x128" Command="{Binding SetThumbnailSize}" CommandParameter="128"/>
-                    <MenuItem Header="192x192" Command="{Binding SetThumbnailSize}" CommandParameter="192"/>
-                    <MenuItem Header="256x256" Command="{Binding SetThumbnailSize}" CommandParameter="256"/>
-                    <MenuItem Header="384x384" Command="{Binding SetThumbnailSize}" CommandParameter="384"/>
-                    <MenuItem Header="512x512" Command="{Binding SetThumbnailSize}" CommandParameter="512"/>
+                    <MenuItem Header="128x128" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=128}" Command="{Binding SetThumbnailSize}" CommandParameter="128"/>
+                    <MenuItem Header="192x192" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=192}" Command="{Binding SetThumbnailSize}" CommandParameter="192"/>
+                    <MenuItem Header="256x256" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=256}" Command="{Binding SetThumbnailSize}" CommandParameter="256"/>
+                    <MenuItem Header="384x384" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=384}" Command="{Binding SetThumbnailSize}" CommandParameter="384"/>
+                    <MenuItem Header="512x512" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=512}" Command="{Binding SetThumbnailSize}" CommandParameter="512"/>
                 </MenuItem>
                 <Separator/>
                 <MenuItem Header="Show/Hide _Info" Command="{Binding ToggleInfo}" InputGestureText="I"/>

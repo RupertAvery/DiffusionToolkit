@@ -50,6 +50,7 @@ public class MainModel : BaseNotify
     private ICommand _toggleAlbum;
     private ICommand _refresh;
     private ICommand _quickCopy;
+    private int _thumbnailSize;
 
     public MainModel()
     {
@@ -322,5 +323,11 @@ public class MainModel : BaseNotify
     {
         get => _quickCopy;
         set => SetField(ref _quickCopy, value);
+    }
+
+    public int ThumbnailSize
+    {
+        get => _thumbnailSize;
+        set => SetField(ref _thumbnailSize, value);
     }
 }

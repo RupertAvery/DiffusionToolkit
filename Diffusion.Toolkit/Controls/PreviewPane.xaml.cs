@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Diffusion.Toolkit.Models;
+using Point = System.Windows.Point;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -62,9 +65,28 @@ namespace Diffusion.Toolkit.Controls
         public PreviewPane()
         {
             InitializeComponent();
-
-            _scrollDragger = new ScrollDragger(Preview, ScrollViewer);
+            InitIcons();
+            _scrollDragger = new ScrollDragger(Preview, ScrollViewer, grabCursor);
         }
+
+        private Cursor handCursor;
+        private Cursor grabCursor;
+
+        private void InitIcons()
+        {
+            Uri handIconUri = new Uri("pack://application:,,,/Icons/hand.cur", UriKind.RelativeOrAbsolute);
+            handCursor = new Cursor(Application.GetResourceStream(handIconUri).Stream);
+            Uri grabIconUri = new Uri("pack://application:,,,/Icons/grab.cur", UriKind.RelativeOrAbsolute);
+            grabCursor = new Cursor(Application.GetResourceStream(grabIconUri).Stream);
+            //Unloaded += OnUnloaded;
+        }
+
+
+        //private void OnUnloaded(object sender, RoutedEventArgs e)
+        //{
+        //    handCursor.Dispose();
+        //    grabCursor.Dispose();
+        //}
 
 
         public void ResetZoom()
@@ -85,7 +107,7 @@ namespace Diffusion.Toolkit.Controls
 
                 // Calculate the new zoom level based on the mouse wheel delta
                 double zoomDelta = e.Delta > 0 ? 0.1 : -0.1;
-                
+
                 zoomDelta = Preview.LayoutTransform.Value.M11 * zoomDelta;
 
                 double newZoom = Math.Min(Math.Max(Preview.LayoutTransform.Value.M11 + zoomDelta, 0.1), 10);
@@ -106,22 +128,22 @@ namespace Diffusion.Toolkit.Controls
             }
             else
             {
-                Key vkey = e.Delta > 0 ? Key.Left : e.Delta < 0 ? Key.Right : Key.None;
+                //Key vkey = e.Delta > 0 ? Key.Left : e.Delta < 0 ? Key.Right : Key.None;
 
-                var ps = PresentationSource.FromVisual((ScrollViewer)sender);
+                //var ps = PresentationSource.FromVisual((ScrollViewer)sender);
 
-                if (vkey == Key.None)
-                {
-                    OnPreviewKeyUp(new KeyEventArgs(null, ps, 0, vkey));
-                }
-                else
-                {
-                    OnPreviewKeyDown(new KeyEventArgs(null, ps, 0, vkey));
-                }
+                //if (vkey == Key.None)
+                //{
+                //    OnPreviewKeyUp(new KeyEventArgs(null, ps, 0, vkey));
+                //}
+                //else
+                //{
+                //    OnPreviewKeyDown(new KeyEventArgs(null, ps, 0, vkey));
+                //}
 
             }
         }
-        
+
         public void ZoomPreview(double zoomDelta)
         {
             var mouseAtScrollViewer = new Point(ScrollViewer.ViewportWidth / 2, ScrollViewer.ViewportHeight / 2);
@@ -270,6 +292,30 @@ namespace Diffusion.Toolkit.Controls
         private void ScrollViewer_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
             OnPreviewKeyUp(e);
+        }
+
+        private void ScrollViewer_OnMouseMove(object sender, MouseEventArgs e)
+        {
+            Window window = Window.GetWindow(this);
+            window.Cursor = handCursor;
+        }
+
+        private void ScrollViewer_OnMouseLeave(object sender, MouseEventArgs e)
+        {
+            Window window = Window.GetWindow(this);
+            window.Cursor = Cursors.Arrow;
+        }
+
+        private void ScrollViewer_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Window window = Window.GetWindow(this);
+            window.Cursor = grabCursor;
+        }
+
+        private void ScrollViewer_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            Window window = Window.GetWindow(this);
+            window.Cursor = handCursor;
         }
     }
 }

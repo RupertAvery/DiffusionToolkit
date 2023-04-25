@@ -16,11 +16,14 @@
 * [Folders](#folders)
 * [Albums](#albums)
 * [Drag and Drop](#drag-and-drop)
-* [Tagging](#tagging)
-   * [Favorites](#favorites)
+* [Tagging Images](#tagging-images)
+   * [Favorite](#favorite)
    * [Rating](#rating)
    * [NSFW](#nsfw-tag)
    * [Deleting](#deleting)
+* [Managing Images](#managing-images)
+   * [Moving Images](#moving-images)
+   * [Removing Entries](#removing-entries)
 * [Searching](#searching)
 * [Advanced Searching](#advanced-searching)
 * [Supported Parameters](#supported-parameters)
@@ -72,17 +75,19 @@ Diffusion Toolkit scans your AI-Generated images for metadata and stores it in a
 
 # Getting Started
 
-On first load, you will be shown the settings dialog, where you can add your image folders.
+On first load, you will be shown the Settings dialog.
 
-![image](https://user-images.githubusercontent.com/1910659/213331016-43426782-92df-446b-8a77-264bbae066e4.png)
+![image](https://user-images.githubusercontent.com/1910659/234148070-65c04c81-2d8b-4983-bbc5-5e9dd5b4ddb3.png)
 
 ## General Tab
 
-If you have your images stored in several nested folders, don't add the nested folders, just add the topmost folder to the **Diffusion Folders**. 
-
-You can choose to **Watch Folders** for new images. See [Watch Folders](#watch-folders) for more information on this option.
+Diffusion Toolkit will scan a set of folders and index images found into its database.  Add the folders you want to scan into the **Diffusion Folders** list.
 
 You can choose **Recursive** to let Diffusion Toolkit recursively scan your Diffusion Folders. This is enabled by default.
+
+If you have subfolders you want to ignore from the **Diffusion Folders** list, add them to the **Excluded Folders** list.
+
+You can choose to **Watch Folders** for new images. See [Watch Folders](#watch-folders) for more information on this option.
 
 You can set what **File Extensions** to scan for. Don't include an asterisk, but do include the dot, and separate with commas e.g. `.png, .jpg, .jpeg, .webp`.
 
@@ -168,11 +173,11 @@ Double-clicking an image or pressing `Enter` with an image selected will launch 
 
 Click **View > Thumbnails** to select the thumbnail size.
 
-# Tagging
+# Tagging Images
 
 You can tag your files with additional metadata (stored in the Diffusion Toolkit database) to help you organize and manage your images further.
 
-## Favorites
+## Favorite
 
 While browsing via the thumbnail viewer, or with the Preview in focus, press `F` to toggle **Favorite** on the selected image.  A blue heart will indicate that the image has been tagged as Favorite. This will also be indicated in the Preview Pane.
 
@@ -192,7 +197,7 @@ You can rate multiple selected images.
 
 You can use the Rating search parameter to filter images by rating. See [Advanced Searching](#advanced-searching) for more information.
 
-## NSFW Tag
+## NSFW
 
 While browsing via the thumbnail viewer, or with the Preview in focus, press `N` to toggle **NSFW** Tag on the selected image. If the **View > Blur NSFW** option is checked, the image will be blurred to indicate NSFW on the image.  Otherwise there no visible indicator that the image is tagged as NSFW.
 
@@ -208,7 +213,7 @@ You can use the NSFW search parameter to filter images by nsfw. See [Advanced Se
 
 The shortcut for **View > Blur NSFW** is `B`
 
-## Deleting
+## Deleting Images
 
 When inside the thumbnail viewer, press `Del` or `X` to toggle **For Deletion** on the selected image.  The thumbnail will become transparent, indicating that the image has been tagged as For Deletion.
 
@@ -217,6 +222,24 @@ If you click on the **Recycle Bin Icon** in the toolbar, you will be presented w
 When in the **Recycle Bin View**, toggling an image delete off will cause the image to be removed from the list and it will not be displayed the next time you visit the Recycle Bin View.
 
 To permanently remove all images marked For Deletion, click **Edit > Empty Recycle Bin**.
+
+**WARNING** - Images will not be sent to Window's Recycle bin. They will be removed permanently!
+
+# Managing Images
+
+## Moving Images
+
+If you want to move images around in your Diffusion Folders, you should use the **Right-click > Move** command. Diffusion Toolkit tracks your Favorites, Ratings, NSFW in its own database, and is linked to the image by the path. Because of this, you should use the internal Move command so that the application can update the reference in the database.
+
+## Removing Entries
+
+You way want to remove an image from the database, without deleting the file from disk. The reasons you may want to do this are:
+
+* Diffusion Toolkit generated a duplicate entry, pointing to the same file.
+* You added an **Excluded Folder** (see [General](#general-tab) tab under Settings) and you wish to stop tracking images in the folder.
+
+To do this, select the image and right-click > Remove Entry or press `Ctrl-X` or `Ctrl-Del`.
+
 
 # Preview Pane
 
@@ -266,6 +289,8 @@ Pressing **Escape** will close the Popout.
 
 Double-clicking an image, or pressing Enter on a selected image will display the image in a maximized view of the popout.
 
+See [Preview Pane](#preview-pane) for instructions on how to zoom, navigate and tag your image in the Image Viewer. 
+
 # Folders
 
 Click on the **Folders** icon in the menu bar to browse your images using folders. A Home button, Up button, and an address bar will appear below the search bar.
@@ -310,15 +335,19 @@ You can drag an image from the thumbnail to another app, such as the PNGInfo tab
 
 # Searching
 
-Separate search terms using a comma. Each search term is ANDed to produce the final filter. 
+Above the thumbnail view is the search box. You can type in search terms to filter your results and find what you are looking for easily.
 
-For example:
+## Searching by prompt
+
+The basic way to search is by entering text that appears in the prompt. It will work the way yout expect most of the time.  However, commas are special and are used to **separate prompt terms**.
+
+Take this query for example:
 
 ```
 A man staring into a starry night sky, by Van Gogh
 ```
 
-This contains two search terms.
+This contains two search terms:
 
 * `A man staring into a starry night sky` 
 * `by Van Gogh` 
@@ -344,19 +373,22 @@ is not the same as the previous term.
 
 # Advanced Searching
 
-The prompt, if any, must always come first.  
+To be able to search by other parameters in the search box, you need to use special tokens.  These are words referring to the parameter followed by a colon, for example `seed: 12345` will add a search term that filters images using a seed value of `12345`.
 
-You can also include image generation parameters in your search query. 
-
-Add the parameters to the end of your query, e.g:
+The prompt query, if any, should always come first, in order to avoid being interpreted as an argument to the parameter token.
 
 ```
 A man staring into a starry night sky, by Van Gogh steps: 20 cfg:12  
 ```
 
-Parameters will be ANDed, meaning adding more parameters will filter out more results. 
+Parameters will be ANDed, meaning adding more parameters will filter out more results. The above query will show images that have
 
-The way the query is parsed is, each possible parameter is matched and then removed from the query. Any remaining unmatched text will be considered as part of the prompt.
+* prompt contains `A man staring into a starry night sky` 
+* AND `by Van Gogh` 
+* AND `steps` is `20` 
+* AND `cfg` is `12`  
+
+When parsing the query, each possible parameter is matched and then removed. Any remaining unmatched text will be considered as part of the prompt.
 
 # Supported parameters
 
@@ -375,27 +407,27 @@ The way the query is parsed is, each possible parameter is matched and then remo
 
 * `sampler: <name>` 
 
-	To search for a sampler name, use whatever is stored in the metadata.
-	Sometimes, this will vary from tool to tool.  Also, for sampler names that use
-	spaces, put quotes around the name.
+	The sampler name varies between AI generators. Some will use names with spaces, and some will use lowercase with underscore. Check what the generator stores in your images. For sampler names that use	spaces, put quotes around the name.
 
-   * Euler a or `euler_a`
+   Here is a list of known samplers used in A1111 and other tools.
+
+   * "Euler a" or `euler_a`
    * Euler or `euler`
    * LMS or `lms`
    * Heun or `heun`
    * DPM2 or `dpm2`
-   * DPM2 a or `dpm2_a`
-   * DPM++ 2S a or `dpm++_2s_a`
-   * DPM++ 2M or `dpm++_2m`
-   * DPM++ SDE or `dpm++_sde`
-   * DPM fast or `dpm_fast`
-   * DPM adaptive or `dpm_adaptive`
-   * LMS Karras or `lms_karras`
-   * DPM2 Karras or `dpm2_karras`
-   * DPM2 a Karras or `dpm2_a_karras`
-   * DPM++ 2S a Karras or `dpm++_2s_a_karras`
-   * DPM++ 2M Karras or `dpm++_2s_karras`
-   * DPM++ SDE Karras or `dpm++_sde_karras`
+   * "DPM2 a" or `dpm2_a`
+   * "DPM++ 2S" a or `dpm++_2s_a`
+   * "DPM++ 2M" or `dpm++_2m`
+   * "DPM++ SDE" or `dpm++_sde`
+   * "DPM fast" or `dpm_fast`
+   * "DPM adaptive" or `dpm_adaptive`
+   * "LMS Karras" or `lms_karras`
+   * "DPM2 Karras" or `dpm2_karras`
+   * "DPM2 a Karras" or `dpm2_a_karras`
+   * "DPM++ 2S a Karras" or `dpm++_2s_a_karras`
+   * "DPM++ 2M Karras" or `dpm++_2s_karras`
+   * "DPM++ SDE Karras" or `dpm++_sde_karras`
    * DDIM or `ddim`
    * PLMS or `plms`
 
@@ -421,7 +453,7 @@ You can query `seed`, with a number, a range, or wildcards.
 * `size: <width>x<height>` 
 * `size: <width>:<height>` 
   
-  `width` and `height` can be a number or a question mark (`?`) to match any value. e.g. `size:512x?` 
+  `width` and `height` can be a number or a question mark (`?`) to match any value. e.g. `size:512x?` will match images with a width of `512` and any height.
 
 ## Model Hash
 
@@ -433,15 +465,23 @@ Wildcards (`?`, `*`) are supported
 
 * `model: <term>`
 
+Some tools don't store the model name in metadata by default.
+
+Diffusion Toolkit will try to perform a hash lookup using the information stored in the AUTOMATIC1111 `cache.json` file if it exists.  It will attempt to lookup the name (partial matches allowed), and take the hash of any matching models, and use a hash query to search for the images. Both old hash algorithm and the newer SHA256 hash are supported.
+
+Note that the `cache.json` file is updated on the fly by AUTOMATIC1111. It computes model hashes for new models it has never loaded before. Model hashes are computed the when you switch to them in the UI.
+
+You should click **Edit > Reload Models** to ensure the application has the latest copy of the json file.
+
 ## Aesthetic Score
 
-Aesthetic score is a tag added by the [Aesthetic Image Scorer Extension](https://github.com/tsngo/stable-diffusion-webui-aesthetic-image-scorer) for AUTOMATIC111 Web UI.
+Aesthetic score is a tag added by the [Aesthetic Image Scorer Extension](https://github.com/tsngo/stable-diffusion-webui-aesthetic-image-scorer) for AUTOMATIC1111 Web UI.
 
-It calculates aestetic score for generated images using CLIP+MLP Aesthetic Score Predictor based on Chad Scorer and stores it metadata.
+It calculates an aesthetic score for generated images using CLIP+MLP Aesthetic Score Predictor based on Chad Scorer and stores it metadata.
 
 * `aesthetic_score: [<|>|<=|>=|<>] <number>`
 
-  You can search for an exact number e.g. `aesthetic_score: 0.6`, but most likely you would like to do a comparative search such as less than `aesthetic_score: < 0.6`
+You can search for an exact number e.g. `aesthetic_score: 0.6`, but most likely you would like to do a comparative search such as less than `aesthetic_score: < 0.6`
 
 ## Hyper Networks
 
@@ -502,8 +542,7 @@ Allows you to search by the file's created date
   Notes:
 
    * `YYYY-MM-DD` format is supported
-   * `XX-XX-XXXX` dates will be parsed using your computer's date format, i.e. 
-`MM-DD-YYYY` for US and similar regions, `DD-MM-YYYY` for European regions.
+   * `XX-XX-XXXX` dates will be parsed using your computer's date format, i.e. `MM-DD-YYYY` for US and similar regions, `DD-MM-YYYY` for European regions.
 
 ## Path
  
@@ -574,8 +613,8 @@ The Similarity Slider will try to do a fuzzy match by applying a Hamming Distanc
 
 # Keyboard Shortcuts
 
-| Shortcut       | Action         |
-|----------------|----------------|
+| Shortcut       | Action         | Notes  |
+|----------------|----------------|--------|
 | `1..9, 0` | Rate 1 - 10 | 
 | `I` | Show/Hide Info |  
 | `F` | Tag Favorite |  
@@ -593,6 +632,7 @@ The Similarity Slider will try to do a fuzzy match by applying a Hamming Distanc
 | `Ctrl+4` | Favorites Page |
 | `Ctrl+5` | Recycle Bin |
 | `Ctrl+6` | Prompts View |
+| `Ctrl+0` | Reset Zoom | in Preview Pane or Image Viewer
 | `Ctrl+R` | Scan folders for new images |
 | `Alt+Home` | First Page |
 | `Alt+PageUp` | Previous Page |   

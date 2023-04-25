@@ -6,7 +6,7 @@ You can also tag your images as favorites, rate them 1-10, sort them by aestheti
 
 You can arrange them in albums, view them by folder, see your most used prompts.
 
-Of course it lets you view the metadata stored with your image 
+And of course, you can view the metadata stored with your image.
 
 Diffusion Toolkit supports
 
@@ -23,47 +23,29 @@ Metadata formats supported are:
 * Stable Diffusion
 * ComfyUI (Experimental)
 
-How to get it:
+# Installation
 
 * [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/latest
 ) (Windows)
 * Requires [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) 
-* [Usage](https://github.com/RupertAvery/DiffusionToolkit/blob/master/Diffusion.Toolkit/Tips.md)
 
 
-# Themes
+Look for **> Assets** under the latest release, expand it, then grab the zip file **Diffusion.Toolkit.v1.x.zip**.
 
-Diffusion Toolkit supports Light and Dark themes. By default, it will use your system theme.
+# Usage
 
-![image](https://user-images.githubusercontent.com/1910659/210345039-32b76844-9dc9-4891-9c3b-f9f6efb09e53.png)
+Usage should be pretty straightforward, but there are a lot of tips and tricks and shortcuts you can learn. See the documentation for [Getting Started](Diffusion.Toolkit/Tips.md)
 
-![image](https://user-images.githubusercontent.com/1910659/210344793-557fd0ba-65ab-4b27-8da7-75438c71085b.png)
-
-
-# Installation
-
-If you want to just run the program, get the latest release from [here](https://github.com/RupertAvery/DiffusionToolkit/releases). Look for the Assets under the latest release, expand it, then grab the zip file.
-
-This is Windows only. You may be required to install .NET 6 Desktop Runtime (https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
-
-## TODO
-
-* Snippets and prompt management
-* Manage Checkpoint metadata alongside file
-* Advanced Search UI?
-
-## Future
-
-* Embed Checkpoint metadata inside checkpoint for use in SD UIs
-
-# Getting Started
-
-See the in-app documentation for [Getting Started](Diffusion.Toolkit/Tips.md#geting-started)
+The application also has this documentation, you can press F1 to view it at any time.
 
 
-# Troubleshooting
+# Screenshots
 
-If you get some sort of database error, try deleting the file `diffusion-toolkit.db` in `%APPDATA%\DiffusionToolkit`
+![image](https://user-images.githubusercontent.com/1910659/234151335-ad797e36-cd64-4253-875b-e03328de1f24.png)
+
+![image](https://user-images.githubusercontent.com/1910659/234151651-038bcbfd-a47e-4f41-9ea4-607e15af111a.png)
+
+
 
 # Buy me a coffee
 

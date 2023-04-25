@@ -7,14 +7,15 @@ public class ScrollDragger
 {
     private readonly ScrollViewer _scrollViewer;
     private readonly UIElement _content;
-    private readonly Cursor _dragCursor = Cursors.Hand;
+    private readonly Cursor _dragCursor;
     private double _scrollMouseX;
     private double _scrollMouseY;
     private int _updateCounter = 0;
 
-    public ScrollDragger(UIElement content, ScrollViewer scrollViewer)
+    public ScrollDragger(UIElement content, ScrollViewer scrollViewer, Cursor dragCursor)
     {
         _scrollViewer = scrollViewer;
+        _dragCursor = dragCursor;
         _content = content;
 
         content.MouseLeftButtonDown += scrollViewer_MouseLeftButtonDown;

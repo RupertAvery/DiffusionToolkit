@@ -23,6 +23,10 @@
     <None Remove="Icons\Dark\trash-32.png" />
     <None Remove="Icons\favorite-32.png" />
     <None Remove="Icons\filter-32.png" />
+    <None Remove="Icons\grab.cur" />
+    <None Remove="Icons\grab.ico" />
+    <None Remove="Icons\hand.cur" />
+    <None Remove="Icons\hand.ico" />
     <None Remove="Icons\icons8-blue-heart-48.png" />
     <None Remove="Icons\Light\copy-32.png" />
     <None Remove="Icons\Light\favorite-32.png" />
@@ -89,6 +93,8 @@
     <Resource Include="Icons\Dark\search-32.png" />
     <Resource Include="Icons\Dark\settings-32.png" />
     <Resource Include="Icons\Dark\trash-32.png" />
+    <Resource Include="Icons\grab.cur" />
+    <Resource Include="Icons\hand.cur" />
     <Resource Include="Icons\icons8-blue-heart-48.png" />
     <Resource Include="Icons\Light\copy-32.png" />
     <Resource Include="Icons\Light\favorite-32.png" />

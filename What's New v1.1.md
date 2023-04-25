@@ -6,6 +6,10 @@ You can also tag your images as favorites, rate them 1-10, sort them by aestheti
 
 You can arrange them in albums, view them by folder, see your most used prompts.
 
+You can sort by Date Created, Aesthetic Score and Rating.
+
+And of course, you can view the metadata stored with your image.
+
 Diffusion Toolkit supports
 
 * JPG/JPEG + EXIF
@@ -38,25 +42,24 @@ How to get it:
 
 ## Enhancements
 
-* Optional **Recursive** Folder Scan for Diffusion Folders. See **Settings > General** tab
-
-* **Exclude Folders** from Folder Scan. Only relevant if Recursive is enabled, and only allows subfolders of Diffusion Folders.
-
 * **Borderless Window** - Gets rid of the unsightly light-colored titlebar, especially in Dark mode. May have some minor side effects like missing the window alignment popup menu on the Maximize/Restore button.
 
    Also applied to popout Preview for a better viewing experience. 
 
-* **Open Image in Popout** - Double-clicking an image will now open a maximized Preview Popout if the Preview is not already popped out. 
+* Built-in **Image Viewer** - Double-clicking an image will now open a maximized Preview Popout if the Preview is not already popped out. 
 
    While in this view, you can navigate images with the Left and Right cursor keys.  You can also cross pages once you reach the beginning or end of the current page. See **Improved Navigation in Thumbnail** for more details. Note that there will be a slight delay when crossing pages.
 
-   You can dismiss the popout with **Escape**.
+   You can dismiss the image viewer/popout with **Escape**.
 
-* **Improved Zoom** in Preview 
+* Optional **Recursive** Folder Scan for Diffusion Folders. See **Settings > General** tab
+
+* **Exclude Folders** from Folder Scan. Only relevant if **Recursive** is enabled, and only allows subfolders of Diffusion Folders.
+
+* **Improved Zoom** in Preview / Image Viewer
 
    * Zooming with the mouse scroll now keeps the center of the zoom at the mouse position.
    * Zooming with the `Ctrl +/-` now keeps the center of the zoom at center of the viewport.
-   * Zoom rate improvements
 
 * **Show/Hide Albums Panel** - Put the Albums panel away when not in use. Shortcut: `Ctrl+Shift+A`
 
@@ -64,6 +67,7 @@ How to get it:
 
 * **Improved Navigation in Thumbnail**
 
+   * You can now cross pages using cursor keys
    * Pressing **Left** at the first thumbnail of the page will move you to the previous page, at the last thumbnail.
    * Pressing **Right** at the last thumbnail of the page will move you to the next page, at the first thumbnail.
    * **Page guards** - If you reached the first or last thumbnail by holding down left/right from a thumbnail in between, you will not immediately move to the previous or next page. Release the key and press again to continue to the previous or next page.
@@ -83,6 +87,5 @@ How to get it:
 
 * **Improved Manual** (F1) - Table of Contents hyperlinks now work
 
-* **Dragging Improvements** - Previously, only dragging from within the thumbnail bounding box (white rectangle) would trigger a drag-and-drop. Now, the selection bounding box (blue rectangle) will trigger a drag and drop. 
 
 https://github.com/RupertAvery/DiffusionToolkit/releases/tag/v1.1

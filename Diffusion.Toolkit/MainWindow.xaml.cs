@@ -234,8 +234,8 @@ namespace Diffusion.Toolkit
         {
             _settings.ThumbnailSize = size;
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
+            _model.ThumbnailSize = _settings.ThumbnailSize;
             _search.SetThumbnailSize(_settings.ThumbnailSize);
-
         }
 
         private void SystemEventsOnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
@@ -389,6 +389,8 @@ namespace Diffusion.Toolkit
 
 
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
+
+            _model.ThumbnailSize = _settings.ThumbnailSize;
             _search.SetThumbnailSize(_settings.ThumbnailSize);
 
             _search.OnPopout = () => PopoutPreview();
