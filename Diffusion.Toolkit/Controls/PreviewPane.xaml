@@ -37,10 +37,35 @@
     </UserControl.Resources>
     <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}">
 
-        <Grid.ContextMenu>
-            <ContextMenu>
-                <MenuItem Header="Fit to Preview" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
-                <!--<MenuItem Header="Favorite (F)" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
+        <!--<Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition/>
+            </Grid.RowDefinitions>-->
+        <Grid  Style="{StaticResource Preview}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="42"/>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="32"/>
+            </Grid.RowDefinitions>
+
+
+            <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
+                              HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
+                              VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"  
+                              MouseMove="ScrollViewer_OnMouseMove"
+                              MouseLeave="ScrollViewer_OnMouseLeave"
+                              MouseDown="ScrollViewer_OnMouseDown"
+                              MouseUp="ScrollViewer_OnMouseUp"
+                              PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
+                              PreviewMouseWheel="UIElement_OnMouseWheel"  
+                              PreviewKeyUp="ScrollViewer_OnPreviewKeyUp"
+                              KeyDown="ScrollViewer_OnKeyDown"
+                              >
+                <ScrollViewer.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Fit to Preview" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
+                        <!--<MenuItem Header="Favorite (F)" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
                 <MenuItem Header="Rate">
                     <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
                     <MenuItem Header="2" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
@@ -55,7 +80,7 @@
                     <Separator></Separator>
                     <MenuItem Header="Remove rating" Click="Unrate_OnClick"></MenuItem>
                 </MenuItem>-->
-                <!--<MenuItem Header="NSFW (N)" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
+                        <!--<MenuItem Header="NSFW (N)" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
                 <Separator />
                 <MenuItem Header="Copy prompt"  Command="{Binding CopyPromptCommand}"/>
                 <MenuItem Header="Copy negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
@@ -66,45 +91,21 @@
                 <MenuItem Header="Move"  Command="{Binding MoveCommand}"/>
                 <Separator />
                 <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>-->
-                <!--<Separator />
+                        <!--<Separator />
                                             <MenuItem Header="Add to Album" />
                                             <MenuItem Header="Remove from Album" />-->
-                <!--<Separator />
+                        <!--<Separator />
                 <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash (X/Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
                 <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore (X/Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
                 <MenuItem Header="Remove Entry (Ctrl+X/Del)"  Command="{Binding RemoveEntryCommand}"/>-->
-            </ContextMenu>
-        </Grid.ContextMenu>
+                    </ContextMenu>
 
-        <!--<Grid.RowDefinitions>
-                <RowDefinition/>
-                <RowDefinition Height="Auto" />
-                <RowDefinition/>
-            </Grid.RowDefinitions>-->
-        <Grid  Style="{StaticResource Preview}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="42"/>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="32"/>
-            </Grid.RowDefinitions>
-
-            <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
-                              HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
-                              VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"  
-                              MouseMove="ScrollViewer_OnMouseMove"
-                              MouseLeave="ScrollViewer_OnMouseLeave"
-                              MouseDown="ScrollViewer_OnMouseDown"
-                              MouseUp="ScrollViewer_OnMouseUp"
-                              PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
-                              PreviewMouseWheel="UIElement_OnMouseWheel"  
-                              PreviewKeyUp="ScrollViewer_OnPreviewKeyUp"
-                              KeyDown="ScrollViewer_OnKeyDown"
-                              >
+                </ScrollViewer.ContextMenu>
                 <Image x:Name="Preview"
-                           DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
-                           RenderOptions.BitmapScalingMode="Fant"
-                           Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
-                           Source="{Binding Image}" >
+                       DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                       RenderOptions.BitmapScalingMode="Fant"
+                       Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                       Source="{Binding Image}" >
                     <Image.Visibility>
                         <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
                             <Binding Path="NSFW"></Binding>
@@ -174,6 +175,7 @@
                         <Grid Margin="-20" Background="Transparent"></Grid>
 
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
+
                             <StackPanel Background="#AF000000">
 
                                 <Grid  Background="Transparent" >
