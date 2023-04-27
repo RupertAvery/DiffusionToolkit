@@ -619,6 +619,7 @@ public class Metadata
                                 fileParameters.HyperNetworkStrength = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                             case "aesthetic_score":
+                            case "Score":
                                 fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
                                 break;
                         }
@@ -669,6 +670,14 @@ public class Metadata
             }
 
         }
+
+        if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Score:"), out tag))
+        {
+            fileParameters ??= new FileParameters();
+            fileParameters.AestheticScore = decimal.Parse(tag.Description.Substring("Score:".Length), CultureInfo.InvariantCulture);
+            fileParameters.OtherParameters ??= $"aesthetic_score: {fileParameters.AestheticScore}";
+        }
+
 
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("aesthetic_score:"), out tag))
         {
