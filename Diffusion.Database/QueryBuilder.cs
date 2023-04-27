@@ -41,6 +41,7 @@ public static partial class QueryBuilder
     private static readonly Regex RatingRegex = new Regex("\\brating:\\s*(?:(?<value>none)|(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+))\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex ForeDeletionRegex = new Regex("\\b(?:for deletion|delete|to delete):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex FavoriteRegex = new Regex("\\b(?:favorite|fave):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex InAlbumRegex = new Regex("\\bin_album:\\s*(?<value>(?:true|false))?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex NSFWRegex = new Regex("\\b(?:nsfw):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex NoMetadataRegex = new Regex("\\b(?:nometa|nometadata):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -74,6 +75,7 @@ public static partial class QueryBuilder
         ParseFavorite(ref prompt, conditions);
         ParseForDeletion(ref prompt, conditions);
         ParseNSFW(ref prompt, conditions);
+        ParseInAlbum(ref prompt, conditions, joins);
         ParseNoMetadata(ref prompt, conditions);
 
         ParseNegativePrompt(ref prompt, conditions);
@@ -196,6 +198,37 @@ public static partial class QueryBuilder
         {
             conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
         }
+
+        //return false;
+    }
+
+    private static void ParseInAlbum(ref string prompt, List<KeyValuePair<string, object>> conditions, List<string> joins)
+    {
+        var match = InAlbumRegex.Match(prompt);
+        if (match.Success)
+        {
+            prompt = InAlbumRegex.Replace(prompt, String.Empty);
+
+            var value = true;
+
+            if (match.Groups["value"].Success)
+            {
+                value = match.Groups["value"].Value.ToLower() == "true";
+            }
+
+            if (value)
+            {
+                conditions.Add(new KeyValuePair<string, object>("(AlbumImage.ImageId IS NOT NULL)", null));
+                joins.Add("LEFT OUTER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id");
+            }
+            else
+            {
+                conditions.Add(new KeyValuePair<string, object>("(AlbumImage.ImageId IS NULL)", null));
+                joins.Add("LEFT OUTER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id");
+            }
+        }
+
+
 
         //return false;
     }
