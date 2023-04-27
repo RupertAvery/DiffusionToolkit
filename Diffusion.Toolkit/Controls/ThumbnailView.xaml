@@ -26,6 +26,157 @@
             <converters:FolderEntryTypeVisibilityConverter x:Key="folderEntryTypeVis"></converters:FolderEntryTypeVisibilityConverter>
             <converters:AlbumEntryTypeVisibilityConverter x:Key="albumEntryTypeVis"></converters:AlbumEntryTypeVisibilityConverter>
             <converters:AlbumModeVisibilityConverter x:Key="albumModeVis"></converters:AlbumModeVisibilityConverter>
+            <local:ThumbnailTemplateSelector x:Key="ThumbnailTemplateSelector"></local:ThumbnailTemplateSelector>
+
+            <DataTemplate x:Key="FolderDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
+                <fa:ImageAwesome Icon="FolderOutlinepenOutline"
+                                 Foreground="{DynamicResource ForegroundBrush}" 
+                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"></fa:ImageAwesome>
+
+            </DataTemplate>
+
+            <DataTemplate x:Key="AlbumDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
+                <fa:ImageAwesome Icon="FilePhotoOutline"
+                                 Foreground="{DynamicResource ForegroundBrush}" 
+                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <fa:ImageAwesome.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>
+                            <MenuItem Header="Remove Album" Click="RemoveAlbum_OnClick"></MenuItem>
+                        </ContextMenu>
+                    </fa:ImageAwesome.ContextMenu>
+
+                </fa:ImageAwesome>
+            </DataTemplate>
+
+            <DataTemplate x:Key="FileDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
+                <Grid>
+                    <local:Thumbnail 
+                                    DataContext="{Binding .}"
+                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                                    Source="{Binding Thumbnail, IsAsync = True}" 
+                                    Opacity="{Binding Path=ForDeletion, Converter={StaticResource BoolToOpacity}}"
+                                    Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                    MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                    HorizontalAlignment="Stretch" VerticalAlignment="Top">
+
+                        <local:Thumbnail.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="Add to _Album">
+                                    <!--<MenuItem Header="_New Album" Click="CreateAlbum_OnClick"></MenuItem>
+                                                <Separator></Separator>-->
+                                </MenuItem>
+                                <MenuItem Visibility="{Binding ViewMode, Converter={StaticResource albumModeVis}}" Header="_Remove from Album" Click="RemoveFromAlbum_OnClick"></MenuItem>
+                                <Separator />
+                                <MenuItem Header="_Favorite" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
+                                <MenuItem Header="_Rate">
+                                    <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
+                                    <MenuItem Header="2" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
+                                    <MenuItem Header="3" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
+                                    <MenuItem Header="4" Command="{Binding RatingCommand}" CommandParameter="4"></MenuItem>
+                                    <MenuItem Header="5" Command="{Binding RatingCommand}" CommandParameter="5"></MenuItem>
+                                    <MenuItem Header="6" Command="{Binding RatingCommand}" CommandParameter="6"></MenuItem>
+                                    <MenuItem Header="7" Command="{Binding RatingCommand}" CommandParameter="7"></MenuItem>
+                                    <MenuItem Header="8" Command="{Binding RatingCommand}" CommandParameter="8"></MenuItem>
+                                    <MenuItem Header="9" Command="{Binding RatingCommand}" CommandParameter="9"></MenuItem>
+                                    <MenuItem Header="10" Command="{Binding RatingCommand}" CommandParameter="10"></MenuItem>
+                                    <Separator></Separator>
+                                    <MenuItem Header="_Remove rating" Click="Unrate_OnClick"></MenuItem>
+                                </MenuItem>
+                                <MenuItem Header="_NSFW" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
+                                <Separator />
+                                <MenuItem Header="_Copy Parameter">
+                                    <MenuItem Header="_Prompt"  Command="{Binding CopyPromptCommand}"/>
+                                    <MenuItem Header="_Negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
+                                    <MenuItem Header="_Seed"  Command="{Binding CopySeedCommand}"/>
+                                    <MenuItem Header="_Hash"  Command="{Binding CopyHashCommand}"/>
+                                    <MenuItem Header="_All parameters"  Command="{Binding CopyParametersCommand}"/>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
+                                <MenuItem Header="_Move" Command="{Binding MoveCommand}"/>
+                                <Separator />
+                                <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
+                                <!--<Separator />
+                                            <MenuItem Header="Add to Album" />
+                                            <MenuItem Header="Remove from Album" />-->
+                                <Separator />
+                                <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
+                                <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
+                                <MenuItem Header="Remove Entry" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
+                            </ContextMenu>
+                        </local:Thumbnail.ContextMenu>
+                        <local:Thumbnail.Effect>
+                            <BlurEffect  KernelType="Gaussian">
+                                <BlurEffect.Radius>
+                                    <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
+                                        <Binding Path="NSFW"></Binding>
+                                        <Binding ElementName="ThumbnailListView" Path="DataContext.NSFWBlur" ></Binding>
+                                    </MultiBinding>
+                                </BlurEffect.Radius>
+                            </BlurEffect>
+                        </local:Thumbnail.Effect>
+                    </local:Thumbnail>
+                    <!--Margin="96,96,0,0"-->
+                    <Grid Background="{x:Null}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="32"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal">
+                            <Image IsHitTestVisible="False" Height="24" Width="24" Source="../Icons/blue-heart-32.png" Visibility="{Binding Favorite, Converter={StaticResource boolToVisCol}}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+                            <Grid Background="Transparent" Visibility="{Binding Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
+                                <Image IsHitTestVisible="False" Height="24" Width="24" Source="../Icons/star-32.png">
+                                    <Image.Effect>
+                                        <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
+                                    </Image.Effect>
+                                </Image>
+                                <Label FontWeight="Bold" IsHitTestVisible="False" Height="24" Width="24"  Content="{Binding Rating}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+                                    <Label.Style>
+                                        <Style TargetType="{x:Type Label}">
+                                            <Setter Property="ContentTemplate">
+                                                <Setter.Value>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}"
+                                                                               Foreground="Black" />
+                                                    </DataTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Label.Style>
+                                    <!--<Label.Effect>
+                                                <DropShadowEffect BlurRadius="2" Opacity="0.8"  ShadowDepth="1" Direction="-90" RenderingBias="Quality" />
+                                            </Label.Effect>-->
+                                </Label>
+                            </Grid>
+                            <Border  Visibility="{Binding Score, Converter={StaticResource strToVis}}" CornerRadius="5" Background="Black" Opacity="0.75" >
+                                <Label  FontWeight="Bold" IsHitTestVisible="False" Height="24"  Content="{Binding Score}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
+                                    <Label.Style>
+                                        <Style TargetType="{x:Type Label}">
+                                            <Setter Property="ContentTemplate">
+                                                <Setter.Value>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}" Foreground="White" />
+                                                    </DataTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Label.Style>
+                                </Label>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </DataTemplate>
+           
         </ResourceDictionary>
 
     </UserControl.Resources>
@@ -98,180 +249,20 @@
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ListView.ItemTemplate>
-                <DataTemplate  DataType="{x:Type toolkit:ImageEntry}">
+                <DataTemplate>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition></RowDefinition>
                             <RowDefinition></RowDefinition>
                         </Grid.RowDefinitions>
-                        <Border CornerRadius="5" BorderBrush="Transparent" BorderThickness="0" Visibility="{Binding EntryType, Converter={StaticResource folderEntryTypeVis}}"
-                            Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                            Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12">
-                            <fa:ImageAwesome Icon="FolderOutlinepenOutline"
-                                 Foreground="{DynamicResource ForegroundBrush}" 
-                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                 MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                 HorizontalAlignment="Center" VerticalAlignment="Center"></fa:ImageAwesome>
-
-                        </Border>
-
-                        <Border CornerRadius="5" BorderBrush="Transparent" BorderThickness="0" Visibility="{Binding EntryType, Converter={StaticResource albumEntryTypeVis}}"
-                            Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                            Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12" >
-                            <fa:ImageAwesome Icon="FilePhotoOutline"
-                                 Foreground="{DynamicResource ForegroundBrush}" 
-                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                 MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                 HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <fa:ImageAwesome.ContextMenu>
-                                    <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>
-                                        <MenuItem Header="Remove Album" Click="RemoveAlbum_OnClick"></MenuItem>
-                                    </ContextMenu>
-                                </fa:ImageAwesome.ContextMenu>
-
-                            </fa:ImageAwesome>
-
-                        </Border>
-
                         <Border CornerRadius="5" BorderBrush="LightGray" BorderThickness="2" Visibility="{Binding EntryType, Converter={StaticResource fileEntryTypeVis}}"
                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                                 Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12" >
-                            <Grid>
-                                <local:Thumbnail 
-                                    DataContext="{Binding .}"
-                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
-                                    Source="{Binding Thumbnail, IsAsync = True}" 
-                                    Opacity="{Binding Path=ForDeletion, Converter={StaticResource BoolToOpacity}}"
-                                    Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                    MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                    HorizontalAlignment="Stretch" VerticalAlignment="Top">
-
-                                    <local:Thumbnail.ContextMenu>
-                                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                            <MenuItem ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="Add to _Album">
-                                                <!--<MenuItem Header="_New Album" Click="CreateAlbum_OnClick"></MenuItem>
-                                                <Separator></Separator>-->
-                                            </MenuItem>
-                                            <MenuItem Visibility="{Binding ViewMode, Converter={StaticResource albumModeVis}}" Header="_Remove from Album" Click="RemoveFromAlbum_OnClick"></MenuItem>
-                                            <Separator />
-                                            <MenuItem Header="_Favorite" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
-                                            <MenuItem Header="_Rate">
-                                                <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
-                                                <MenuItem Header="2" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
-                                                <MenuItem Header="3" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
-                                                <MenuItem Header="4" Command="{Binding RatingCommand}" CommandParameter="4"></MenuItem>
-                                                <MenuItem Header="5" Command="{Binding RatingCommand}" CommandParameter="5"></MenuItem>
-                                                <MenuItem Header="6" Command="{Binding RatingCommand}" CommandParameter="6"></MenuItem>
-                                                <MenuItem Header="7" Command="{Binding RatingCommand}" CommandParameter="7"></MenuItem>
-                                                <MenuItem Header="8" Command="{Binding RatingCommand}" CommandParameter="8"></MenuItem>
-                                                <MenuItem Header="9" Command="{Binding RatingCommand}" CommandParameter="9"></MenuItem>
-                                                <MenuItem Header="10" Command="{Binding RatingCommand}" CommandParameter="10"></MenuItem>
-                                                <Separator></Separator>
-                                                <MenuItem Header="_Remove rating" Click="Unrate_OnClick"></MenuItem>
-                                            </MenuItem>
-                                            <MenuItem Header="_NSFW" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
-                                            <Separator />
-                                            <MenuItem Header="_Copy Parameter">
-                                                <MenuItem Header="_Prompt"  Command="{Binding CopyPromptCommand}"/>
-                                                <MenuItem Header="_Negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
-                                                <MenuItem Header="_Seed"  Command="{Binding CopySeedCommand}"/>
-                                                <MenuItem Header="_Hash"  Command="{Binding CopyHashCommand}"/>
-                                                <MenuItem Header="_All parameters"  Command="{Binding CopyParametersCommand}"/>
-                                            </MenuItem>
-                                            <Separator />
-                                            <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
-                                            <MenuItem Header="_Move" Command="{Binding MoveCommand}"/>
-                                            <Separator />
-                                            <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
-                                            <!--<Separator />
-                                            <MenuItem Header="Add to Album" />
-                                            <MenuItem Header="Remove from Album" />-->
-                                            <Separator />
-                                            <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
-                                            <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
-                                            <MenuItem Header="Remove Entry" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
-                                        </ContextMenu>
-                                    </local:Thumbnail.ContextMenu>
-                                    <local:Thumbnail.Effect>
-                                        <BlurEffect  KernelType="Gaussian">
-                                            <BlurEffect.Radius>
-                                                <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
-                                                    <Binding Path="NSFW"></Binding>
-                                                    <Binding ElementName="ThumbnailListView" Path="DataContext.NSFWBlur" ></Binding>
-                                                </MultiBinding>
-                                            </BlurEffect.Radius>
-                                        </BlurEffect>
-                                    </local:Thumbnail.Effect>
-                                </local:Thumbnail>
-                                <!--Margin="96,96,0,0"-->
-                                <Grid Background="{x:Null}">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition/>
-                                        <RowDefinition Height="32"/>
-                                    </Grid.RowDefinitions>
-                                    <StackPanel Grid.Row="1" Orientation="Horizontal">
-                                        <Image IsHitTestVisible="False" Height="24" Width="24" Source="../Icons/blue-heart-32.png" Visibility="{Binding Favorite, Converter={StaticResource boolToVisCol}}">
-                                            <Image.Effect>
-                                                <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
-                                            </Image.Effect>
-                                        </Image>
-                                        <Grid Background="Transparent" Visibility="{Binding Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
-                                            <Image IsHitTestVisible="False" Height="24" Width="24" Source="../Icons/star-32.png">
-                                                <Image.Effect>
-                                                    <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
-                                                </Image.Effect>
-                                            </Image>
-                                            <Label FontWeight="Bold" IsHitTestVisible="False" Height="24" Width="24"  Content="{Binding Rating}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                                                <Label.Style>
-                                                    <Style TargetType="{x:Type Label}">
-                                                        <Setter Property="ContentTemplate">
-                                                            <Setter.Value>
-                                                                <DataTemplate>
-                                                                    <TextBlock Text="{Binding}"
-                                                                               Foreground="Black" />
-                                                                </DataTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </Label.Style>
-                                                <!--<Label.Effect>
-                                                <DropShadowEffect BlurRadius="2" Opacity="0.8"  ShadowDepth="1" Direction="-90" RenderingBias="Quality" />
-                                            </Label.Effect>-->
-                                            </Label>
-                                        </Grid>
-                                        <Border  Visibility="{Binding Score, Converter={StaticResource strToVis}}" CornerRadius="5" Background="Black" Opacity="0.75" >
-                                            <Label  FontWeight="Bold" IsHitTestVisible="False" Height="24"  Content="{Binding Score}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                                                <Label.Style>
-                                                    <Style TargetType="{x:Type Label}">
-                                                        <Setter Property="ContentTemplate">
-                                                            <Setter.Value>
-                                                                <DataTemplate>
-                                                                    <TextBlock Text="{Binding}"
-                                                                               Foreground="White" />
-                                                                </DataTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </Label.Style>
-                                            </Label>
-                                        </Border>
-                                    </StackPanel>
-                                </Grid>
-
-                                <!--<Image IsHitTestVisible="False" Height="32" Width="32" Source="../Icons/x-mark-32.png" Visibility="{Binding ForDeletion, Converter={StaticResource boolToVis}}"/>-->
-                            </Grid>
+                            <ContentControl Content="{Binding Path=.}" ContentTemplateSelector="{DynamicResource ThumbnailTemplateSelector}"/>
                         </Border>
                         <Label Grid.Row="1" HorizontalContentAlignment="Center" Content="{Binding Name}">
                         </Label>
                     </Grid>
-
-                    <!--<DataTemplate.Triggers>
-                            <DataTrigger Binding="{Binding Path=(toolkit:MyScrollViewer.IsInViewport), RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"
-                                         Value="True">
-                                <Setter TargetName="Thumbnail" Property="Source" Value="{Binding Thumbnail}" />
-                            </DataTrigger>
-                        </DataTemplate.Triggers>-->
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
