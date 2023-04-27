@@ -23,8 +23,6 @@
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:FileEntryTypeVisibilityConverter x:Key="fileEntryTypeVis"></converters:FileEntryTypeVisibilityConverter>
-            <converters:FolderEntryTypeVisibilityConverter x:Key="folderEntryTypeVis"></converters:FolderEntryTypeVisibilityConverter>
-            <converters:AlbumEntryTypeVisibilityConverter x:Key="albumEntryTypeVis"></converters:AlbumEntryTypeVisibilityConverter>
             <converters:AlbumModeVisibilityConverter x:Key="albumModeVis"></converters:AlbumModeVisibilityConverter>
             <local:ThumbnailTemplateSelector x:Key="ThumbnailTemplateSelector"></local:ThumbnailTemplateSelector>
 
@@ -32,25 +30,26 @@
                 <fa:ImageAwesome Icon="FolderOutlinepenOutline"
                                  Foreground="{DynamicResource ForegroundBrush}" 
                                  Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                 MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                                  HorizontalAlignment="Center" VerticalAlignment="Center"></fa:ImageAwesome>
 
             </DataTemplate>
 
             <DataTemplate x:Key="AlbumDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
-                <fa:ImageAwesome Icon="FilePhotoOutline"
-                                 Foreground="{DynamicResource ForegroundBrush}" 
-                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                 MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                 HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <fa:ImageAwesome.ContextMenu>
-                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>
-                            <MenuItem Header="Remove Album" Click="RemoveAlbum_OnClick"></MenuItem>
-                        </ContextMenu>
-                    </fa:ImageAwesome.ContextMenu>
+                <Grid>
+                    <fa:ImageAwesome Icon="FilePhotoOutline"
+                                     Foreground="{DynamicResource ForegroundBrush}" 
+                                     Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                     Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                     HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:ImageAwesome.ContextMenu>
+                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>
+                                <MenuItem Header="Remove Album" Click="RemoveAlbum_OnClick"></MenuItem>
+                            </ContextMenu>
+                        </fa:ImageAwesome.ContextMenu>
 
-                </fa:ImageAwesome>
+                    </fa:ImageAwesome>
+                </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="FileDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
@@ -255,7 +254,7 @@
                             <RowDefinition></RowDefinition>
                             <RowDefinition></RowDefinition>
                         </Grid.RowDefinitions>
-                        <Border CornerRadius="5" BorderBrush="LightGray" BorderThickness="2" Visibility="{Binding EntryType, Converter={StaticResource fileEntryTypeVis}}"
+                        <Border CornerRadius="5" BorderBrush="LightGray" BorderThickness="2"
                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                                 Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12" >
                             <ContentControl Content="{Binding Path=.}" ContentTemplateSelector="{DynamicResource ThumbnailTemplateSelector}"/>
