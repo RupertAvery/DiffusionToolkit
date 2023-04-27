@@ -8,8 +8,6 @@
              xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              mc:Ignorable="d" 
-             Focusable="True"
-             GotFocus="PreviewPane_OnGotFocus"
              d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>

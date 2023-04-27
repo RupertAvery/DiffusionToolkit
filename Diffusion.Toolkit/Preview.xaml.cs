@@ -22,7 +22,7 @@ namespace Diffusion.Toolkit
 
         protected override void OnSourceInitialized(EventArgs e)
         {
-            PreviewPane.Focus();
+            PreviewPane.SetFocus();
             base.OnSourceInitialized(e);
         }
 

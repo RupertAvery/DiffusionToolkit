@@ -264,27 +264,20 @@ namespace Diffusion.Toolkit.Controls
         public bool IsPopout { get; set; }
 
         public Action OnPopout { get; set; }
-        //public Action OnNext { get; set; }
-        //public Action OnPrev { get; set; }
+
         public MainModel MainModel { get; set; }
 
         private void ScrollViewer_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            //if (e.Key == Key.Left)
-            //{
-            //    OnPrev?.Invoke();
-            //    e.Handled = true;
-            //}
-
-            //if (e.Key == Key.Right)
-            //{
-            //    OnNext?.Invoke();
-            //    e.Handled = true;
-            //}
             OnPreviewKeyDown(e);
         }
 
-        private void PreviewPane_OnGotFocus(object sender, RoutedEventArgs e)
+        //private void PreviewPane_OnGotFocus(object sender, RoutedEventArgs e)
+        //{
+        //    ScrollViewer.Focus();
+        //}
+
+        public void SetFocus()
         {
             ScrollViewer.Focus();
         }
