@@ -55,14 +55,12 @@
             <DataTemplate x:Key="FileDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
                 <Grid>
                     <local:Thumbnail 
-                                    DataContext="{Binding .}"
-                                    Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
-                                    Source="{Binding Thumbnail, IsAsync = True}" 
-                                    Opacity="{Binding Path=ForDeletion, Converter={StaticResource BoolToOpacity}}"
-                                    Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                    MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                    HorizontalAlignment="Stretch" VerticalAlignment="Top">
-
+                        Source="{Binding Thumbnail}" 
+                        Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                        Data="{Binding .}"
+                        Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                        MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Top">
                         <local:Thumbnail.ContextMenu>
                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                 <MenuItem ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="Add to _Album">
@@ -120,62 +118,19 @@
                             </BlurEffect>
                         </local:Thumbnail.Effect>
                     </local:Thumbnail>
-                    <!--Margin="96,96,0,0"-->
                     <Grid Background="{x:Null}">
                         <Grid.RowDefinitions>
                             <RowDefinition/>
                             <RowDefinition Height="32"/>
                         </Grid.RowDefinitions>
-                        <StackPanel Grid.Row="1" Orientation="Horizontal">
-                            <Image IsHitTestVisible="False" Height="24" Width="24" Source="../Icons/blue-heart-32.png" Visibility="{Binding Favorite, Converter={StaticResource boolToVisCol}}">
-                                <Image.Effect>
-                                    <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
-                                </Image.Effect>
-                            </Image>
-                            <Grid Background="Transparent" Visibility="{Binding Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
-                                <Image IsHitTestVisible="False" Height="24" Width="24" Source="../Icons/star-32.png">
-                                    <Image.Effect>
-                                        <DropShadowEffect BlurRadius="3" Opacity="0.8"  ShadowDepth="4" Direction="-90" RenderingBias="Quality" />
-                                    </Image.Effect>
-                                </Image>
-                                <Label FontWeight="Bold" IsHitTestVisible="False" Height="24" Width="24"  Content="{Binding Rating}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                                    <Label.Style>
-                                        <Style TargetType="{x:Type Label}">
-                                            <Setter Property="ContentTemplate">
-                                                <Setter.Value>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding}"
-                                                                               Foreground="Black" />
-                                                    </DataTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Label.Style>
-                                    <!--<Label.Effect>
-                                                <DropShadowEffect BlurRadius="2" Opacity="0.8"  ShadowDepth="1" Direction="-90" RenderingBias="Quality" />
-                                            </Label.Effect>-->
-                                </Label>
-                            </Grid>
-                            <Border  Visibility="{Binding Score, Converter={StaticResource strToVis}}" CornerRadius="5" Background="Black" Opacity="0.75" >
-                                <Label  FontWeight="Bold" IsHitTestVisible="False" Height="24"  Content="{Binding Score}" HorizontalAlignment="Center" HorizontalContentAlignment="Center">
-                                    <Label.Style>
-                                        <Style TargetType="{x:Type Label}">
-                                            <Setter Property="ContentTemplate">
-                                                <Setter.Value>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding}" Foreground="White" />
-                                                    </DataTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Label.Style>
-                                </Label>
-                            </Border>
-                        </StackPanel>
+                        <local:ThumbnailIcons Grid.Row="1"
+                        Data="{Binding .}"
+                        Height="32"
+                        ></local:ThumbnailIcons>
                     </Grid>
                 </Grid>
             </DataTemplate>
-           
+
         </ResourceDictionary>
 
     </UserControl.Resources>
