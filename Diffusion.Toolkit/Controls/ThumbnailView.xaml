@@ -61,52 +61,7 @@
                         Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                         MaxWidth="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" MaxHeight="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                         HorizontalAlignment="Stretch" VerticalAlignment="Top">
-                        <local:Thumbnail.ContextMenu>
-                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                <MenuItem ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="Add to _Album">
-                                    <!--<MenuItem Header="_New Album" Click="CreateAlbum_OnClick"></MenuItem>
-                                                <Separator></Separator>-->
-                                </MenuItem>
-                                <MenuItem Visibility="{Binding ViewMode, Converter={StaticResource albumModeVis}}" Header="_Remove from Album" Click="RemoveFromAlbum_OnClick"></MenuItem>
-                                <Separator />
-                                <MenuItem Header="_Favorite" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
-                                <MenuItem Header="_Rate">
-                                    <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
-                                    <MenuItem Header="2" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
-                                    <MenuItem Header="3" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
-                                    <MenuItem Header="4" Command="{Binding RatingCommand}" CommandParameter="4"></MenuItem>
-                                    <MenuItem Header="5" Command="{Binding RatingCommand}" CommandParameter="5"></MenuItem>
-                                    <MenuItem Header="6" Command="{Binding RatingCommand}" CommandParameter="6"></MenuItem>
-                                    <MenuItem Header="7" Command="{Binding RatingCommand}" CommandParameter="7"></MenuItem>
-                                    <MenuItem Header="8" Command="{Binding RatingCommand}" CommandParameter="8"></MenuItem>
-                                    <MenuItem Header="9" Command="{Binding RatingCommand}" CommandParameter="9"></MenuItem>
-                                    <MenuItem Header="10" Command="{Binding RatingCommand}" CommandParameter="10"></MenuItem>
-                                    <Separator></Separator>
-                                    <MenuItem Header="_Remove rating" Click="Unrate_OnClick"></MenuItem>
-                                </MenuItem>
-                                <MenuItem Header="_NSFW" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
-                                <Separator />
-                                <MenuItem Header="_Copy Parameter">
-                                    <MenuItem Header="_Prompt"  Command="{Binding CopyPromptCommand}"/>
-                                    <MenuItem Header="_Negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
-                                    <MenuItem Header="_Seed"  Command="{Binding CopySeedCommand}"/>
-                                    <MenuItem Header="_Hash"  Command="{Binding CopyHashCommand}"/>
-                                    <MenuItem Header="_All parameters"  Command="{Binding CopyParametersCommand}"/>
-                                </MenuItem>
-                                <Separator />
-                                <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
-                                <MenuItem Header="_Move" Command="{Binding MoveCommand}"/>
-                                <Separator />
-                                <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
-                                <!--<Separator />
-                                            <MenuItem Header="Add to Album" />
-                                            <MenuItem Header="Remove from Album" />-->
-                                <Separator />
-                                <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
-                                <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
-                                <MenuItem Header="Remove Entry" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
-                            </ContextMenu>
-                        </local:Thumbnail.ContextMenu>
+                      
                         <local:Thumbnail.Effect>
                             <BlurEffect  KernelType="Gaussian">
                                 <BlurEffect.Radius>
@@ -190,6 +145,52 @@
                 <KeyBinding Command="{Binding FocusSearch}" Key="F6" Gesture="F6"></KeyBinding>
                 <KeyBinding Command="{Binding ToggleParameters}" Key="I"></KeyBinding>
             </ListView.InputBindings>
+            <ListView.ContextMenu>
+                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                    <MenuItem ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="Add to _Album">
+                        <!--<MenuItem Header="_New Album" Click="CreateAlbum_OnClick"></MenuItem>
+                                                <Separator></Separator>-->
+                    </MenuItem>
+                    <MenuItem Visibility="{Binding ViewMode, Converter={StaticResource albumModeVis}}" Header="_Remove from Album" Click="RemoveFromAlbum_OnClick"></MenuItem>
+                    <Separator />
+                    <MenuItem Header="_Favorite" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
+                    <MenuItem Header="_Rate">
+                        <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
+                        <MenuItem Header="2" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
+                        <MenuItem Header="3" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
+                        <MenuItem Header="4" Command="{Binding RatingCommand}" CommandParameter="4"></MenuItem>
+                        <MenuItem Header="5" Command="{Binding RatingCommand}" CommandParameter="5"></MenuItem>
+                        <MenuItem Header="6" Command="{Binding RatingCommand}" CommandParameter="6"></MenuItem>
+                        <MenuItem Header="7" Command="{Binding RatingCommand}" CommandParameter="7"></MenuItem>
+                        <MenuItem Header="8" Command="{Binding RatingCommand}" CommandParameter="8"></MenuItem>
+                        <MenuItem Header="9" Command="{Binding RatingCommand}" CommandParameter="9"></MenuItem>
+                        <MenuItem Header="10" Command="{Binding RatingCommand}" CommandParameter="10"></MenuItem>
+                        <Separator></Separator>
+                        <MenuItem Header="_Remove rating" Click="Unrate_OnClick"></MenuItem>
+                    </MenuItem>
+                    <MenuItem Header="_NSFW" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
+                    <Separator />
+                    <MenuItem Header="_Copy Parameter">
+                        <MenuItem Header="_Prompt"  Command="{Binding CopyPromptCommand}"/>
+                        <MenuItem Header="_Negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
+                        <MenuItem Header="_Seed"  Command="{Binding CopySeedCommand}"/>
+                        <MenuItem Header="_Hash"  Command="{Binding CopyHashCommand}"/>
+                        <MenuItem Header="_All parameters"  Command="{Binding CopyParametersCommand}"/>
+                    </MenuItem>
+                    <Separator />
+                    <MenuItem Header="Copy" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
+                    <MenuItem Header="_Move" Command="{Binding MoveCommand}"/>
+                    <Separator />
+                    <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>
+                    <!--<Separator />
+                                            <MenuItem Header="Add to Album" />
+                                            <MenuItem Header="Remove from Album" />-->
+                    <Separator />
+                    <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
+                    <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
+                    <MenuItem Header="Remove Entry" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
+                </ContextMenu>
+            </ListView.ContextMenu>
             <ListView.Template>
                 <ControlTemplate >
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Background="Transparent">
