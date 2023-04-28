@@ -1,4 +1,5 @@
-﻿using static System.IO.Directory;
+﻿using Diffusion.Common;
+using static System.IO.Directory;
 
 namespace Diffusion.IO
 {

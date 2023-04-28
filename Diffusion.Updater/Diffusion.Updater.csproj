@@ -9,4 +9,9 @@
     <SelfContained>False</SelfContained>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
+    <ProjectReference Include="..\Diffusion.Github\Diffusion.Github.csproj" />
+  </ItemGroup>
+
 </Project>

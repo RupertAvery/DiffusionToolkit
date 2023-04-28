@@ -1,8 +1,7 @@
-using System;
 using System.Diagnostics;
 using System.IO.Compression;
-using System.Security.Policy;
-using Microsoft.VisualBasic;
+using Diffusion.Common;
+using Diffusion.Github;
 
 namespace Diffusion.Updater
 {

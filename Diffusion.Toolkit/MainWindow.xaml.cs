@@ -21,7 +21,6 @@ using Microsoft.Win32;
 using Diffusion.Toolkit.Pages;
 using MessageBox = System.Windows.MessageBox;
 using Model = Diffusion.Common.Model;
-using Diffusion.Updater;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Globalization;
 using System.Runtime.InteropServices;

@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
 
-namespace Diffusion.Updater;
+namespace Diffusion.Github;
 
 public class GithubClient : IDisposable
 {

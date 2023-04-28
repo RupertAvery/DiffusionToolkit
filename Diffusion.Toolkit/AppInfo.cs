@@ -1,6 +1,6 @@
-﻿using Diffusion.Updater;
-using System;
+﻿using System;
 using System.IO;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit;
 

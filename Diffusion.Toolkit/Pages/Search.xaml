@@ -65,6 +65,7 @@
                         </fa:ImageAwesome>
                     </Button>
                     <Grid>
+
                         <ComboBox x:Name="SearchTermTextBox" 
                                   Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
                                   ItemsSource="{Binding SearchHistory}"
@@ -95,7 +96,6 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-
                     </Grid>
 
                 </DockPanel>

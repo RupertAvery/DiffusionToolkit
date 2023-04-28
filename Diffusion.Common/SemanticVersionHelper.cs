@@ -1,4 +1,6 @@
-namespace Diffusion.Updater;
+using System.IO;
+
+namespace Diffusion.Common;
 
 public class SemanticVersionHelper
 {

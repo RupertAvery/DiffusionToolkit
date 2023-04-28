@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit
 {
@@ -31,9 +32,6 @@ namespace Diffusion.Toolkit
             }
 
             FileCopy(appDir, "Diffusion.Updater.exe", temp);
-            FileCopy(appDir, "Diffusion.Updater.deps.json", temp);
-            FileCopy(appDir, "Diffusion.Updater.dll", temp);
-            FileCopy(appDir, "Diffusion.Updater.runtimeconfig.json", temp);
 
             var pi = new ProcessStartInfo()
             {

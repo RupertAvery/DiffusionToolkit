@@ -1,4 +1,9 @@
-namespace Diffusion.Updater;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Diffusion.Github;
+
+namespace Diffusion.Common;
 
 public class UpdateChecker
 {

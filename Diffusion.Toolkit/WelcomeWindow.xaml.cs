@@ -1,7 +1,7 @@
-﻿using Diffusion.Updater;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Navigation;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit
 {

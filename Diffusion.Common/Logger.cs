@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 
+namespace Diffusion.Common;
+
 public class Logger
 {
 

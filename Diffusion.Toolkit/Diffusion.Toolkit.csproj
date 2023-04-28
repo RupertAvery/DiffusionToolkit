@@ -5,6 +5,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+	<UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>diffusion-toolkit.ico</ApplicationIcon>
   </PropertyGroup>
 
@@ -66,7 +67,6 @@
     <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
     <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
-    <ProjectReference Include="..\Diffusion.Updater\Diffusion.Updater.csproj" />
   </ItemGroup>
 
   <ItemGroup>

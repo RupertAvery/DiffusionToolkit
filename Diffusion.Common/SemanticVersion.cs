@@ -1,6 +1,7 @@
+using System;
 using System.Text.RegularExpressions;
 
-namespace Diffusion.Updater;
+namespace Diffusion.Common;
 
 public class SemanticVersion : IComparable<SemanticVersion>
 {

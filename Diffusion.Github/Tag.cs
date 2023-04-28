@@ -1,4 +1,4 @@
-﻿namespace Diffusion.Updater;
+﻿namespace Diffusion.Github;
 
 public class Tag
 {

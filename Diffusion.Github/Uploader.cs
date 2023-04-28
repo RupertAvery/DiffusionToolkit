@@ -1,6 +1,6 @@
-﻿namespace Diffusion.Updater;
+﻿namespace Diffusion.Github;
 
-public class Author
+public class Uploader
 {
     public string login { get; set; }
     public int id { get; set; }

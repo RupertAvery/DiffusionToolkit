@@ -77,6 +77,7 @@ public class Thumbnail : FrameworkElement
             drawingContext.PushOpacity(0.2);
         }
 
+
         drawingContext.DrawImage(Source, rect);
 
         if (Data.ForDeletion)
