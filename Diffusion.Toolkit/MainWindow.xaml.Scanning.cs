@@ -49,6 +49,7 @@ namespace Diffusion.Toolkit
 
         private async Task Scan()
         {
+
             _scanCancellationTokenSource = new CancellationTokenSource();
 
             await Task.Run(async () =>

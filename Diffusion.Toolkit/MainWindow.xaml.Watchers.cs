@@ -3,15 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
+        private readonly List<FileSystemWatcher> _watchers = new List<FileSystemWatcher>();
+        private List<string>? _detectedFiles;
+        private Timer? t = null;
+        private object _lock = new object();
 
-        private void OnActivated(object? sender, EventArgs e)
+        private async void OnActivated(object? sender, EventArgs e)
         {
+            await Task.Delay(500);
 
             if (addedTotal > 0)
             {
@@ -24,20 +30,18 @@ namespace Diffusion.Toolkit
 
         }
 
-        private PreviewWindow? _previewWindow;
-
         private void WatcherOnCreated(object sender, FileSystemEventArgs e)
         {
             if (e.ChangeType == WatcherChangeTypes.Created)
             {
-                if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath)) > -1)
+                if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
                 {
                     AddFile(e.FullPath);
                 }
             }
             else if (e.ChangeType == WatcherChangeTypes.Renamed)
             {
-                if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath)) > -1)
+                if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
                 {
                     AddFile(e.FullPath);
                 }
@@ -53,7 +57,7 @@ namespace Diffusion.Toolkit
                     var watcher = new FileSystemWatcher(path)
                     {
                         EnableRaisingEvents = true,
-                        IncludeSubdirectories = true,
+                        IncludeSubdirectories = _settings.RecurseFolders.GetValueOrDefault(true)
                     };
                     watcher.Created += WatcherOnCreated;
                     _watchers.Add(watcher);
@@ -63,23 +67,14 @@ namespace Diffusion.Toolkit
 
         private void RemoveWatchers()
         {
-            if (_watchers != null)
+            foreach (var watcher in _watchers)
             {
-                foreach (var watcher in _watchers)
-                {
-                    watcher.Dispose();
-                }
-                _watchers.Clear();
+                watcher.Dispose();
             }
+            _watchers.Clear();
         }
 
 
-        private List<FileSystemWatcher> _watchers = new List<FileSystemWatcher>();
-
-        private List<string> detectedFiles;
-
-        private Timer? t = null;
-        private object _lock = new object();
 
         private void AddFile(string path)
         {
@@ -87,14 +82,14 @@ namespace Diffusion.Toolkit
             {
                 if (t == null)
                 {
-                    detectedFiles = new List<string>();
+                    _detectedFiles = new List<string>();
                     t = new Timer(Callback, null, 2000, Timeout.Infinite);
                 }
                 else
                 {
                     t.Change(2000, Timeout.Infinite);
                 }
-                detectedFiles.Add(path);
+                _detectedFiles.Add(path);
             }
         }
 
@@ -109,7 +104,10 @@ namespace Diffusion.Toolkit
             {
                 t?.Dispose();
                 t = null;
-                (added, elapsed) = ScanFiles(detectedFiles.Where(f => !_settings.ExcludePaths.Any(p => f.StartsWith(p))).ToList(), false, CancellationToken.None);
+
+                var filteredFiles = _detectedFiles.Where(f => !_settings.ExcludePaths.Any(p => f.StartsWith(p))).ToList();
+
+                (added, elapsed) = ScanFiles(filteredFiles, false, CancellationToken.None);
             }
 
             if (added > 0)
@@ -129,12 +127,8 @@ namespace Diffusion.Toolkit
                         }
                     }
                 });
-
-
             }
-
         }
-
 
     }
 }

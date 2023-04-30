@@ -26,6 +26,9 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Diagnostics;
+using System.Windows.Forms;
+using DragDropEffects = System.Windows.Forms.DragDropEffects;
+using DragEventArgs = System.Windows.Forms.DragEventArgs;
 
 namespace Diffusion.Toolkit
 {
@@ -49,7 +52,7 @@ namespace Diffusion.Toolkit
         private bool _tipsOpen;
         private MessagePopupManager _messagePopupManager;
 
- 
+
 
         private DataStore _dataStore => _dataStoreOptions.Value;
 
@@ -58,7 +61,9 @@ namespace Diffusion.Toolkit
             Logger.Log("===========================================");
             Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
 
-            
+
+
+
             var settingsPath = Path.Combine(AppInfo.AppDir, "config.json");
             var dbPath = Path.Combine(AppInfo.AppDir, "diffusion-toolkit.db");
 
@@ -175,6 +180,7 @@ namespace Diffusion.Toolkit
             _search.SearchImages(null);
         }
 
+        private PreviewWindow? _previewWindow;
 
         private void PopoutPreview(bool hidePreview = true, bool maximized = false)
         {
@@ -221,7 +227,7 @@ namespace Diffusion.Toolkit
             Logger.Log($"An unhandled exception occured: {exception.Message}\r\n\r\n{exception.StackTrace}");
 
             MessageBox.Show(this, exception.Message, "An unhandled exception occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-            
+
         }
 
         private void TogglePreview()
@@ -362,12 +368,42 @@ namespace Diffusion.Toolkit
                     var path = dialog.FileName;
 
                     var isInPath = false;
-                    foreach (var imagePath in _settings.ImagePaths)
+
+                    // Check if the target path is in the list of selected diffusion folders
+
+                    if (_settings.RecurseFolders.GetValueOrDefault(true))
                     {
-                        if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
+                        foreach (var imagePath in _settings.ImagePaths)
                         {
-                            isInPath = true;
-                            break;
+                            if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
+                            {
+                                isInPath = true;
+                                break;
+                            }
+                        }
+
+                        // Now check if the path falls under one of the excluded paths.
+
+                        foreach (var imagePath in _settings.ExcludePaths)
+                        {
+                            if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
+                            {
+                                isInPath = false;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // If recursion is turned off, the path must specifically equal one of the diffusion folders
+
+                        foreach (var imagePath in _settings.ImagePaths)
+                        {
+                            if (path.Equals(imagePath, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                isInPath = true;
+                                break;
+                            }
                         }
                     }
 
@@ -574,7 +610,22 @@ namespace Diffusion.Toolkit
                         UpdateTheme();
                     }
 
-                    if (_settings.IsPropertyDirty(nameof(Settings.WatchFolders)))
+
+                    if (_settings.IsPropertyDirty(nameof(Settings.ImagePaths)))
+                    {
+                        await TryScanFolders();
+
+                        // Rebuild watchers in case paths were added or removed
+
+                        if (_settings.WatchFolders)
+                        {
+                            RemoveWatchers();
+                            CreateWatchers();
+                        }
+                    }
+
+
+                    if (_settings.IsPropertyDirty(nameof(Settings.WatchFolders)) || _settings.IsPropertyDirty(nameof(Settings.RecurseFolders)))
                     {
                         if (_settings.WatchFolders)
                         {
@@ -583,17 +634,6 @@ namespace Diffusion.Toolkit
                         else
                         {
                             RemoveWatchers();
-                        }
-                    }
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.ImagePaths)))
-                    {
-                        await TryScanFolders();
-
-                        if (_settings.WatchFolders)
-                        {
-                            RemoveWatchers();
-                            CreateWatchers();
                         }
                     }
 
@@ -717,11 +757,11 @@ namespace Diffusion.Toolkit
                 case WindowState.Minimized:
                     return window.RestoreBounds.Top;
                 case WindowState.Maximized:
-                {
-                    RECT rect;
-                    GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
-                    return rect.Top;
-                }
+                    {
+                        RECT rect;
+                        GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
+                        return rect.Top;
+                    }
             }
             return 0;
         }
@@ -734,14 +774,13 @@ namespace Diffusion.Toolkit
                 case WindowState.Minimized:
                     return window.RestoreBounds.Left;
                 case WindowState.Maximized:
-                {
-                    RECT rect;
-                    GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
-                    return rect.Left;
-                }
+                    {
+                        RECT rect;
+                        GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
+                        return rect.Left;
+                    }
             }
             return 0;
         }
     }
 }
-
