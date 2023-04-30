@@ -7,11 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MetadataExtractor" Version="2.7.2" />
+    <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
+    <Reference Include="MetadataExtractor">
+      <HintPath>..\lib\MetadataExtractor.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
