@@ -106,7 +106,6 @@
                   SelectedItem="{Binding SelectedImageEntry}" 
                   KeyDown="ThumbnailListView_OnKeyDown"
                   PreviewKeyDown="ThumbnailListView_OnPreviewKeyDown"
-                  KeyUp="ThumbnailListView_OnKeyUp"
                   PreviewMouseLeftButtonDown="ThumbnailListView_OnPreviewMouseLeftButtonDown"
                   MouseDown="ThumbnailListView_OnMouseDown"
                   MouseUp="ThumbnailListView_OnMouseUp"

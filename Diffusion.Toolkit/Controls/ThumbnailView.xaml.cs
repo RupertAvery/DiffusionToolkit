@@ -222,7 +222,7 @@ namespace Diffusion.Toolkit.Controls
             return null;
         }
 
-        public void SelectItem(int index)
+        public void SelectItem(int index, bool focus = false)
         {
             ThumbnailListView.SelectedIndex = index;
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;
@@ -230,6 +230,22 @@ namespace Diffusion.Toolkit.Controls
             //var item = wrapPanel.Children[ThumbnailListView.SelectedIndex];
             ThumbnailListView.ScrollIntoView(item);
             item.BringIntoView();
+            if (focus)
+            {
+                item.Focus();
+            }
+        }
+
+
+        public void FocusCurrentItem()
+        {
+            var index = ThumbnailListView.SelectedIndex;
+            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+            var item = wrapPanel.Children[index] as ListViewItem;
+            //var item = wrapPanel.Children[ThumbnailListView.SelectedIndex];
+            ThumbnailListView.ScrollIntoView(item);
+            item.BringIntoView();
+            item.Focus();
         }
 
 
@@ -247,13 +263,6 @@ namespace Diffusion.Toolkit.Controls
                     return;
                 }
 
-                if (!_keyPressed)
-                {
-                    _startIndex = ThumbnailListView.SelectedIndex;
-                    _keyPressed = true;
-                }
-
-
                 var delta = e.Key switch
                 {
                     Key.Left => -1,
@@ -261,7 +270,7 @@ namespace Diffusion.Toolkit.Controls
                     _ => 0
                 };
 
-                if (delta == -1 && _startIndex == 0)
+                if (delta == -1 && ThumbnailListView.SelectedIndex == 0 && !e.IsRepeat)
                 {
                     GoPrevPage(true);
                     e.Handled = true;
@@ -269,7 +278,7 @@ namespace Diffusion.Toolkit.Controls
                 }
 
 
-                if (delta == 1 && _startIndex == Model.Images.Count - 1)
+                if (delta == 1 && ThumbnailListView.SelectedIndex == Model.Images.Count - 1 && !e.IsRepeat)
                 {
                     GoNextPage();
                     e.Handled = true;
@@ -567,24 +576,7 @@ namespace Diffusion.Toolkit.Controls
                 {
                     var index = gotoEnd ? Model.Images.Count - 1 : 0;
 
-                    SelectItem(index);
-
-                    //ThumbnailListView.SelectedIndex = index;
-                    //var wrapPanel = GetChildOfType<WrapPanel>(this)!;
-                    //var item = wrapPanel.Children[index] as ListViewItem;
-
-                    //ThumbnailListView.ScrollIntoView(item);
-                    ////ThumbnailListView.SelectedItem = item;
-
-                    //if (focus)
-                    //{
-                    //    item.BringIntoView();
-
-                    //    //if (ThumbnailListView.ItemContainerGenerator.ContainerFromIndex(index) is ListViewItem item)
-                    //    //{
-                    //    //    item.Focus();
-                    //    //}
-                    //}
+                    SelectItem(index, focus && this.ThumbnailListView.IsFocused);
                 }
             });
         }
@@ -670,15 +662,6 @@ namespace Diffusion.Toolkit.Controls
         private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
         {
             RemoveAlbumCommand?.Execute(null);
-        }
-
-        private int _startIndex;
-        private bool _keyPressed;
-
-        private void ThumbnailListView_OnKeyUp(object sender, KeyEventArgs e)
-        {
-            _keyPressed = false;
-            _startIndex = -1;
         }
 
         private void ThumbnailListView_OnMouseUp(object sender, MouseButtonEventArgs e)

@@ -197,6 +197,7 @@ namespace Diffusion.Toolkit
                 _previewWindow.Closed += (sender, args) =>
                 {
                     _search.OnCurrentImageChange = null;
+                    _search.ThumbnailListView.FocusCurrentItem();
                     _previewWindow = null;
                 };
                 _previewWindow.SetCurrentImage(_search.CurrentImage);
