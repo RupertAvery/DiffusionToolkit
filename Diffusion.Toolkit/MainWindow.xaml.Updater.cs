@@ -36,7 +36,8 @@ namespace Diffusion.Toolkit
             var pi = new ProcessStartInfo()
             {
                 FileName = Path.Combine(temp, "Diffusion.Updater.exe"),
-                Arguments = $"\"{appDir}\""
+                Arguments = $"\"{appDir}\"",
+                UseShellExecute = true
             };
 
 

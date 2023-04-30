@@ -6,6 +6,8 @@ You can also tag your images as favorites, rate them 1-10, sort them by aestheti
 
 You can arrange them in albums, view them by folder, see your most used prompts.
 
+You can sort by Date Created, Aesthetic Score and Rating.
+
 And of course, you can view the metadata stored with your image.
 
 Diffusion Toolkit supports
