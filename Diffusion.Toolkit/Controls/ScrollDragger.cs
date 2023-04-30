@@ -6,15 +6,17 @@ using Diffusion.Toolkit.Controls;
 public class ScrollDragger
 {
     private readonly ScrollViewer _scrollViewer;
+    private readonly Cursor _handCursor;
     private readonly UIElement _content;
     private readonly Cursor _dragCursor;
     private double _scrollMouseX;
     private double _scrollMouseY;
     private int _updateCounter = 0;
 
-    public ScrollDragger(UIElement content, ScrollViewer scrollViewer, Cursor dragCursor)
+    public ScrollDragger(UIElement content, ScrollViewer scrollViewer, Cursor handCursor, Cursor dragCursor)
     {
         _scrollViewer = scrollViewer;
+        _handCursor = handCursor;
         _dragCursor = dragCursor;
         _content = content;
 
@@ -23,16 +25,37 @@ public class ScrollDragger
         content.PreviewMouseLeftButtonUp += scrollViewer_PreviewMouseLeftButtonUp;
     }
 
+    private bool IsDraggable => _scrollViewer.ScrollableHeight > 0 || _scrollViewer.ScrollableWidth > 0;
+
     private void scrollViewer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         // Capture the mouse, reset counter, switch to hand cursor to indicate dragging
-        _content.CaptureMouse();
-        _updateCounter = 0;
-        _scrollViewer.Cursor = _dragCursor;
+        if (IsDraggable)
+        {
+            _content.CaptureMouse();
+            _updateCounter = 0;
+            _scrollViewer.Cursor = _dragCursor;
+        }
     }
 
     private void scrollViewer_PreviewMouseMove(object sender, MouseEventArgs e)
     {
+        if (IsDraggable)
+        {
+            if (_content.IsMouseCaptured)
+            {
+                _scrollViewer.Cursor = _handCursor;
+            }
+            else
+            {
+                _scrollViewer.Cursor = _dragCursor;
+            }
+        }
+        else
+        {
+            _scrollViewer.Cursor = null;
+        }
+
         if (_content.IsMouseCaptured)
         {
             _updateCounter++;
@@ -54,6 +77,7 @@ public class ScrollDragger
             var newHOff = HandleMouseMoveAxisUpdateScroll(_scrollViewer.HorizontalOffset, ref _scrollMouseX, e.GetPosition(_scrollViewer).X, _scrollViewer.ScrollableWidth);
             _scrollViewer.ScrollToHorizontalOffset(newHOff);
         }
+
     }
 
     private double HandleMouseMoveAxisUpdateScroll(double offsetStart, ref double oldScrollMouse, double newScrollMouse, double scrollableMax)

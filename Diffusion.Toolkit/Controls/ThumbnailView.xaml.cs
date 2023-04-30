@@ -528,8 +528,9 @@ namespace Diffusion.Toolkit.Controls
 
                 DataObject dataObject = new DataObject();
                 dataObject.SetData(DataFormats.FileDrop, _selItems.Select(t => t.Path).ToArray());
-                DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Copy);
+                dataObject.SetData("DTCustomDragSource", true);
 
+                DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
             }
 
         }

@@ -616,10 +616,11 @@ namespace Diffusion.Toolkit.Pages
         {
             if (image != null && image.EntryType != EntryType.File) return;
 
-            var parameters = Metadata.ReadFromFile(path);
 
             try
             {
+                var parameters = Metadata.ReadFromFile(path);
+
                 PreviewPane.ResetZoom();
 
                 if (image != null)
@@ -1493,12 +1494,15 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                // Note that you can have more than one file.
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (!e.Data.GetDataPresent("DTCustomDragSource"))
+                {
+                    // Note that you can have more than one file.
+                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 
-                // Assuming you have one file that you care about, pass it off to whatever
-                // handling code you have defined.
-                LoadPreviewImage(files[0]);
+                    // Assuming you have one file that you care about, pass it off to whatever
+                    // handling code you have defined.
+                    LoadPreviewImage(files[0]);
+                }
             }
 
         }

@@ -66,7 +66,7 @@ namespace Diffusion.Toolkit.Controls
         {
             InitializeComponent();
             InitIcons();
-            _scrollDragger = new ScrollDragger(Preview, ScrollViewer, grabCursor);
+            _scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
         }
 
         private Cursor handCursor;
@@ -290,25 +290,38 @@ namespace Diffusion.Toolkit.Controls
         private void ScrollViewer_OnMouseMove(object sender, MouseEventArgs e)
         {
             Window window = Window.GetWindow(this);
-            window.Cursor = handCursor;
+
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                if (ScrollViewer.ScrollableHeight == 0 && ScrollViewer.ScrollableWidth == 0)
+                {
+                    DataObject dataObject = new DataObject();
+                    dataObject.SetData(DataFormats.FileDrop, new [] { Image.Path });
+                    dataObject.SetData("DTCustomDragSource", true);
+
+                    DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
+                    
+                    window.Cursor = null;
+
+                    e.Handled = true;
+                }
+            }
         }
 
-        private void ScrollViewer_OnMouseLeave(object sender, MouseEventArgs e)
-        {
-            Window window = Window.GetWindow(this);
-            window.Cursor = Cursors.Arrow;
-        }
 
-        private void ScrollViewer_OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            Window window = Window.GetWindow(this);
-            window.Cursor = grabCursor;
-        }
+        //private void ScrollViewer_OnMouseLeave(object sender, MouseEventArgs e)
+        //{
+        //    ScrollViewer.Cursor = Cursors.Arrow;
+        //}
 
-        private void ScrollViewer_OnMouseUp(object sender, MouseButtonEventArgs e)
-        {
-            Window window = Window.GetWindow(this);
-            window.Cursor = handCursor;
-        }
+        //private void ScrollViewer_OnMouseDown(object sender, MouseButtonEventArgs e)
+        //{
+        //    ScrollViewer.Cursor = grabCursor;
+        //}
+
+        //private void ScrollViewer_OnMouseUp(object sender, MouseButtonEventArgs e)
+        //{
+        //    ScrollViewer.Cursor = handCursor;
+        //}
     }
 }
