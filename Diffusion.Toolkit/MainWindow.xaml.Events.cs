@@ -4,8 +4,10 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit
 {
@@ -65,6 +67,8 @@ namespace Diffusion.Toolkit
                 return;
             }
 
+            _scanCancellationTokenSource = new CancellationTokenSource();
+
             _messagePopupManager.Show("This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", PopupButtons.YesNo).ContinueWith(t =>
             {
                 if (t.Result == PopupResult.Yes)
@@ -72,6 +76,8 @@ namespace Diffusion.Toolkit
                     Task.Run(async () =>
                     {
                         _model.IsScanning = true;
+
+                        var cancelled = false;
 
                         try
                         {
@@ -83,22 +89,22 @@ namespace Diffusion.Toolkit
 
                             foreach (var imagePath in files)
                             {
-
-                                if (_scanCancellationTokenSource.IsCancellationRequested) break;
+                                if (_scanCancellationTokenSource.IsCancellationRequested)
+                                {
+                                    break;
+                                }
 
                                 try
                                 {
                                     count++;
 
-                                    var path = Path.GetFileName(imagePath.Path);
+                                    var filename = Path.GetFileName(imagePath.Path);
 
                                     Dispatcher.Invoke(() =>
                                     {
-                                        _model.Status = $"Deleting {path}...";
+                                        _model.Status = $"Deleting {filename}...";
                                         _model.CurrentPositionScan = count;
                                     });
-
-                                    //await Task.Delay(50);
 
                                     File.Delete(imagePath.Path);
                                     var dir = Path.GetDirectoryName(imagePath.Path);
@@ -116,25 +122,35 @@ namespace Diffusion.Toolkit
                                 }
                                 catch (Exception e)
                                 {
+                                    Logger.Log($"Failed to delete {imagePath.Path}. \n\n {e.Message}");
+
                                     var result = await Dispatcher.Invoke(async () =>
                                     {
                                         return await _messagePopupManager.Show($"Failed to delete {imagePath.Path}. \n\n {e.Message}", "Error", PopupButtons.OkCancel);
                                     });
 
-                                    if (result == PopupResult.Yes)
+                                    if (result == PopupResult.Cancel)
                                     {
+                                        cancelled = true;
                                         break;
                                     }
 
                                 }
                             }
 
-                            Dispatcher.Invoke(() =>
+
+                            await Dispatcher.Invoke(async () =>
                             {
                                 _model.TotalFilesScan = 100;
                                 _model.CurrentPositionScan = 0;
 
-                                Toast($"{count} images were deleted", "Delete images");
+
+                                if (cancelled || _scanCancellationTokenSource.IsCancellationRequested)
+                                {
+                                    await _messagePopupManager.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
+                                }
+
+                                Toast($"{count} images were deleted", "Empty recycle bin");
                             });
 
                         }
@@ -152,13 +168,6 @@ namespace Diffusion.Toolkit
                     });
                 }
             });
-
-
-            //if (MessageBox.Show(this, "This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes)
-            //{
-
-
-            //}
         }
 
         private void ShowAbout()
