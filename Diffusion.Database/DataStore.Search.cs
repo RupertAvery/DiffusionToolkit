@@ -131,7 +131,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Filter(filter);
 
-            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image {string.Join(' ', q.Joins)} WHERE {q.Item1}", q.Item2.ToArray());
 
             db.Close();
 
@@ -200,7 +200,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Filter(filter);
 
-            var images = db.Query<Image>($"SELECT Image.* FROM Image WHERE {q.Item1}", q.Item2.ToArray());
+            var images = db.Query<Image>($"SELECT Image.* FROM Image {string.Join(' ', q.Joins)} WHERE {q.Item1}", q.Item2.ToArray());
 
             foreach (var image in images)
             {
@@ -309,7 +309,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Filter(filter);
 
-            var images = db.Query<Image>($"SELECT Image.* FROM Image WHERE {q.Item1} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
+            var images = db.Query<Image>($"SELECT Image.* FROM Image  {string.Join(' ', q.Joins)}  WHERE {q.Item1} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {
