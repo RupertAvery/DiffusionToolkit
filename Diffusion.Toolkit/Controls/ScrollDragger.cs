@@ -44,11 +44,11 @@ public class ScrollDragger
         {
             if (_content.IsMouseCaptured)
             {
-                _scrollViewer.Cursor = _handCursor;
+                _scrollViewer.Cursor = _dragCursor;
             }
             else
             {
-                _scrollViewer.Cursor = _dragCursor;
+                _scrollViewer.Cursor = _handCursor;
             }
         }
         else
