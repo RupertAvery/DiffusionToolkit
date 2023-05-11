@@ -639,6 +639,9 @@ namespace Diffusion.Toolkit.Pages
                 _model.CurrentImage.NegativePrompt = parameters.NegativePrompt;
                 _model.CurrentImage.OtherParameters = parameters.OtherParameters;
 
+                _model.CurrentImage.Width = parameters.Width;
+                _model.CurrentImage.Height = parameters.Height;
+
                 _model.CurrentImage.ModelHash = parameters.ModelHash;
                 _model.CurrentImage.Seed = parameters.Seed;
                 _model.CurrentImage.AestheticScore = $"{parameters.AestheticScore}";

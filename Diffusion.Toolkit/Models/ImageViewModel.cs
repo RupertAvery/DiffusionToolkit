@@ -23,6 +23,8 @@ public class ImageViewModel : BaseNotify
     private string _otherParameters;
     private string _modelName;
     private string _date;
+    private int _width;
+    private int _height;
 
     private bool _favorite;
     private int? _rating;
@@ -74,11 +76,22 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _modelName, value);
     }
 
-
     public string Date
     {
         get => _date;
         set => SetField(ref _date, value);
+    }
+
+    public int Width
+    {
+        get => _width;
+        set => SetField(ref _width, value);
+    }
+
+    public int Height
+    {
+        get => _height;
+        set => SetField(ref _height, value);
     }
 
     public ICommand CopyPromptCommand

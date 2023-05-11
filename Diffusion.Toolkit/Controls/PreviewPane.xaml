@@ -244,8 +244,28 @@
                                         <ColumnDefinition/>
                                         <ColumnDefinition Width="32"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                    <StackPanel Orientation = "Horizontal">
+                                        <TextBox Foreground="White" FontSize="14" BorderThickness="0"
                                              IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
+                                        <TextBlock>
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Width}" Value="0">
+                                                            <Setter Property="Visibility" Value="Hidden"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Height}" Value="0">
+                                                            <Setter Property="Visibility" Value="Hidden"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                            <TextBlock Foreground="White" FontSize="14" Padding="15 5 0 0" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Width}"></TextBlock>
+                                            <TextBlock Foreground="White" FontSize="14" Padding="0 4 0 0" Background="Transparent" TextWrapping="WrapWithOverflow" Text="x"></TextBlock>
+                                            <TextBlock Foreground="White" FontSize="14" Padding="0 5 5 0" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Height}"></TextBlock>
+                                        </TextBlock>
+                                    </StackPanel>
                                     <Grid Opacity="0.5" Grid.Column="1"></Grid>
                                 </Grid>
                             </StackPanel>
