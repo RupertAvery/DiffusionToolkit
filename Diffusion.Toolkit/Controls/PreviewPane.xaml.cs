@@ -201,10 +201,10 @@ namespace Diffusion.Toolkit.Controls
                 Image.Favorite = !Image.Favorite;
                 Favorite?.Invoke(Image.Id, Image.Favorite);
             }
-            if (e.Key == Key.I && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                Image.IsParametersVisible = !Image.IsParametersVisible;
-            }
+            //if (e.Key == Key.I && e.KeyboardDevice.Modifiers == ModifierKeys.None)
+            //{
+            //    Image.IsParametersVisible = !Image.IsParametersVisible;
+            //}
             //if (e.Key == Key.F && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control) && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Shift))
             //{
             //    MainModel.FitToPreview = !MainModel.FitToPreview;
