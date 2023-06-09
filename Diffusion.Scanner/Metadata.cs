@@ -44,7 +44,23 @@ public class Metadata
 
                     var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
 
-                    var isComfyUI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("prompt: ")));
+                    var isEasyDiffusion = directories.Any(d =>
+                        d.Name == "PNG-tEXt" &&
+                       d.Tags.Any(t =>
+                           t.Name == "Textual Data" &&
+                           t.Description.StartsWith("prompt: ") &&
+                           !t.Description.Substring("prompt: ".Length).Trim().StartsWith("{")
+                           )
+                       );
+
+                    var isComfyUI = directories.Any(d =>
+                        d.Name == "PNG-tEXt" &&
+                        d.Tags.Any(t =>
+                            t.Name == "Textual Data" &&
+                            t.Description.StartsWith("prompt: ") &&
+                            t.Description.Substring("prompt: ".Length).Trim().StartsWith("{")
+                    ));
+
 
                     if (isInvokeAINew)
                     {
@@ -57,6 +73,10 @@ public class Metadata
                     else if (isNovelAI)
                     {
                         fileParameters = ReadNovelAIParameters(file, directories);
+                    }
+                    else if (isEasyDiffusion)
+                    {
+                        fileParameters = ReadEasyDiffusionParameters(file, directories);
                     }
                     else if (isComfyUI)
                     {
@@ -209,6 +229,77 @@ public class Metadata
         return null;
     }
 
+
+
+    private static FileParameters ReadEasyDiffusionParameters(string file, IEnumerable<Directory> directories)
+    {
+        var fp = new FileParameters();
+
+        string? GetTag(string key)
+        {
+            if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
+            {
+                return tag.Description.Substring($"{key}: ".Length);
+            }
+
+            return null;
+        }
+
+        float GetFloatTag(string key)
+        {
+            if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
+            {
+                var value = tag.Description.Substring($"{key}: ".Length);
+
+                return float.Parse(value);
+            }
+
+            return 0f;
+        }
+
+        decimal GetDecimalTag(string key)
+        {
+            if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
+            {
+                var value = tag.Description.Substring($"{key}: ".Length);
+
+                return decimal.Parse(value);
+            }
+
+            return 0m;
+        }
+
+
+        int GetIntTag(string key)
+        {
+            if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
+            {
+                var value = tag.Description.Substring($"{key}: ".Length);
+
+                return int.Parse(value);
+            }
+
+            return 0;
+        }
+
+        fp.Prompt = GetTag("prompt");
+        fp.NegativePrompt = GetTag("negative_prompt");
+        fp.Width = GetIntTag("width");
+        fp.Height = GetIntTag("height");
+        fp.Steps = GetIntTag("num_inference_steps"); 
+        fp.CFGScale = GetDecimalTag("guidance_scale");
+        fp.Seed = GetIntTag("seed");
+        fp.Sampler = GetTag("sampler_name");
+        fp.Model = GetTag("use_stable_diffusion_model");
+        
+
+        fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
+
+        //    return fp;
+
+        return fp;
+    }
+
     private static FileParameters ReadComfyUIParameters(string file, IEnumerable<Directory> directories)
     {
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("prompt: "), out var tag))
@@ -288,7 +379,7 @@ public class Metadata
             fp.Seed = image.GetProperty("seed").GetInt64();
             fp.Sampler = image.GetProperty("sampler_name").GetString();
 
-            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Size: {fp.Width}x{fp.Height}";
+            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
 
             return fp;
         }
@@ -304,14 +395,21 @@ public class Metadata
             var json = tag.Description.Substring("sd-metadata: ".Length);
             var root = JsonDocument.Parse(json);
             var image = root.RootElement.GetProperty("image");
-            var promptArray = image.GetProperty("prompt");
-            var promptArrayEnumerator = promptArray.EnumerateArray();
-            promptArrayEnumerator.MoveNext();
-            var promptObject = promptArrayEnumerator.Current;
+            var prompt = image.GetProperty("prompt");
+            if (prompt.ValueKind == JsonValueKind.Array)
+            {
+                var promptArrayEnumerator = prompt.EnumerateArray();
+                promptArrayEnumerator.MoveNext();
+                var promptObject = promptArrayEnumerator.Current;
+                fp.Prompt = promptObject.GetProperty("prompt").GetString();
+                fp.PromptStrength = promptObject.GetProperty("weight").GetDecimal();
+            }
+            else if (prompt.ValueKind == JsonValueKind.String)
+            {
+                fp.Prompt = prompt.GetString();
+            }
 
-            fp.Prompt = promptObject.GetProperty("prompt").GetString();
-            fp.PromptStrength = promptObject.GetProperty("weight").GetDecimal();
-
+            fp.ModelHash = root.RootElement.GetProperty("model_hash").GetString();
             fp.Steps = image.GetProperty("steps").GetInt32();
             fp.CFGScale = image.GetProperty("cfg_scale").GetDecimal();
             fp.Height = image.GetProperty("height").GetInt32();
@@ -319,7 +417,7 @@ public class Metadata
             fp.Seed = image.GetProperty("seed").GetInt64();
             fp.Sampler = image.GetProperty("sampler").GetString();
 
-            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Size: {fp.Width}x{fp.Height}";
+            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
 
             return fp;
         }
