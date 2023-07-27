@@ -30,8 +30,6 @@ using Microsoft.Extensions.Options;
 
 namespace Diffusion.Toolkit.Pages
 {
-    public class AlbumListBox : DragAndDropListBox<Album> { }
-
     public class ModeSettings
     {
         public ModeSettings()
