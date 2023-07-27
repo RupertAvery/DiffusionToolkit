@@ -195,14 +195,14 @@
             <Grid  Visibility="{Binding IsFilterVisible, Converter={StaticResource boolToVis}}" Grid.Row="2" >
                 <ScrollViewer  VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <controls:Search  Filter="{Binding Filter}" SearchCommand="{Binding DoFilter}" VerticalAlignment="Stretch"/>
+                        <controls:Search  Filter="{Binding Filter}" SearchCommand="{Binding FilterCommand}" VerticalAlignment="Stretch"/>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
-                            <Button Grid.Column="1" Height="30" Command="{Binding DoFilter}">Filter</Button>
-                            <Button Grid.Column="0" Height="30" Command="{Binding ClearFilter}">Clear</Button>
+                            <Button Grid.Column="0" Height="30" Command="{Binding ClearCommand}">Clear</Button>
+                            <Button Grid.Column="1" Height="30" Command="{Binding FilterCommand}">Filter</Button>
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
