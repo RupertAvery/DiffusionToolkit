@@ -146,9 +146,14 @@ namespace Diffusion.Toolkit.Controls
 
         private void Control_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            OpenSelected();
-        }
+            Point pt = e.GetPosition(ThumbnailListView);
+            var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
+            if (item.VisualHit is FrameworkElement { DataContext: ImageEntry })
+            {
+                OpenSelected();
+            }
 
+        }
         private void ThumbnailListView_OnKeyDown(object sender, KeyEventArgs e)
         {
             var ratings = new[]
