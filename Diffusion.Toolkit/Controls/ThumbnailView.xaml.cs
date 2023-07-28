@@ -253,64 +253,114 @@ namespace Diffusion.Toolkit.Controls
             item.Focus();
         }
 
-
+        private int currentItemIndex = -1;
 
         /// <summary>
         /// Handle wrapping around if an arrow key is pressed at the edge of the <see cref="ListView"/>.
         /// </summary>
         private void ThumbnailListView_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key is Key.Left or Key.Right)
+            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+            var item = wrapPanel.Children[0] as ListViewItem;
+            var columnWidth = (int)(wrapPanel.ActualWidth / item.ActualWidth);
+
+
+            switch (e.Key)
             {
-
-                if (ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1)
-                {
+                case Key.Left or Key.Right or Key.Up or Key.Down when ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1:
                     return;
-                }
 
-                var delta = e.Key switch
-                {
-                    Key.Left => -1,
-                    Key.Right => 1,
-                    _ => 0
-                };
-
-                if (delta == -1 && ThumbnailListView.SelectedIndex == 0 && !e.IsRepeat)
-                {
-                    GoPrevPage(true);
-                    e.Handled = true;
-                    return;
-                }
-
-
-                if (delta == 1 && ThumbnailListView.SelectedIndex == Model.Images.Count - 1 && !e.IsRepeat)
-                {
-                    GoNextPage();
-                    e.Handled = true;
-                    return;
-                }
-
-
-                if (delta != 0)
-                {
-                    var wrapPanel = GetChildOfType<WrapPanel>(this)!;
-                    var item = wrapPanel.Children[0] as ListViewItem;
-                    var columns = (int)(wrapPanel.ActualWidth / item.ActualWidth);
-
-                    if (ThumbnailListView.SelectedIndex + delta < 0 || ThumbnailListView.SelectedIndex + delta >= wrapPanel.Children.Count)
+                case Key.Left or Key.Right:
                     {
-                        e.Handled = true;
-                    }
-                    else if ((ThumbnailListView.SelectedIndex + delta) % columns == (delta == 1 ? 0 : columns - 1))
-                    {
-                        ThumbnailListView.SelectedIndex += delta;
-                        wrapPanel.Children[ThumbnailListView.SelectedIndex].Focus();
-                        e.Handled = true;
-                    }
-                }
+                        var delta = e.Key switch
+                        {
+                            Key.Left => -1,
+                            Key.Right => 1,
+                            _ => 0
+                        };
 
+                        switch (delta)
+                        {
+                            case -1 when ThumbnailListView.SelectedIndex == 0 && !e.IsRepeat:
+                                GoPrevPage(true);
+                                e.Handled = true;
+                                return;
+                            case 1 when ThumbnailListView.SelectedIndex == Model.Images.Count - 1 && !e.IsRepeat:
+                                GoNextPage();
+                                e.Handled = true;
+                                return;
+                        }
+
+
+                        if (delta != 0)
+                        {
+                            if (currentItemIndex + delta < 0 || currentItemIndex + delta >= wrapPanel.Children.Count)
+                            {
+                                e.Handled = true;
+                                return;
+                            }
+                            
+                            
+                            if ((currentItemIndex + delta) % columnWidth == (delta == 1 ? 0 : columnWidth - 1))
+                            {
+                                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                                {
+                                    ThumbnailListView.SelectedIndex = currentItemIndex + delta;
+                                    ThumbnailListView.SelectedItems.Add(ThumbnailListView.Items[currentItemIndex + delta + 1]);
+                                }
+                                else
+                                {
+                                    ThumbnailListView.SelectedIndex = currentItemIndex + delta;
+                                }
+
+                                wrapPanel.Children[ThumbnailListView.SelectedIndex].Focus();
+
+                                e.Handled = true;
+                            }
+
+                            currentItemIndex += delta;
+                        }
+
+
+                        break;
+                    }
+                case Key.Up or Key.Down:
+                    {
+                        var delta = e.Key switch
+                        {
+                            Key.Up => -columnWidth,
+                            Key.Down => columnWidth,
+                            _ => 0
+                        };
+
+                        if (currentItemIndex + delta < 0 || currentItemIndex + delta >= wrapPanel.Children.Count)
+                        {
+                            e.Handled = true;
+                            return;
+                        }
+                        //else
+                        //{
+
+                        //    //if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                        //    //{
+                        //    //    ThumbnailListView.SelectedIndex = currentItemIndex + delta;
+                        //    //    ThumbnailListView.SelectedItems.Add(ThumbnailListView.Items[currentItemIndex + delta + 1]);
+                        //    //}
+                        //    //else
+                        //    //{
+                        //    //    ThumbnailListView.SelectedIndex = currentItemIndex + delta;
+                        //    //}
+
+                        //    //wrapPanel.Children[ThumbnailListView.SelectedIndex].Focus();
+
+                        //    //e.Handled = true;
+                        //}
+
+                        currentItemIndex += delta;
+
+                        break;
+                    }
             }
-
         }
 
         private void RateSelected(int rating)
@@ -489,6 +539,11 @@ namespace Diffusion.Toolkit.Controls
             {
                 var thumbnail = item.VisualHit as Thumbnail;
 
+                if (item.VisualHit is FrameworkElement { DataContext: ImageEntry } f)
+                {
+                    currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
+                }
+
                 if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border))
                 {
                     _dragStarted = true;
@@ -497,6 +552,7 @@ namespace Diffusion.Toolkit.Controls
                 this._start = e.GetPosition(null);
                 _selItems.Clear();
                 _selItems.AddRange(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
+
 
             }
 
@@ -551,20 +607,15 @@ namespace Diffusion.Toolkit.Controls
 
         private void ThumbnailListView_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            //if (e.LeftButton == MouseButtonState.Pressed)
-            //{
-            //    if (this.ThumbnailListView.SelectedItems.Count == 0)
-            //    {
-            //        return;
-            //    }
-
-            //    foreach (object selItem in _selItems)
-            //    {
-            //        if (!ThumbnailListView.SelectedItems.Contains(selItem))
-            //            ThumbnailListView.SelectedItems.Add(selItem);
-            //    }
-
-            //}
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                Point pt = e.GetPosition(ThumbnailListView);
+                var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
+                if (item.VisualHit is FrameworkElement { DataContext: ImageEntry } f)
+                {
+                    currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
+                }
+            }
 
         }
 
@@ -678,5 +729,6 @@ namespace Diffusion.Toolkit.Controls
         {
             _dragStarted = false;
         }
+
     }
 }
