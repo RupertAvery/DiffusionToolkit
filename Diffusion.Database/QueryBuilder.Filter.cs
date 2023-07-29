@@ -54,7 +54,7 @@ namespace Diffusion.Database
 
         private static void FilterFolder(Filter filter, List<KeyValuePair<string, object>> conditions, List<string> joins)
         {
-            if (filter.Folder != null)
+            if (filter.UseFolder)
             {
                 var value = filter.Folder;
                 conditions.Add(new KeyValuePair<string, object>("(Folder.Path = ?)", value));
@@ -66,7 +66,7 @@ namespace Diffusion.Database
         private static void FilterAlbum(Filter filter, List<KeyValuePair<string, object>> conditions, List<string> joins)
         {
 
-            if (filter.Album != null)
+            if (filter.UseAlbum)
             {
                 var value = filter.Album;
                 conditions.Add(new KeyValuePair<string, object>("(Album.Name = ?)", value));
