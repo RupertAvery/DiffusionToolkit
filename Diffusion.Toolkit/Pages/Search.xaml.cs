@@ -1763,5 +1763,9 @@ namespace Diffusion.Toolkit.Pages
             ExtOnKeyDown(this, e);
         }
 
+        public void SetPageSize(int pageSize)
+        {
+            ThumbnailListView.PageSize = pageSize;
+        }
     }
 }

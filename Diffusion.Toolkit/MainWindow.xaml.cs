@@ -428,6 +428,7 @@ namespace Diffusion.Toolkit
 
             _model.ThumbnailSize = _settings.ThumbnailSize;
             _search.SetThumbnailSize(_settings.ThumbnailSize);
+            _search.SetPageSize(_settings.PageSize);
 
             _search.OnPopout = () => PopoutPreview();
             _search.OnCurrentImageOpen = OnCurrentImageOpen;
@@ -597,6 +598,7 @@ namespace Diffusion.Toolkit
                     if (_settings.IsPropertyDirty(nameof(Settings.PageSize)))
                     {
                         ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
+                        _search.SetPageSize(_settings.PageSize);
                         _search.SearchImages();
                     }
 
