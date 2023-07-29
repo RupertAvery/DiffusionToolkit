@@ -199,7 +199,6 @@ namespace Diffusion.Toolkit.Pages
             _model.FilterCommand = new RelayCommand<object>((o) =>
             {
                 _model.IsFilterVisible = false;
-                _model.SearchText = "(filtered)";
                 UseFilter = true;
                 SearchImages(null);
             });

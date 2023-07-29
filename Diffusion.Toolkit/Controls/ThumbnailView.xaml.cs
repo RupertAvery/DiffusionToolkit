@@ -154,6 +154,7 @@ namespace Diffusion.Toolkit.Controls
             }
 
         }
+
         private void ThumbnailListView_OnKeyDown(object sender, KeyEventArgs e)
         {
             var ratings = new[]
