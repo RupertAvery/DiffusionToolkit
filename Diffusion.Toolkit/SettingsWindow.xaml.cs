@@ -54,6 +54,7 @@ namespace Diffusion.Toolkit
             _model.HashCache = settings.HashCache;
             _model.PortableMode = settings.PortableMode;
             _model.RecurseFolders = settings.RecurseFolders;
+            _model.Escape = new RelayCommand<object>(o => Close());
 
             DataContext = _model;
 

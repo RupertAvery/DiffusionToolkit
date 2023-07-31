@@ -51,6 +51,7 @@ public class MainModel : BaseNotify
     private ICommand _refresh;
     private ICommand _quickCopy;
     private int _thumbnailSize;
+    private ICommand _escape;
 
     public MainModel()
     {
@@ -329,5 +330,11 @@ public class MainModel : BaseNotify
     {
         get => _thumbnailSize;
         set => SetField(ref _thumbnailSize, value);
+    }
+
+    public ICommand Escape
+    {
+        get => _escape;
+        set => SetField(ref _escape, value);
     }
 }

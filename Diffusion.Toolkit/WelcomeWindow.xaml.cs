@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Navigation;
 using Diffusion.Common;
+using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit
 {
@@ -9,6 +11,7 @@ namespace Diffusion.Toolkit
     {
         private bool _dontShowWelcomeOnStartup;
         private string _version;
+        private ICommand _escape;
 
         public bool DontShowWelcomeOnStartup
         {
@@ -20,6 +23,12 @@ namespace Diffusion.Toolkit
         {
             get => _version;
             set => SetField(ref _version, value);
+        }
+
+        public ICommand Escape
+        {
+            get => _escape;
+            set => SetField(ref _escape, value);
         }
     }
 
@@ -39,9 +48,12 @@ namespace Diffusion.Toolkit
 
             var semanticVersion = SemanticVersionHelper.GetLocalVersion();
 
-            _model = new WelcomeModel();
-            _model.DontShowWelcomeOnStartup = settings.DontShowWelcomeOnStartup;
-            _model.Version = semanticVersion.ToString();
+            _model = new WelcomeModel
+            {
+                DontShowWelcomeOnStartup = settings.DontShowWelcomeOnStartup,
+                Version = semanticVersion.ToString(),
+                Escape = new RelayCommand<object>(o => Close())
+            };
 
             Closing += (sender, args) =>
             {

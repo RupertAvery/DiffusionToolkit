@@ -1,5 +1,7 @@
 ﻿using System.IO;
 using System.Windows;
+using System.Windows.Input;
+using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.MdStyles;
 
 namespace Diffusion.Toolkit
@@ -8,6 +10,7 @@ namespace Diffusion.Toolkit
     {
         private string _markdown;
         private Style _style;
+        private ICommand _escape;
 
         public string Markdown
         {
@@ -19,6 +22,12 @@ namespace Diffusion.Toolkit
         {
             get => _style;
             set => SetField(ref _style, value);
+        }
+
+        public ICommand Escape
+        {
+            get => _escape;
+            set => SetField(ref _escape, value);
         }
     }
 
@@ -32,9 +41,12 @@ namespace Diffusion.Toolkit
         public TipsWindow()
         {
             InitializeComponent();
-            var tips = new TipsModel();
-            tips.Markdown = File.ReadAllText("Tips.md");
-            tips.Style = CustomStyles.BetterGithub;
+            var tips = new TipsModel
+            {
+                Markdown = File.ReadAllText("Tips.md"),
+                Style = CustomStyles.BetterGithub,
+                Escape = new RelayCommand<object>(o => Close())
+            };
 
             //Markdown engine = new Markdown();
             //engine.DocumentStyle = CustomStyles.BetterGithub;

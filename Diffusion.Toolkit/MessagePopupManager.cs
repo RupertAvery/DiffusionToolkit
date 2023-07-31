@@ -157,6 +157,26 @@ public class MessagePopupManager
             });
     }
 
+    private PopupResult GetDefaultResult(PopupButtons buttons)
+    {
+        var defaultResult = PopupResult.No;
+
+        if (buttons.HasFlag(PopupButtons.OkCancel))
+        {
+            defaultResult = PopupResult.Cancel;
+        }
+        else if (buttons.HasFlag(PopupButtons.YesNo))
+        {
+            defaultResult = PopupResult.No;
+        }
+        else if (buttons.HasFlag(PopupButtons.OK))
+        {
+            defaultResult = PopupResult.OK;
+        }
+
+        return defaultResult;
+    }
+
     public void Close(MessagePopup messagePopup)
     {
         _dispatcher.Invoke(() =>
@@ -164,5 +184,15 @@ public class MessagePopupManager
             _host.Children.Remove(messagePopup);
         });
         _popups.Remove(messagePopup);
+    }
+
+    public void Cancel()
+    {
+        var popup = _popups.LastOrDefault();
+        if (popup != null)
+        {
+            popup.Cancel();
+        }
+
     }
 }

@@ -139,6 +139,9 @@ namespace Diffusion.Toolkit
                 win.Owner = this;
                 win.ShowDialog();
             });
+
+            _model.Escape = new RelayCommand<object>((o) => Escape());
+
             _model.PropertyChanged += ModelOnPropertyChanged;
 
             var total = _dataStore.GetTotal();
@@ -173,6 +176,11 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void Escape()
+        {
+            _messagePopupManager.Cancel();
         }
 
         private void Refresh()

@@ -18,6 +18,7 @@
     <Window.InputBindings>
         <common:BareKeyBinding Key="I" Command="{Binding ToggleInfo}"></common:BareKeyBinding>
         <common:BareKeyBinding Key="B" Command="{Binding ToggleNSFWBlur}"></common:BareKeyBinding>
+        <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
         <KeyBinding Key="F1" Command="{Binding Help}"></KeyBinding>
         <KeyBinding Key="F5" Command="{Binding Refresh}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
