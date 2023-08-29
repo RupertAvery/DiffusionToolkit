@@ -6,6 +6,7 @@ using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
 using System.Globalization;
+using System.Threading.Tasks.Sources;
 using MetadataExtractor.Formats.WebP;
 
 namespace Diffusion.IO;
@@ -310,6 +311,8 @@ public class Metadata
             var root = JsonDocument.Parse(json);
             var nodes = root.RootElement.EnumerateObject().ToDictionary(o => o.Name, o => o.Value);
 
+            var isSDXL = false;
+            
             var ksampler = nodes.Values.SingleOrDefault(o =>
             {
                 if (o.TryGetProperty("class_type", out var element))
@@ -319,6 +322,26 @@ public class Metadata
 
                 return false;
             });
+
+
+            if (ksampler.ValueKind == JsonValueKind.Undefined)
+            {
+                ksampler = nodes.Values.FirstOrDefault(o =>
+                {
+                    if (o.TryGetProperty("class_type", out var element))
+                    {
+                        return element.GetString() == "KSamplerAdvanced";
+                    }
+
+                    return false;
+                });
+
+                if (ksampler.ValueKind != JsonValueKind.Undefined)
+                {
+                    isSDXL = true;
+                }
+            }
+
 
             //"seed": 1102676403634909,
             //"steps": 20,
@@ -350,14 +373,28 @@ public class Metadata
             {
                 var promptIndex = positive.EnumerateArray().First().GetString();
                 var promptObject = nodes[promptIndex].GetProperty("inputs");
-                fp.Prompt = promptObject.GetProperty("text").GetString();
+                if (isSDXL)
+                {
+                    fp.Prompt = promptObject.GetProperty("text_g").GetString();
+                }
+                else
+                {
+                    fp.Prompt = promptObject.GetProperty("text").GetString();
+                }
             }
 
             if (image.TryGetProperty("negative", out var negative))
             {
                 var promptIndex = negative.EnumerateArray().First().GetString();
                 var promptObject = nodes[promptIndex].GetProperty("inputs");
-                fp.NegativePrompt = promptObject.GetProperty("text").GetString();
+                if (isSDXL)
+                {
+                    fp.NegativePrompt = promptObject.GetProperty("text_g").GetString();
+                }
+                else
+                {
+                    fp.NegativePrompt = promptObject.GetProperty("text").GetString();
+                }
             }
 
             if (image.TryGetProperty("latent_image", out var latent_image))
@@ -376,7 +413,16 @@ public class Metadata
 
             fp.Steps = image.GetProperty("steps").GetInt32();
             fp.CFGScale = image.GetProperty("cfg").GetDecimal();
-            fp.Seed = image.GetProperty("seed").GetInt64();
+
+            if (isSDXL)
+            {
+                fp.Seed = image.GetProperty("noise_seed").GetInt64();
+            }
+            else
+            {
+                fp.Seed = image.GetProperty("seed").GetInt64();
+            }
+
             fp.Sampler = image.GetProperty("sampler_name").GetString();
 
             fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
