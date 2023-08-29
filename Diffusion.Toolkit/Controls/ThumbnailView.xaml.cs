@@ -262,6 +262,11 @@ namespace Diffusion.Toolkit.Controls
         private void ThumbnailListView_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+            if (wrapPanel.Children.Count == 0)
+            {
+                return;
+            }
+
             var item = wrapPanel.Children[0] as ListViewItem;
             var columnWidth = (int)(wrapPanel.ActualWidth / item.ActualWidth);
 
