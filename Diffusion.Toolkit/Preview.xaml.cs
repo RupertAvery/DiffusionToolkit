@@ -60,6 +60,7 @@ namespace Diffusion.Toolkit
             };
             PreviewPane.MainModel = mainModel;
             _model.ToggleFitToPreview = PreviewPane.MainModel.ToggleFitToPreview;
+            _model.ToggleInfo = PreviewPane.MainModel.ToggleInfo;
         }
 
         public void SetNSFWBlur(bool value)
