@@ -83,13 +83,13 @@
                 <MenuItem Header="_Album Pane" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
             </MenuItem>
             <MenuItem Header="_Tools">
-                <MenuItem Header="_Query">
+                <MenuItem Header="_Search results">
                     <!--<MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
                     <Separator></Separator>-->
-                    <MenuItem Header="_Mark all matching files for Deletion" Command="{Binding MarkAllForDeletion}"/>
-                    <MenuItem Header="_Unmark all matching files for Deletion" Command="{Binding UnmarkAllForDeletion}"/>
+                    <MenuItem Header="_Mark all search results for Deletion" Command="{Binding MarkAllForDeletion}"/>
+                    <MenuItem Header="_Unmark all search results for Deletion" Command="{Binding UnmarkAllForDeletion}"/>
                     <Separator></Separator>
-                    <MenuItem Header="_Remove all matching files from the database" Command="{Binding RemoveMatching}"/>
+                    <MenuItem Header="_Remove all query results from the database" Command="{Binding RemoveMatching}"/>
                 </MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="_Auto tag NSFW" Command="{Binding AutoTagNSFW}"/>

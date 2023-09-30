@@ -38,6 +38,7 @@ public class SearchModel : BaseNotify
     private ICommand? _copyFiles;
     private bool _nsfwBlur;
     private ICommand _showFilter;
+    private ICommand _clearFilter;
     private bool _isFilterVisible;
     private SearchControlModel _filter;
     private ICommand _filterCommand;
@@ -259,6 +260,12 @@ public class SearchModel : BaseNotify
     {
         get => _showFilter;
         set => SetField(ref _showFilter, value);
+    }
+
+    public ICommand ClearFilter
+    {
+        get => _clearFilter;
+        set => SetField(ref _clearFilter, value);
     }
 
     public bool IsFilterVisible

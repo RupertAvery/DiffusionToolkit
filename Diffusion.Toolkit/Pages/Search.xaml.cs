@@ -195,6 +195,7 @@ namespace Diffusion.Toolkit.Pages
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
             _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = !_model.IsFilterVisible);
+            _model.ClearFilter= new RelayCommand<object>((o) => ClearQueryFilter());
 
             _model.FilterCommand = new RelayCommand<object>((o) =>
             {
@@ -357,6 +358,13 @@ namespace Diffusion.Toolkit.Pages
             //PreviewPane.OnNext = Next;
             //PreviewPane.OnPrev = Prev;
             GetRandomHint();
+        }
+
+        private void ClearQueryFilter()
+        {
+            _model.Filter.Clear();
+            SearchTermTextBox.Text = "";
+            SearchImages(null);
         }
 
 
@@ -1765,6 +1773,11 @@ namespace Diffusion.Toolkit.Pages
         public void SetPageSize(int pageSize)
         {
             ThumbnailListView.PageSize = pageSize;
+        }
+
+        private void PreviewPane_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
