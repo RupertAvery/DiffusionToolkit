@@ -47,8 +47,6 @@ The application also has this documentation, you can press F1 to view it at any 
 
 ![image](https://user-images.githubusercontent.com/1910659/234151651-038bcbfd-a47e-4f41-9ea4-607e15af111a.png)
 
-
-
 # Buy me a coffee
 
 I've been told that people should be allowed to [buy me a coffee](https://www.buymeacoffee.com/rupertavery)
