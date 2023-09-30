@@ -54,6 +54,19 @@ public class SearchControlModel : BaseNotify
     private bool _useNoMetadata;
     private bool _noMetadata;
 
+    public SearchControlModel()
+    {
+        PropertyChanged += SearchControlModel_PropertyChanged;
+    }
+
+    private void SearchControlModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName != nameof(IsActive))
+        {
+            OnPropertyChanged(nameof(IsActive));
+        }
+    }
+
     public bool UsePrompt
     {
         get => _usePrompt;
@@ -347,6 +360,29 @@ public class SearchControlModel : BaseNotify
         get => _noMetadata;
         set => SetField(ref _noMetadata, value);
     }
+
+    public bool IsActive => (UsePrompt ||
+                             UseNegativePrompt ||
+                             UseSteps ||
+                             UseSampler ||
+                             UseSeed ||
+                             UseCFGScale ||
+                             UseSize ||
+                             UseModelHash ||
+                             UseModelName ||
+                             UseFavorite ||
+                             UseRating ||
+                             Unrated ||
+                             UseNSFW ||
+                             UseForDeletion ||
+                             UseBatchSize ||
+                             UseBatchPos ||
+                             UseAestheticScore ||
+                             UsePath ||
+                             UseCreationDate ||
+                             UseHyperNet ||
+                             UseHyperNetStr ||
+                             UseNoMetadata);
 
     public void Clear()
     {

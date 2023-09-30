@@ -458,7 +458,7 @@ public static partial class QueryBuilder
             {
                 if (match.Groups[i].Value.Length > 0)
                 {
-                    orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ?)", match.Groups[i].Value));
+                    orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", match.Groups[i].Value));
                 }
             }
 

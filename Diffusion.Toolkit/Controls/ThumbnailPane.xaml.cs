@@ -64,7 +64,10 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(SelectedImageEntryProperty, value);
         }
 
-        public Action  SearchImages { get; set; }
+        public Action ClearQuery { get; set; }
+
+        public Action SearchImages { get; set; }
+
         public Action<bool> ReloadMatches { get; set; }
 
         public ThumbnailPane()
@@ -77,6 +80,7 @@ namespace Diffusion.Toolkit.Controls
             Model.TotalFiles = 100;
             Model.Images = new ObservableCollection<ImageEntry>();
             Model.SearchCommand = new RelayCommand<object>((o) => SearchImages());
+            Model.ClearCommand = new RelayCommand<object>((o) => ClearQuery());
 
             //Model.Refresh = new RelayCommand<object>((o) => ReloadMatches());
             //Model.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());

@@ -195,14 +195,16 @@ namespace Diffusion.Toolkit.Pages
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
             _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = !_model.IsFilterVisible);
-            _model.DoFilter = new RelayCommand<object>((o) =>
+            _model.ClearFilter= new RelayCommand<object>((o) => ClearQueryFilter());
+
+            _model.FilterCommand = new RelayCommand<object>((o) =>
             {
                 _model.IsFilterVisible = false;
-                _model.SearchText = "(filtered)";
                 UseFilter = true;
                 SearchImages(null);
             });
-            _model.ClearFilter = new RelayCommand<object>((o) =>
+
+            _model.ClearCommand = new RelayCommand<object>((o) =>
             {
                 _model.Filter.Clear();
 
@@ -324,6 +326,7 @@ namespace Diffusion.Toolkit.Pages
             DataContext = _model;
 
             ThumbnailListView.DataStoreOptions = _dataStoreOptions;
+
             ThumbnailListView.MessagePopupManager = messagePopupManager;
 
             PreviewPane.MainModel = mainModel;
@@ -333,24 +336,35 @@ namespace Diffusion.Toolkit.Pages
                 DataStore.SetNSFW(id, b);
                 Update(id);
             };
+
             PreviewPane.Favorite = (id, b) =>
             {
                 DataStore.SetFavorite(id, b);
                 Update(id);
             };
+
             PreviewPane.Rate = (id, b) =>
             {
                 DataStore.SetRating(id, b);
                 Update(id);
             };
+
             PreviewPane.Delete = (id, b) =>
             {
                 DataStore.SetDeleted(id, b);
                 Update(id);
             };
+
             //PreviewPane.OnNext = Next;
             //PreviewPane.OnPrev = Prev;
             GetRandomHint();
+        }
+
+        private void ClearQueryFilter()
+        {
+            _model.Filter.Clear();
+            SearchTermTextBox.Text = "";
+            SearchImages(null);
         }
 
 
@@ -1754,6 +1768,16 @@ namespace Diffusion.Toolkit.Pages
         private void PreviewPane_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             ExtOnKeyDown(this, e);
+        }
+
+        public void SetPageSize(int pageSize)
+        {
+            ThumbnailListView.PageSize = pageSize;
+        }
+
+        private void PreviewPane_Loaded(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

@@ -61,6 +61,7 @@ public class ThumbnailViewModel : BaseNotify
     private int _thumbnailSize;
     private ObservableCollection<Control> _albumMenuItems;
     private ViewMode _viewMode;
+    private int _pageSize;
 
     public ThumbnailViewModel()
     {
@@ -369,5 +370,11 @@ public class ThumbnailViewModel : BaseNotify
     {
         get => _albumMenuItems;
         set => SetField(ref _albumMenuItems, value);
+    }
+
+    public int PageSize
+    {
+        get => _pageSize;
+        set => SetField(ref _pageSize, value);
     }
 }

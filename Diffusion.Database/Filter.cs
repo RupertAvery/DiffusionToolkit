@@ -2,6 +2,7 @@
 
 public class Filter
 {
+
     public bool UsePrompt { get; set; }
     public string Prompt { get; set; }
     public bool UseNegativePrompt { get; set; }
@@ -82,8 +83,12 @@ public class Filter
                             UseCreationDate ||
                             UseHyperNet ||
                             UseHyperNetStr ||
-                            UseNoMetadata);
+                            UseNoMetadata ||
+                            UseAlbum || 
+                            UseFolder);
 
+    public bool UseFolder => !string.IsNullOrEmpty(Folder);
     public string? Folder { get; set; }
+    public bool UseAlbum => !string.IsNullOrEmpty(Album);
     public string? Album { get; set; }
 }

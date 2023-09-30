@@ -9,6 +9,9 @@
         d:DataContext="{d:DesignInstance local:TipsModel, IsDesignTimeCreatable=True}"
         ShowInTaskbar="False"
         Title="Getting Started" Height="600" Width="800">
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
+    </Window.InputBindings>
     <Grid Background="{StaticResource PrimaryBrush}">
         <Grid.RowDefinitions>
             <RowDefinition/>

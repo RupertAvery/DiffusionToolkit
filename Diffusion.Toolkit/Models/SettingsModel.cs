@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
 
 namespace Diffusion.Toolkit;
 
@@ -20,6 +21,7 @@ public class SettingsModel : BaseNotify
     private bool _watchFolders;
     private ObservableCollection<string> _excludePaths;
     private bool? _recurseFolders;
+    private ICommand _escape;
 
     public SettingsModel()
     {
@@ -120,5 +122,11 @@ public class SettingsModel : BaseNotify
     {
         get => _recurseFolders;
         set => SetField(ref _recurseFolders, value);
+    }
+
+    public ICommand Escape
+    {
+        get => _escape;
+        set => SetField(ref _escape, value);
     }
 }

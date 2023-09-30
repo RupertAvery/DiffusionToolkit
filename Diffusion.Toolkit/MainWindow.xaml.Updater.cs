@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using Diffusion.Common;
@@ -21,27 +22,33 @@ namespace Diffusion.Toolkit
         private void CallUpdater()
         {
             Logger.Log($"Calling updater...");
-
-            var appDir = AppInfo.AppDir;
-
-            var temp = Path.Combine(appDir, "Updater");
-
-            if (!Directory.Exists(temp))
+            try
             {
-                Directory.CreateDirectory(temp);
+                var appDir = AppInfo.AppDir;
+
+                var temp = Path.Combine(appDir, "Updater");
+
+                if (!Directory.Exists(temp))
+                {
+                    Directory.CreateDirectory(temp);
+                }
+
+                FileCopy(appDir, "Diffusion.Updater.exe", temp);
+
+                var pi = new ProcessStartInfo()
+                {
+                    FileName = Path.Combine(temp, "Diffusion.Updater.exe"),
+                    Arguments = $"\"{appDir}\"",
+                    UseShellExecute = true
+                };
+
+
+                Process.Start(pi);
             }
-
-            FileCopy(appDir, "Diffusion.Updater.exe", temp);
-
-            var pi = new ProcessStartInfo()
+            catch (Exception e)
             {
-                FileName = Path.Combine(temp, "Diffusion.Updater.exe"),
-                Arguments = $"\"{appDir}\"",
-                UseShellExecute = true
-            };
-
-
-            Process.Start(pi);
+                MessageBox.Show(e.Message, "Updater Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
         }
 
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -77,7 +78,7 @@ public class MessagePopupManager
         var popup = new MessagePopup(this, _placementTarget, timeout, true);
         _popups.Add(popup);
         _host.Children.Add(popup);
-        return popup.Show(message, title, PopupButtons.OkCancel)
+        return popup.Show(message, title, PopupButtons.OkCancel, PopupResult.OK)
             .ContinueWith(t =>
             {
                 _dispatcher.Invoke(() =>
@@ -112,7 +113,10 @@ public class MessagePopupManager
         var popup = new MessagePopup(this, _placementTarget, timeout);
         _popups.Add(popup);
         _host.Children.Add(popup);
-        return popup.Show(message, title, buttons)
+
+
+
+        return popup.Show(message, title, buttons, GetDefaultResult(buttons))
             .ContinueWith(t =>
             {
                 _dispatcher.Invoke(() =>
@@ -129,7 +133,7 @@ public class MessagePopupManager
         var popup = new MessagePopup(this, _placementTarget, timeout);
         _popups.Add(popup);
         _host.Children.Add(popup);
-        return popup.ShowMedium(message, title, buttons)
+        return popup.ShowMedium(message, title, buttons, GetDefaultResult(buttons))
             .ContinueWith(t =>
             {
                 _dispatcher.Invoke(() =>
@@ -140,13 +144,13 @@ public class MessagePopupManager
             });
     }
 
-    public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons, int width, int height, int timeout = 0)
+    public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons,  int width, int height, int timeout = 0)
     {
         _host.Visibility = Visibility.Visible;
         var popup = new MessagePopup(this, _placementTarget, timeout);
         _popups.Add(popup);
         _host.Children.Add(popup);
-        return popup.ShowCustom(message, title, buttons, width, height)
+        return popup.ShowCustom(message, title, buttons, GetDefaultResult(buttons), width, height)
             .ContinueWith(t =>
             {
                 _dispatcher.Invoke(() =>
@@ -155,6 +159,26 @@ public class MessagePopupManager
                 });
                 return t.Result;
             });
+    }
+
+    private PopupResult GetDefaultResult(PopupButtons buttons)
+    {
+        var defaultResult = PopupResult.No;
+
+        if (buttons.HasFlag(PopupButtons.OkCancel))
+        {
+            defaultResult = PopupResult.Cancel;
+        }
+        else if (buttons.HasFlag(PopupButtons.YesNo))
+        {
+            defaultResult = PopupResult.No;
+        }
+        else if (buttons.HasFlag(PopupButtons.OK))
+        {
+            defaultResult = PopupResult.OK;
+        }
+
+        return defaultResult;
     }
 
     public void Close(MessagePopup messagePopup)
@@ -164,5 +188,15 @@ public class MessagePopupManager
             _host.Children.Remove(messagePopup);
         });
         _popups.Remove(messagePopup);
+    }
+
+    public void Cancel()
+    {
+        var popup = _popups.LastOrDefault();
+        if (popup != null)
+        {
+            popup.Cancel();
+        }
+
     }
 }

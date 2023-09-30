@@ -20,6 +20,13 @@ namespace Diffusion.Toolkit.Controls
         private Timer t;
         private Timer t2;
 
+        public void Cancel()
+        {
+            _model.IsVisible = false;
+            _tcs.SetResult(_defaultResult);
+            Close();
+        }
+
         public void Close()
         {
             t = new Timer(Callback, null, 1000, Timeout.Infinite);
@@ -128,13 +135,17 @@ namespace Diffusion.Toolkit.Controls
             _model.HasCancel = false;
             _model.HasYes = false;
             _model.HasNo = false;
+            
+            _defaultResult = PopupResult.OK;
 
-            _tcs = new TaskCompletionSource<PopupResult>();
+            //_tcs = new TaskCompletionSource<PopupResult>();
 
             return _tcs.Task;
         }
 
-        public Task<PopupResult> Show(string message, string title, PopupButtons buttons)
+        private PopupResult _defaultResult;
+
+        public Task<PopupResult> Show(string message, string title, PopupButtons buttons, PopupResult defaultResult)
         {
             _model.Width = 400;
             _model.Height = 200;
@@ -148,11 +159,12 @@ namespace Diffusion.Toolkit.Controls
             _model.HasYes = buttons.HasFlag(PopupButtons.Yes);
             _model.HasNo = buttons.HasFlag(PopupButtons.No);
 
+            _defaultResult = defaultResult;
 
             return _tcs.Task;
         }
 
-        public Task<PopupResult> ShowMedium(string message, string title, PopupButtons buttons)
+        public Task<PopupResult> ShowMedium(string message, string title, PopupButtons buttons, PopupResult defaultResult)
         {
             _model.Width = 500;
             _model.Height = 300;
@@ -166,10 +178,12 @@ namespace Diffusion.Toolkit.Controls
             _model.HasYes = buttons.HasFlag(PopupButtons.Yes);
             _model.HasNo = buttons.HasFlag(PopupButtons.No);
 
+            _defaultResult = defaultResult;
+
             return _tcs.Task;
         }
 
-        public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons, int width, int height)
+        public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons, PopupResult defaultResult, int width, int height)
         {
             _model.Width = width;
             _model.Height = height;
@@ -182,6 +196,8 @@ namespace Diffusion.Toolkit.Controls
             _model.HasCancel = buttons.HasFlag(PopupButtons.Cancel);
             _model.HasYes = buttons.HasFlag(PopupButtons.Yes);
             _model.HasNo = buttons.HasFlag(PopupButtons.No);
+
+            _defaultResult = defaultResult;
 
             return _tcs.Task;
         }

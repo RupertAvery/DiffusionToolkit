@@ -50,10 +50,9 @@ namespace Diffusion.Toolkit.Controls
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
-
-        public static readonly DependencyProperty PagesProperty =
+        public static readonly DependencyProperty PageProperty =
             DependencyProperty.Register(
-                name: nameof(Pages),
+                name: nameof(Page),
                 propertyType: typeof(int),
                 ownerType: typeof(ThumbnailView),
                 typeMetadata: new FrameworkPropertyMetadata(
@@ -62,10 +61,20 @@ namespace Diffusion.Toolkit.Controls
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
-
-        public static readonly DependencyProperty PageProperty =
+        public static readonly DependencyProperty PageSizeProperty =
             DependencyProperty.Register(
-                name: nameof(Page),
+                name: nameof(PageSize),
+                propertyType: typeof(int),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: 0,
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
+        public static readonly DependencyProperty PagesProperty =
+            DependencyProperty.Register(
+                name: nameof(Pages),
                 propertyType: typeof(int),
                 ownerType: typeof(ThumbnailView),
                 typeMetadata: new FrameworkPropertyMetadata(
@@ -239,6 +248,9 @@ namespace Diffusion.Toolkit.Controls
                     case nameof(Pages):
                         thumbnailView.Model.Pages = (int)e.NewValue;
                         break;
+                    case nameof(PageSize):
+                        thumbnailView.Model.PageSize = (int)e.NewValue;
+                        break;
                     case nameof(IsEmpty):
                         thumbnailView.Model.IsEmpty = (bool)e.NewValue;
                         break;
@@ -313,6 +325,12 @@ namespace Diffusion.Toolkit.Controls
         {
             get => (int)GetValue(PageProperty);
             set => SetValue(PageProperty, value);
+        }
+
+        public int PageSize
+        {
+            get => (int)GetValue(PageSizeProperty);
+            set => SetValue(PageSizeProperty, value);
         }
 
         public int Pages

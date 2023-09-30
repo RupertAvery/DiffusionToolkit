@@ -38,10 +38,11 @@ public class SearchModel : BaseNotify
     private ICommand? _copyFiles;
     private bool _nsfwBlur;
     private ICommand _showFilter;
+    private ICommand _clearFilter;
     private bool _isFilterVisible;
     private SearchControlModel _filter;
-    private ICommand _doFilter;
-    private ICommand _clearFilter;
+    private ICommand _filterCommand;
+    private ICommand _clearCommand;
     private string _sortBy;
     private string _sortDirection;
     private ICommand _openCommand;
@@ -261,6 +262,12 @@ public class SearchModel : BaseNotify
         set => SetField(ref _showFilter, value);
     }
 
+    public ICommand ClearFilter
+    {
+        get => _clearFilter;
+        set => SetField(ref _clearFilter, value);
+    }
+
     public bool IsFilterVisible
     {
         get => _isFilterVisible;
@@ -273,16 +280,16 @@ public class SearchModel : BaseNotify
         set => SetField(ref _filter, value);
     }
 
-    public ICommand DoFilter
+    public ICommand FilterCommand
     {
-        get => _doFilter;
-        set => SetField(ref _doFilter, value);
+        get => _filterCommand;
+        set => SetField(ref _filterCommand, value);
     }
 
-    public ICommand ClearFilter
+    public ICommand ClearCommand
     {
-        get => _clearFilter;
-        set => SetField(ref _clearFilter, value);
+        get => _clearCommand;
+        set => SetField(ref _clearCommand, value);
     }
 
     public string SortBy

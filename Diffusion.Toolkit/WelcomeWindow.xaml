@@ -14,6 +14,9 @@
         Style="{StaticResource BorderlessWindowStyle}"
         ResizeMode="NoResize"
         Title="Welcome" Height="500" Width="600">
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
+    </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>

@@ -45,6 +45,7 @@ public class ThumbnailPaneModel : BaseNotify
     private ICommand _copyFiles;
     private bool _nsfwBlur;
     private bool _fitToPreview;
+    private ICommand _clearCommand;
 
     public ThumbnailPaneModel()
     {
@@ -105,6 +106,13 @@ public class ThumbnailPaneModel : BaseNotify
             OnPropertyChanged("ReverseSearchHistory");
         }
     }
+
+    public ICommand ClearCommand
+    {
+        get => _clearCommand;
+        set => SetField(ref _clearCommand, value);
+    }
+
 
     public ICommand SearchCommand
     {
