@@ -43,9 +43,10 @@ The application also has this documentation, you can press F1 to view it at any 
 
 # Screenshots
 
-![image](https://user-images.githubusercontent.com/1910659/234151335-ad797e36-cd64-4253-875b-e03328de1f24.png)
+![Screenshot 2023-09-30 125304](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/4f385236-cf01-462b-b0c8-cb2708110cb3)
 
-![image](https://user-images.githubusercontent.com/1910659/234151651-038bcbfd-a47e-4f41-9ea4-607e15af111a.png)
+![Screenshot 2023-09-30 125523](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/378b9153-86aa-42ce-af27-95e8709a1bd3)
+
 
 # Buy me a coffee
 
