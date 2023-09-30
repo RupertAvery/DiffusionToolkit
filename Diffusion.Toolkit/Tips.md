@@ -245,11 +245,11 @@ To do this, select the image and right-click > Remove Entry or press `Ctrl-X` or
 
 On the right is the **Preview Pane**, where the image preview will be displayed when an thumbnail is selected.
 
-![image](https://user-images.githubusercontent.com/1910659/210345752-d0a2deef-174d-4bae-b191-393387a8fce6.png)
+![Screenshot 2023-09-30 125622](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/6e8ab5e4-9f9a-427b-a06e-6314e532ba3d)
 
 When you rate or favorite an image, an indicator will appear in the bottom left.
 
-![image](https://user-images.githubusercontent.com/1910659/210347580-5e5bfbf7-63e6-4581-99c7-56806b002377.png)
+![Screenshot 2023-09-30 125823](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/2399569a-a96e-4b4d-9595-9f1dfeee3166)
 
 You can set the image to automatically fit to the preview area by clicking **View > Fit to Preview**. Otherwise by default the image will be displayed at 100%, and you can Zoom and Pan the image. 
 
@@ -273,7 +273,7 @@ Zoom will be reset when you select another image.
 
 To display the prompt and other metadata associated with the image (i.e. PNGInfo) press the **eye icon** located at the bottom right of the Preview Pane, or press `i` while in the Thumbnail View.
 
-![image](https://user-images.githubusercontent.com/1910659/210345696-914d36bf-76dc-4717-ab3c-cc622e80d07b.png)
+![Screenshot 2023-09-30 125805](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/0164dcac-3fe6-416e-8ce5-2e1646b0baba)
 
 ## Popout
 
