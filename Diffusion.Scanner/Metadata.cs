@@ -45,6 +45,8 @@ public class Metadata
 
                     var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
 
+                    var isInvokeAI2 = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("invokeai_metadata: ")));
+
                     var isEasyDiffusion = directories.Any(d =>
                         d.Name == "PNG-tEXt" &&
                        d.Tags.Any(t =>
@@ -62,8 +64,11 @@ public class Metadata
                             t.Description.Substring("prompt: ".Length).Trim().StartsWith("{")
                     ));
 
-
-                    if (isInvokeAINew)
+                    if (isInvokeAI2)
+                    {
+                        fileParameters = ReadInvokeAIParameters2(file, directories);
+                    }
+                    else if (isInvokeAINew)
                     {
                         fileParameters = ReadInvokeAIParametersNew(file, directories);
                     }
@@ -470,6 +475,33 @@ public class Metadata
 
         return null;
     }
+
+    private static FileParameters ReadInvokeAIParameters2(string file, IEnumerable<Directory> directories)
+    {
+        if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("invokeai_metadata: "), out var tag))
+        {
+            var fp = new FileParameters();
+            var json = tag.Description.Substring("invokeai_metadata: ".Length);
+            var root = JsonDocument.Parse(json);
+            var image = root.RootElement;
+            
+            fp.Prompt = image.GetProperty("positive_prompt").GetString();
+            fp.NegativePrompt = image.GetProperty("negative_prompt").GetString();
+            fp.Steps = image.GetProperty("steps").GetInt32();
+            fp.CFGScale = image.GetProperty("cfg_scale").GetDecimal();
+            fp.Height = image.GetProperty("height").GetInt32();
+            fp.Width = image.GetProperty("width").GetInt32();
+            fp.Seed = image.GetProperty("seed").GetInt64();
+            fp.Sampler = image.GetProperty("scheduler").GetString();
+
+            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
+
+            return fp;
+        }
+
+        return null;
+    }
+
 
     private static FileParameters ReadNovelAIParameters(string file, IEnumerable<Directory> directories)
     {
