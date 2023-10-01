@@ -196,7 +196,7 @@ namespace Diffusion.Toolkit.Pages
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
             _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = !_model.IsFilterVisible);
-            _model.ClearFilter= new RelayCommand<object>((o) => ClearQueryFilter());
+            _model.ClearSearch= new RelayCommand<object>((o) => ClearQueryFilter());
 
             _model.FilterCommand = new RelayCommand<object>((o) =>
             {

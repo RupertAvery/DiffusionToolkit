@@ -65,10 +65,18 @@
                         <fa:ImageAwesome ToolTip="Advanced Filter" Icon="Filter" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         </fa:ImageAwesome>
                     </Button>
-                    <Button DockPanel.Dock="Left" Width="28" Command="{Binding ClearFilter}" >
+                    <Button DockPanel.Dock="Left" Width="28" Command="{Binding ClearSearch}" >
                         <fa:ImageAwesome ToolTip="Clear Query/Filter" Icon="Close" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         </fa:ImageAwesome>
                     </Button>
+                    <Button DockPanel.Dock="Left" Width="28" Command="{Binding Refresh}" >
+                        <fa:ImageAwesome ToolTip="Refresh" Icon="Search" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        </fa:ImageAwesome>
+                    </Button>
+                    <!--<Button DockPanel.Dock="Left" Width="28" Command="{Binding ClearFilter}" >
+                        <fa:ImageAwesome ToolTip="Help" Icon="QuestionCircleOutline" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        </fa:ImageAwesome>
+                    </Button>-->
                     <Grid>
 
                         <ComboBox x:Name="SearchTermTextBox" 
