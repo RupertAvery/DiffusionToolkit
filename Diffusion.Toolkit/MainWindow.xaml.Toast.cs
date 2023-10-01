@@ -11,7 +11,7 @@ namespace Diffusion.Toolkit
         private void Toast(string message, string caption, int timeout = 5)
         {
             ToastPopup.IsOpen = true;
-            ToastMessage.Content = message;
+            ToastMessage.Text = message;
             Task.Delay(timeout * 1000).ContinueWith((_) =>
             {
                 Dispatcher.Invoke(() =>

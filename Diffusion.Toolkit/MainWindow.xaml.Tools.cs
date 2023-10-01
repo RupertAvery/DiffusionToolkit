@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Diffusion.Database;
 
 namespace Diffusion.Toolkit
 {
@@ -172,5 +173,59 @@ namespace Diffusion.Toolkit
             });
         }
 
+        private async void AddAllToAlbum()
+        {
+            if (_search.IsQueryEmpty())
+            {
+                await _messagePopupManager.Show("Query cannot be empty", "Add images to album", PopupButtons.OK);
+                return;
+            }
+
+            var selector = new AlbumListWindow(_dataStore)
+            {
+                Owner = this
+            };
+
+            var result = selector.ShowDialog();
+
+
+            if (result.HasValue && result.Value)
+            {
+                var matches = _search.UseFilter ? _dataStore.Query(_search.Filter) : _dataStore.Query(_search.Prompt);
+
+                var ids = matches.Select(m => m.Id).ToList();
+
+                string albumName = "";
+
+                if (selector.IsNewAlbum)
+                {
+                    var album = _dataStore.CreateAlbum(new Album() { Name = selector.AlbumName });
+                    albumName = selector.AlbumName;
+
+                    await Task.Run(() =>
+                    {
+                        _dataStore.AddImagesToAlbum(album.Id, ids);
+                    });
+
+                }
+                else
+                {
+                    var albumId = selector.SelectedAlbum.Id;
+                    albumName = selector.SelectedAlbum.Name;
+
+                    await Task.Run(() =>
+                    {
+                        _dataStore.AddImagesToAlbum(albumId, ids);
+                    });
+
+                }
+
+                Toast($"{ids.Count} images added to album {albumName}.", "Add to Album");
+            }
+
+            //_search.ReloadMatches();
+
+            //await _search.ReloadMatches();
+        }
     }
 }

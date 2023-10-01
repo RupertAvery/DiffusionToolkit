@@ -148,6 +148,7 @@ namespace Diffusion.Toolkit.Controls
         {
             Point pt = e.GetPosition(ThumbnailListView);
             var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
+            if (item == null) return;
             if (item.VisualHit is FrameworkElement { DataContext: ImageEntry })
             {
                 OpenSelected();

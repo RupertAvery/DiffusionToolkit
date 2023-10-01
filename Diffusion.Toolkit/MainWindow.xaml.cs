@@ -124,6 +124,7 @@ namespace Diffusion.Toolkit
             _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
             _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview());
 
+            _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
             _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
             _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
             _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
@@ -365,6 +366,8 @@ namespace Diffusion.Toolkit
             };
 
             _search = new Search(_navigatorService, _dataStoreOptions, _messagePopupManager, _settings, _model);
+
+            _search.Toast = (message, caption) => Toast(message, caption);
 
             _search.MoveFiles = (files) =>
             {

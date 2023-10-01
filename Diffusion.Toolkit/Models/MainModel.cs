@@ -38,6 +38,7 @@ public class MainModel : BaseNotify
     private ICommand _poputPreview;
     private ICommand _togglePreview;
     private bool _isPreviewVisible;
+    private ICommand _addAllToAlbum;
     private ICommand _markAllForDeletion;
     private ICommand _unmarkAllForDeletion;
     private ICommand _removeMatching;
@@ -270,6 +271,12 @@ public class MainModel : BaseNotify
     {
         get => _isPreviewVisible;
         set => SetField(ref _isPreviewVisible, value);
+    }
+
+    public ICommand AddAllToAlbum
+    {
+        get => _addAllToAlbum;
+        set => SetField(ref _addAllToAlbum, value);
     }
 
     public ICommand MarkAllForDeletion

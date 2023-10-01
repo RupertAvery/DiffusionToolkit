@@ -86,6 +86,7 @@
                 <MenuItem Header="_Search results">
                     <!--<MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
                     <Separator></Separator>-->
+                    <MenuItem Header="Add all search results to Album" Command="{Binding AddAllToAlbum}"/>
                     <MenuItem Header="_Mark all search results for Deletion" Command="{Binding MarkAllForDeletion}"/>
                     <MenuItem Header="_Unmark all search results for Deletion" Command="{Binding UnmarkAllForDeletion}"/>
                     <Separator></Separator>
@@ -174,7 +175,7 @@
                     </Border.Effect>
                 </Border>
                 <Grid Background="Transparent" Margin="10,25,10,20" IsHitTestVisible="False">
-                    <Label x:Name="ToastMessage"  Width="280" HorizontalContentAlignment="Center"></Label>
+                    <TextBlock TextAlignment="Center" TextWrapping="WrapWithOverflow" x:Name="ToastMessage" Width="280" Padding="10"></TextBlock>
                 </Grid>
             </Grid>
         </Popup>

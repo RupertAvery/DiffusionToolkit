@@ -66,7 +66,8 @@ namespace Diffusion.Toolkit.Pages
         private ModeSettings _currentModeSettings;
 
         private ICollection<Model>? _modelLookup;
-
+        public Action<string, string> Toast { get; set; }
+        
         public Search()
         {
             InitializeComponent();
@@ -274,18 +275,19 @@ namespace Diffusion.Toolkit.Pages
             _model.AddToAlbumCommand = new RelayCommand<object>((o) =>
             {
                 var album = (Album)((MenuItem)o).Tag;
-                var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
+                var images = ThumbnailListView.SelectedImages.Select(x => x.Id).ToList();
                 DataStore.AddImagesToAlbum(album.Id, images);
+                Toast?.Invoke($"{images.Count} images added to album {album.Name}.", "Add to Album");
                 ThumbnailListView.ReloadAlbums();
             });
 
             _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
             {
-                var name = _currentModeSettings.CurrentAlbum;
-                var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
-                DataStore.RemoveImagesFromAlbum(_currentModeSettings.CurrentAlbum.Id, images);
+                var album = _currentModeSettings.CurrentAlbum;
+                var images = ThumbnailListView.SelectedImages.Select(x => x.Id).ToList();
+                DataStore.RemoveImagesFromAlbum(album.Id, images);
+                Toast?.Invoke($"{images.Count} images removed from album {album.Name}.", "Remove from Album");
                 SearchImages(null);
-
             });
 
             _model.RemoveAlbumCommand = new RelayCommand<object>((o) =>
@@ -1573,6 +1575,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     DataStore.AddImagesToAlbum(album.Id, imageEntries.Select(i => i.Id));
                 }
+                Toast?.Invoke($"{imageEntries.Count()} images added to album {album.Name}.", "Add to Album");
 
                 AddAlbumPopup.Tag = null;
                 UpdateAlbums();
