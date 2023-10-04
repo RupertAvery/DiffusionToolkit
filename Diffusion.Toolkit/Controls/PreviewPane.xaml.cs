@@ -74,11 +74,17 @@ namespace Diffusion.Toolkit.Controls
 
         private void InitIcons()
         {
-            Uri handIconUri = new Uri("pack://application:,,,/Icons/hand.cur", UriKind.RelativeOrAbsolute);
-            handCursor = new Cursor(Application.GetResourceStream(handIconUri).Stream);
-            Uri grabIconUri = new Uri("pack://application:,,,/Icons/grab.cur", UriKind.RelativeOrAbsolute);
-            grabCursor = new Cursor(Application.GetResourceStream(grabIconUri).Stream);
-            //Unloaded += OnUnloaded;
+            try
+            {
+                Uri handIconUri = new Uri("pack://application:,,,/Icons/hand.cur", UriKind.RelativeOrAbsolute);
+                handCursor = new Cursor(Application.GetResourceStream(handIconUri).Stream);
+                Uri grabIconUri = new Uri("pack://application:,,,/Icons/grab.cur", UriKind.RelativeOrAbsolute);
+                grabCursor = new Cursor(Application.GetResourceStream(grabIconUri).Stream);
+                //Unloaded += OnUnloaded;
+            }
+            catch (Exception e)
+            {
+            }
         }
 
 
@@ -100,7 +106,11 @@ namespace Diffusion.Toolkit.Controls
 
         private void UIElement_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            var ctrlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+
+            var active = true;
+
+            if (active)
             {
                 Point mouseAtImage = e.GetPosition(Preview); // ScrollViewer_CanvasMain.TranslatePoint(middleOfScrollViewer, Canvas_Main);
                 Point mouseAtScrollViewer = e.GetPosition(ScrollViewer);
