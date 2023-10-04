@@ -67,7 +67,7 @@ namespace Diffusion.Toolkit.Pages
 
         private ICollection<Model>? _modelLookup;
         public Action<string, string> Toast { get; set; }
-        
+
         public Search()
         {
             InitializeComponent();
@@ -196,7 +196,7 @@ namespace Diffusion.Toolkit.Pages
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
             _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = !_model.IsFilterVisible);
-            _model.ClearSearch= new RelayCommand<object>((o) => ClearQueryFilter());
+            _model.ClearSearch = new RelayCommand<object>((o) => ClearQueryFilter());
 
             _model.FilterCommand = new RelayCommand<object>((o) =>
             {
@@ -277,7 +277,7 @@ namespace Diffusion.Toolkit.Pages
                 var album = (Album)((MenuItem)o).Tag;
                 var images = ThumbnailListView.SelectedImages.Select(x => x.Id).ToList();
                 DataStore.AddImagesToAlbum(album.Id, images);
-                Toast?.Invoke($"{images.Count} images added to album {album.Name}.", "Add to Album");
+                Toast?.Invoke($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
                 ThumbnailListView.ReloadAlbums();
             });
 
@@ -286,7 +286,7 @@ namespace Diffusion.Toolkit.Pages
                 var album = _currentModeSettings.CurrentAlbum;
                 var images = ThumbnailListView.SelectedImages.Select(x => x.Id).ToList();
                 DataStore.RemoveImagesFromAlbum(album.Id, images);
-                Toast?.Invoke($"{images.Count} images removed from album {album.Name}.", "Remove from Album");
+                Toast?.Invoke($"{images.Count} image{(images.Count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
                 SearchImages(null);
             });
 
@@ -297,7 +297,7 @@ namespace Diffusion.Toolkit.Pages
                     Name = ThumbnailListView.SelectedImageEntry!.Name,
                     Id = ThumbnailListView.SelectedImageEntry!.Id
                 };
-                RemoveAlbumMessage.Text = $"Are you sure you want to remove the Album \"{_selectedAlbum.Name}\"?";
+                RemoveAlbumMessage.Text = $"Are you sure you want to remove \"{_selectedAlbum.Name}\"?";
                 RemoveAlbumPopup.IsOpen = true;
             });
 
@@ -1554,10 +1554,10 @@ namespace Diffusion.Toolkit.Pages
 
         private void AddImagesToNewAlbum_Click(object sender, RoutedEventArgs e)
         {
-            AddImagesToAlbum(ThumbnailListView.SelectedImages);
+            AddImagesToAlbum(ThumbnailListView.SelectedImages.ToList());
         }
 
-        private void AddImagesToAlbum(IEnumerable<ImageEntry> imageEntries)
+        private void AddImagesToAlbum(IReadOnlyList<ImageEntry> imageEntries)
         {
             var name = NewAlbumName.Text.Trim();
 
@@ -1575,7 +1575,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     DataStore.AddImagesToAlbum(album.Id, imageEntries.Select(i => i.Id));
                 }
-                Toast?.Invoke($"{imageEntries.Count()} images added to album {album.Name}.", "Add to Album");
+                Toast?.Invoke($"{imageEntries.Count} image{(imageEntries.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
 
                 AddAlbumPopup.Tag = null;
                 UpdateAlbums();
@@ -1677,7 +1677,7 @@ namespace Diffusion.Toolkit.Pages
             switch (e.Key)
             {
                 case Key.Enter:
-                    AddImagesToAlbum(ThumbnailListView.SelectedImages);
+                    AddImagesToAlbum(ThumbnailListView.SelectedImages.ToList());
                     e.Handled = true;
                     break;
                 case Key.Escape:
@@ -1690,8 +1690,9 @@ namespace Diffusion.Toolkit.Pages
         private void DropImagesOnAlbum(object sender, DragEventArgs e)
         {
             var album = (Album)((Button)sender).DataContext;
-            var images = ThumbnailListView.SelectedImages.Select(x => x.Id);
+            var images = ThumbnailListView.SelectedImages.Select(x => x.Id).ToList();
             DataStore.AddImagesToAlbum(album.Id, images);
+            Toast?.Invoke($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
         }
 
         private void OpenAlbum_Click(object sender, MouseButtonEventArgs e)

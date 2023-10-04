@@ -372,7 +372,7 @@ namespace Diffusion.Toolkit
                 Visibility = Visibility.Collapsed;
                 ResizeMode = ResizeMode.NoResize;
                 //WindowStyle = WindowStyle.None;
-                //WindowState = WindowState.Maximized;
+                WindowState = WindowState.Maximized;
 
                 var workingArea = screen.Bounds;
 
