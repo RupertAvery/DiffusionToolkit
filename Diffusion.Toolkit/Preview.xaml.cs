@@ -4,6 +4,7 @@ using Diffusion.Toolkit.Models;
 using System;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Diffusion.Toolkit
 {
@@ -61,6 +62,35 @@ namespace Diffusion.Toolkit
             PreviewPane.MainModel = mainModel;
             _model.ToggleFitToPreview = PreviewPane.MainModel.ToggleFitToPreview;
             _model.ToggleInfo = PreviewPane.MainModel.ToggleInfo;
+            _model.ToggleFullScreen = new RelayCommand<object>((o) => ToggleFullScreen());
+        }
+
+        private bool _isFullScreen = false;
+        //private WindowState _lastWindowState;
+        //private WindowStyle _lastWindowStyle;
+
+        private Brush _background;
+
+        private void ToggleFullScreen()
+        {
+            _isFullScreen = !_isFullScreen;
+            if (_isFullScreen)
+            {
+                _background = this.BackgroundGrid.Background;
+                BackgroundGrid.Background = new SolidColorBrush(Colors.Black);
+            }
+            else
+            {
+                BackgroundGrid.Background = _background;
+            }
+            SetFullScreen(_isFullScreen);
+        }
+
+        public void ShowFullScreen()
+        {
+            Show();
+            _isFullScreen = false;
+            ToggleFullScreen();
         }
 
         public void SetNSFWBlur(bool value)

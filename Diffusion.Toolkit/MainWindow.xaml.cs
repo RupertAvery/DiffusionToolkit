@@ -201,8 +201,12 @@ namespace Diffusion.Toolkit
                     _search.SetPreviewVisible(_model.IsPreviewVisible);
                 }
 
+                var fullscreen = true;
+
                 _previewWindow = new PreviewWindow(_dataStore, _model);
+
                 _previewWindow.WindowState = maximized ? WindowState.Maximized : WindowState.Normal;
+                
                 _previewWindow.Owner = this;
 
                 _previewWindow.PreviewKeyUp += _search.ExtOnKeyUp;
@@ -220,7 +224,16 @@ namespace Diffusion.Toolkit
                 {
                     _previewWindow?.SetCurrentImage(image);
                 };
-                _previewWindow.Show();
+
+                if (fullscreen)
+                {
+                    _previewWindow.ShowFullScreen();
+                }
+                else
+                {
+                    _previewWindow.Show();
+                }
+
             }
             else
             {

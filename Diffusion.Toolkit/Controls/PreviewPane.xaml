@@ -35,14 +35,14 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}">
+    <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
 
         <!--<Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="Auto" />
                 <RowDefinition/>
             </Grid.RowDefinitions>-->
-        <Grid  Style="{StaticResource Preview}">
+        <Grid  Style="{StaticResource Preview}" Background="Transparent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="42"/>
                 <RowDefinition Height="*" />
@@ -50,9 +50,12 @@
             </Grid.RowDefinitions>
 
 
+            <!--HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
+            VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
+
             <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
-                              HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
-                              VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"  
+                              HorizontalScrollBarVisibility="Hidden" 
+                              VerticalScrollBarVisibility="Hidden"  
                               MouseMove="ScrollViewer_OnMouseMove"
                               PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
                               PreviewMouseWheel="UIElement_OnMouseWheel"  

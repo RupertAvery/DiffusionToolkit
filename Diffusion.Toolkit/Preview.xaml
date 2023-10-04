@@ -10,13 +10,15 @@
         mc:Ignorable="d"
         Style="{StaticResource BorderlessWindowStyle}"
         d:DataContext="{d:DesignInstance local:PreviewModel, IsDesignTimeCreatable=True}"
+        BorderThickness="0"
         Height="450" Width="800">
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Close}"></KeyBinding>
         <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding ToggleFitToPreview}"></KeyBinding>
         <KeyBinding Key="I" Command="{Binding ToggleInfo}"></KeyBinding>
+        <KeyBinding Key="F11" Command="{Binding ToggleFullScreen}"></KeyBinding>
     </Window.InputBindings>
-    <Grid>
+    <Grid Name="BackgroundGrid" Margin="-2">
         <controls:PreviewPane 
             NSFWBlur="{Binding NSFWBlur}" 
             Image="{Binding CurrentImage}"
