@@ -715,6 +715,7 @@
         <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
         <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
         <Setter Property="Opacity" Value="0.45"/>
+        <Setter Property="ToolTipService.InitialShowDelay" Value="{DynamicResource ToolTipDelay}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -995,6 +996,7 @@
             </Setter.Value>
         </Setter>
     </Style>
+
 
 
 </ResourceDictionary>

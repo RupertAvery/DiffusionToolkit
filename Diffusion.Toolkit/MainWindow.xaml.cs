@@ -60,9 +60,7 @@ namespace Diffusion.Toolkit
         {
             Logger.Log("===========================================");
             Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
-
-
-
+            
 
             var settingsPath = Path.Combine(AppInfo.AppDir, "config.json");
             var dbPath = Path.Combine(AppInfo.AppDir, "diffusion-toolkit.db");

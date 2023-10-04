@@ -19,18 +19,21 @@ namespace Diffusion.Toolkit.Themes
 
             var app = (App)Application.Current;
             app.Resources.MergedDictionaries.Clear();
-            ResourceDictionary theme = (ResourceDictionary)Application.LoadComponent(new Uri($"Themes/{themeName}.xaml", UriKind.Relative));
-            ResourceDictionary common = (ResourceDictionary)Application.LoadComponent(new Uri("Themes/Common.xaml", UriKind.Relative));
-            ResourceDictionary menu = (ResourceDictionary)Application.LoadComponent(new Uri($"Themes/Menu.xaml", UriKind.Relative));
-            ResourceDictionary swStyles = (ResourceDictionary)Application.LoadComponent(new Uri($"Themes/SWStyles.xaml", UriKind.Relative));
-            ResourceDictionary window = (ResourceDictionary)Application.LoadComponent(new Uri($"Themes/Window.xaml", UriKind.Relative));
-            app.Resources.MergedDictionaries.Add(theme);
-            app.Resources.MergedDictionaries.Add(common);
-            app.Resources.MergedDictionaries.Add(menu);
-            app.Resources.MergedDictionaries.Add(swStyles);
-            app.Resources.MergedDictionaries.Add(window);
+
+            LoadResource(app, $"Themes/ToolTips.xaml");
+            LoadResource(app, $"Themes/{themeName}.xaml");
+            LoadResource(app, "Themes/Common.xaml");
+            LoadResource(app, $"Themes/Menu.xaml");
+            LoadResource(app, $"Themes/SWStyles.xaml");
+            LoadResource(app, $"Themes/Window.xaml");
         }
-        
+
+        private static void LoadResource(App app, string url)
+        {
+            ResourceDictionary resource = (ResourceDictionary)Application.LoadComponent(new Uri(url, UriKind.Relative));
+            app.Resources.MergedDictionaries.Add(resource);
+        }
+
         private static string GetWindowsTheme()
         {
             using var key = Registry.CurrentUser.OpenSubKey(RegistryKeyPath);
