@@ -1,5 +1,4 @@
 ﻿using Diffusion.Database;
-using Diffusion.IO;
 using Diffusion.Toolkit.Models;
 using System;
 using System.Collections.Generic;
@@ -23,6 +22,7 @@ using Task = System.Threading.Tasks.Task;
 using static System.String;
 using Diffusion.Toolkit.Controls;
 using System.Collections.Specialized;
+using Diffusion.IO;
 using Image = Diffusion.Database.Image;
 using SQLite;
 using Diffusion.Toolkit.Common;
