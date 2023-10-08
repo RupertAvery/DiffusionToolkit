@@ -20,12 +20,12 @@ namespace Diffusion.Toolkit.Themes
             var app = (App)Application.Current;
             app.Resources.MergedDictionaries.Clear();
 
-            LoadResource(app, $"Themes/ToolTips.xaml");
+            LoadResource(app, "Themes/ToolTips.xaml");
             LoadResource(app, $"Themes/{themeName}.xaml");
             LoadResource(app, "Themes/Common.xaml");
-            LoadResource(app, $"Themes/Menu.xaml");
-            LoadResource(app, $"Themes/SWStyles.xaml");
-            LoadResource(app, $"Themes/Window.xaml");
+            LoadResource(app, "Themes/Menu.xaml");
+            LoadResource(app, "Themes/SWStyles.xaml");
+            LoadResource(app, "Themes/Window.xaml");
         }
 
         private static void LoadResource(App app, string url)
