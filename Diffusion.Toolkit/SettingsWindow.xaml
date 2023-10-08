@@ -100,7 +100,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
                         </Grid>
-                     
+
                         <CheckBox IsChecked="{Binding CheckForUpdatesOnStartup}" Margin="0,10,0,0">Check for updates on startup</CheckBox>
 
                         <CheckBox IsChecked="{Binding PortableMode}" Margin="0,10,0,0">Portable Mode</CheckBox>
@@ -120,7 +120,7 @@
                         </Grid>
                         <TextBlock Margin="10" TextWrapping="Wrap">
                             Set the Model Root to the path of the AUTOMATIC111 models\Stable-diffusion folder to list 
-                            all your models in the Model Tab 
+                            all your models in the Model Tab
                         </TextBlock>
                         <Label>A1111 Cache (cache.json)</Label>
                         <Grid>
@@ -147,6 +147,35 @@
                             </Grid.ColumnDefinitions>
                             <Slider x:Name="Slider" Minimum="100" Maximum="500" Value="{Binding PageSize}" TickFrequency="50" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Orientation="Horizontal" Margin="0,0,10,0"></Slider>
                             <Label Grid.Column="1" Height="26" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="{Binding PageSize}" Margin="0,0,10,0"></Label>
+                        </Grid>
+                        <Label>Open images using:</Label>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <RadioButton GroupName="Viewer" IsChecked="{Binding UseBuiltInViewer}">Built-in viewer</RadioButton>
+                            <CheckBox  IsEnabled="{Binding UseBuiltInViewer}" Grid.Column="1" IsChecked="{Binding OpenInFullScreen}">Open in fullscreen</CheckBox>
+                        </Grid>
+                        <RadioButton GroupName="Viewer" IsChecked="{Binding UseSystemDefault}" Margin="0,10,0,0">System default</RadioButton>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="30"/>
+                            </Grid.ColumnDefinitions>
+                            <RadioButton GroupName="Viewer" IsChecked="{Binding UseCustomViewer}">Custom</RadioButton>
+                            <TextBox  IsEnabled="{Binding UseCustomViewer}" Grid.Column="1" Text="{Binding CustomCommandLine}"></TextBox>
+                            <Button  IsEnabled="{Binding UseCustomViewer}" Grid.Column="2" Click="BrowseCustomViewer_OnClick">...</Button>
+                        </Grid>
+                        <Grid Margin="0,10,0,0" IsEnabled="{Binding UseCustomViewer}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="30"/>
+                            </Grid.ColumnDefinitions>
+                            <Label>Arguments</Label>
+                            <TextBox Grid.Column="1" Height="20"  Text="{Binding CustomCommandLineArgs}"></TextBox>
                         </Grid>
                         <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,10,0,0">Scan for new images on startup</CheckBox>
                     </StackPanel>

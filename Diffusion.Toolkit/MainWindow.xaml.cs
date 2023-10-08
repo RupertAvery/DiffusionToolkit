@@ -120,7 +120,7 @@ namespace Diffusion.Toolkit
             _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
             _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
-            _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview());
+            _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
 
             _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
             _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
@@ -189,7 +189,7 @@ namespace Diffusion.Toolkit
 
         private PreviewWindow? _previewWindow;
 
-        private void PopoutPreview(bool hidePreview = true, bool maximized = false)
+        private void PopoutPreview(bool hidePreview, bool maximized, bool fullscreen)
         {
             if (_previewWindow == null)
             {
@@ -198,8 +198,6 @@ namespace Diffusion.Toolkit
                     _model.IsPreviewVisible = false;
                     _search.SetPreviewVisible(_model.IsPreviewVisible);
                 }
-
-                var fullscreen = true;
 
                 _previewWindow = new PreviewWindow(_dataStore, _model);
 
@@ -317,6 +315,7 @@ namespace Diffusion.Toolkit
             {
                 _settings.ShowAlbumPanel ??= true;
                 _settings.RecurseFolders ??= true;
+                _settings.UseBuiltInViewer ??= true;
 
                 UpdateTheme();
 
@@ -452,7 +451,7 @@ namespace Diffusion.Toolkit
             _search.SetThumbnailSize(_settings.ThumbnailSize);
             _search.SetPageSize(_settings.PageSize);
 
-            _search.OnPopout = () => PopoutPreview();
+            _search.OnPopout = () => PopoutPreview(false, true, false);
             _search.OnCurrentImageOpen = OnCurrentImageOpen;
 
             _model.ShowFavorite = new RelayCommand<object>((o) =>
@@ -584,18 +583,44 @@ namespace Diffusion.Toolkit
         private void OnCurrentImageOpen(ImageViewModel obj)
         {
             //if (obj == null) return;
-            //var p = obj.Path;
+            var p = obj.Path;
 
-            //var processInfo = new ProcessStartInfo()
-            //{
-            //    FileName = "explorer.exe",
-            //    Arguments = $"/select,\"{p}\"",
-            //    UseShellExecute = true
-            //};
+            if (_settings.UseBuiltInViewer.GetValueOrDefault(true))
+            {
+                PopoutPreview(false, true, _settings.OpenInFullScreen.GetValueOrDefault(true));
+            }
+            else if (_settings.UseSystemDefault.GetValueOrDefault(false))
+            {
+                var processInfo = new ProcessStartInfo()
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{p}\"",
+                    UseShellExecute = true
+                };
 
-            //Process.Start(processInfo);
+                Process.Start(processInfo);
+            }
+            else if (_settings.UseCustomViewer.GetValueOrDefault(false))
+            {
+                var args = _settings.CustomCommandLineArgs;
 
-            PopoutPreview(false, true);
+                if (string.IsNullOrWhiteSpace(args))
+                {
+                    args = "%1";
+                }
+
+                var processInfo = new ProcessStartInfo()
+                {
+                    FileName = _settings.CustomCommandLine,
+                    Arguments = args.Replace("%1", $"\"{p}\""),
+                    UseShellExecute = true
+                };
+
+                Process.Start(processInfo);
+            }
+
+
+            //PopoutPreview(false, true);
 
             //Process.Start("explorer.exe", $"/select,\"{p}\"");
 

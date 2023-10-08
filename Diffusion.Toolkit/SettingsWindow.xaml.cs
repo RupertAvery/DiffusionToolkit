@@ -54,6 +54,14 @@ namespace Diffusion.Toolkit
             _model.HashCache = settings.HashCache;
             _model.PortableMode = settings.PortableMode;
             _model.RecurseFolders = settings.RecurseFolders;
+
+            _model.UseBuiltInViewer = settings.UseBuiltInViewer.GetValueOrDefault(true);
+            _model.OpenInFullScreen = settings.OpenInFullScreen.GetValueOrDefault(true);
+            _model.UseSystemDefault = settings.UseSystemDefault.GetValueOrDefault(false);
+            _model.UseCustomViewer = settings.UseCustomViewer.GetValueOrDefault(false);
+            _model.CustomCommandLine = settings.CustomCommandLine;
+            _model.CustomCommandLineArgs = settings.CustomCommandLineArgs;
+
             _model.Escape = new RelayCommand<object>(o => Close());
 
             DataContext = _model;
@@ -75,6 +83,13 @@ namespace Diffusion.Toolkit
                 settings.HashCache = _model.HashCache;
                 settings.PortableMode = _model.PortableMode;
                 settings.RecurseFolders = _model.RecurseFolders;
+
+                settings.UseBuiltInViewer = _model.UseBuiltInViewer;
+                settings.OpenInFullScreen = _model.OpenInFullScreen;
+                settings.UseSystemDefault = _model.UseSystemDefault;
+                settings.UseCustomViewer = _model.UseCustomViewer;
+                settings.CustomCommandLine = _model.CustomCommandLine;
+                settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
             };
 
             //var str = new System.Text.StringBuilder();
@@ -251,6 +266,16 @@ namespace Diffusion.Toolkit
             if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
             {
                 _model.HashCache = dialog.FileName;
+            }
+        }
+
+        private void BrowseCustomViewer_OnClick(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new CommonOpenFileDialog();
+            dialog.Filters.Add(new CommonFileDialogFilter("Executable files", "*.exe;*.bat;*.cmd"));
+            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            {
+                _model.CustomCommandLine = dialog.FileName;
             }
         }
     }

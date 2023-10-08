@@ -46,6 +46,12 @@ public class Settings : IScanOptions
     private bool? _recurseFolders;
     private readonly Dictionary<string, bool> _isPropertyDirty = new Dictionary<string, bool>();
     private bool _isDirty;
+    private bool? _useBuiltInViewer;
+    private bool? _openInFullScreen;
+    private bool? _useSystemDefault;
+    private bool? _useCustomViewer;
+    private string _customCommandLine;
+    private string _customCommandLineArgs;
 
     public bool IsDirty()
     {
@@ -67,6 +73,10 @@ public class Settings : IScanOptions
         Theme = "System";
         PageSize = 100;
         ThumbnailSize = 128;
+        UseBuiltInViewer = true;
+        OpenInFullScreen = true;
+        CustomCommandLineArgs = "%1";
+
         if (initialize)
         {
             ShowAlbumPanel = true;
@@ -233,6 +243,42 @@ public class Settings : IScanOptions
     {
         get => _portableMode;
         set => UpdateValue(ref _portableMode, value);
+    }
+
+    public bool? UseBuiltInViewer
+    {
+        get => _useBuiltInViewer;
+        set => UpdateValue(ref _useBuiltInViewer, value);
+    }
+
+    public bool? OpenInFullScreen
+    {
+        get => _openInFullScreen;
+        set => UpdateValue(ref _openInFullScreen, value);
+    }
+
+    public bool? UseSystemDefault
+    {
+        get => _useSystemDefault;
+        set => UpdateValue(ref _useSystemDefault, value);
+    }
+
+    public bool? UseCustomViewer
+    {
+        get => _useCustomViewer;
+        set => UpdateValue(ref _useCustomViewer, value);
+    }
+
+    public string CustomCommandLine
+    {
+        get => _customCommandLine;
+        set => UpdateValue(ref _customCommandLine, value);
+    }
+
+    public string CustomCommandLineArgs
+    {
+        get => _customCommandLineArgs;
+        set => UpdateValue(ref _customCommandLineArgs, value);
     }
 
     public void Apply(Settings settings)

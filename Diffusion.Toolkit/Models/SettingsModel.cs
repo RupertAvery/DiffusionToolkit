@@ -22,6 +22,12 @@ public class SettingsModel : BaseNotify
     private ObservableCollection<string> _excludePaths;
     private bool? _recurseFolders;
     private ICommand _escape;
+    private bool _useBuiltInViewer;
+    private bool _openInFullScreen;
+    private bool _useSystemDefault;
+    private bool _useCustomViewer;
+    private string _customCommandLine;
+    private string _customCommandLineArgs;
 
     public SettingsModel()
     {
@@ -129,4 +135,40 @@ public class SettingsModel : BaseNotify
         get => _escape;
         set => SetField(ref _escape, value);
     }
+
+    public bool UseBuiltInViewer
+    {
+        get => _useBuiltInViewer;
+        set => SetField(ref _useBuiltInViewer, value);
+    }
+
+    public bool OpenInFullScreen
+    {
+        get => _openInFullScreen;
+        set => SetField(ref _openInFullScreen, value);
+    }
+
+    public bool UseSystemDefault
+    {
+        get => _useSystemDefault;
+        set => SetField(ref _useSystemDefault, value);
+    }
+
+    public bool UseCustomViewer
+    {
+        get => _useCustomViewer;
+        set => SetField(ref _useCustomViewer, value);
+    }
+
+    public string CustomCommandLine
+    {
+        get => _customCommandLine;
+        set => SetField(ref _customCommandLine, value);
+    }
+    public string CustomCommandLineArgs
+    {
+        get => _customCommandLineArgs;
+        set => SetField(ref _customCommandLineArgs, value);
+    }
+
 }
