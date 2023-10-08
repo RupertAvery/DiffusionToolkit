@@ -20,17 +20,17 @@ namespace Diffusion.Toolkit.Themes
             var app = (App)Application.Current;
             app.Resources.MergedDictionaries.Clear();
 
-            LoadResource(app, "Themes/ToolTips.xaml");
-            LoadResource(app, $"Themes/{themeName}.xaml");
-            LoadResource(app, "Themes/Common.xaml");
-            LoadResource(app, "Themes/Menu.xaml");
-            LoadResource(app, "Themes/SWStyles.xaml");
-            LoadResource(app, "Themes/Window.xaml");
+            LoadResourceDictionary(app, "Themes/ToolTips.xaml");
+            LoadResourceDictionary(app, $"Themes/{themeName}.xaml");
+            LoadResourceDictionary(app, "Themes/Common.xaml");
+            LoadResourceDictionary(app, "Themes/Menu.xaml");
+            LoadResourceDictionary(app, "Themes/SWStyles.xaml");
+            LoadResourceDictionary(app, "Themes/Window.xaml");
         }
 
-        private static void LoadResource(App app, string url)
+        private static void LoadResourceDictionary(App app, string url)
         {
-            ResourceDictionary resource = (ResourceDictionary)Application.LoadComponent(new Uri(url, UriKind.Relative));
+            var resource = (ResourceDictionary)Application.LoadComponent(new Uri(url, UriKind.Relative));
             app.Resources.MergedDictionaries.Add(resource);
         }
 
