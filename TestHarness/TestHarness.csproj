@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Diffusion.Civitai\Diffusion.Civitai.csproj" />
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
     <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
   </ItemGroup>

@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Common", "Diffusi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Updater", "Diffusion.Updater\Diffusion.Updater.csproj", "{1C125C3C-EF74-4485-9103-8EF71EA05FEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Github", "Diffusion.Github\Diffusion.Github.csproj", "{628611CA-5A54-487A-8B15-CE0BB733DC41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Github", "Diffusion.Github\Diffusion.Github.csproj", "{628611CA-5A54-487A-8B15-CE0BB733DC41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Civitai", "Diffusion.Civitai\Diffusion.Civitai.csproj", "{172F6027-8248-4315-953D-2B4930C2338A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{628611CA-5A54-487A-8B15-CE0BB733DC41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{628611CA-5A54-487A-8B15-CE0BB733DC41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{628611CA-5A54-487A-8B15-CE0BB733DC41}.Release|Any CPU.Build.0 = Release|Any CPU
+		{172F6027-8248-4315-953D-2B4930C2338A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{172F6027-8248-4315-953D-2B4930C2338A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{172F6027-8248-4315-953D-2B4930C2338A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{172F6027-8248-4315-953D-2B4930C2338A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
