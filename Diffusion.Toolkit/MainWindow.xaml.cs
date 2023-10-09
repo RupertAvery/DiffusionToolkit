@@ -60,7 +60,7 @@ namespace Diffusion.Toolkit
         {
             Logger.Log("===========================================");
             Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
-            
+
 
             var settingsPath = Path.Combine(AppInfo.AppDir, "config.json");
             var dbPath = Path.Combine(AppInfo.AppDir, "diffusion-toolkit.db");
@@ -202,7 +202,7 @@ namespace Diffusion.Toolkit
                 _previewWindow = new PreviewWindow(_dataStore, _model);
 
                 _previewWindow.WindowState = maximized ? WindowState.Maximized : WindowState.Normal;
-                
+
                 _previewWindow.Owner = this;
 
                 _previewWindow.PreviewKeyUp += _search.ExtOnKeyUp;
@@ -496,20 +496,7 @@ namespace Diffusion.Toolkit
 
             if (_settings.WatchFolders)
             {
-                foreach (var path in _settings.ImagePaths)
-                {
-                    if (Directory.Exists(path))
-                    {
-                        var watcher = new FileSystemWatcher(path)
-                        {
-                            EnableRaisingEvents = true,
-                            IncludeSubdirectories = true,
-                        };
-                        watcher.Created += WatcherOnCreated;
-                        watcher.Renamed += WatcherOnCreated;
-                        _watchers.Add(watcher);
-                    }
-                }
+                CreateWatchers();
             }
 
 
@@ -731,22 +718,48 @@ namespace Diffusion.Toolkit
             if (!string.IsNullOrEmpty(_settings.ModelRootPath) && Directory.Exists(_settings.ModelRootPath))
             {
                 _modelsCollection = ModelScanner.Scan(_settings.ModelRootPath).ToList();
-                if (!string.IsNullOrEmpty(_settings.HashCache))
-                {
-                    var hashes = JsonSerializer.Deserialize<Hashes>(File.ReadAllText(_settings.HashCache));
-                    foreach (var model in _modelsCollection)
-                    {
-                        if (hashes.hashes.TryGetValue("checkpoint/" + model.Path, out var hash))
-                        {
-                            model.SHA256 = hash.sha256;
-                        }
-                    }
-                }
             }
             else
             {
                 _modelsCollection = new List<Model>();
             }
+
+            if (!string.IsNullOrEmpty(_settings.HashCache))
+            {
+                var hashes = JsonSerializer.Deserialize<Hashes>(File.ReadAllText(_settings.HashCache));
+
+                var modelLookup = _modelsCollection.ToDictionary(m => m.Path);
+
+                var index = "checkpoint/".Length;
+
+                foreach (var hash in hashes.hashes)
+                {
+                    var path = hash.Key.Substring(index);
+                    if (modelLookup.TryGetValue(path, out var model))
+                    {
+                        model.SHA256 = hash.Value.sha256;
+                    }
+                    else
+                    {
+                        _modelsCollection.Add(new Model()
+                        {
+                            Filename = Path.GetFileNameWithoutExtension(path),
+                            Path = path,
+                            SHA256 = hash.Value.sha256
+                        });
+
+                    }
+                }
+
+                //foreach (var model in _modelsCollection.ToList())
+                //{
+                //    if (hashes.hashes.TryGetValue("checkpoint/" + model.Path, out var hash))
+                //    {
+                //        model.SHA256 = hash.sha256;
+                //    }
+                //}
+            }
+
             _search.SetModels(_modelsCollection);
             _models.SetModels(_modelsCollection);
             QueryBuilder.SetModels(_modelsCollection);
