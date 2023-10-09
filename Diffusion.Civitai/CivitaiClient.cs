@@ -4,6 +4,8 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Diffusion.Civitai.Models;
 
 namespace Diffusion.Civitai;
@@ -19,73 +21,80 @@ public class CivitaiClient : IDisposable
         _httpClient = new HttpClient();
     }
 
-    public async Task<Results<LiteModel>> GetLiteModelsAsync(ModelSearchParameters searchParameters)
+    public async Task<Results<LiteModel>?> GetLiteModelsAsync(ModelSearchParameters searchParameters, CancellationToken token)
     {
         string queryString = GetQueryString(searchParameters);
 
         string apiUrl = $"{_baseUrl}/models{queryString}";
 
-        return await GetResponseResults<LiteModel>(_httpClient, apiUrl);
+        return await GetResponseResults<LiteModel>(_httpClient, apiUrl, token);
     }
 
-    public async Task<Results<Model>> GetModelsAsync(ModelSearchParameters searchParameters)
+    public async Task<Results<Model>?> GetModelsAsync(ModelSearchParameters searchParameters, CancellationToken token)
     {
         string queryString = GetQueryString(searchParameters);
 
         string apiUrl = $"{_baseUrl}/models{queryString}";
 
-        return await GetResponseResults<Model>(_httpClient, apiUrl);
+        return await GetResponseResults<Model>(_httpClient, apiUrl, token);
     }
 
-    private async Task<Results<T>> GetResponseResults<T>(HttpClient client, string url)
+    private async Task<Results<T>?> GetResponseResults<T>(HttpClient client, string url, CancellationToken token)
     {
-        var response = await client.GetAsync(url);
-
-        if (response.IsSuccessStatusCode)
+        Results<T>? results = null;
+        try
         {
-            var options = new JsonSerializerOptions
+            var response = await client.GetAsync(url, token);
+
+            if (response.IsSuccessStatusCode)
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                Converters =
+                var options = new JsonSerializerOptions
                 {
-                    new JsonStringEnumConverter()
-                }
-            };
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    Converters =
+                    {
+                        new JsonStringEnumConverter()
+                    }
+                };
 
-            using (var responseStream = await response.Content.ReadAsStreamAsync())
-            {
-                var results = await JsonSerializer.DeserializeAsync<Results<T>>(responseStream, options);
-                return results;
-            }
-        }
-        else
-        {
-            if (response.Content.Headers.ContentType?.MediaType == "application/json")
-            {
-                var body = await response.Content.ReadAsStringAsync();
-                var document = JsonDocument.Parse(body);
-                string message = "Failed to retrieve results";
-                var arr = document.RootElement.EnumerateArray();
-                var err = arr.First();
-                string path = null;
-
-                if (err.TryGetProperty("message", out var messageElement))
+                using (var responseStream = await response.Content.ReadAsStreamAsync(token))
                 {
-                    message = messageElement.GetString();
+                    results = await JsonSerializer.DeserializeAsync<Results<T>>(responseStream, options);
                 }
-
-                if (err.TryGetProperty("path", out var pathElement))
-                {
-                    path = string.Join("/", pathElement.EnumerateArray().Select(p => p.GetString()));
-                }
-
-                throw new CivitaiRequestException(message, path, body, response.StatusCode);
             }
             else
             {
+                if (response.Content.Headers.ContentType?.MediaType == "application/json")
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    var document = JsonDocument.Parse(body);
+                    string message = "Failed to retrieve results";
+                    var arr = document.RootElement.EnumerateArray();
+                    var err = arr.First();
+                    string path = null;
+
+                    if (err.TryGetProperty("message", out var messageElement))
+                    {
+                        message = messageElement.GetString();
+                    }
+
+                    if (err.TryGetProperty("path", out var pathElement))
+                    {
+                        path = string.Join("/", pathElement.EnumerateArray().Select(p => p.GetString()));
+                    }
+
+                    throw new CivitaiRequestException(message, path, body, response.StatusCode);
+                }
+
                 throw new CivitaiRequestException("Failed to retrieve results", response.StatusCode);
             }
+
         }
+        catch (TaskCanceledException)
+        {
+        }
+
+        return results;
     }
 
     static string GetQueryString<T>(T searchParameters)

@@ -65,6 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Diffusion.Civitai\Diffusion.Civitai.csproj" />
     <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
     <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />

@@ -51,7 +51,7 @@ async Task<Results<LiteModel>> GetPage(int page, int? total = 0)
         Page = page,
         Limit = 100,
         Types = new List<ModelType>() { ModelType.Checkpoint }
-    });
+    }, CancellationToken.None);
 }
 
 

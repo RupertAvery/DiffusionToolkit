@@ -53,6 +53,7 @@ public class MainModel : BaseNotify
     private ICommand _quickCopy;
     private int _thumbnailSize;
     private ICommand _escape;
+    private ICommand _downloadCivitai;
 
     public MainModel()
     {
@@ -343,5 +344,11 @@ public class MainModel : BaseNotify
     {
         get => _escape;
         set => SetField(ref _escape, value);
+    }
+
+    public ICommand DownloadCivitai
+    {
+        get => _downloadCivitai;
+        set => SetField(ref _downloadCivitai, value);
     }
 }

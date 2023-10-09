@@ -128,6 +128,7 @@ namespace Diffusion.Toolkit
             _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
             _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
             _model.AddMatchingToAlbum = new RelayCommand<object>((o) => AddMatchingToAlbum());
+            _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
 
             _model.ToggleAlbum = new RelayCommand<object>((o) => ToggleAlbum());
 

@@ -60,6 +60,7 @@
                 <MenuItem Header="_Empty Recycle Bin" Command="{Binding RemoveMarked}"/>
                 <MenuItem Header="_Rebuild Metadata" Command="{Binding Rebuild}"/>
                 <MenuItem Header="_Reload Models" Command="{Binding ReloadHashes}"/>
+                <MenuItem Header="Download _Civitai Models" Command="{Binding DownloadCivitai}"/>
             </MenuItem>
             <MenuItem Header="_View">
                 <MenuItem Header="Refresh" Command="{Binding Refresh}" InputGestureText="F5"/>
