@@ -181,7 +181,7 @@
                                 Images="{Binding Images}" 
                                 Page="{Binding Page, Mode=TwoWay}" 
                                 Pages="{Binding Pages}" 
-                                NSFWBlur="{Binding MainModel.NSFWBlur}" 
+                                NSFWBlur="{Binding MainModel.NSFWBlurCommand}" 
                                 IsEmpty="{Binding IsEmpty}"
                                 Results="{Binding Results}"
                                 PageChangedCommand="{Binding PageChangedCommand}"

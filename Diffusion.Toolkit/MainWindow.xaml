@@ -16,10 +16,10 @@
         TitleWidth="*"
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Window.InputBindings>
-        <common:BareKeyBinding Key="I" Command="{Binding ToggleInfo}"></common:BareKeyBinding>
-        <common:BareKeyBinding Key="B" Command="{Binding ToggleNSFWBlur}"></common:BareKeyBinding>
+        <common:BareKeyBinding Key="I" Command="{Binding ToggleInfoCommand}"></common:BareKeyBinding>
+        <common:BareKeyBinding Key="B" Command="{Binding ToggleNSFWBlurCommand}"></common:BareKeyBinding>
         <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
-        <KeyBinding Key="F1" Command="{Binding Help}"></KeyBinding>
+        <KeyBinding Key="F1" Command="{Binding HelpCommand}"></KeyBinding>
         <KeyBinding Key="F5" Command="{Binding Refresh}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D2" Command="{Binding ShowAlbums}"></KeyBinding>
@@ -73,9 +73,9 @@
                     <MenuItem Header="512x512" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=512}" Command="{Binding SetThumbnailSize}" CommandParameter="512"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="Show/Hide _Info" Command="{Binding ToggleInfo}" InputGestureText="I"/>
-                <MenuItem Header="_Blur NSFW" IsChecked="{Binding NSFWBlur}" InputGestureText="B" Command="{Binding ToggleNSFWBlur}"/>
-                <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFW}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
+                <MenuItem Header="Show/Hide _Info" Command="{Binding ToggleInfoCommand}" InputGestureText="I"/>
+                <MenuItem Header="_Blur NSFW" IsChecked="{Binding NSFWBlurCommand}" InputGestureText="B" Command="{Binding ToggleNSFWBlurCommand}"/>
+                <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFWCommand}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
                 <Separator/>
                 <MenuItem Header="_Fit to Preview" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
                 <MenuItem Header="Show/Hide Preview" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
@@ -97,8 +97,8 @@
                 <MenuItem Header="_Auto tag NSFW" Command="{Binding AutoTagNSFW}"/>
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem Header="_About" Command="{Binding About}"/>
-                <MenuItem Header="_Getting Started" Command="{Binding Help}" InputGestureText="F1"/>
+                <MenuItem Header="_About" Command="{Binding AboutCommand}"/>
+                <MenuItem Header="_Getting Started" Command="{Binding HelpCommand}" InputGestureText="F1"/>
                 <Separator></Separator>
                 <MenuItem Header="_Check for updates" Click="MenuItem_OnClick"/>
             </MenuItem>
@@ -124,7 +124,7 @@
                 <fa:ImageAwesome MinWidth="32" ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
-            <Button  Command="{Binding ShowPrompts}">
+            <Button  Command="{Binding ShowPromptsCommand}">
                 <fa:ImageAwesome MinWidth="32" ToolTip="Prompts (Ctrl+6)" Icon="FileTextOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
@@ -148,9 +148,9 @@
         <Frame x:Name="Frame" Grid.Row="2" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
         <Grid Grid.Row="3" ColumnSpan="3">
             <DockPanel HorizontalAlignment="Stretch">
-                <Button DockPanel.Dock="Right"  Width="50" Visibility="{Binding IsScanning, Converter={StaticResource boolToVisCol}}" Command="{Binding CancelScan}">Cancel</Button>
+                <Button DockPanel.Dock="Right"  Width="50" Visibility="{Binding IsBusy, Converter={StaticResource boolToVisCol}}" Command="{Binding CancelCommand}">Cancel</Button>
                 <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
-                    <ProgressBar Value="{Binding CurrentPositionScan}" Maximum="{Binding TotalFilesScan}" HorizontalAlignment="Stretch"></ProgressBar>
+                    <ProgressBar Value="{Binding CurrentProgress}" Maximum="{Binding TotalProgress}" HorizontalAlignment="Stretch"></ProgressBar>
                     <Label Content="{Binding Status}"></Label>
                 </Grid>
             </DockPanel>

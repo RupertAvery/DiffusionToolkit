@@ -50,11 +50,11 @@ namespace Diffusion.Toolkit
         private async Task Scan()
         {
 
-            _scanCancellationTokenSource = new CancellationTokenSource();
+            _progressCancellationTokenSource = new CancellationTokenSource();
 
             await Task.Run(async () =>
             {
-                var result = await ScanInternal(_settings!, false, true, _scanCancellationTokenSource.Token);
+                var result = await ScanInternal(_settings!, false, true, _progressCancellationTokenSource.Token);
                 if (result && _search != null)
                 {
                     _search.SearchImages();
@@ -64,11 +64,11 @@ namespace Diffusion.Toolkit
 
         private async Task Rebuild()
         {
-            _scanCancellationTokenSource = new CancellationTokenSource();
+            _progressCancellationTokenSource = new CancellationTokenSource();
 
             await Task.Run(async () =>
             {
-                var result = await ScanInternal(_settings!, true, true, _scanCancellationTokenSource.Token);
+                var result = await ScanInternal(_settings!, true, true, _progressCancellationTokenSource.Token);
                 if (result)
                 {
                     _search.SearchImages();
@@ -86,8 +86,8 @@ namespace Diffusion.Toolkit
 
             Dispatcher.Invoke(() =>
             {
-                _model.TotalFilesScan = images.Count;
-                _model.CurrentPositionScan = 0;
+                _model.TotalProgress = images.Count;
+                _model.CurrentProgress = 0;
             });
 
             var moved = 0;
@@ -113,23 +113,23 @@ namespace Diffusion.Toolkit
                     Dispatcher.Invoke(() =>
                     {
                         image.Path = newPath;
-                        _model.CurrentPositionScan = moved1;
-                        _model.Status = $"Moving {_model.CurrentPositionScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+                        _model.CurrentProgress = moved1;
+                        _model.Status = $"Moving {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
                     });
                     moved++;
                 }
                 else
                 {
-                    _model.TotalFilesScan--;
+                    _model.TotalProgress--;
                 }
             }
 
 
             await Dispatcher.Invoke(async () =>
             {
-                _model.Status = $"Moving {_model.TotalFilesScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
-                _model.TotalFilesScan = Int32.MaxValue;
-                _model.CurrentPositionScan = 0;
+                _model.Status = $"Moving {_model.TotalProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
+                _model.TotalProgress = Int32.MaxValue;
+                _model.CurrentProgress = 0;
                 Toast($"{moved} files were moved.", "Move images");
             });
 
@@ -156,8 +156,8 @@ namespace Diffusion.Toolkit
 
             Dispatcher.Invoke(() =>
             {
-                _model.TotalFilesScan = max;
-                _model.CurrentPositionScan = 0;
+                _model.TotalProgress = max;
+                _model.CurrentProgress = 0;
             });
 
             var folderIdCache = new Dictionary<string, int>();
@@ -242,8 +242,8 @@ namespace Diffusion.Toolkit
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        _model.CurrentPositionScan = scanned;
-                        _model.Status = $"Scanning {_model.CurrentPositionScan:#,###,##0} of {_model.TotalFilesScan:#,###,##0}...";
+                        _model.CurrentProgress = scanned;
+                        _model.Status = $"Scanning {_model.CurrentProgress:#,###,##0} of {_model.TotalProgress:#,###,##0}...";
                     });
                 }
             }
@@ -263,9 +263,9 @@ namespace Diffusion.Toolkit
 
             Dispatcher.Invoke(() =>
             {
-                _model.Status = $"Scanning {_model.TotalFilesScan:#,###,##0} of {_model.TotalFilesScan:#,###,##0}...";
-                _model.TotalFilesScan = Int32.MaxValue;
-                _model.CurrentPositionScan = 0;
+                _model.Status = $"Scanning {_model.TotalProgress:#,###,##0} of {_model.TotalProgress:#,###,##0}...";
+                _model.TotalProgress = Int32.MaxValue;
+                _model.CurrentProgress = 0;
             });
 
             stopwatch.Stop();
@@ -279,9 +279,9 @@ namespace Diffusion.Toolkit
 
         private async Task<bool> ScanInternal(IScanOptions settings, bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
         {
-            if (_model.IsScanning) return false;
+            if (_model.IsBusy) return false;
 
-            _model.IsScanning = true;
+            _model.IsBusy = true;
 
             var removed = 0;
             var added = 0;
@@ -302,7 +302,7 @@ namespace Diffusion.Toolkit
 
                 foreach (var path in settings.ImagePaths)
                 {
-                    if (_scanCancellationTokenSource.IsCancellationRequested)
+                    if (_progressCancellationTokenSource.IsCancellationRequested)
                     {
                         break;
                     }
@@ -332,7 +332,7 @@ namespace Diffusion.Toolkit
             }
             finally
             {
-                _model.IsScanning = false;
+                _model.IsBusy = false;
 
             }
 

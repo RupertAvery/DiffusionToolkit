@@ -24,16 +24,16 @@ namespace Diffusion.Toolkit
 
             if (result == PopupResult.Yes)
             {
-                _scanCancellationTokenSource = new CancellationTokenSource();
+                _progressCancellationTokenSource = new CancellationTokenSource();
 
-                _model.IsScanning = true;
+                _model.IsBusy = true;
 
                 try
                 {
-                    var collection = await FetchCivitaiModels(_scanCancellationTokenSource.Token);
+                    var collection = await FetchCivitaiModels(_progressCancellationTokenSource.Token);
 
 
-                    if (_scanCancellationTokenSource.Token.IsCancellationRequested)
+                    if (_progressCancellationTokenSource.Token.IsCancellationRequested)
                     {
                         return;
                     }
@@ -62,12 +62,12 @@ namespace Diffusion.Toolkit
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        _model.TotalFilesScan = 100;
-                        _model.CurrentPositionScan = 0;
+                        _model.TotalProgress = 100;
+                        _model.CurrentProgress = 0;
                         _model.Status = "Download Complete";
                     });
 
-                    _model.IsScanning = false;
+                    _model.IsBusy = false;
                 }
 
             }
@@ -103,8 +103,8 @@ namespace Diffusion.Toolkit
 
             Dispatcher.Invoke(() =>
             {
-                _model.TotalFilesScan = 100;
-                _model.CurrentPositionScan = 1;
+                _model.TotalProgress = 100;
+                _model.CurrentProgress = 1;
                 _model.Status = $"Downloading models from Civitai...";
             });
 
@@ -126,8 +126,8 @@ namespace Diffusion.Toolkit
 
                     Dispatcher.Invoke(() =>
                     {
-                        _model.TotalFilesScan = totalPages;
-                        _model.CurrentPositionScan = nextPage;
+                        _model.TotalProgress = totalPages;
+                        _model.CurrentProgress = nextPage;
                         _model.Status = $"Downloading set {nextPage} of {totalPages:#,###,###}...";
                     });
 

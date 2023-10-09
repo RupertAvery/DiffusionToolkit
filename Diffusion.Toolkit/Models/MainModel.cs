@@ -18,20 +18,20 @@ public class MainModel : BaseNotify
     private ICommand _showLastQuery;
     private ICommand _showModels;
     private ICommand _showSearch;
-    private int _totalFilesScan;
-    private int _currentPositionScan;
+    private int _totalProgress;
+    private int _currentProgress;
     private string _status;
-    private bool _isScanning;
-    private ICommand _cancelScan;
-    private ICommand _about;
-    private ICommand _help;
+    private bool _isBusy;
+    private ICommand _cancelCommand;
+    private ICommand _aboutCommand;
+    private ICommand _helpCommand;
     private MessagePopupModel _messagePopupModel;
-    private ICommand _toggleInfo;
-    private ICommand _toggleNsfwBlur;
+    private ICommand _toggleInfoCommand;
+    private ICommand _toggleNsfwBlurCommand;
     private ICommand _toggleHideNsfw;
-    private bool _hideNsfw;
-    private bool _nsfwBlur;
-    private ICommand _showPrompts;
+    private bool _hideNsfwCommand;
+    private bool _nsfwBlurCommand;
+    private ICommand _showPromptsCommand;
     private bool _fitToPreview;
     private ICommand _toggleFitToPreview;
     private ICommand _setThumbnailSize;
@@ -165,52 +165,52 @@ public class MainModel : BaseNotify
         get => _status;
         set => SetField(ref _status, value);
     }
-    public bool IsScanning
+    public bool IsBusy
     {
-        get => _isScanning;
-        set => SetField(ref _isScanning, value);
+        get => _isBusy;
+        set => SetField(ref _isBusy, value);
     }
 
-    public int CurrentPositionScan
+    public int CurrentProgress
     {
-        get => _currentPositionScan;
-        set => SetField(ref _currentPositionScan, value);
+        get => _currentProgress;
+        set => SetField(ref _currentProgress, value);
     }
 
-    public int TotalFilesScan
+    public int TotalProgress
     {
-        get => _totalFilesScan;
-        set => SetField(ref _totalFilesScan, value);
+        get => _totalProgress;
+        set => SetField(ref _totalProgress, value);
     }
     
-    public ICommand CancelScan
+    public ICommand CancelCommand
     {
-        get => _cancelScan;
-        set => SetField(ref _cancelScan, value);
+        get => _cancelCommand;
+        set => SetField(ref _cancelCommand, value);
     }
 
-    public ICommand About
+    public ICommand AboutCommand
     {
-        get => _about;
-        set => SetField(ref _about, value);
+        get => _aboutCommand;
+        set => SetField(ref _aboutCommand, value);
     }
 
-    public ICommand Help
+    public ICommand HelpCommand
     {
-        get => _help;
-        set => SetField(ref _help, value);
+        get => _helpCommand;
+        set => SetField(ref _helpCommand, value);
     }
 
-    public ICommand ToggleInfo
+    public ICommand ToggleInfoCommand
     {
-        get => _toggleInfo;
-        set => SetField(ref _toggleInfo, value);
+        get => _toggleInfoCommand;
+        set => SetField(ref _toggleInfoCommand, value);
     }
 
-    public ICommand ToggleNSFWBlur
+    public ICommand ToggleNSFWBlurCommand
     {
-        get => _toggleNsfwBlur;
-        set => SetField(ref _toggleNsfwBlur, value);
+        get => _toggleNsfwBlurCommand;
+        set => SetField(ref _toggleNsfwBlurCommand, value);
     }
 
     public ICommand ToggleHideNSFW
@@ -219,22 +219,22 @@ public class MainModel : BaseNotify
         set => SetField(ref _toggleHideNsfw, value);
     }
 
-    public bool NSFWBlur
+    public bool NSFWBlurCommand
     {
-        get => _nsfwBlur;
-        set => SetField(ref _nsfwBlur, value);
+        get => _nsfwBlurCommand;
+        set => SetField(ref _nsfwBlurCommand, value);
     }
 
-    public bool HideNSFW
+    public bool HideNSFWCommand
     {
-        get => _hideNsfw;
-        set => SetField(ref _hideNsfw, value);
+        get => _hideNsfwCommand;
+        set => SetField(ref _hideNsfwCommand, value);
     }
 
-    public ICommand ShowPrompts
+    public ICommand ShowPromptsCommand
     {
-        get => _showPrompts;
-        set => SetField(ref _showPrompts, value);
+        get => _showPromptsCommand;
+        set => SetField(ref _showPromptsCommand, value);
     }
 
     public bool FitToPreview

@@ -22,16 +22,16 @@ namespace Diffusion.Toolkit
 
         private void ToggleHideNSFW()
         {
-            _model.HideNSFW = !_model.HideNSFW;
-            QueryBuilder.HideNFSW = _model.HideNSFW;
-            _settings.HideNSFW = _model.HideNSFW;
+            _model.HideNSFWCommand = !_model.HideNSFWCommand;
+            QueryBuilder.HideNFSW = _model.HideNSFWCommand;
+            _settings.HideNSFW = _model.HideNSFWCommand;
             _search.SearchImages();
         }
 
         private void ToggleNSFWBlur()
         {
-            _model.NSFWBlur = !_model.NSFWBlur;
-            _settings.NSFWBlur = _model.NSFWBlur;
+            _model.NSFWBlurCommand = !_model.NSFWBlurCommand;
+            _settings.NSFWBlur = _model.NSFWBlurCommand;
         }
 
         private void ToggleFitToPreview()
@@ -47,7 +47,7 @@ namespace Diffusion.Toolkit
 
         private void RemoveMarked(object obj)
         {
-            if (_model.IsScanning)
+            if (_model.IsBusy)
             {
                 return;
             }
@@ -67,7 +67,7 @@ namespace Diffusion.Toolkit
                 return;
             }
 
-            _scanCancellationTokenSource = new CancellationTokenSource();
+            _progressCancellationTokenSource = new CancellationTokenSource();
 
             _messagePopupManager.Show("This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", PopupButtons.YesNo).ContinueWith(t =>
             {
@@ -75,7 +75,7 @@ namespace Diffusion.Toolkit
                 {
                     Task.Run(async () =>
                     {
-                        _model.IsScanning = true;
+                        _model.IsBusy = true;
 
                         var cancelled = false;
 
@@ -83,13 +83,13 @@ namespace Diffusion.Toolkit
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                _model.TotalFilesScan = files.Count;
-                                _model.CurrentPositionScan = 0;
+                                _model.TotalProgress = files.Count;
+                                _model.CurrentProgress = 0;
                             });
 
                             foreach (var imagePath in files)
                             {
-                                if (_scanCancellationTokenSource.IsCancellationRequested)
+                                if (_progressCancellationTokenSource.IsCancellationRequested)
                                 {
                                     break;
                                 }
@@ -103,7 +103,7 @@ namespace Diffusion.Toolkit
                                     Dispatcher.Invoke(() =>
                                     {
                                         _model.Status = $"Deleting {filename}...";
-                                        _model.CurrentPositionScan = count;
+                                        _model.CurrentProgress = count;
                                     });
 
                                     File.Delete(imagePath.Path);
@@ -141,11 +141,11 @@ namespace Diffusion.Toolkit
 
                             await Dispatcher.Invoke(async () =>
                             {
-                                _model.TotalFilesScan = 100;
-                                _model.CurrentPositionScan = 0;
+                                _model.TotalProgress = 100;
+                                _model.CurrentProgress = 0;
 
 
-                                if (cancelled || _scanCancellationTokenSource.IsCancellationRequested)
+                                if (cancelled || _progressCancellationTokenSource.IsCancellationRequested)
                                 {
                                     await _messagePopupManager.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
                                 }
@@ -156,7 +156,7 @@ namespace Diffusion.Toolkit
                         }
                         finally
                         {
-                            _model.IsScanning = false;
+                            _model.IsBusy = false;
 
                             SetTotalFilesStatus();
 
@@ -192,13 +192,13 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private async Task CancelScan()
+        private async Task CancelProgress()
         {
             var dialogResult = await _messagePopupManager.Show("Are you sure you want to cancel the operation?", "Cancel", PopupButtons.YesNo);
 
             if (dialogResult == PopupResult.Yes)
             {
-                _scanCancellationTokenSource.Cancel();
+                _progressCancellationTokenSource.Cancel();
             }
         }
 

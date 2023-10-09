@@ -61,7 +61,7 @@ namespace Diffusion.Toolkit
             };
             PreviewPane.MainModel = mainModel;
             _model.ToggleFitToPreview = PreviewPane.MainModel.ToggleFitToPreview;
-            _model.ToggleInfo = PreviewPane.MainModel.ToggleInfo;
+            _model.ToggleInfo = PreviewPane.MainModel.ToggleInfoCommand;
             _model.ToggleFullScreen = new RelayCommand<object>((o) => ToggleFullScreen());
         }
 

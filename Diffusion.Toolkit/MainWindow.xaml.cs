@@ -45,7 +45,7 @@ namespace Diffusion.Toolkit
 
         private Configuration<Settings> _configuration;
         private Settings? _settings;
-        private CancellationTokenSource _scanCancellationTokenSource;
+        private CancellationTokenSource _progressCancellationTokenSource;
 
         private Search _search;
         private Pages.Models _models;
@@ -111,11 +111,11 @@ namespace Diffusion.Toolkit
             });
             _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
             _model.Settings = new RelayCommand<object>(ShowSettings);
-            _model.CancelScan = new AsyncCommand(CancelScan);
-            _model.About = new RelayCommand<object>((o) => ShowAbout());
-            _model.Help = new RelayCommand<object>((o) => ShowTips());
-            _model.ToggleInfo = new RelayCommand<object>((o) => ToggleInfo());
-            _model.ToggleNSFWBlur = new RelayCommand<object>((o) => ToggleNSFWBlur());
+            _model.CancelCommand = new AsyncCommand(CancelProgress);
+            _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
+            _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
+            _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
+            _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
             _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
             _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
@@ -147,7 +147,7 @@ namespace Diffusion.Toolkit
             var total = _dataStore.GetTotal();
 
             _model.Status = $"{total:###,###,##0} images in database";
-            _model.TotalFilesScan = 100;
+            _model.TotalProgress = 100;
 
 
             this.Loaded += OnLoaded;
@@ -351,9 +351,9 @@ namespace Diffusion.Toolkit
                 this.Height = _settings.WindowSize.Value.Height;
             }
 
-            _model.HideNSFW = _settings.HideNSFW;
-            QueryBuilder.HideNFSW = _model.HideNSFW;
-            _model.NSFWBlur = _settings.NSFWBlur;
+            _model.HideNSFWCommand = _settings.HideNSFW;
+            QueryBuilder.HideNFSW = _model.HideNSFWCommand;
+            _model.NSFWBlurCommand = _settings.NSFWBlur;
             _model.FitToPreview = _settings.FitToPreview;
 
             _model.ShowAlbumPanel = _settings.ShowAlbumPanel.GetValueOrDefault(true);
@@ -490,7 +490,7 @@ namespace Diffusion.Toolkit
                 _navigatorService.Goto("models");
             });
 
-            _model.ShowPrompts = new RelayCommand<object>((o) =>
+            _model.ShowPromptsCommand = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("prompts");
             });
@@ -549,9 +549,9 @@ namespace Diffusion.Toolkit
             {
                 Logger.Log($"Scanning for new images");
 
-                _scanCancellationTokenSource = new CancellationTokenSource();
+                _progressCancellationTokenSource = new CancellationTokenSource();
 
-                await ScanInternal(_settings, false, false, _scanCancellationTokenSource.Token);
+                await ScanInternal(_settings, false, false, _progressCancellationTokenSource.Token);
             }
 
             if (_settings.ImagePaths.Any())

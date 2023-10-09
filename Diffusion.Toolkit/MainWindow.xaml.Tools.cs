@@ -149,9 +149,9 @@ namespace Diffusion.Toolkit
 
             Dispatcher.Invoke(() =>
             {
-                _model.TotalFilesScan = ids.Count;
-                _model.CurrentPositionScan = processed;
-                _model.Status = $"Updating {_model.CurrentPositionScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+                _model.TotalProgress = ids.Count;
+                _model.CurrentProgress = processed;
+                _model.Status = $"Updating {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
             });
 
             foreach (var chunk in ids.Chunk(size))
@@ -160,15 +160,15 @@ namespace Diffusion.Toolkit
                 processed += chunk.Length;
                 Dispatcher.Invoke(() =>
                 {
-                    _model.CurrentPositionScan = processed;
-                    _model.Status = $"Updating {_model.CurrentPositionScan:#,###,###} of {_model.TotalFilesScan:#,###,###}...";
+                    _model.CurrentProgress = processed;
+                    _model.Status = $"Updating {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
                 });
             }
 
             Dispatcher.Invoke(() =>
             {
-                _model.TotalFilesScan = 999;
-                _model.CurrentPositionScan = 0;
+                _model.TotalProgress = 999;
+                _model.CurrentProgress = 0;
                 _model.Status = oldStatus;
             });
         }
