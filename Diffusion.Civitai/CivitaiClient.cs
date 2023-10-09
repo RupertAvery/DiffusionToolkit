@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -27,7 +28,7 @@ public class CivitaiClient : IDisposable
 
         string apiUrl = $"{_baseUrl}/models{queryString}";
 
-        return await GetResponseResults<LiteModel>(_httpClient, apiUrl, token);
+        return await GetResponseResults<Results<LiteModel>>(_httpClient, apiUrl, token);
     }
 
     public async Task<Results<Model>?> GetModelsAsync(ModelSearchParameters searchParameters, CancellationToken token)
@@ -36,12 +37,19 @@ public class CivitaiClient : IDisposable
 
         string apiUrl = $"{_baseUrl}/models{queryString}";
 
-        return await GetResponseResults<Model>(_httpClient, apiUrl, token);
+        return await GetResponseResults<Results<Model>>(_httpClient, apiUrl, token);
     }
 
-    private async Task<Results<T>?> GetResponseResults<T>(HttpClient client, string url, CancellationToken token)
+    public async Task<ModelVersion2> GetModelVersionsByHashAsync(string hash, CancellationToken token)
     {
-        Results<T>? results = null;
+        string apiUrl = $"{_baseUrl}/model-versions/by-hash/{hash}";
+
+        return await GetResponseResults<ModelVersion2>(_httpClient, apiUrl, token);
+    }
+
+    private async Task<T> GetResponseResults<T>(HttpClient client, string url, CancellationToken token) where T: class
+    {
+        T? results = null;
         try
         {
             var response = await client.GetAsync(url, token);
@@ -59,7 +67,7 @@ public class CivitaiClient : IDisposable
 
                 using (var responseStream = await response.Content.ReadAsStreamAsync(token))
                 {
-                    results = await JsonSerializer.DeserializeAsync<Results<T>>(responseStream, options);
+                    results = await JsonSerializer.DeserializeAsync<T>(responseStream, options);
                 }
             }
             else
@@ -68,22 +76,33 @@ public class CivitaiClient : IDisposable
                 {
                     var body = await response.Content.ReadAsStringAsync();
                     var document = JsonDocument.Parse(body);
+
                     string message = "Failed to retrieve results";
-                    var arr = document.RootElement.EnumerateArray();
-                    var err = arr.First();
-                    string path = null;
 
-                    if (err.TryGetProperty("message", out var messageElement))
+                    if (document.RootElement.ValueKind == JsonValueKind.Array)
                     {
-                        message = messageElement.GetString();
+                        var arr = document.RootElement.EnumerateArray();
+                        var err = arr.First();
+                        string path = null;
+
+                        if (err.TryGetProperty("message", out var messageElement))
+                        {
+                            message = messageElement.GetString();
+                        }
+
+                        if (err.TryGetProperty("path", out var pathElement))
+                        {
+                            path = string.Join("/", pathElement.EnumerateArray().Select(p => p.GetString()));
+                        }
+
+                        throw new CivitaiRequestException(message, path, body, response.StatusCode);
+                    }
+                    else
+                    {
+                        throw new CivitaiRequestException(message, body, response.StatusCode);
                     }
 
-                    if (err.TryGetProperty("path", out var pathElement))
-                    {
-                        path = string.Join("/", pathElement.EnumerateArray().Select(p => p.GetString()));
-                    }
 
-                    throw new CivitaiRequestException(message, path, body, response.StatusCode);
                 }
 
                 throw new CivitaiRequestException("Failed to retrieve results", response.StatusCode);
@@ -179,4 +198,5 @@ public class CivitaiClient : IDisposable
     {
         _httpClient.Dispose();
     }
+
 }

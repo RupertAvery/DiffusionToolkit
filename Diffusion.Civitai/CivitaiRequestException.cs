@@ -13,9 +13,9 @@ public class CivitaiRequestException : Exception
         StatusCode = statusCode;
     }
 
-    public CivitaiRequestException(string message, string path, HttpStatusCode statusCode) : base($"{path}: {message}")
+    public CivitaiRequestException(string message, string body, HttpStatusCode statusCode) : base($"{message}")
     {
-        Path = path;
+        Body = body;
         StatusCode = statusCode;
     }
 

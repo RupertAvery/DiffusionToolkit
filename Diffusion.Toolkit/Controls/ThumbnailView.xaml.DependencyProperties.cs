@@ -262,6 +262,7 @@ namespace Diffusion.Toolkit.Controls
                         break;
                     case nameof(CurrentImage):
                         thumbnailView.Model.CurrentImage = (ImageViewModel)e.NewValue;
+                        thumbnailView.Model.CurrentImage.SearchModelCommand = new RelayCommand<object>(thumbnailView.SearchModel);
                         thumbnailView.Model.CurrentImage.CopyPathCommand = new RelayCommand<object>(thumbnailView.CopyPath);
                         thumbnailView.Model.CurrentImage.CopyPromptCommand = new RelayCommand<object>(thumbnailView.CopyPrompt);
                         thumbnailView.Model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(thumbnailView.CopyNegative);

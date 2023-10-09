@@ -34,6 +34,7 @@ public class ImageViewModel : BaseNotify
     private string _modelHash;
     private ICommand _toggleParameters;
     private string? _aestheticScore;
+    private ICommand _searchModelCommand;
 
     public int Id { get; set; }
 
@@ -85,6 +86,12 @@ public class ImageViewModel : BaseNotify
     {
         get => _copyPromptCommand;
         set => SetField(ref _copyPromptCommand, value);
+    }
+
+    public ICommand SearchModelCommand
+    {
+        get => _searchModelCommand;
+        set => SetField(ref _searchModelCommand, value);
     }
 
     public ICommand CopyPathCommand

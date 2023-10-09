@@ -226,7 +226,9 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox Foreground="White" FontSize="14" BorderThickness="0"
                                              IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
-                                    <Grid Opacity="0.5" Grid.Column="1"></Grid>
+                                    <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding SearchModelCommand}" >
+                                        <Image Source="{DynamicResource SearchIcon}" Height="16" Width="16" ToolTip="Search Civitai"></Image>
+                                    </Button>
                                 </Grid>
 
                                 <Grid  Background="Transparent" >
