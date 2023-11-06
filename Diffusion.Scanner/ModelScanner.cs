@@ -21,7 +21,8 @@ public class ModelScanner
             {
                 Path = relativePath,
                 Filename = Path.GetFileNameWithoutExtension(file),
-                Hash = HashFunctions.CalculateHash(file)
+                Hash = HashFunctions.CalculateHash(file),
+                IsLocal = true
             };
         }
     }

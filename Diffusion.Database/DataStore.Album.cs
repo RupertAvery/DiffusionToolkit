@@ -87,11 +87,12 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var query = $"INSERT INTO {nameof(Album)} (Name) VALUES (@Name)";
+            var query = $"INSERT INTO {nameof(Album)} (Name, LastUpdated) VALUES (@Name, @LastUpdated)";
 
             var command = db.CreateCommand(query);
 
             command.Bind("@Name", album.Name);
+            command.Bind("@LastUpdated", DateTime.Now);
 
             command.ExecuteNonQuery();
 

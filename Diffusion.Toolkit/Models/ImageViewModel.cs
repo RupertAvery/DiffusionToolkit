@@ -131,7 +131,6 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _copyOthersCommand, value);
     }
 
-
     public ICommand CopyParametersCommand
     {
         get => _copyParametersCommand;

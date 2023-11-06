@@ -74,6 +74,7 @@ public class SearchModel : BaseNotify
         _sortBy = "Date Created";
         _sortDirection = "Z-A";
         _isFilterVisible = false;
+        _showAlbumPanel = true;
     }
 
     public SearchModel(MainModel mainModel)
@@ -311,18 +312,6 @@ public class SearchModel : BaseNotify
         set => SetField(ref _openCommand, value);
     }
 
-    public ICommand AddAlbumCommand
-    {
-        get => _addAlbumCommand;
-        set => SetField(ref _addAlbumCommand, value);
-    }
-
-    public ICommand AddToAlbumCommand
-    {
-        get => _addToAlbumCommand;
-        set => SetField(ref _addToAlbumCommand, value);
-    }
-
     public ICommand GoHome
     {
         get => _goHome;
@@ -353,29 +342,6 @@ public class SearchModel : BaseNotify
         set => SetField(ref _album, value);
     }
 
-    public ICommand RemoveFromAlbumCommand
-    {
-        get => _removeFromAlbumCommand;
-        set => SetField(ref _removeFromAlbumCommand, value);
-    }
-
-    public ICommand RenameAlbumCommand
-    {
-        get => _renameAlbumCommand;
-        set => SetField(ref _renameAlbumCommand, value);
-    }
-
-    public ICommand RemoveAlbumCommand
-    {
-        get => _removeAlbumCommand;
-        set => SetField(ref _removeAlbumCommand, value);
-    }
-
-    public ObservableCollection<Album> Albums
-    {
-        get => _albums;
-        set => SetField(ref _albums, value);
-    }
 
     public bool ShowAlbumPanel
     {

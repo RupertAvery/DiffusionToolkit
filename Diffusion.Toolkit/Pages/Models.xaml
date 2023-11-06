@@ -11,7 +11,7 @@
     <Page.Resources>
         <SolidColorBrush x:Key="ListBox.Disabled.Background" Color="#FFFFFFFF"/>
         <SolidColorBrush x:Key="ListBox.Disabled.Border" Color="#FFD9D9D9"/>
-       
+
     </Page.Resources>
 
     <Grid>
@@ -21,7 +21,7 @@
         </Grid.ColumnDefinitions>
         <DockPanel  VerticalAlignment="Stretch">
             <TextBox Height="26" VerticalContentAlignment="Center" DockPanel.Dock="Top" Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-            <ListBox ItemsSource="{Binding FilteredModels}" DisplayMemberPath="DisplayName" 
+            <ListBox ItemsSource="{Binding FilteredModels}"
                      SelectedItem="{Binding SelectedModel}"
                      VerticalAlignment="Stretch">
                 <ListBox.Resources>
@@ -37,6 +37,13 @@
                     </Style>
 
                 </ListBox.Resources>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Background="Transparent">
+                            <Label Content="{Binding DisplayName}"></Label>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
             </ListBox>
         </DockPanel>
 

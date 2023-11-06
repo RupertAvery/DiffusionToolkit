@@ -157,6 +157,7 @@
         </Grid>
         <Grid RowSpan="4" x:Name="PopupHost" Visibility="Hidden"  Background="#000000" Opacity="0.5">
         </Grid>
+
         <Popup  x:Name="ToastPopup"  Width="300" Height="100" Placement="Custom"  
                 PlacementTarget="{Binding ElementName=Host}"
                 CustomPopupPlacementCallback="GetPopupPlacement"
@@ -179,6 +180,145 @@
                     <TextBlock TextAlignment="Center" TextWrapping="WrapWithOverflow" x:Name="ToastMessage" Width="280" Padding="10"></TextBlock>
                 </Grid>
             </Grid>
+        </Popup>
+
+
+        <Popup x:Name="AddAlbumPopup" Placement="Center" Width="400" Height="250"
+           AllowsTransparency="True" PopupAnimation="Fade"
+           >
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid>
+                    <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="46"/>
+                            <RowDefinition Height="60"/>
+                            <RowDefinition Height="36"/>
+                        </Grid.RowDefinitions>
+                        <Label FontWeight="Bold" Grid.Row="0" Content="Add Album" HorizontalAlignment="Center" FontSize="16"></Label>
+                        <TextBlock TextWrapping="WrapWithOverflow" Grid.Row="1" Text="Enter a name for the new album" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <TextBox x:Name="NewAlbumName" KeyDown="NewAlbumName_OnKeyDown" Grid.Row="2" FontSize="16" Height="32" VerticalContentAlignment="Center"></TextBox>
+                        <Grid Grid.Row="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <Button Width="80" Height="30" Margin="0,0,10,0" Click="AddImagesToNewAlbum_Click">OK</Button>
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="CancelNewAlbum_Click">Cancel</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="NewAlbumPopup" Placement="Center" Width="400" Height="250"
+           AllowsTransparency="True" PopupAnimation="Fade"
+           >
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid>
+                    <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="46"/>
+                            <RowDefinition Height="36"/>
+                        </Grid.RowDefinitions>
+                        <Label FontWeight="Bold" Grid.Row="0" Content="Add Album" HorizontalAlignment="Center" FontSize="16"></Label>
+                        <TextBlock x:Name="NewAlbumMessage" TextWrapping="WrapWithOverflow" Grid.Row="1" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <Grid Grid.Row="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="NewAlbumMessageOK_Click">OK</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="RenameAlbumPopup" Placement="Center" Width="400" Height="250"
+           AllowsTransparency="True" PopupAnimation="Fade"
+           >
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid>
+                    <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="46"/>
+                            <RowDefinition Height="60"/>
+                            <RowDefinition Height="36"/>
+                        </Grid.RowDefinitions>
+                        <Label FontWeight="Bold" Grid.Row="0" Content="Rename Album" HorizontalAlignment="Center" FontSize="16"></Label>
+                        <TextBlock TextWrapping="WrapWithOverflow" Grid.Row="1" Text="Enter a new name for the album" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <TextBox x:Name="RenewAlbumName" Grid.Row="2" FontSize="16" Height="32" VerticalContentAlignment="Center"
+                                 KeyDown="RenewAlbumName_OnKeyDown"
+                                 ></TextBox>
+                        <Grid Grid.Row="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <Button Width="80" Height="30" Margin="0,0,10,0" Click="RenameAlbumOK_Click">OK</Button>
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="RenameAlbumCancel_Click">Cancel</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="RemoveAlbumPopup" Placement="Center" Width="400" Height="250"
+               AllowsTransparency="True" PopupAnimation="Fade"
+        >
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Margin="15"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid>
+                    <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="36"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="36"/>
+                        </Grid.RowDefinitions>
+                        <Label FontWeight="Bold" Grid.Row="0" Content="Remove Album" HorizontalAlignment="Center" FontSize="16"></Label>
+                        <TextBlock x:Name="RemoveAlbumMessage" TextWrapping="WrapWithOverflow" Grid.Row="1" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        </TextBlock>
+                        <Grid Grid.Row="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                <Button Width="80" Height="30" Margin="0,0,10,0" Click="RemoveAlbumYes_Click">Yes</Button>
+                                <Button Width="80" Height="30" Margin="0,0,0,0" Click="RemoveAlbumNo_Click">No</Button>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
         </Popup>
     </Grid>
 

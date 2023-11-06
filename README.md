@@ -1,29 +1,47 @@
 # Diffusion Toolkit
 
-Diffusion Toolkit is an image metadata-indexer and viewer for AI-generated images.  It scans your 50,000 image collection in seconds and lets you search them by prompt, seed, hash and more.
+Diffusion Toolkit is an image metadata-indexer and viewer for AI-generated images. 
 
-You can also tag your images as favorites, rate them 1-10, sort them by aesthetic score, mark them as NSFW, blur images marked as NSFW, and auto-tag NSFW images by looking at keywords in the prompt.
+Thanks to Bill Meeks for putting together a demonstration video:
 
-You can arrange them in albums, view them by folder, see your most used prompts.
+[![Watch](https://img.youtube.com/vi/r7J3n1LjojE/hqdefault.jpg)](https://www.youtube.com/watch?v=r7J3n1LjojE&ab_channel=BillMeeks)
 
-You can sort by Date Created, Aesthetic Score and Rating.
+# Features
 
-And of course, you can view the metadata stored with your image.
+* Scan images, store and index prompts and other metadata (PNGInfo)
+* Search for your images by prompt
+* View images and the metadata easily
+* Custom tagging 
+    * Favorite
+    * Rating (1-10)
+    * NSFW
+* Sort images
+    * by Date Created 
+    * by Aesthetic Score
+    * by Rating   
+* Auto tag NFSW by keywords
+* Blur images tagged as NSFW 
+* Albums
+* Folder View
+* View and search prompts
 
-Diffusion Toolkit supports
+# Supported formats
 
 * JPG/JPEG + EXIF
 * PNG
 * WebP
 * .TXT metadata
 
-Metadata formats supported are:
+# Supported Metadata formats
 
 * AUTOMATIC1111
-* InvokeAI
+* InvokeAI (Dream/sd-metadata/invokeai_metadata)
 * NovelAI
 * Stable Diffusion
-* ComfyUI (Experimental)
+* ComfyUI + SDXL (Work in progress) 
+* EasyDiffusion
+
+You can even use it on images without metadata and still use the other features such as rating and albums!
 
 # Installation
 

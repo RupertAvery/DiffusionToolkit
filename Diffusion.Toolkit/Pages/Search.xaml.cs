@@ -47,7 +47,7 @@ namespace Diffusion.Toolkit.Pages
         public bool IsFavorite { get; set; }
         public ViewMode ViewMode { get; set; }
         public string CurrentFolder { get; set; }
-        public Album CurrentAlbum { get; set; }
+        //public Album CurrentAlbum { get; set; }
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ namespace Diffusion.Toolkit.Pages
         private DataStore DataStore => _dataStoreOptions.Value;
 
         private Settings _settings;
-        private readonly MainModel _mainModel;
+        //private readonly MainModel _mainModel;
 
         private ModeSettings _currentModeSettings;
 
@@ -145,7 +145,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 { "search", new ModeSettings() { Name="Diffusions", ViewMode = ViewMode.Search } },
                 { "folders", new ModeSettings() { Name="Folders", ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
-                { "albums", new ModeSettings() { Name="Albums", ViewMode = ViewMode.Album, CurrentAlbum = new Album() { Id = -1, Name = "$" } } },
+                { "albums", new ModeSettings() { Name="Albums", ViewMode = ViewMode.Album } },
                 { "favorites", new ModeSettings() { Name="Favorites", ViewMode = ViewMode.Search, IsFavorite = true } },
                 { "deleted", new ModeSettings() { Name="Recycle Bin", ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
             };
@@ -223,13 +223,12 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Album && _model.SelectedImageEntry.EntryType == EntryType.Album)
                 {
-                    _currentModeSettings.CurrentAlbum = new Album()
+                    _model.MainModel.CurrentAlbum = new Album()
                     {
                         Name = _model.SelectedImageEntry.Name,
                         Id = _model.SelectedImageEntry.Id
                     };
 
-                    _model.Album = _currentModeSettings.CurrentAlbum.Name;
 
                     SearchImages(null);
                 }
@@ -251,7 +250,10 @@ namespace Diffusion.Toolkit.Pages
                 else if (_currentModeSettings.ViewMode == ViewMode.Album)
                 {
                     _model.Album = "Albums";
-                    _currentModeSettings.CurrentAlbum = new Album() { Id = -1, Name = "$" };
+
+                    _model.MainModel.CurrentAlbum = null;
+
+                    //_currentModeSettings.CurrentAlbum = new Album() { Id = -1, Name = "$" };
                     SearchImages(null);
                 }
             });
@@ -264,63 +266,15 @@ namespace Diffusion.Toolkit.Pages
             });
 
 
-            _model.AddAlbumCommand = new RelayCommand<object>((o) =>
-            {
-                NewAlbumName.Text = null;
-                AddAlbumPopup.Tag = "AddImages";
-                AddAlbumPopup.IsOpen = true;
-                NewAlbumName.Focus();
-            });
-
-            _model.AddToAlbumCommand = new RelayCommand<object>((o) =>
-            {
-                var album = (Album)((MenuItem)o).Tag;
-                var images = ThumbnailListView.SelectedImages.Select(x => x.Id).ToList();
-                DataStore.AddImagesToAlbum(album.Id, images);
-                Toast?.Invoke($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
-                ThumbnailListView.ReloadAlbums();
-            });
-
-            _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
-            {
-                var album = _currentModeSettings.CurrentAlbum;
-                var images = ThumbnailListView.SelectedImages.Select(x => x.Id).ToList();
-                DataStore.RemoveImagesFromAlbum(album.Id, images);
-                Toast?.Invoke($"{images.Count} image{(images.Count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
-                SearchImages(null);
-            });
-
-            _model.RemoveAlbumCommand = new RelayCommand<object>((o) =>
-            {
-                _selectedAlbum = new Album()
-                {
-                    Name = ThumbnailListView.SelectedImageEntry!.Name,
-                    Id = ThumbnailListView.SelectedImageEntry!.Id
-                };
-                RemoveAlbumMessage.Text = $"Are you sure you want to remove \"{_selectedAlbum.Name}\"?";
-                RemoveAlbumPopup.IsOpen = true;
-            });
-
-            _model.RenameAlbumCommand = new RelayCommand<object>((o) =>
-            {
-                _selectedAlbum = new Album()
-                {
-                    Name = ThumbnailListView.SelectedImageEntry!.Name,
-                    Id = ThumbnailListView.SelectedImageEntry!.Id
-                };
-                RenewAlbumName.Text = _selectedAlbum.Name;
-                RenameAlbumPopup.IsOpen = true;
-                RenewAlbumName.Focus();
-            });
 
             _model.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
             {
                 ReloadMatches(true, o.GotoEnd);
             });
 
-            var albums = DataStore.GetAlbums();
+            //var albums = DataStore.GetAlbums();
 
-            _model.Albums = new ObservableCollection<Album>(albums);
+            //_model.Albums = new ObservableCollection<Album>(albums);
 
 
             SetMode("search");
@@ -474,9 +428,9 @@ namespace Diffusion.Toolkit.Pages
                         }
                         else if (_currentModeSettings.ViewMode == ViewMode.Album)
                         {
-                            if (_currentModeSettings.CurrentAlbum.Id > -1)
+                            if (_model.MainModel.CurrentAlbum != null)
                             {
-                                filter.Album = _currentModeSettings.CurrentAlbum.Name;
+                                filter.Album = _model.MainModel.CurrentAlbum.Name;
                             }
                         }
 
@@ -521,9 +475,9 @@ namespace Diffusion.Toolkit.Pages
                         }
                         else if (_currentModeSettings.ViewMode == ViewMode.Album)
                         {
-                            if (_currentModeSettings.CurrentAlbum.Id > -1)
+                            if (_model.MainModel.CurrentAlbum != null)
                             {
-                                query = $"{query} album: \"{_currentModeSettings.CurrentAlbum.Name}\"";
+                                query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
                             }
                         }
 
@@ -535,6 +489,11 @@ namespace Diffusion.Toolkit.Pages
                     //_model.FileSize = size;
 
                     _model.IsEmpty = count == 0;
+
+                    if (_model.IsEmpty)
+                    {
+                        //_model.CurrentImage.;
+                    }
 
                     _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
 
@@ -670,7 +629,7 @@ namespace Diffusion.Toolkit.Pages
 
                     if (models.Any())
                     {
-                        _model.CurrentImage.ModelName = Join(", ", models.Select(m => m.Filename)) + $" ({parameters.ModelHash})";
+                        _model.CurrentImage.ModelName = Join(", ", models.Select(m => m.Filename));
                     }
                     else
                     {
@@ -935,7 +894,7 @@ namespace Diffusion.Toolkit.Pages
             if (_currentModeSettings.ViewMode == ViewMode.Album)
             {
 
-                if (_currentModeSettings.CurrentAlbum.Id == -1)
+                if (_model.MainModel.CurrentAlbum == null)
                 {
                     IEnumerable<Album> albums = DataStore.GetAlbums();
 
@@ -993,9 +952,9 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Album)
                 {
-                    if (_currentModeSettings.CurrentAlbum.Id > -1)
+                    if (_model.MainModel.CurrentAlbum != null)
                     {
-                        filter.Album = _currentModeSettings.CurrentAlbum.Name;
+                        filter.Album = _model.MainModel.CurrentAlbum.Name;
                     }
                     else
                     {
@@ -1038,9 +997,9 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Album)
                 {
-                    if (_currentModeSettings.CurrentAlbum.Id > -1)
+                    if (_model.MainModel.CurrentAlbum != null)
                     {
-                        query = $"{query} album: \"{_currentModeSettings.CurrentAlbum.Name}\"";
+                        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
                     }
                     else
                     {
@@ -1167,7 +1126,7 @@ namespace Diffusion.Toolkit.Pages
             if (_currentModeSettings.ViewMode == ViewMode.Album)
             {
 
-                if (_currentModeSettings.CurrentAlbum.Id > -1)
+                if (_model.MainModel.CurrentAlbum != null)
                 {
                     IEnumerable<Album> albums = DataStore.GetAlbums();
 
@@ -1225,9 +1184,9 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Album)
                 {
-                    if (_currentModeSettings.CurrentAlbum.Id > -1)
+                    if (_model.MainModel.CurrentAlbum != null)
                     {
-                        filter.Album = _currentModeSettings.CurrentAlbum.Name;
+                        filter.Album = _model.MainModel.CurrentAlbum.Name;
                     }
                     else
                     {
@@ -1270,9 +1229,9 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Album)
                 {
-                    if (_currentModeSettings.CurrentFolder != "$")
+                    if (_model.MainModel.CurrentAlbum != null)
                     {
-                        query = $"{query} album: \"{_currentModeSettings.CurrentAlbum}\"";
+                        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
                     }
                     else
                     {
@@ -1378,7 +1337,7 @@ namespace Diffusion.Toolkit.Pages
             return settings;
         }
 
-        private void SetMode(string mode)
+        public void SetMode(string mode)
         {
             _currentModeSettings = GetModeSettings(mode);
             _model.IsFilterVisible = false;
@@ -1552,193 +1511,34 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void AddImagesToNewAlbum_Click(object sender, RoutedEventArgs e)
-        {
-            AddImagesToAlbum(ThumbnailListView.SelectedImages.ToList());
-        }
+        //private void OpenAlbum_Click(object sender, MouseButtonEventArgs e)
+        //{
+        //    var album = (Album)((Border)sender).DataContext;
+        //    SetMode("albums");
+        //    _currentModeSettings.CurrentAlbum = album;
+        //    _model.Album = album.Name;
+        //    SearchImages(null);
+        //}
 
-        private void AddImagesToAlbum(IReadOnlyList<ImageEntry> imageEntries)
-        {
-            var name = NewAlbumName.Text.Trim();
+        //private void OpenAlbumButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var album = (Album)((Button)sender).DataContext;
+        //    SetMode("albums");
+        //    _currentModeSettings.CurrentAlbum = album;
+        //    _model.MainModel.CurrentAlbum = album;
+        //    _model.Album = album.Name;
+        //    SearchImages(null);
+        //}
 
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                NewAlbumPopup.IsOpen = true;
-                NewAlbumMessage.Text = "Album name cannot be empty.";
-                return;
-            }
 
-            try
-            {
-                var album = DataStore.CreateAlbum(new Album() { Name = name });
-                if (AddAlbumPopup.Tag is string and "AddImages" && imageEntries.Any())
-                {
-                    DataStore.AddImagesToAlbum(album.Id, imageEntries.Select(i => i.Id));
-                }
-                Toast?.Invoke($"{imageEntries.Count} image{(imageEntries.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
 
-                AddAlbumPopup.Tag = null;
-                UpdateAlbums();
-            }
-            catch (SQLiteException ex)
-            {
-                NewAlbumPopup.IsOpen = true;
-                NewAlbumMessage.Text = $"Album {name} already exists! \r\n Please use another name.";
-            }
-            AddAlbumPopup.IsOpen = false;
-        }
+        //private Album? _selectedAlbum = null;
 
-        private void CancelNewAlbum_Click(object sender, RoutedEventArgs e)
-        {
-            AddAlbumPopup.IsOpen = false;
-        }
-
-        private void NewAlbumMessageOK_Click(object sender, RoutedEventArgs e)
-        {
-            NewAlbumPopup.IsOpen = false;
-        }
-
-        private void RemoveAlbumYes_Click(object sender, RoutedEventArgs e)
-        {
-            var album = DataStore.GetAlbum(_selectedAlbum.Id);
-            DataStore.RemoveAlbum(album.Id);
-            RemoveAlbumPopup.IsOpen = false;
-
-            SearchImages(null);
-            UpdateAlbums();
-        }
-
-        private void RemoveAlbumNo_Click(object sender, RoutedEventArgs e)
-        {
-            RemoveAlbumPopup.IsOpen = false;
-        }
-
-        private void RenameAlbumOK_Click(object sender, RoutedEventArgs e)
-        {
-            RenameAlbum();
-        }
-
-        private void RenameAlbum()
-        {
-            var name = RenewAlbumName.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                NewAlbumPopup.IsOpen = true;
-                NewAlbumMessage.Text = "Album name cannot be empty.";
-                return;
-            }
-
-            try
-            {
-                DataStore.RenameAlbum(_selectedAlbum!.Id, name);
-                UpdateAlbums();
-                SearchImages(null);
-            }
-            catch (SQLiteException ex)
-            {
-                NewAlbumPopup.IsOpen = true;
-                NewAlbumMessage.Text = $"Album {name} already exists! \r\n Please use another name.";
-            }
-
-            RenameAlbumPopup.IsOpen = false;
-        }
-
-        private Album? _selectedAlbum = null;
-
-        private void UpdateAlbums()
-        {
-            ThumbnailListView.ReloadAlbums();
-            _model.Albums = new ObservableCollection<Album>(DataStore.GetAlbums());
-        }
-
-        private void RenameAlbumCancel_Click(object sender, RoutedEventArgs e)
-        {
-            RenameAlbumPopup.IsOpen = false;
-        }
-
-        private void RenewAlbumName_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-                case Key.Enter:
-                    RenameAlbum();
-                    e.Handled = true;
-                    break;
-                case Key.Escape:
-                    RenameAlbumPopup.IsOpen = false;
-                    e.Handled = true;
-                    break;
-            }
-        }
-
-        private void NewAlbumName_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-                case Key.Enter:
-                    AddImagesToAlbum(ThumbnailListView.SelectedImages.ToList());
-                    e.Handled = true;
-                    break;
-                case Key.Escape:
-                    AddAlbumPopup.IsOpen = false;
-                    e.Handled = true;
-                    break;
-            }
-        }
-
-        private void DropImagesOnAlbum(object sender, DragEventArgs e)
-        {
-            var album = (Album)((Button)sender).DataContext;
-            var images = ThumbnailListView.SelectedImages.Select(x => x.Id).ToList();
-            DataStore.AddImagesToAlbum(album.Id, images);
-            Toast?.Invoke($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
-        }
-
-        private void OpenAlbum_Click(object sender, MouseButtonEventArgs e)
-        {
-            var album = (Album)((Border)sender).DataContext;
-            SetMode("albums");
-            _currentModeSettings.CurrentAlbum = album;
-            _model.Album = album.Name;
-            SearchImages(null);
-        }
-
-        private void OpenAlbumButton_Click(object sender, RoutedEventArgs e)
-        {
-            var album = (Album)((Button)sender).DataContext;
-            SetMode("albums");
-            _currentModeSettings.CurrentAlbum = album;
-            _model.Album = album.Name;
-            SearchImages(null);
-        }
-
-        private void RenameAlbum_OnClick(object sender, RoutedEventArgs e)
-        {
-            _selectedAlbum = (Album)((MenuItem)sender).DataContext;
-
-            RenewAlbumName.Text = _selectedAlbum.Name;
-            RenewAlbumName.SelectAll();
-            RenameAlbumPopup.IsOpen = true;
-            RenewAlbumName.Focus();
-        }
-
-        private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
-        {
-            _selectedAlbum = (Album)((MenuItem)sender).DataContext;
-
-            RemoveAlbumMessage.Text = $"Are you sure you want to remove the Album \"{_selectedAlbum.Name}\"?";
-            RemoveAlbumPopup.IsOpen = true;
-
-        }
-
-        private void CreateAlbum_Click(object sender, RoutedEventArgs e)
-        {
-            NewAlbumName.Text = null;
-            AddAlbumPopup.Tag = "NoImages";
-            AddAlbumPopup.IsOpen = true;
-            NewAlbumName.Focus();
-        }
+        //private void UpdateAlbums()
+        //{
+        //    ThumbnailListView.ReloadAlbums();
+        //    //_model.Albums = new ObservableCollection<Album>(DataStore.GetAlbums());
+        //}
 
         public void SetShowAlbumPanel(bool showAlbumPanel)
         {
@@ -1782,6 +1582,22 @@ namespace Diffusion.Toolkit.Pages
         private void PreviewPane_Loaded(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void RenameAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+            _model.MainModel.RemoveAlbumCommand.Execute(null);
+        }
+
+        private void DropImagesOnAlbum(object sender, DragEventArgs e)
+        {
+            var album = (Album)((FrameworkElement)sender).DataContext;
+            _model.MainModel.AddSekectedImagesToAlbum(album);
+        }
+
+        private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+            _model.MainModel.RemoveAlbumCommand.Execute(null);
         }
     }
 }

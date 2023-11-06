@@ -142,7 +142,7 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
-        public IEnumerable<ImageEntry> SelectedImages => ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+        //public IEnumerable<ImageEntry> SelectedImages => ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
         private void Control_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
@@ -542,6 +542,7 @@ namespace Diffusion.Toolkit.Controls
             Point pt = e.GetPosition(ThumbnailListView);
             var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
 
+
             if (item != null)
             {
                 var thumbnail = item.VisualHit as Thumbnail;
@@ -549,6 +550,8 @@ namespace Diffusion.Toolkit.Controls
                 if (item.VisualHit is FrameworkElement { DataContext: ImageEntry } f)
                 {
                     currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
+
+                    SelectedImageEntry = f.DataContext as ImageEntry;
                 }
 
                 if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border))
@@ -614,6 +617,9 @@ namespace Diffusion.Toolkit.Controls
 
         private void ThumbnailListView_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
+            // This doesn't get called, probably handled by some object
+            // Instead, see Preview*
+
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 Point pt = e.GetPosition(ThumbnailListView);

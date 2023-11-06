@@ -18,6 +18,11 @@ namespace Diffusion.Toolkit
     {
         public async void DownloadCivitaiModels()
         {
+            if (_model.IsBusy)
+            {
+                return;
+            }
+
             var message = "This will download Civitai model info.\r\n\r\n" + "Are you sure you want to continue?";
 
             var result = await _messagePopupManager.Show(message, "Download Civitai models", PopupButtons.YesNo);
@@ -57,6 +62,8 @@ namespace Diffusion.Toolkit
                     message = $"{collection.Models.Count} models were retrieved";
 
                     await _messagePopupManager.Show(message, "Download Civitai models", PopupButtons.OK);
+
+                    LoadModels();
                 }
                 finally
                 {

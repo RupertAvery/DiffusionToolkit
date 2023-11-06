@@ -1,4 +1,8 @@
-﻿namespace Diffusion.Toolkit.Controls
+﻿using System.Collections.ObjectModel;
+using System.Windows;
+using Diffusion.Database;
+
+namespace Diffusion.Toolkit.Controls
 {
     public class PageChangedEventArgs
     {
@@ -70,5 +74,6 @@
         {
             Model.SetPagingEnabled(Model.Page);
         }
+
     }
 }

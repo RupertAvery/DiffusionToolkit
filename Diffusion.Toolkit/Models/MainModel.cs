@@ -1,4 +1,10 @@
-﻿using System.Windows.Controls;
+﻿using System;
+using Diffusion.Database;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Diffusion.Toolkit.Models;
@@ -54,6 +60,15 @@ public class MainModel : BaseNotify
     private int _thumbnailSize;
     private ICommand _escape;
     private ICommand _downloadCivitai;
+    private ICommand _addAlbumCommand;
+    private ICommand _addToAlbumCommand;
+    private ICommand _removeFromAlbumCommand;
+    private ICommand _renameAlbumCommand;
+    private ICommand _removeAlbumCommand;
+    private ObservableCollection<Album> _albums;
+    private ObservableCollection<ImageEntry>? _selectedImages;
+    private Album? _selectedAlbum;
+    private Album? _currentAlbum;
 
     public MainModel()
     {
@@ -351,4 +366,65 @@ public class MainModel : BaseNotify
         get => _downloadCivitai;
         set => SetField(ref _downloadCivitai, value);
     }
+
+
+    public ObservableCollection<Album> Albums
+    {
+        get => _albums;
+        set => SetField(ref _albums, value);
+    }
+
+
+    public ICommand AddAlbumCommand
+    {
+        get => _addAlbumCommand;
+        set => SetField(ref _addAlbumCommand, value);
+    }
+
+    public ICommand AddToAlbumCommand
+    {
+        get => _addToAlbumCommand;
+        set => SetField(ref _addToAlbumCommand, value);
+    }
+
+
+    public ICommand RemoveFromAlbumCommand
+    {
+        get => _removeFromAlbumCommand;
+        set => SetField(ref _removeFromAlbumCommand, value);
+    }
+
+    public ICommand RenameAlbumCommand
+    {
+        get => _renameAlbumCommand;
+        set => SetField(ref _renameAlbumCommand, value);
+    }
+
+    public ICommand RemoveAlbumCommand
+    {
+        get => _removeAlbumCommand;
+        set => SetField(ref _removeAlbumCommand, value);
+    }
+
+
+    public ObservableCollection<ImageEntry>? SelectedImages
+    {
+        get => _selectedImages;
+        set => SetField(ref _selectedImages, value);
+    }
+
+    public Album? SelectedAlbum
+    {
+        get => _selectedAlbum;
+        set => SetField(ref _selectedAlbum, value);
+    }
+
+    public Album? CurrentAlbum
+    {
+        get => _currentAlbum;
+        set => SetField(ref _currentAlbum, value);
+    }
+
+    public ICommand CreateAlbumCommand { get; set; }
+    public Action<Album> AddSekectedImagesToAlbum { get; set; }
 }

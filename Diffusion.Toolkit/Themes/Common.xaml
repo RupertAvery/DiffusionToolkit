@@ -696,6 +696,13 @@
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
     </Style>
 
+
+    <Style x:Key="SmallCaps" TargetType="Label">
+        <Setter Property="Foreground" Value="White"></Setter>
+        <Setter Property="FontSize" Value="10"></Setter>
+    </Style>
+
+
     <Style TargetType="TextBox">
         <Setter Property="Background" Value="{DynamicResource ControlBackgroundBrush}"></Setter>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>

@@ -2,9 +2,13 @@
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
+using Diffusion.Database;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Controls;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -211,6 +215,26 @@ namespace Diffusion.Toolkit.Controls
                     FrameworkPropertyMetadataOptions.None,
                     propertyChangedCallback: PropertyChangedCallback));
 
+        public static readonly DependencyProperty AlbumsProperty =
+            DependencyProperty.Register(
+                name: nameof(Albums),
+                propertyType: typeof(ObservableCollection<Album>),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: null,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback));
+
+        public static readonly DependencyProperty SelectedImagesProperty =
+            DependencyProperty.Register(
+                name: nameof(SelectedImages),
+                propertyType: typeof(ObservableCollection<ImageEntry>),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: null,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback));
+
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (d is ThumbnailView thumbnailView)
@@ -268,15 +292,31 @@ namespace Diffusion.Toolkit.Controls
                         thumbnailView.Model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(thumbnailView.CopyNegative);
                         //_model.CurrentImage.CopySeed = new RelayCommand<object>(CopySeed);
                         //_model.CurrentImage.CopyHash = new RelayCommand<object>(CopyHash);
+                        thumbnailView.Model.CurrentImage.CopyOthersCommand = new RelayCommand<object>(thumbnailView.CopyOthers);
                         thumbnailView.Model.CurrentImage.CopyParametersCommand = new RelayCommand<object>(thumbnailView.CopyParameters);
                         thumbnailView.Model.CurrentImage.ShowInExplorerCommand = new RelayCommand<object>(thumbnailView.ShowInExplorer);
                         //_model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
                         thumbnailView.Model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => thumbnailView.DeleteSelected());
                         thumbnailView.Model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => thumbnailView.FavoriteSelected());
                         break;
+                    case nameof(Albums):
+                        thumbnailView.ReloadAlbums();
+                        break;
                 }
             }
 
+        }
+
+        public ObservableCollection<ImageEntry> SelectedImages
+        {
+            get => (ObservableCollection<ImageEntry>)GetValue(SelectedImagesProperty);
+            set => SetValue(SelectedImagesProperty, value);
+        }
+
+        public ObservableCollection<Album> Albums
+        {
+            get => (ObservableCollection<Album>)GetValue(AlbumsProperty);
+            set => SetValue(AlbumsProperty, value);
         }
 
         public bool IsEmpty
@@ -405,5 +445,9 @@ namespace Diffusion.Toolkit.Controls
             //throw new NotImplementedException();
         }
 
+        private void ThumbnailListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            SelectedImages = new ObservableCollection<ImageEntry>(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
+        }
     }
 }

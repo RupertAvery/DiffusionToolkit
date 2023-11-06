@@ -26,6 +26,9 @@ namespace Diffusion.Toolkit
             QueryBuilder.HideNFSW = _model.HideNSFWCommand;
             _settings.HideNSFW = _model.HideNSFWCommand;
             _search.SearchImages();
+
+            _prompts.ReloadPrompts();
+            _prompts.LoadImages();
         }
 
         private void ToggleNSFWBlur()

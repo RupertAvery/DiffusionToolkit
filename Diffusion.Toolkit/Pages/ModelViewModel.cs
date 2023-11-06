@@ -25,5 +25,5 @@ public class ModelViewModel : BaseNotify
         set => SetField(ref _sha256, value);
     }
 
-    public string DisplayName => $"{Filename} ({Hash.ToLower()})";
+    public string DisplayName => $"{Filename}";
 }

@@ -8,6 +8,7 @@ using Dir = System.IO.Directory;
 using System.Globalization;
 using System.Threading.Tasks.Sources;
 using MetadataExtractor.Formats.WebP;
+using Diffusion.Common;
 
 namespace Diffusion.IO;
 
@@ -64,34 +65,43 @@ public class Metadata
                             t.Description.Substring("prompt: ".Length).Trim().StartsWith("{")
                     ));
 
-                    if (isInvokeAI2)
+                    try
                     {
-                        fileParameters = ReadInvokeAIParameters2(file, directories);
+                        if (isInvokeAI2)
+                        {
+                            fileParameters = ReadInvokeAIParameters2(file, directories);
+                        }
+                        else if (isInvokeAINew)
+                        {
+                            fileParameters = ReadInvokeAIParametersNew(file, directories);
+                        }
+                        else if (isInvokeAI)
+                        {
+                            fileParameters = ReadInvokeAIParameters(file, directories);
+                        }
+                        else if (isNovelAI)
+                        {
+                            fileParameters = ReadNovelAIParameters(file, directories);
+                        }
+                        else if (isEasyDiffusion)
+                        {
+                            fileParameters = ReadEasyDiffusionParameters(file, directories);
+                        }
+                        else if (isComfyUI)
+                        {
+                            fileParameters = ReadComfyUIParameters(file, directories);
+                        }
+                        else
+                        {
+                            fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        }
+
                     }
-                    else if (isInvokeAINew)
+                    catch (Exception e)
                     {
-                        fileParameters = ReadInvokeAIParametersNew(file, directories);
+                        Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
                     }
-                    else if (isInvokeAI)
-                    {
-                        fileParameters = ReadInvokeAIParameters(file, directories);
-                    }
-                    else if (isNovelAI)
-                    {
-                        fileParameters = ReadNovelAIParameters(file, directories);
-                    }
-                    else if (isEasyDiffusion)
-                    {
-                        fileParameters = ReadEasyDiffusionParameters(file, directories);
-                    }
-                    else if (isComfyUI)
-                    {
-                        fileParameters = ReadComfyUIParameters(file, directories);
-                    }
-                    else
-                    {
-                        fileParameters = ReadAutomatic1111Parameters(file, directories);
-                    }
+
 
                     if (fileParameters != null && (fileParameters.Width == 0 || fileParameters.Height == 0))
                     {
@@ -109,15 +119,20 @@ public class Metadata
                             }
                         }
                     }
-
-
                     break;
                 }
             case ".jpg" or ".jpeg":
                 {
                     IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(file);
 
-                    fileParameters = ReadAutomatic1111Parameters(file, directories);
+                    try
+                    {
+                        fileParameters = ReadAutomatic1111Parameters(file, directories);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
+                    }
 
                     break;
                 }
@@ -125,7 +140,14 @@ public class Metadata
                 {
                     IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(file);
 
-                    fileParameters = ReadAutomatic1111Parameters(file, directories);
+                    try
+                    {
+                        fileParameters = ReadAutomatic1111Parameters(file, directories);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
+                    }
 
                     break;
                 }
@@ -133,25 +155,33 @@ public class Metadata
 
         if (fileParameters == null)
         {
-            var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
-
-            if (File.Exists(parameterFile))
+            try
             {
-                var parameters = File.ReadAllText(parameterFile);
-                fileParameters = DetectAndReadMetaType(parameters);
-            }
-            else
-            {
-                var currPath = Path.GetDirectoryName(parameterFile);
-                var textFiles = GetDirectoryTextFileCache(currPath);
+                var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
 
-                var matchingFile = textFiles.FirstOrDefault(t => Path.GetFileNameWithoutExtension(parameterFile).StartsWith(Path.GetFileNameWithoutExtension(t)));
-
-                if (matchingFile != null)
+                if (File.Exists(parameterFile))
                 {
-                    var parameters = File.ReadAllText(matchingFile);
+                    var parameters = File.ReadAllText(parameterFile);
                     fileParameters = DetectAndReadMetaType(parameters);
                 }
+                else
+                {
+                    var currPath = Path.GetDirectoryName(parameterFile);
+                    var textFiles = GetDirectoryTextFileCache(currPath);
+
+                    var matchingFile = textFiles.FirstOrDefault(t => Path.GetFileNameWithoutExtension(parameterFile).StartsWith(Path.GetFileNameWithoutExtension(t)));
+
+                    if (matchingFile != null)
+                    {
+                        var parameters = File.ReadAllText(matchingFile);
+                        fileParameters = DetectAndReadMetaType(parameters);
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
             }
         }
 
@@ -292,12 +322,12 @@ public class Metadata
         fp.NegativePrompt = GetTag("negative_prompt");
         fp.Width = GetIntTag("width");
         fp.Height = GetIntTag("height");
-        fp.Steps = GetIntTag("num_inference_steps"); 
+        fp.Steps = GetIntTag("num_inference_steps");
         fp.CFGScale = GetDecimalTag("guidance_scale");
         fp.Seed = GetIntTag("seed");
         fp.Sampler = GetTag("sampler_name");
         fp.Model = GetTag("use_stable_diffusion_model");
-        
+
 
         fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
 
@@ -317,7 +347,8 @@ public class Metadata
             var nodes = root.RootElement.EnumerateObject().ToDictionary(o => o.Name, o => o.Value);
 
             var isSDXL = false;
-            
+            var isEfficient = false;
+
             var ksampler = nodes.Values.SingleOrDefault(o =>
             {
                 if (o.TryGetProperty("class_type", out var element))
@@ -328,6 +359,23 @@ public class Metadata
                 return false;
             });
 
+            if (ksampler.ValueKind == JsonValueKind.Undefined)
+            {
+                ksampler = nodes.Values.FirstOrDefault(o =>
+                {
+                    if (o.TryGetProperty("class_type", out var element))
+                    {
+                        return element.GetString() == "KSampler (Efficient)";
+                    }
+
+                    return false;
+                });
+
+                if (ksampler.ValueKind != JsonValueKind.Undefined)
+                {
+                    isEfficient = true;
+                }
+            }
 
             if (ksampler.ValueKind == JsonValueKind.Undefined)
             {
@@ -348,89 +396,83 @@ public class Metadata
             }
 
 
-            //"seed": 1102676403634909,
-            //"steps": 20,
-            //"cfg": 8.0,
-            //"sampler_name": "dpmpp_2m",
-            //"scheduler": "normal",
-            //"denoise": 1.0,
-            //"model": [
-            //"4",
-            //0
-            //    ],
-            //"positive": [
-            //"6",
-            //0
-            //    ],
-            //"negative": [
-            //"7",
-            //0
-            //    ],
-            //"latent_image": [
-            //"14",
-            //0
-            //    ]
-
-
-            var image = ksampler.GetProperty("inputs");
-
-            if (image.TryGetProperty("positive", out var positive))
+            if (ksampler.ValueKind != JsonValueKind.Undefined)
             {
-                var promptIndex = positive.EnumerateArray().First().GetString();
-                var promptObject = nodes[promptIndex].GetProperty("inputs");
+
+                var image = ksampler.GetProperty("inputs");
+
+                if (image.TryGetProperty("positive", out var positive))
+                {
+                    var promptIndex = positive.EnumerateArray().First().GetString();
+                    var promptObject = nodes[promptIndex].GetProperty("inputs");
+                    if (isSDXL)
+                    {
+                        fp.Prompt = promptObject.GetProperty("text_g").GetString();
+                    }
+                    else if (isEfficient)
+                    {
+                        fp.Prompt = promptObject.GetProperty("positive").GetString();
+                    }
+                    else
+                    {
+                        fp.Prompt = promptObject.GetProperty("text").GetString();
+                    }
+                }
+
+                if (image.TryGetProperty("negative", out var negative))
+                {
+                    var promptIndex = negative.EnumerateArray().First().GetString();
+                    var promptObject = nodes[promptIndex].GetProperty("inputs");
+                    if (isSDXL)
+                    {
+                        fp.NegativePrompt = promptObject.GetProperty("text_g").GetString();
+                    }
+                    else if (isEfficient)
+                    {
+                        fp.NegativePrompt = promptObject.GetProperty("negative").GetString();
+                    }
+                    else
+                    {
+                        fp.NegativePrompt = promptObject.GetProperty("text").GetString();
+                    }
+                }
+
+                if (image.TryGetProperty("latent_image", out var latent_image))
+                {
+                    var index = latent_image.EnumerateArray().First().GetString();
+                    var promptObject = nodes[index].GetProperty("inputs");
+                    var hasWidth = promptObject.TryGetProperty("width", out var widthObject);
+                    var hasHeight = promptObject.TryGetProperty("height", out var heightObject);
+
+                    if (hasWidth && hasHeight)
+                    {
+                        fp.Width = widthObject.GetInt32();
+                        fp.Height = heightObject.GetInt32();
+                    }
+                }
+
+                fp.Steps = image.GetProperty("steps").GetInt32();
+                fp.CFGScale = image.GetProperty("cfg").GetDecimal();
+
                 if (isSDXL)
                 {
-                    fp.Prompt = promptObject.GetProperty("text_g").GetString();
+                    fp.Seed = image.GetProperty("noise_seed").GetInt64();
                 }
                 else
                 {
-                    fp.Prompt = promptObject.GetProperty("text").GetString();
+                    var seed = image.GetProperty("seed");
+
+                    if (seed.ValueKind == JsonValueKind.Number)
+                    {
+                        fp.Seed = seed.GetInt64();
+                    }
                 }
+
+                fp.Sampler = image.GetProperty("sampler_name").GetString();
+
+                fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
             }
 
-            if (image.TryGetProperty("negative", out var negative))
-            {
-                var promptIndex = negative.EnumerateArray().First().GetString();
-                var promptObject = nodes[promptIndex].GetProperty("inputs");
-                if (isSDXL)
-                {
-                    fp.NegativePrompt = promptObject.GetProperty("text_g").GetString();
-                }
-                else
-                {
-                    fp.NegativePrompt = promptObject.GetProperty("text").GetString();
-                }
-            }
-
-            if (image.TryGetProperty("latent_image", out var latent_image))
-            {
-                var index = latent_image.EnumerateArray().First().GetString();
-                var promptObject = nodes[index].GetProperty("inputs");
-                var hasWidth = promptObject.TryGetProperty("width", out var widthObject);
-                var hasHeight = promptObject.TryGetProperty("height", out var heightObject);
-
-                if (hasWidth && hasHeight)
-                {
-                    fp.Width = widthObject.GetInt32();
-                    fp.Height = heightObject.GetInt32();
-                }
-            }
-
-            fp.Steps = image.GetProperty("steps").GetInt32();
-            fp.CFGScale = image.GetProperty("cfg").GetDecimal();
-
-            if (isSDXL)
-            {
-                fp.Seed = image.GetProperty("noise_seed").GetInt64();
-            }
-            else
-            {
-                fp.Seed = image.GetProperty("seed").GetInt64();
-            }
-
-            fp.Sampler = image.GetProperty("sampler_name").GetString();
-
-            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
 
             return fp;
         }
@@ -484,7 +526,7 @@ public class Metadata
             var json = tag.Description.Substring("invokeai_metadata: ".Length);
             var root = JsonDocument.Parse(json);
             var image = root.RootElement;
-            
+
             fp.Prompt = image.GetProperty("positive_prompt").GetString();
             fp.NegativePrompt = image.GetProperty("negative_prompt").GetString();
             fp.Steps = image.GetProperty("steps").GetInt32();

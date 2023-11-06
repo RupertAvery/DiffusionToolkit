@@ -19,6 +19,11 @@ namespace Diffusion.Database
 
             var query = "SELECT COUNT(*) FROM Image";
 
+            if (QueryBuilder.HideNFSW)
+            {
+                query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+            }
+
             var count = db.ExecuteScalar<int>(query);
 
             db.Close();
@@ -54,6 +59,34 @@ namespace Diffusion.Database
             return size;
         }
 
+        public long CountPromptFileSize(string prompt)
+        {
+            using var db = OpenConnection();
+
+
+            //if (string.IsNullOrEmpty(prompt))
+            //{
+            //    var query = $"SELECT SUM(FileSize) FROM Image";
+
+            //    if (QueryBuilder.HideNFSW)
+            //    {
+            //        query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+            //    }
+
+            //    var allcount = db.ExecuteScalar<long>(query);
+            //    return allcount;
+            //}
+
+            var q = QueryBuilder.QueryPrompt(prompt);
+
+            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
+
+            db.Close();
+
+            return size;
+        }
+
+
 
         public int Count(string prompt)
         {
@@ -81,6 +114,31 @@ namespace Diffusion.Database
             return count;
         }
 
+        public int CountPrompt(string prompt)
+        {
+            using var db = OpenConnection();
+
+            //if (string.IsNullOrEmpty(prompt))
+            //{
+            //    var query = "SELECT COUNT(*) FROM Image";
+
+            //    if (QueryBuilder.HideNFSW)
+            //    {
+            //        query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+            //    }
+
+            //    var allcount = db.ExecuteScalar<int>(query);
+            //    return allcount;
+            //}
+
+            var q = QueryBuilder.QueryPrompt(prompt);
+
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
+
+            db.Close();
+
+            return count;
+        }
 
 
         public long CountFileSize(Filter filter)
@@ -156,9 +214,16 @@ namespace Diffusion.Database
         public IEnumerable<Image> QueryAll()
         {
             using var db = OpenConnection();
+            
+            var query = $"SELECT Image.* FROM Image";
 
-            var images = db.Query<Image>($"SELECT Image.* FROM Image");
+            if (QueryBuilder.HideNFSW)
+            {
+                query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+            }
 
+            var images = db.Query<Image>(query);
+            
             foreach (var image in images)
             {
                 yield return image;
@@ -201,6 +266,63 @@ namespace Diffusion.Database
             var q = QueryBuilder.Filter(filter);
 
             var images = db.Query<Image>($"SELECT Image.* FROM Image {string.Join(' ', q.Joins)} WHERE {q.Item1}", q.Item2.ToArray());
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+
+            db.Close();
+        }
+
+        public IEnumerable<Image> SearchPrompt(string? prompt, int pageSize, int offset, string sortBy, string sortDirection)
+        {
+            using var db = OpenConnection();
+
+            var sortField = sortBy switch
+            {
+                "Date Created" => nameof(Image.CreatedDate),
+                "Rating" => nameof(Image.Rating),
+                "Aesthetic Score" => nameof(Image.AestheticScore),
+                _ => nameof(Image.CreatedDate),
+            };
+
+            var sortDir = sortDirection switch
+            {
+                "A-Z" => "ASC",
+                "Z-A" => "DESC",
+                _ => "DESC",
+            };
+
+            //if (string.IsNullOrEmpty(prompt))
+            //{
+            //    var query = "SELECT Image.* FROM Image ";
+
+            //    if (QueryBuilder.HideNFSW)
+            //    {
+            //        query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+            //    }
+
+            //    var allimages = db.Query<Image>($"{query} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", pageSize, offset);
+
+            //    foreach (var image in allimages)
+            //    {
+            //        yield return image;
+            //    }
+
+            //    db.Close();
+
+            //    yield break;
+            //}
+
+            //SELECT foo, bar, baz, quux FROM table
+            //WHERE oid NOT IN(SELECT oid FROM table
+            //ORDER BY title ASC LIMIT 50 )
+            //ORDER BY title ASC LIMIT 10
+
+            var q = QueryBuilder.QueryPrompt(prompt);
+
+            var images = db.Query<Image>($"SELECT Image.* FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {
@@ -330,7 +452,16 @@ namespace Diffusion.Database
 
             if (string.IsNullOrEmpty(prompt))
             {
-                results = db.Query<UsedPrompt>("SELECT Prompt, COUNT(*) AS Usage FROM Image GROUP BY Prompt ORDER BY Usage DESC");
+                var query = "SELECT Prompt, COUNT(*) AS Usage FROM Image";
+
+                if (QueryBuilder.HideNFSW)
+                {
+                    query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                }
+
+                query += " GROUP BY Prompt ORDER BY Usage DESC";
+
+                results = db.Query<UsedPrompt>(query);
 
                 foreach (var result in results)
                 {
@@ -345,7 +476,16 @@ namespace Diffusion.Database
                 {
                     if (allResults == null || lastPrompt != prompt)
                     {
-                        allResults = db.Query<UsedPrompt>($"SELECT Prompt, COUNT(*) AS Usage FROM Image GROUP BY Prompt ORDER BY Usage DESC")
+                        var query = "SELECT Prompt, COUNT(*) AS Usage FROM Image";
+
+                        if (QueryBuilder.HideNFSW)
+                        {
+                            query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                        }
+
+                        query += " GROUP BY Prompt ORDER BY Usage DESC";
+
+                        allResults = db.Query<UsedPrompt>(query)
                             .ToList();
                     }
 
@@ -363,7 +503,16 @@ namespace Diffusion.Database
                     }
                     else
                     {
-                        results = db.Query<UsedPrompt>($"SELECT Prompt, COUNT(*) AS Usage FROM Image WHERE TRIM(Prompt) = ? GROUP BY Prompt ORDER BY Usage DESC", new[] { prompt.Trim() });
+                        var query = "SELECT Prompt, COUNT(*) AS Usage FROM Image WHERE TRIM(Prompt) = ?";
+
+                        if (QueryBuilder.HideNFSW)
+                        {
+                            query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
+                        }
+
+                        query += " GROUP BY Prompt ORDER BY Usage DESC";
+
+                        results = db.Query<UsedPrompt>(query, new[] { prompt.Trim() });
 
                         foreach (var result in results)
                         {
@@ -376,7 +525,16 @@ namespace Diffusion.Database
                 {
                     var q = QueryBuilder.Parse(prompt);
 
-                    results = db.Query<UsedPrompt>($"SELECT Prompt, COUNT(*) AS Usage  FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause} GROUP BY Prompt ORDER BY Usage DESC", q.Bindings.ToArray());
+                    var query = $"SELECT Prompt, COUNT(*) AS Usage FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}";
+
+                    if (QueryBuilder.HideNFSW)
+                    {
+                        query += " AND (NSFW = 0 OR NSFW IS NULL)";
+                    }
+
+                    query += " GROUP BY Prompt ORDER BY Usage DESC";
+
+                    results = db.Query<UsedPrompt>(query, q.Bindings.ToArray());
 
                     foreach (var result in results)
                     {

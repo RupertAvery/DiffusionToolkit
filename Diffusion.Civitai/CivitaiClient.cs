@@ -170,7 +170,7 @@ public class CivitaiClient : IDisposable
 
     public static string ToCamelCase(string name)
     {
-        return name.Substring(0, 1).ToLower() + name.Substring(1);
+        return name[..1].ToLower() + name[1..];
     }
 
     static string EnumToString(Enum value)

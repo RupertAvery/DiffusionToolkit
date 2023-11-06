@@ -103,7 +103,8 @@
 
         <ListView Grid.Row="0" x:Name="ThumbnailListView" Margin="2" Padding="10" ItemsSource="{Binding Images}"
                   SelectionMode="Extended"
-                  SelectedItem="{Binding SelectedImageEntry}" 
+                  SelectedItem="{Binding SelectedImageEntry}"
+                  SelectionChanged="ThumbnailListView_OnSelectionChanged"
                   KeyDown="ThumbnailListView_OnKeyDown"
                   PreviewKeyDown="ThumbnailListView_OnPreviewKeyDown"
                   PreviewMouseLeftButtonDown="ThumbnailListView_OnPreviewMouseLeftButtonDown"

@@ -29,6 +29,8 @@ using System.Diagnostics;
 using System.Windows.Forms;
 using DragDropEffects = System.Windows.Forms.DragDropEffects;
 using DragEventArgs = System.Windows.Forms.DragEventArgs;
+using System.Text.Json.Serialization;
+using Diffusion.Civitai.Models;
 
 namespace Diffusion.Toolkit
 {
@@ -131,6 +133,9 @@ namespace Diffusion.Toolkit
             _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
 
             _model.ToggleAlbum = new RelayCommand<object>((o) => ToggleAlbum());
+
+
+            InitAlbums();
 
             _model.Refresh = new RelayCommand<object>((o) => Refresh());
             _model.QuickCopy = new RelayCommand<object>((o) =>
@@ -261,6 +266,7 @@ namespace Diffusion.Toolkit
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
             _model.ThumbnailSize = _settings.ThumbnailSize;
             _search.SetThumbnailSize(_settings.ThumbnailSize);
+            _prompts.SetThumbnailSize(_settings.ThumbnailSize);
         }
 
         private void SystemEventsOnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
@@ -280,6 +286,24 @@ namespace Diffusion.Toolkit
             else if (e.PropertyName == nameof(MainModel.HideIcons))
             {
                 _search.SetIconVisibility(_model.HideIcons);
+            }
+            else if (e.PropertyName == nameof(MainModel.SelectedImages))
+            {
+                if (_model.SelectedImages.Count > 1)
+                {
+                    _model.Status = $"{_model.SelectedImages.Count} items selected";
+                }
+                else
+                {
+                    _model.Status = "";
+                }
+            }
+            else if (e.PropertyName == nameof(MainModel.CurrentAlbum))
+            {
+                _search.SetMode("albums");
+                //_currentModeSettings.CurrentAlbum = album;
+                //_model.Album = album.Name;
+                _search.SearchImages(null);
             }
         }
 
@@ -443,16 +467,20 @@ namespace Diffusion.Toolkit
                 }
             };
 
-            _prompts = new Prompts(_dataStore, _settings);
+            _prompts = new Prompts(_dataStoreOptions, _messagePopupManager, _model, _settings);
 
 
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
 
             _model.ThumbnailSize = _settings.ThumbnailSize;
+
             _search.SetThumbnailSize(_settings.ThumbnailSize);
             _search.SetPageSize(_settings.PageSize);
+            
+            _prompts.SetThumbnailSize(_settings.ThumbnailSize);
+            _prompts.SetPageSize(_settings.PageSize);
 
-            _search.OnPopout = () => PopoutPreview(false, true, false);
+            _search.OnPopout = () => PopoutPreview(true, true, false);
             _search.OnCurrentImageOpen = OnCurrentImageOpen;
 
             _model.ShowFavorite = new RelayCommand<object>((o) =>
@@ -516,6 +544,8 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Loading models");
 
+
+            LoadAlbums();
             LoadModels();
 
             Logger.Log($"{_modelsCollection.Count} models loaded");
@@ -586,7 +616,15 @@ namespace Diffusion.Toolkit
                     UseShellExecute = true
                 };
 
-                Process.Start(processInfo);
+                try
+                {
+                    Process.Start(processInfo);
+                }
+                catch(Exception ex)
+                {
+                    MessageBox.Show(this, ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
             }
             else if (_settings.UseCustomViewer.GetValueOrDefault(false))
             {
@@ -597,6 +635,19 @@ namespace Diffusion.Toolkit
                     args = "%1";
                 }
 
+                if (string.IsNullOrEmpty(_settings.CustomCommandLine))
+                {
+                    MessageBox.Show(this, "No custom viewer set. Please check Settings", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+
+                if (!File.Exists(_settings.CustomCommandLine))
+                {
+                    MessageBox.Show(this, "The specified application does not exist", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 var processInfo = new ProcessStartInfo()
                 {
                     FileName = _settings.CustomCommandLine,
@@ -604,7 +655,15 @@ namespace Diffusion.Toolkit
                     UseShellExecute = true
                 };
 
-                Process.Start(processInfo);
+                try
+                {
+                    Process.Start(processInfo);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, ex.Message + "\r\n\r\nPlease check that the path to your custom viewer is valid and that the arguments are correct", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
             }
 
 
@@ -629,11 +688,13 @@ namespace Diffusion.Toolkit
                     _configuration.Save(_settings);
 
                     _search.Settings = _settings;
+                    _prompts.Settings = _settings;
 
                     if (_settings.IsPropertyDirty(nameof(Settings.PageSize)))
                     {
                         ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
                         _search.SetPageSize(_settings.PageSize);
+                        _prompts.SetPageSize(_settings.PageSize);
                         _search.SearchImages();
                     }
 
@@ -746,7 +807,8 @@ namespace Diffusion.Toolkit
                         {
                             Filename = Path.GetFileNameWithoutExtension(path),
                             Path = path,
-                            SHA256 = hash.Value.sha256
+                            SHA256 = hash.Value.sha256,
+                            IsLocal = true
                         });
 
                     }
@@ -761,9 +823,45 @@ namespace Diffusion.Toolkit
                 //}
             }
 
-            _search.SetModels(_modelsCollection);
+            var otherModels = new List<Model>();
+
+            if (File.Exists("models.json"))
+            {
+                var json = File.ReadAllText(Path.Combine(AppDir, "models.json"));
+
+                var options = new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    Converters = { new JsonStringEnumConverter() }
+                };
+
+                var civitAiModels = JsonSerializer.Deserialize<LiteModelCollection>(json, options);
+
+                foreach (var model in civitAiModels.Models)
+                {
+                    foreach (var modelVersion in model.ModelVersions)
+                    {
+                        foreach (var versionFile in modelVersion.Files)
+                        {
+                            otherModels.Add(new Model()
+                            {
+                                Filename = Path.GetFileNameWithoutExtension(versionFile.Name),
+                                Hash = versionFile.Hashes.AutoV1,
+                                SHA256 = versionFile.Hashes.SHA256,
+                            });
+                        }
+                    }
+           
+                }
+
+            }
+
+            var allModels = _modelsCollection.Concat(otherModels).ToList();
+
+            _search.SetModels(allModels);
             _models.SetModels(_modelsCollection);
-            QueryBuilder.SetModels(_modelsCollection);
+
+            QueryBuilder.SetModels(allModels);
         }
 
         private async Task TryScanFolders()

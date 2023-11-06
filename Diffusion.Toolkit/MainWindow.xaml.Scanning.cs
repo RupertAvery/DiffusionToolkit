@@ -263,7 +263,10 @@ namespace Diffusion.Toolkit
 
             Dispatcher.Invoke(() =>
             {
-                _model.Status = $"Scanning {_model.TotalProgress:#,###,##0} of {_model.TotalProgress:#,###,##0}...";
+                if (_model.TotalProgress > 0)
+                {
+                    _model.Status = $"Scanning {_model.TotalProgress:#,###,##0} of {_model.TotalProgress:#,###,##0}...";
+                }
                 _model.TotalProgress = Int32.MaxValue;
                 _model.CurrentProgress = 0;
             });

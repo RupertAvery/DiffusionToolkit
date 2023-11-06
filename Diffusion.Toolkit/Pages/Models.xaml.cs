@@ -42,20 +42,25 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.PropertyName == nameof(ModelsModel.Search))
             {
-                if (!string.IsNullOrEmpty(_model.Search))
-                {
-                    var query = _model.Search.ToLower();
-                    _model.FilteredModels = _model.Models.Where(m =>
-                        m.Filename.ToLower().Contains(query) ||
-                        m.Hash.ToLower().Contains(query) ||
-                        (!string.IsNullOrEmpty(m.SHA256) && m.SHA256.ToLower().Contains(query))
-                        );
-                }
-                else
-                {
-                    _model.FilteredModels = _model.Models.ToList();
-                }
+                UpdateFilteredModels();
             }
+        }
+
+        private void UpdateFilteredModels()
+        {
+            var models = _model.Models;
+            if (!string.IsNullOrEmpty(_model.Search))
+            {
+                var query = _model.Search.ToLower();
+
+                models = models.Where(m =>
+                    m.Filename.ToLower().Contains(query) ||
+                    (!string.IsNullOrEmpty(m.Hash) && m.Hash.ToLower().Contains(query)) ||
+                    (!string.IsNullOrEmpty(m.SHA256) && m.SHA256.ToLower().Contains(query))
+                ).ToList();
+            }
+
+            _model.FilteredModels = models.OrderBy(m => m.DisplayName).ToList();
         }
 
         public void SetModels(ICollection<Model> modelsCollection)
@@ -68,7 +73,7 @@ namespace Diffusion.Toolkit.Pages
                 SHA256 = m.SHA256,
             }).ToList();
 
-            _model.FilteredModels = _model.Models;
+            UpdateFilteredModels();
         }
 
 

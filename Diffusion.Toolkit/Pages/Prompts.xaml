@@ -4,21 +4,37 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Diffusion.Toolkit.Models"
+      xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
       mc:Ignorable="d" 
       d:DataContext="{d:DesignInstance local:PromptsModel, IsDesignTimeCreatable = True}"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Prompts">
 
     <Grid>
-        <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="38"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label FontSize="24" FontWeight="DemiBold" Content="Prompts"></Label>
+        <Grid Grid.Row="1" IsHitTestVisible="False">
             <Grid.RowDefinitions>
-                <RowDefinition Height="38"/>
+                <RowDefinition Height="36"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Label FontSize="24" FontWeight="DemiBold" Content="Prompts"></Label>
-            <TabControl Grid.Row="1" Background="Transparent">
-                <TabItem Header="Prompts" Background="Transparent">
-                    <Grid>
+            <Grid Grid.Row="1" x:Name="VirtualGrid" >
+
+            </Grid>
+        </Grid>
+
+        <TabControl Grid.Row="1" Background="Transparent">
+            <TabItem Header="Prompts" Background="Transparent">
+                <Grid Height="{Binding ElementName=VirtualGrid,Path=ActualHeight}" Width="{Binding ElementName=VirtualGrid,Path=ActualWidth}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="30"/>
                             <RowDefinition Height="30"/>
@@ -31,7 +47,17 @@
                             <Slider IsEnabled="{Binding FullTextPrompt}" VerticalAlignment="Center" Margin="10,0,0,0" Value="{Binding PromptDistance}" TickFrequency="5" Minimum="10" Maximum="150" Width="200"></Slider>
                             <Label VerticalAlignment="Center"  Margin="10,0,0,0">Different</Label>
                         </StackPanel>
-                        <DataGrid Style="{DynamicResource DataGridStyle1}" Grid.Row="2" ItemsSource="{Binding Prompts}" AutoGenerateColumns="False" SelectionMode="Single"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <DataGrid Style="{DynamicResource DataGridStyle1}" Grid.Row="2" 
+                                  ItemsSource="{Binding Prompts}" 
+                                  SelectedItem="{Binding SelectedPrompt}"
+                                  SelectionChanged="Selector_OnSelectionChanged"
+                                  SelectionUnit="FullRow"
+                                  AutoGenerateColumns="False" SelectionMode="Single"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <!--<DataGrid.Resources>
+                                <Style TargetType="DataGridRow">
+                                    <EventSetter Event="MouseDown" Handler="LoadImages"/>
+                                </Style>
+                            </DataGrid.Resources>-->
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Prompt" Binding="{Binding Prompt}" MaxWidth="900" IsReadOnly="True">
                                     <DataGridTextColumn.ElementStyle>
@@ -46,39 +72,65 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
-                   
-                </TabItem>
-                <TabItem Header="Negative Prompts">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="30"/>
-                            <RowDefinition Height="30"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <TextBox Text="{Binding NegativePromptQuery, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Padding="3,0,0,0" KeyDown="NegativePromptQuery_OnKeyDown"></TextBox>
-                        <StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
-                            <CheckBox VerticalAlignment="Center" IsChecked="{Binding NegativeFullTextPrompt}">Full Text</CheckBox>
-                            <Label VerticalAlignment="Center"  Margin="20,0,0,0">Similar</Label>
-                            <Slider IsEnabled="{Binding NegativeFullTextPrompt}" VerticalAlignment="Center" Margin="10,0,0,0" Value="{Binding NegativePromptDistance}" TickFrequency="5" Minimum="10" Maximum="150" Width="200"></Slider>
-                            <Label VerticalAlignment="Center"  Margin="10,0,0,0">Different</Label>
-                        </StackPanel>
-                        <DataGrid Grid.Row="2" ItemsSource="{Binding NegativePrompts}" AutoGenerateColumns="False" SelectionMode="Single"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Prompt" Binding="{Binding Prompt}" MaxWidth="900" IsReadOnly="True">
-                                    <DataGridTextColumn.ElementStyle>
-                                        <Style>
-                                            <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
-                                            <Setter Property="TextBlock.TextAlignment" Value="Left"/>
-                                        </Style>
-                                    </DataGridTextColumn.ElementStyle>
-                                </DataGridTextColumn>
-                                <DataGridTextColumn Header="Usage" Binding="{Binding Usage}" IsReadOnly="True">
-                                </DataGridTextColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                    <GridSplitter 
+                                  Grid.Row="0" Grid.Column="1"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Stretch"
+                                  ShowsPreview="False"
+                                  Width="5"></GridSplitter>
+                    <Grid Column="2" DataContext="{Binding PromptsResults}">
+                        <controls:ThumbnailView 
+                                DockPanel.Dock="Right" 
+                                x:Name="ThumbnailListView" 
+                                Images="{Binding Images}" 
+                                SelectedImages="{Binding MainModel.SelectedImages, Mode=TwoWay}"
+                                NSFWBlur="{Binding MainModel.NSFWBlurCommand}" 
+                                PageChangedCommand="{Binding PageChangedCommand}"
+                                OpenCommand="{Binding OpenCommand}"
+                                AddAlbumCommand="{Binding MainModel.AddAlbumCommand}"
+                                AddToAlbumCommand="{Binding MainModel.AddToAlbumCommand}"
+                                CopyCommand="{Binding CopyFiles}"
+                                Page="{Binding Page, Mode=TwoWay}" 
+                                Pages="{Binding Pages}" 
+                                IsEmpty="{Binding IsEmpty}"
+                                Results="{Binding Results}"
+                                ResultStatus="{Binding ResultStatus}"
+                                >
+                        </controls:ThumbnailView>
                     </Grid>
-                </TabItem>
-            </TabControl>
-        </Grid>
+                </Grid>
+
+            </TabItem>
+            <TabItem Header="Negative Prompts">
+                <Grid Height="{Binding ElementName=VirtualGrid,Path=ActualHeight}" Width="{Binding ElementName=VirtualGrid,Path=ActualWidth}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBox Text="{Binding NegativePromptQuery, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Padding="3,0,0,0" KeyDown="NegativePromptQuery_OnKeyDown"></TextBox>
+                    <StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
+                        <CheckBox VerticalAlignment="Center" IsChecked="{Binding NegativeFullTextPrompt}">Full Text</CheckBox>
+                        <Label VerticalAlignment="Center"  Margin="20,0,0,0">Similar</Label>
+                        <Slider IsEnabled="{Binding NegativeFullTextPrompt}" VerticalAlignment="Center" Margin="10,0,0,0" Value="{Binding NegativePromptDistance}" TickFrequency="5" Minimum="10" Maximum="150" Width="200"></Slider>
+                        <Label VerticalAlignment="Center"  Margin="10,0,0,0">Different</Label>
+                    </StackPanel>
+                    <DataGrid Grid.Row="2" ItemsSource="{Binding NegativePrompts}" AutoGenerateColumns="False" SelectionMode="Single"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Prompt" Binding="{Binding Prompt}" MaxWidth="900" IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                        <Setter Property="TextBlock.TextAlignment" Value="Left"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Usage" Binding="{Binding Usage}" IsReadOnly="True">
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Page>

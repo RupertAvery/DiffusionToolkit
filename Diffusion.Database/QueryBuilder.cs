@@ -52,6 +52,32 @@ public static partial class QueryBuilder
 
     public static bool HideNFSW { get; set; }
 
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) QueryPrompt(string prompt)
+    {
+        var conditions = new List<KeyValuePair<string, object>>();
+        var joins = new List<string>();
+
+        ParseExactPrompt(ref prompt, conditions);
+
+        if (HideNFSW)
+        {
+            conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+        }
+
+        return (string.Join(" AND ", conditions.Select(c => c.Key)),
+                conditions.SelectMany(c =>
+                {
+                    return c.Value switch
+                    {
+                        IEnumerable<object> orConditions => orConditions.Select(o => o),
+                        _ => new[] { c.Value }
+                    };
+                }).Where(o => o != null),
+                joins
+            );
+    }
+
+
     public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) Parse(string prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
@@ -80,6 +106,12 @@ public static partial class QueryBuilder
 
         ParseNegativePrompt(ref prompt, conditions);
         ParsePrompt(ref prompt, conditions);
+
+        // this should be here
+        //if (HideNFSW)
+        //{
+        //    conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+        //}
 
         return (string.Join(" AND ", conditions.Select(c => c.Key)),
             conditions.SelectMany(c =>
@@ -382,6 +414,17 @@ public static partial class QueryBuilder
         }
 
 
+    }
+
+    private static void ParseExactPrompt(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        //if (prompt.Trim().Length == 0)
+        //{
+        //    conditions.Add(new KeyValuePair<string, object>("(Prompt LIKE ? OR Prompt IS NULL)", "%%"));
+        //    return;
+        //}
+
+        conditions.Add(new KeyValuePair<string, object>("(Prompt = ?)", prompt));
     }
 
     private static void ParsePrompt(ref string prompt, List<KeyValuePair<string, object>> conditions)
