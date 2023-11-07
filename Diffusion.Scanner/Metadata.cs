@@ -6,6 +6,7 @@ using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Threading.Tasks.Sources;
 using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
@@ -27,6 +28,17 @@ public class Metadata
         return files;
     }
 
+    public enum MetaFormat
+    {
+        A1111,
+        NovelAI,
+        InvokeAI,
+        InvokeAINew,
+        InvokeAI2,
+        EasyDiffusion,
+        ComfyUI,
+    }
+
     public static FileParameters? ReadFromFile(string file)
     {
         FileParameters? fileParameters = null;
@@ -40,62 +52,80 @@ public class Metadata
                 {
                     IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
 
-                    var isNovelAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description == "Software: NovelAI"));
+                    var format = MetaFormat.A1111;
 
-                    var isInvokeAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("Dream: ")));
+                    foreach (var directory in directories)
+                    {
+                        if (directory.Name == "PNG-tEXt")
+                        {
+                            foreach (var tag in directory.Tags)
+                            {
+                                if (tag.Name == "Textual Data")
+                                {
+                                    if (tag.Description == "Software: NovelAI")
+                                    {
+                                        format = MetaFormat.NovelAI;
+                                    }
+                                    else if (tag.Description.StartsWith("Dream: "))
+                                    {
+                                        format = MetaFormat.InvokeAI;
+                                    }
+                                    else if (tag.Description.StartsWith("sd-metadata: "))
+                                    {
+                                        format = MetaFormat.InvokeAINew;
+                                    }
+                                    else if (tag.Description.StartsWith("invokeai_metadata: "))
+                                    {
+                                        format = MetaFormat.InvokeAI2;
+                                    }
+                                    else if (tag.Description.StartsWith("prompt: "))
+                                    {
+                                        var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
+                                        format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-                    var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
 
-                    var isInvokeAI2 = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("invokeai_metadata: ")));
+                    //var isNovelAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description == "Software: NovelAI"));
 
-                    var isEasyDiffusion = directories.Any(d =>
-                        d.Name == "PNG-tEXt" &&
-                       d.Tags.Any(t =>
-                           t.Name == "Textual Data" &&
-                           t.Description.StartsWith("prompt: ") &&
-                           !t.Description.Substring("prompt: ".Length).Trim().StartsWith("{")
-                           )
-                       );
+                    //var isInvokeAI = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("Dream: ")));
 
-                    var isComfyUI = directories.Any(d =>
-                        d.Name == "PNG-tEXt" &&
-                        d.Tags.Any(t =>
-                            t.Name == "Textual Data" &&
-                            t.Description.StartsWith("prompt: ") &&
-                            t.Description.Substring("prompt: ".Length).Trim().StartsWith("{")
-                    ));
+                    //var isInvokeAINew = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("sd-metadata: ")));
+
+                    //var isInvokeAI2 = directories.Any(d => d.Name == "PNG-tEXt" && d.Tags.Any(t => t.Name == "Textual Data" && t.Description.StartsWith("invokeai_metadata: ")));
+
+                    //var isEasyDiffusion = directories.Any(d =>
+                    //    d.Name == "PNG-tEXt" &&
+                    //   d.Tags.Any(t =>
+                    //       t.Name == "Textual Data" &&
+                    //       t.Description.StartsWith("prompt: ") &&
+                    //       !t.Description.Substring("prompt: ".Length).Trim().StartsWith("{")
+                    //       )
+                    //   );
+
+                    //var isComfyUI = directories.Any(d =>
+                    //    d.Name == "PNG-tEXt" &&
+                    //    d.Tags.Any(t =>
+                    //        t.Name == "Textual Data" &&
+                    //        t.Description.StartsWith("prompt: ") &&
+                    //        t.Description.Substring("prompt: ".Length).Trim().StartsWith("{")
+                    //));
 
                     try
                     {
-                        if (isInvokeAI2)
+                        fileParameters = format switch
                         {
-                            fileParameters = ReadInvokeAIParameters2(file, directories);
-                        }
-                        else if (isInvokeAINew)
-                        {
-                            fileParameters = ReadInvokeAIParametersNew(file, directories);
-                        }
-                        else if (isInvokeAI)
-                        {
-                            fileParameters = ReadInvokeAIParameters(file, directories);
-                        }
-                        else if (isNovelAI)
-                        {
-                            fileParameters = ReadNovelAIParameters(file, directories);
-                        }
-                        else if (isEasyDiffusion)
-                        {
-                            fileParameters = ReadEasyDiffusionParameters(file, directories);
-                        }
-                        else if (isComfyUI)
-                        {
-                            fileParameters = ReadComfyUIParameters(file, directories);
-                        }
-                        else
-                        {
-                            fileParameters = ReadAutomatic1111Parameters(file, directories);
-                        }
-
+                            MetaFormat.InvokeAI2 => ReadInvokeAIParameters2(file, directories),
+                            MetaFormat.InvokeAINew => ReadInvokeAIParametersNew(file, directories),
+                            MetaFormat.InvokeAI => ReadInvokeAIParameters(file, directories),
+                            MetaFormat.NovelAI => ReadNovelAIParameters(file, directories),
+                            MetaFormat.EasyDiffusion => ReadEasyDiffusionParameters(file, directories),
+                            MetaFormat.ComfyUI => ReadComfyUIParameters(file, directories),
+                            _ => ReadAutomatic1111Parameters(file, directories)
+                        };
                     }
                     catch (Exception e)
                     {
@@ -862,22 +892,58 @@ public class Metadata
         //var parameters = directories.FirstOrDefault(d => d.Name == "PNG-tEXt")?.Tags
         //    .FirstOrDefault(t => t.Name == "Textual Data")?.Description;
 
-        Tag tag;
+        decimal aestheticScore = 0m;
 
 
-        if (TryFindTag(directories, "Exif SubIFD", "User Comment", tag => true, out tag))
+        foreach (var directory in directories)
         {
-            fileParameters = ReadA111Parameters(tag.Description);
+            if (directory.Name == "PNG-tEXt")
+            {
+                foreach (var tag in directory.Tags)
+                {
+                    if (tag.Name == "Textual Data")
+                    {
+                        if (tag.Description.StartsWith("parameters:"))
+                        {
+                            fileParameters = ReadA111Parameters(tag.Description);
+                        }
+                        else if (tag.Description.StartsWith("Score:"))
+                        {
+                            decimal.TryParse(tag.Description[6..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
+                        }
+                        else if (tag.Description.StartsWith("aesthetic_score:"))
+                        {
+                            decimal.TryParse(tag.Description[16..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
+                        }
+                    }
+                }
+            }
+            else if (directory.Name == "PNG-iTXt")
+            {
+                foreach (var tag in directory.Tags)
+                {
+                    if (tag.Name == "Textual Data" && tag.Description.StartsWith("parameters:"))
+                    {
+                        fileParameters = ReadA111Parameters(tag.Description);
+                    }
+                }
+
+            }
+            else if (directory.Name == "Exif SubIFD")
+            {
+                foreach (var tag in directory.Tags)
+                {
+                    if (tag.Name == "User Comment")
+                    {
+                        fileParameters = ReadA111Parameters(tag.Description);
+                    }
+                }
+            }
+
         }
-        else if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("parameters:"), out tag))
-        {
-            fileParameters = ReadA111Parameters(tag.Description);
-        }
-        else if (TryFindTag(directories, "PNG-iTXt", "Textual Data", tag => tag.Description.StartsWith("parameters:"), out tag))
-        {
-            fileParameters = ReadA111Parameters(tag.Description);
-        }
-        else
+
+
+        if (fileParameters == null)
         {
             var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
 
@@ -886,27 +952,15 @@ public class Metadata
                 var parameters = File.ReadAllText(parameterFile);
                 fileParameters = ReadA111Parameters(parameters);
             }
-
         }
 
-        if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Score:"), out tag))
+
+
+        if (aestheticScore > 0)
         {
             fileParameters ??= new FileParameters();
-            fileParameters.AestheticScore = decimal.Parse(tag.Description.Substring("Score:".Length), CultureInfo.InvariantCulture);
             fileParameters.OtherParameters ??= $"aesthetic_score: {fileParameters.AestheticScore}";
         }
-
-
-        if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("aesthetic_score:"), out tag))
-        {
-            if (fileParameters == null)
-            {
-                fileParameters = new FileParameters();
-            }
-            fileParameters.AestheticScore = decimal.Parse(tag.Description.Substring("aesthetic_score:".Length), CultureInfo.InvariantCulture);
-            fileParameters.OtherParameters ??= $"aesthetic_score: {fileParameters.AestheticScore}";
-        }
-
 
         return fileParameters;
     }

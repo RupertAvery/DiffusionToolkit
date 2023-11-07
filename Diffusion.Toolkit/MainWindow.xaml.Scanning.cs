@@ -171,7 +171,7 @@ namespace Diffusion.Toolkit
                 includeProperties.Add(nameof(Image.NSFW));
             }
 
-            foreach (var file in Scanner.Scan(filesToScan))
+            foreach (var file in MetadataScanner.Scan(filesToScan))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -314,7 +314,7 @@ namespace Diffusion.Toolkit
                     {
                         var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
-                        filesToScan.AddRange(Scanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), settings.ExcludePaths).ToList());
+                        filesToScan.AddRange(MetadataScanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), settings.ExcludePaths).ToList());
                     }
                 }
 

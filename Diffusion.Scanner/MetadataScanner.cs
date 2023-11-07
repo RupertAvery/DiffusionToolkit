@@ -3,7 +3,7 @@ using static System.IO.Directory;
 
 namespace Diffusion.IO
 {
-    public class Scanner
+    public class MetadataScanner
     {
         public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, IEnumerable<string>? excludePaths)
         {
