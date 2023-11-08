@@ -52,6 +52,7 @@ public class Settings : IScanOptions
     private bool? _useCustomViewer;
     private string _customCommandLine;
     private string _customCommandLineArgs;
+    private string _sortAlbumsBy;
 
     public bool IsDirty()
     {
@@ -279,6 +280,12 @@ public class Settings : IScanOptions
     {
         get => _customCommandLineArgs;
         set => UpdateValue(ref _customCommandLineArgs, value);
+    }
+
+    public string SortAlbumsBy
+    {
+        get => _sortAlbumsBy;
+        set => UpdateValue(ref _sortAlbumsBy, value);
     }
 
     public void Apply(Settings settings)

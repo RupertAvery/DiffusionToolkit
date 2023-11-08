@@ -183,7 +183,7 @@
                 <TabItem Header="NSFW">
                     <StackPanel>
                         <Label>NFSW Tags: (one token on each line)</Label>
-                        <TextBox Text="{Binding NSFWTags, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Margin="0,10,0,10" Height="90"></TextBox>
+                        <TextBox Text="{Binding NSFWTags, UpdateSourceTrigger=PropertyChanged}" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Margin="0,10,0,10" Height="90"></TextBox>
                         <CheckBox IsChecked="{Binding AutoTagNSFW}" ToolTip="Automatically tag added images as NSFW">Auto Tag NSFW</CheckBox>
                     </StackPanel>
                 </TabItem>

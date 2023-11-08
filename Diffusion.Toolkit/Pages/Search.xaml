@@ -160,7 +160,7 @@
                                         </Button>
                                         <ListBox Background="Transparent"
                                                  BorderBrush="Transparent"
-                                                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
                                                  ItemsSource="{Binding MainModel.Albums}"
                                                  SelectedItem="{Binding MainModel.CurrentAlbum}"
                                                  AllowDrop="True"

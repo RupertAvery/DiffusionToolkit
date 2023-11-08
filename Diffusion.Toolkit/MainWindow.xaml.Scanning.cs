@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using Diffusion.Database;
 
 namespace Diffusion.Toolkit
@@ -384,5 +385,12 @@ namespace Diffusion.Toolkit
             _model.Status = $"{total:###,###,##0} images in database";
         }
 
+        private void SortAlbums_OnClick(object sender, RoutedEventArgs e)
+        {
+            var window = new AlbumSortWindow(_dataStore, _settings);
+            window.Owner = this;
+            window.ShowDialog();
+            LoadAlbums();
+        }
     }
 }

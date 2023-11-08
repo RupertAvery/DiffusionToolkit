@@ -86,10 +86,22 @@ namespace Diffusion.Toolkit
         private void LoadAlbums()
         {
             var albums = _dataStore.GetAlbums();
+            
 
-            _model.Albums = new ObservableCollection<Album>(albums);
+            switch (_settings.SortAlbumsBy)
+            {
+                case "Name":
+                    _model.Albums = new ObservableCollection<Album>(albums.OrderBy(a => a.Name));
+                    break;
+                case "Date":
+                    _model.Albums = new ObservableCollection<Album>(albums.OrderBy(a => a.LastUpdated));
+                    break;
+                case "Custom":
+                    _model.Albums = new ObservableCollection<Album>(albums.OrderBy(a => a.Order));
+                    break;
+            }
         }
-        
+
         private void AddImagesToNewAlbum_Click(object sender, RoutedEventArgs e)
         {
             var name = NewAlbumName.Text.Trim();

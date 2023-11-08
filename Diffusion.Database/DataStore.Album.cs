@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Diffusion.Database
 {
@@ -187,5 +188,24 @@ namespace Diffusion.Database
             db.Close();
         }
 
+        public void UpdateAlbumsOrder(IEnumerable<Album> albums)
+        {
+            using var db = OpenConnection();
+
+            db.BeginTransaction();
+
+            var query = $"UPDATE {nameof(Album)} SET [Order] = @Order WHERE Id = @Id";
+
+            var command = db.CreateCommand(query);
+
+            foreach (var album in albums)
+            {
+                command.Bind("@Order", album.Order);
+                command.Bind("@Id", album.Id);
+                command.ExecuteNonQuery();
+            }
+
+            db.Commit();
+        }
     }
 }

@@ -115,6 +115,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="AlbumSortWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="ManageAlbumWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

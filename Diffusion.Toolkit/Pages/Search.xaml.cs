@@ -1511,35 +1511,6 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        //private void OpenAlbum_Click(object sender, MouseButtonEventArgs e)
-        //{
-        //    var album = (Album)((Border)sender).DataContext;
-        //    SetMode("albums");
-        //    _currentModeSettings.CurrentAlbum = album;
-        //    _model.Album = album.Name;
-        //    SearchImages(null);
-        //}
-
-        //private void OpenAlbumButton_Click(object sender, RoutedEventArgs e)
-        //{
-        //    var album = (Album)((Button)sender).DataContext;
-        //    SetMode("albums");
-        //    _currentModeSettings.CurrentAlbum = album;
-        //    _model.MainModel.CurrentAlbum = album;
-        //    _model.Album = album.Name;
-        //    SearchImages(null);
-        //}
-
-
-
-        //private Album? _selectedAlbum = null;
-
-        //private void UpdateAlbums()
-        //{
-        //    ThumbnailListView.ReloadAlbums();
-        //    //_model.Albums = new ObservableCollection<Album>(DataStore.GetAlbums());
-        //}
-
         public void SetShowAlbumPanel(bool showAlbumPanel)
         {
             _model.ShowAlbumPanel = showAlbumPanel;
@@ -1549,8 +1520,7 @@ namespace Diffusion.Toolkit.Pages
         {
             EndNavigateCursor();
         }
-
-
+        
         public void ExtOnKeyDown(object sender, KeyEventArgs e)
         {
             StartNavigateCursor();

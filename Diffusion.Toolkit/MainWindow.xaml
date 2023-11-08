@@ -36,7 +36,7 @@
         <ResourceDictionary>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
             <converters:ThumbnailSizeCheckedConverter x:Key="thumbSizeChecked"></converters:ThumbnailSizeCheckedConverter>
-            
+
         </ResourceDictionary>
     </Window.Resources>
 
@@ -80,8 +80,10 @@
                 <MenuItem Header="_Fit to Preview" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
                 <MenuItem Header="Show/Hide Preview" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
                 <MenuItem Header="_Popout Preview" Command="{Binding PoputPreview}"/>
-                <Separator/>
+            </MenuItem>
+            <MenuItem Header="_Albums">
                 <MenuItem Header="_Album Pane" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
+                <MenuItem Header="Sort" Click="SortAlbums_OnClick"/>
             </MenuItem>
             <MenuItem Header="_Tools">
                 <MenuItem Header="_Search results">

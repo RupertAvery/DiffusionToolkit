@@ -1,0 +1,62 @@
+﻿<local:BorderlessWindow x:Class="Diffusion.Toolkit.AlbumSortWindow"
+                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:local="clr-namespace:Diffusion.Toolkit"
+                  xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+                  mc:Ignorable="d"
+                  d:DataContext="{d:DesignInstance local:AlbumSortModel, IsDesignTimeCreatable = True}"
+                  WindowStartupLocation="CenterOwner"
+                  ShowInTaskbar="False"
+                  MenuWidth="0"
+                  TitleWidth="*"
+                  WindowStyle="ToolWindow"
+                  Style="{StaticResource BorderlessWindowStyle}"
+                  Title="Sort Album" Height="450" Width="300">
+    <Window.Resources>
+        <converters:SortAlbumsByConverter x:Key="SortAlbumsByConverter"></converters:SortAlbumsByConverter>
+
+    </Window.Resources>
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
+    </Window.InputBindings>
+    <Grid Margin="5,20,5,5">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <RadioButton Grid.Column="0" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Name}" >Name</RadioButton>
+            <RadioButton Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Date}">Date Created</RadioButton>
+            <RadioButton Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}">Custom</RadioButton>
+        </Grid>
+        <Grid  Grid.Row="1"  IsEnabled="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380"/>
+                <ColumnDefinition Width="3"></ColumnDefinition>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <ListBox Name="ListBox" Grid.Column="0"  Margin="3,0" ItemsSource="{Binding SortedAlbums}" SelectedItem="{Binding SelectedAlbum}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Grid Grid.Column="2" >
+                <StackPanel>
+                    <Button Height="25" Command="{Binding MoveUpCommand}" Margin="0,0,0,5">Up</Button>
+                    <Button Height="25" Command="{Binding MoveDownCommand}">Down</Button>
+                </StackPanel>
+
+            </Grid>
+        </Grid>
+    </Grid>
+</local:BorderlessWindow>
