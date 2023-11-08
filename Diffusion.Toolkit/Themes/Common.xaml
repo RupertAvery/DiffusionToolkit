@@ -411,7 +411,7 @@
                             <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{DynamicResource HighlightBrush}"/>
                             <Setter Property="Fill" TargetName="optionMark" Value="{DynamicResource ForegroundBrush}"/>
                         </Trigger>
-                        
+
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResource ControlBackgroundBrush}"/>
                             <Setter Property="BorderBrush" TargetName="radioButtonBorder" Value="{DynamicResource DisabledBackgroundBrush}"/>
@@ -672,10 +672,37 @@
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
     </Style>
 
-    <Style TargetType="ListBox">
+
+
+    <Style  x:Key="{x:Type ListBox}" TargetType="ListBox">
         <Setter Property="Background" Value="{DynamicResource ControlBackgroundBrush}"></Setter>
         <Setter Property="BorderBrush" Value="{DynamicResource SecondaryBrush}"></Setter>
         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBox">
+                    <Border BorderThickness="{TemplateBinding Border.BorderThickness}" Padding="1,1,1,1" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}" Name="Bd" SnapsToDevicePixels="True">
+                        <ScrollViewer Padding="{TemplateBinding Control.Padding}" Focusable="False">
+                            <ItemsPresenter SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
+                        </ScrollViewer>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="UIElement.IsEnabled" Value="False">
+                            <Setter Property="Panel.Background" TargetName="Bd" Value="{DynamicResource DisabledBackgroundBrush}"></Setter>
+                            <Setter Property="Border.BorderBrush" TargetName="Bd" Value="{DynamicResource SecondaryBrush}"></Setter>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="ItemsControl.IsGrouping" Value="True"></Condition>
+                                <Condition Property="VirtualizingPanel.IsVirtualizingWhenGrouping" Value="False"></Condition>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="ScrollViewer.CanContentScroll" Value="False">
+                            </Setter>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style TargetType="ListBoxItem">
@@ -997,8 +1024,8 @@
                         <Border BorderThickness="{TemplateBinding Border.BorderThickness}" BorderBrush="{TemplateBinding Border.BorderBrush}" Background="{TemplateBinding Panel.Background}" Name="ContentPanel" KeyboardNavigation.TabIndex="2" KeyboardNavigation.TabNavigation="Local" KeyboardNavigation.DirectionalNavigation="Contained" Grid.Column="0" Grid.Row="1">
                             <ContentPresenter Content="{TemplateBinding TabControl.SelectedContent}" ContentTemplate="{TemplateBinding TabControl.SelectedContentTemplate}" ContentStringFormat="{TemplateBinding TabControl.SelectedContentStringFormat}" ContentSource="SelectedContent" Name="PART_SelectedContentHost" Margin="{TemplateBinding Control.Padding}" SnapsToDevicePixels="{TemplateBinding UIElement.SnapsToDevicePixels}" />
                         </Border>
-                    </Grid>                                                                             
-        
+                    </Grid>
+
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

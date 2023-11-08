@@ -25,6 +25,7 @@ namespace Diffusion.Toolkit.Themes
             LoadResourceDictionary(app, "Themes/Common.xaml");
             LoadResourceDictionary(app, "Themes/Menu.xaml");
             LoadResourceDictionary(app, "Themes/SWStyles.xaml");
+            LoadResourceDictionary(app, "Themes/Scrollbars.xaml");
             LoadResourceDictionary(app, "Themes/Window.xaml");
         }
 
