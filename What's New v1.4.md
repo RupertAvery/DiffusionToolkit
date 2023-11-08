@@ -82,10 +82,14 @@ You can even use it on images without metadata and still use the other features 
    * No thumbnails for Negative Prompts yet.
    * Fixes to prompt queries, should be more accurate now
    * Prompts results are affected by Show/Hide NSFW 
+* Albums Updates
+   * Menu item added for albums
+   * You can now sort Albums! See Albums > Sort
+      * Name
+      * Date
+      * Custom
 * Some ComfyUI parsing fixes
    * Errors shouldn't prevent images from loading, but the metadata will be empty
-* Album fixes
-   * Moved album out of Search page, let me know if I broke anything
 * Civitai integration
    * Use CivitAI model database to get model names from the hash
       * Edit > Download Civitai models (saved to `models.json`)
@@ -99,6 +103,7 @@ You can even use it on images without metadata and still use the other features 
 * Moved Filter button to the right
 * Fix openclibboard failed (0x800401D0) (#144)
 * Preview - Mousewheel Zoom without CTRL (#142)
+* Thinner Scrollbars
 * Various bug fixes
 
 https://github.com/RupertAvery/DiffusionToolkit/releases/tag/v1.4
