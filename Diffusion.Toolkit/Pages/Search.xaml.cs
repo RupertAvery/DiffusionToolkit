@@ -27,6 +27,7 @@ using Image = Diffusion.Database.Image;
 using SQLite;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -606,6 +607,7 @@ namespace Diffusion.Toolkit.Pages
                     _model.CurrentImage.Rating = image.Rating;
                     _model.CurrentImage.NSFW = image.NSFW;
                     _model.CurrentImage.ForDeletion = image.ForDeletion;
+                    _model.CurrentImage.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
                 }
 
                 _model.CurrentImage.Image = GetBitmapImage(path);
@@ -617,6 +619,7 @@ namespace Diffusion.Toolkit.Pages
                 _model.CurrentImage.ModelHash = parameters.ModelHash;
                 _model.CurrentImage.Seed = parameters.Seed;
                 _model.CurrentImage.AestheticScore = $"{parameters.AestheticScore}";
+
 
                 if (_modelLookup != null)
                 {
@@ -1042,7 +1045,8 @@ namespace Diffusion.Toolkit.Pages
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
                     NSFW = file.NSFW,
-                    EntryType = EntryType.File
+                    EntryType = EntryType.File,
+                    AlbumCount = file.AlbumCount
                 };
 
                 images.Add(imageEntry);
@@ -1568,6 +1572,19 @@ namespace Diffusion.Toolkit.Pages
         private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
         {
             _model.MainModel.RemoveAlbumCommand.Execute(null);
+        }
+
+        private void ListBox_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            //SetMode("albums");
+            //SearchImages(null);
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            _model.MainModel.CurrentAlbum = ((Album)((Button)sender).DataContext);
+            SetMode("albums");
+            SearchImages(null);
         }
     }
 }

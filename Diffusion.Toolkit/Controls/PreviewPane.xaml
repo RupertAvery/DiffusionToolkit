@@ -295,6 +295,28 @@
                                     <TextBox Foreground="White" FontSize="14" BorderThickness="0"
                                              IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
                                 </Grid>
+
+                                <Grid  Background="#80000000" >
+                                    <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">ALBUMS</Label>
+                                </Grid>
+
+
+                                <Grid  Background="Transparent" Margin="10">
+                                    <ItemsControl ItemsSource="{Binding Path=Albums}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                                         IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Name}"></TextBox>
+
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                </Grid>
                             </StackPanel>
                         </ScrollViewer>
                     </Grid>

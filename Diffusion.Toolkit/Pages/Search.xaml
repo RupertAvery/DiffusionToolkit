@@ -147,7 +147,7 @@
                                   Padding="5,0,0,0"
                                   HorizontalAlignment="Stretch" 
                                   VerticalContentAlignment="Center"
-                                  Content="{Binding Album}"
+                                  Content="{Binding MainModel.CurrentAlbum.Name}"
                         ></Label>
                     </DockPanel>
                     <Grid DockPanel.Dock="Bottom">
@@ -158,42 +158,34 @@
                                         <Button DockPanel.Dock="Top" Width="135" Height="26" Command="{Binding MainModel.CreateAlbumCommand}" Margin="0,10,0,15">
                                             Create Album
                                         </Button>
-                                        <ListBox Background="Transparent"
-                                                 BorderBrush="Transparent"
-                                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                                 ItemsSource="{Binding MainModel.Albums}"
-                                                 SelectedItem="{Binding MainModel.CurrentAlbum}"
-                                                 AllowDrop="True"
-                                                 DockPanel.Dock="Top" 
-                                                 Width="150">
-                                            <ListBox.Resources>
+                                        <ItemsControl ItemsSource="{Binding Path=MainModel.Albums}">
+                                            <ItemsControl.Resources>
                                                 <common:BindingProxy x:Key="Proxy" Data="{Binding MainModel}" />
-                                            </ListBox.Resources>
-                                            <ListBox.ItemTemplate>
-                                                <DataTemplate >
-                                                    <Grid  AllowDrop="True" Drop="DropImagesOnAlbum" Width="135" HorizontalAlignment="Stretch">
-                                                        <Grid.ContextMenu>
-                                                            <ContextMenu>
-                                                                <MenuItem Header="Rename Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameAlbumCommand}" CommandParameter="{Binding Path=.}"></MenuItem>
-                                                                <MenuItem Header="Remove Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveAlbumCommand}" CommandParameter="{Binding Path=.}"></MenuItem>
-                                                            </ContextMenu>
-                                                        </Grid.ContextMenu>
-                                                        <Label  Content="{Binding Name}"></Label>
-
-                                                        <!--<Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" Background="Transparent" AllowDrop="True" Drop="DropImagesOnAlbum" Width="135" HorizontalAlignment="Stretch" Click="OpenAlbumButton_Click">
+                                            </ItemsControl.Resources>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid  AllowDrop="True" Drop="DropImagesOnAlbum" Width="135" HorizontalAlignment="Stretch" Margin="2,0,2,5">
+                                                        <Button Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" 
+                                                                AllowDrop="True" Drop="DropImagesOnAlbum" Width="135" HorizontalAlignment="Stretch" Click="ButtonBase_OnClick">
                                                             <Button.ContextMenu>
                                                                 <ContextMenu>
                                                                     <MenuItem Header="Rename Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameAlbumCommand}" CommandParameter="{Binding Path=.}"></MenuItem>
                                                                     <MenuItem Header="Remove Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveAlbumCommand}" CommandParameter="{Binding Path=.}"></MenuItem>
                                                                 </ContextMenu>
                                                             </Button.ContextMenu>
-                                                            <Label  Content="{Binding Name}"></Label>
-                                                        </Button>-->
+                                                            <TextBlock Text="{Binding Name}" TextWrapping="WrapWithOverflow" Padding="5"></TextBlock>
+                                                        </Button>
                                                     </Grid>
 
                                                 </DataTemplate>
-                                            </ListBox.ItemTemplate>
-                                        </ListBox>
+                                            </ItemsControl.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Vertical"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+
                                     </DockPanel>
                                 </TabItem>
                             </TabControl>
@@ -257,7 +249,7 @@
         />
 
         <controls:PreviewPane x:Name="PreviewPane" Grid.Row="0" Grid.Column="2" 
-                              NSFWBlur="{Binding NSFWBlur}" 
+                              NSFWBlur="{Binding MainModel.NSFWBlurCommand}" 
                               Image="{Binding CurrentImage}" 
                               AllowDrop="True" 
                               PreviewKeyUp="PreviewPane_OnPreviewKeyUp"

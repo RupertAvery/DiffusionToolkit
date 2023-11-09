@@ -129,4 +129,5 @@ public class ImageEntry : BaseNotify
     public int Width { get; set; }
     public string Path { get; set; }
     public DateTime CreatedDate { get; set; }
+    public int AlbumCount { get; set; }
 }

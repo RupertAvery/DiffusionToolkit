@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using Diffusion.Database;
+using System.Collections.Generic;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace Diffusion.Toolkit.Models;
@@ -35,6 +37,11 @@ public class ImageViewModel : BaseNotify
     private ICommand _toggleParameters;
     private string? _aestheticScore;
     private ICommand _searchModelCommand;
+    private IEnumerable<Album> _albums;
+
+    public ImageViewModel()
+    {
+    }
 
     public int Id { get; set; }
 
@@ -195,5 +202,11 @@ public class ImageViewModel : BaseNotify
     {
         get => _aestheticScore;
         set => SetField(ref _aestheticScore, value);
+    }
+
+    public IEnumerable<Album> Albums
+    {
+        get => _albums;
+        set => SetField(ref _albums, value);
     }
 }

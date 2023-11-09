@@ -300,10 +300,9 @@ namespace Diffusion.Toolkit
             }
             else if (e.PropertyName == nameof(MainModel.CurrentAlbum))
             {
-                _search.SetMode("albums");
-                //_currentModeSettings.CurrentAlbum = album;
-                //_model.Album = album.Name;
-                _search.SearchImages(null);
+                //Debug.WriteLine(_model.CurrentAlbum.Name);
+                //_search.SetMode("albums");
+                //_search.SearchImages(null);
             }
         }
 
