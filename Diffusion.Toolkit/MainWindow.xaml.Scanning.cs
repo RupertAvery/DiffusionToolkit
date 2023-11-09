@@ -24,6 +24,7 @@ namespace Diffusion.Toolkit
             else
             {
                 await _messagePopupManager.Show("No image paths configured!", "Rescan Folders");
+                ShowSettings(null);
             }
         }
 
@@ -45,6 +46,7 @@ namespace Diffusion.Toolkit
             else
             {
                 await _messagePopupManager.Show("No image paths configured!", "Rebuild Metadata");
+                ShowSettings(null);
             }
         }
 

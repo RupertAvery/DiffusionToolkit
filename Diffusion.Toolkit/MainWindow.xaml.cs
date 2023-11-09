@@ -340,6 +340,7 @@ namespace Diffusion.Toolkit
                 _settings.ShowAlbumPanel ??= true;
                 _settings.RecurseFolders ??= true;
                 _settings.UseBuiltInViewer ??= true;
+                _settings.SortAlbumsBy ??= "Name";
 
                 UpdateTheme();
 
@@ -795,22 +796,27 @@ namespace Diffusion.Toolkit
 
                 foreach (var hash in hashes.hashes)
                 {
-                    var path = hash.Key.Substring(index);
-                    if (modelLookup.TryGetValue(path, out var model))
+                    if (index < hash.Key.Length)
                     {
-                        model.SHA256 = hash.Value.sha256;
-                    }
-                    else
-                    {
-                        _modelsCollection.Add(new Model()
-                        {
-                            Filename = Path.GetFileNameWithoutExtension(path),
-                            Path = path,
-                            SHA256 = hash.Value.sha256,
-                            IsLocal = true
-                        });
+                        var path = hash.Key.Substring(index);
 
+                        if (modelLookup.TryGetValue(path, out var model))
+                        {
+                            model.SHA256 = hash.Value.sha256;
+                        }
+                        else
+                        {
+                            _modelsCollection.Add(new Model()
+                            {
+                                Filename = Path.GetFileNameWithoutExtension(path),
+                                Path = path,
+                                SHA256 = hash.Value.sha256,
+                                IsLocal = true
+                            });
+
+                        }
                     }
+                   
                 }
 
                 //foreach (var model in _modelsCollection.ToList())

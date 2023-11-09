@@ -77,6 +77,7 @@ public class Settings : IScanOptions
         UseBuiltInViewer = true;
         OpenInFullScreen = true;
         CustomCommandLineArgs = "%1";
+        SortAlbumsBy = "Name";
 
         if (initialize)
         {
