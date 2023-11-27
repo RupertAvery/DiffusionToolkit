@@ -17,13 +17,25 @@ public class ModelScanner
         {
             var relativePath = Path.GetRelativePath(path, file);
 
-            yield return new Model()
+            if (File.Exists(file))
             {
-                Path = relativePath,
-                Filename = Path.GetFileNameWithoutExtension(file),
-                Hash = HashFunctions.CalculateHash(file),
-                IsLocal = true
-            };
+                string hash = null;
+                try
+                {
+                    hash = HashFunctions.CalculateHash(file);
+                }
+                catch (Exception e)
+                {
+                }
+
+                yield return new Model()
+                {
+                    Path = relativePath,
+                    Filename = Path.GetFileNameWithoutExtension(file),
+                    Hash = hash,
+                    IsLocal = true
+                };
+            }
         }
     }
 }
