@@ -625,8 +625,14 @@ namespace Diffusion.Toolkit.Pages
                     _model.CurrentImage.NSFW = image.NSFW;
                     _model.CurrentImage.ForDeletion = image.ForDeletion;
                     _model.CurrentImage.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
+                    var albumLookup = _model.CurrentImage.Albums.ToDictionary(x=>x.Id);
+
+                    foreach (var album in _model.MainModel.Albums)
+                    {
+                        album.IsTicked = albumLookup.ContainsKey(album.Id);
                     }
                     
+                }
 
                 Task.Run(() =>
                 {
