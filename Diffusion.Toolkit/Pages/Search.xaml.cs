@@ -624,7 +624,12 @@ namespace Diffusion.Toolkit.Pages
                     _model.CurrentImage.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
                     }
                     
+
+                Task.Run(() =>
+                {
                     _model.CurrentImage.Image = GetBitmapImage(path);
+                });
+
                 _model.CurrentImage.Path = parameters.Path;
                 _model.CurrentImage.Prompt = parameters.Prompt;
                 _model.CurrentImage.NegativePrompt = parameters.NegativePrompt;
