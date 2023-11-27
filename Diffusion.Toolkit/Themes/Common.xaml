@@ -7,7 +7,9 @@
     <SolidColorBrush x:Key="PrimaryBrush" Color="{DynamicResource Background}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{DynamicResource Splitter}"/>
     <SolidColorBrush x:Key="SplitterBrush" Color="{DynamicResource Splitter}"/>
+    <SolidColorBrush x:Key="FocusedBrush" Color="{DynamicResource Focused}"/>
     <SolidColorBrush x:Key="HighlightBrush" Color="{DynamicResource Highlight}"/>
+    <SolidColorBrush x:Key="HighlightFocusedBrush" Color="{DynamicResource HighlightFocused}"/>
     <SolidColorBrush x:Key="BgHighlightBrush" Color="{DynamicResource BgHighlight}"/>
     <SolidColorBrush x:Key="ForegroundBrush" Color="{DynamicResource Foreground}"/>
     <SolidColorBrush x:Key="DisabledForegroundBrush" Color="{DynamicResource DisabledForeground}"/>
