@@ -41,7 +41,7 @@ namespace Diffusion.Toolkit.Controls
             if (Model.Page > 1)
             {
                 Model.Page--;
-                currentItemIndex = Model.PageSize - 1;
+                //currentItemIndex = Model.PageSize - 1;
 
                 var args = new PageChangedEventArgs()
                 {
@@ -59,7 +59,7 @@ namespace Diffusion.Toolkit.Controls
             if (Model.Page < Model.Pages)
             {
                 Model.Page++;
-                currentItemIndex = 0;
+                //currentItemIndex = 0;
 
                 var args = new PageChangedEventArgs()
                 {

@@ -622,8 +622,8 @@ namespace Diffusion.Toolkit.Pages
                     _model.CurrentImage.NSFW = image.NSFW;
                     _model.CurrentImage.ForDeletion = image.ForDeletion;
                     _model.CurrentImage.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
-                }
-
+                    }
+                    
                     _model.CurrentImage.Image = GetBitmapImage(path);
                 _model.CurrentImage.Path = parameters.Path;
                 _model.CurrentImage.Prompt = parameters.Prompt;
@@ -757,7 +757,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 _model.SelectedImageEntry = _model.Images[currentIndex + 1];
 
-                ThumbnailListView.SelectItem(currentIndex + 1);
+                ThumbnailListView.ShowItem(currentIndex + 1);
             }
             else
             {
@@ -782,7 +782,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 _model.SelectedImageEntry = _model.Images[currentIndex - 1];
 
-                ThumbnailListView.SelectItem(currentIndex - 1);
+                ThumbnailListView.ShowItem(currentIndex - 1);
             }
             else
             {

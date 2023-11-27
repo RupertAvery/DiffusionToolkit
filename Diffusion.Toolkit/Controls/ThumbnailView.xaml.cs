@@ -158,60 +158,73 @@ namespace Diffusion.Toolkit.Controls
 
         private void ThumbnailListView_OnKeyDown(object sender, KeyEventArgs e)
         {
-            var ratings = new[]
+            switch (e.Key)
             {
-                Key.D1,
-                Key.D2,
-                Key.D3,
-                Key.D4,
-                Key.D5,
-                Key.D6,
-                Key.D7,
-                Key.D8,
-                Key.D9,
-                Key.D0,
-            };
+                case Key.Enter when e.KeyboardDevice.Modifiers == ModifierKeys.None:
+                    OpenSelected();
+                    break;
+                
+                case Key.Delete:
+                case Key.X:
+                    {
+                        if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+                        {
+                            RemoveEntry();
+                        }
+                        else if (e.KeyboardDevice.Modifiers == ModifierKeys.None)
+                        {
+                            DeleteSelected();
+                        }
 
-            if (e.Key == Key.Enter && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                OpenSelected();
-            }
-            else if (e.Key == Key.Delete || e.Key == Key.X)
-            {
-                if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
-                {
-                    RemoveEntry();
-                }
-                else if (e.KeyboardDevice.Modifiers == ModifierKeys.None)
-                {
-                    DeleteSelected();
-                }
-            }
-            else if (e.Key == Key.F && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                FavoriteSelected();
-            }
-            else if (e.Key == Key.N && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                NSFWSelected();
-            }
-            else if (ratings.Contains(e.Key) && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                var rating = e.Key switch
-                {
-                    Key.D1 => 1,
-                    Key.D2 => 2,
-                    Key.D3 => 3,
-                    Key.D4 => 4,
-                    Key.D5 => 5,
-                    Key.D6 => 6,
-                    Key.D7 => 7,
-                    Key.D8 => 8,
-                    Key.D9 => 9,
-                    Key.D0 => 10,
-                };
+                        break;
+                    }
+                
+                case Key.F when e.KeyboardDevice.Modifiers == ModifierKeys.None:
+                    FavoriteSelected();
+                    break;
 
-                RateSelected(rating);
+                case Key.N when e.KeyboardDevice.Modifiers == ModifierKeys.None:
+                    NSFWSelected();
+                    break;
+
+                case >= Key.D0 and <= Key.D9 when e.KeyboardDevice.Modifiers == ModifierKeys.None:
+                    {
+                        var rating = e.Key switch
+                        {
+                            Key.D1 => 1,
+                            Key.D2 => 2,
+                            Key.D3 => 3,
+                            Key.D4 => 4,
+                            Key.D5 => 5,
+                            Key.D6 => 6,
+                            Key.D7 => 7,
+                            Key.D8 => 8,
+                            Key.D9 => 9,
+                            Key.D0 => 10,
+                        };
+                        RateSelected(rating);
+                    }
+
+                    break;
+                case >= Key.NumPad0 and <= Key.NumPad9 when e.KeyboardDevice.Modifiers == ModifierKeys.None:
+                    {
+                        var rating = e.Key switch
+                        {
+                            Key.NumPad1 => 1,
+                            Key.NumPad2 => 2,
+                            Key.NumPad3 => 3,
+                            Key.NumPad4 => 4,
+                            Key.NumPad5 => 5,
+                            Key.NumPad6 => 6,
+                            Key.NumPad7 => 7,
+                            Key.NumPad8 => 8,
+                            Key.NumPad9 => 9,
+                            Key.NumPad0 => 10,
+                        };
+                        RateSelected(rating);
+                    }
+
+                    break;
             }
         }
 
@@ -229,12 +242,10 @@ namespace Diffusion.Toolkit.Controls
             return null;
         }
 
-        public void SelectItem(int index, bool focus = false)
+        public void ShowItem(int index, bool focus = false)
         {
-            ThumbnailListView.SelectedIndex = index;
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;
             var item = wrapPanel.Children[index] as ListViewItem;
-            //var item = wrapPanel.Children[ThumbnailListView.SelectedIndex];
             ThumbnailListView.ScrollIntoView(item);
             item.BringIntoView();
             if (focus)
@@ -247,15 +258,15 @@ namespace Diffusion.Toolkit.Controls
         public void FocusCurrentItem()
         {
             var index = ThumbnailListView.SelectedIndex;
-            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
-            var item = wrapPanel.Children[index] as ListViewItem;
-            //var item = wrapPanel.Children[ThumbnailListView.SelectedIndex];
-            ThumbnailListView.ScrollIntoView(item);
-            item.BringIntoView();
-            item.Focus();
+            if (index >= 0)
+            {
+                var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+                var item = wrapPanel.Children[index] as ListViewItem;
+                ThumbnailListView.ScrollIntoView(item);
+                item.BringIntoView();
+                item.Focus();
+            }
         }
-
-        private int currentItemIndex = -1;
 
         /// <summary>
         /// Handle wrapping around if an arrow key is pressed at the edge of the <see cref="ListView"/>.
@@ -268,18 +279,31 @@ namespace Diffusion.Toolkit.Controls
                 return;
             }
 
+            var currentItemIndex = -1;
+
+            for (int i = 0; i < wrapPanel.Children.Count; i++)
+            {
+                var child = wrapPanel.Children[i];
+                if (child.IsFocused)
+                {
+                    currentItemIndex = i;
+                    break;
+                }
+            }
+
+
+            int delta = 0;
             var item = wrapPanel.Children[0] as ListViewItem;
             var columnWidth = (int)(wrapPanel.ActualWidth / item.ActualWidth);
 
-
             switch (e.Key)
             {
-                case Key.Left or Key.Right or Key.Up or Key.Down when ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1:
-                    return;
+                //case Key.Left or Key.Right or Key.Up or Key.Down when ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1:
+                //    return;
 
                 case Key.Left or Key.Right:
                     {
-                        var delta = e.Key switch
+                        delta = e.Key switch
                         {
                             Key.Left => -1,
                             Key.Right => 1,
@@ -288,13 +312,19 @@ namespace Diffusion.Toolkit.Controls
 
                         switch (delta)
                         {
-                            case -1 when ThumbnailListView.SelectedIndex == 0 && !e.IsRepeat:
-                                GoPrevPage(true);
-                                e.Handled = true;
+                            case -1 when currentItemIndex == 0 && !e.IsRepeat:
+                                if (ThumbnailListView.SelectedItems.Count == 1)
+                                {
+                                    GoPrevPage(true);
+                                    e.Handled = true;
+                                }
                                 return;
-                            case 1 when ThumbnailListView.SelectedIndex == Model.Images.Count - 1 && !e.IsRepeat:
-                                GoNextPage();
-                                e.Handled = true;
+                            case 1 when currentItemIndex == ThumbnailListView.Items.Count - 1 && !e.IsRepeat:
+                                if (ThumbnailListView.SelectedItems.Count == 1)
+                                {
+                                    GoNextPage();
+                                    e.Handled = true;
+                                }
                                 return;
                         }
 
@@ -306,26 +336,14 @@ namespace Diffusion.Toolkit.Controls
                                 e.Handled = true;
                                 return;
                             }
-                            
-                            
+
+
                             if ((currentItemIndex + delta) % columnWidth == (delta == 1 ? 0 : columnWidth - 1))
                             {
-                                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
-                                {
-                                    ThumbnailListView.SelectedIndex = currentItemIndex + delta;
-                                    ThumbnailListView.SelectedItems.Add(ThumbnailListView.Items[currentItemIndex + delta + 1]);
-                                }
-                                else
-                                {
-                                    ThumbnailListView.SelectedIndex = currentItemIndex + delta;
-                                }
-
-                                wrapPanel.Children[ThumbnailListView.SelectedIndex].Focus();
-
+                                wrapPanel.Children[currentItemIndex + delta].Focus();
                                 e.Handled = true;
                             }
 
-                            currentItemIndex += delta;
                         }
 
 
@@ -333,7 +351,7 @@ namespace Diffusion.Toolkit.Controls
                     }
                 case Key.Up or Key.Down:
                     {
-                        var delta = e.Key switch
+                        delta = e.Key switch
                         {
                             Key.Up => -columnWidth,
                             Key.Down => columnWidth,
@@ -345,25 +363,6 @@ namespace Diffusion.Toolkit.Controls
                             e.Handled = true;
                             return;
                         }
-                        //else
-                        //{
-
-                        //    //if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
-                        //    //{
-                        //    //    ThumbnailListView.SelectedIndex = currentItemIndex + delta;
-                        //    //    ThumbnailListView.SelectedItems.Add(ThumbnailListView.Items[currentItemIndex + delta + 1]);
-                        //    //}
-                        //    //else
-                        //    //{
-                        //    //    ThumbnailListView.SelectedIndex = currentItemIndex + delta;
-                        //    //}
-
-                        //    //wrapPanel.Children[ThumbnailListView.SelectedIndex].Focus();
-
-                        //    //e.Handled = true;
-                        //}
-
-                        currentItemIndex += delta;
 
                         break;
                     }
@@ -482,7 +481,7 @@ namespace Diffusion.Toolkit.Controls
                     var ids = imageEntries.Select(x => x.Id).ToList();
 
                     Model.SelectedImageEntry = null;
-                    ThumbnailListView.SelectedIndex = -1;
+                    //ThumbnailListView.SelectedIndex = -1;
 
                     foreach (var image in imageEntries)
                     {
@@ -549,7 +548,7 @@ namespace Diffusion.Toolkit.Controls
 
                 if (item.VisualHit is FrameworkElement { DataContext: ImageEntry } f)
                 {
-                    currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
+                    //currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
 
                     SelectedImageEntry = f.DataContext as ImageEntry;
                 }
@@ -626,7 +625,7 @@ namespace Diffusion.Toolkit.Controls
                 var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
                 if (item?.VisualHit is FrameworkElement { DataContext: ImageEntry } f)
                 {
-                    currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
+                    //currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
                 }
             }
 
@@ -645,7 +644,7 @@ namespace Diffusion.Toolkit.Controls
                 {
                     var index = gotoEnd ? Model.Images.Count - 1 : 0;
 
-                    SelectItem(index, focus && this.ThumbnailListView.IsFocused);
+                    ShowItem(index, focus && this.ThumbnailListView.IsFocused);
                 }
             });
         }
