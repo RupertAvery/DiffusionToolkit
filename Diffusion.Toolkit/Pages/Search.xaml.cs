@@ -24,11 +24,8 @@ using Diffusion.Toolkit.Controls;
 using System.Collections.Specialized;
 using Diffusion.IO;
 using Image = Diffusion.Database.Image;
-using SQLite;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
-using Filter = Diffusion.Database.Filter;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -612,6 +609,12 @@ namespace Diffusion.Toolkit.Pages
                 var parameters = Metadata.ReadFromFile(path);
 
                 PreviewPane.ResetZoom();
+
+                var old = _model.CurrentImage.IsParametersVisible;
+                
+                _model.CurrentImage = new ImageViewModel();
+                _model.CurrentImage.IsParametersVisible = old;
+                _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
 
                 if (image != null)
                 {
@@ -1482,11 +1485,14 @@ namespace Diffusion.Toolkit.Pages
             var imageData = DataStore.GetImage(id);
             var image = _model.Images.FirstOrDefault(i => i.Id == id);
 
+            if (image != null)
+            {
                 image.NSFW = imageData.NSFW;
                 image.Favorite = imageData.Favorite;
                 image.Rating = imageData.Rating;
                 image.ForDeletion = imageData.ForDeletion;
             }
+        }
 
         private void PreviewPane_OnDrop(object sender, DragEventArgs e)
         {
