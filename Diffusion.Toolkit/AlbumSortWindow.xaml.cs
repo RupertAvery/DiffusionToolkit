@@ -119,6 +119,7 @@ namespace Diffusion.Toolkit
 
         private void MoveUp()
         {
+            if (_model.SelectedAlbum == null) return;
             oldPosition = _model.SelectedAlbum.Order;
             if (oldPosition == 1) return;
             newPosition = _model.SelectedAlbum.Order - 1;
@@ -129,6 +130,7 @@ namespace Diffusion.Toolkit
 
         private void MoveDown()
         {
+            if (_model.SelectedAlbum == null) return;
             oldPosition = _model.SelectedAlbum.Order;
             if (oldPosition == _model.Albums.Count) return;
             newPosition = _model.SelectedAlbum.Order + 1;

@@ -11,11 +11,22 @@ namespace Diffusion.Database
     public partial class DataStore
     {
 
+        public IEnumerable<AlbumListItem> GetAlbumsView()
+        {
+            using var db = OpenConnection();
+
+            var lists = db.Query<AlbumListItem>($"SELECT A.Id, A.Name, A.[Order], A.LastUpdated, (SELECT COUNT(1) FROM {nameof(AlbumImage)} AI WHERE A.Id = AI.AlbumId) AS ImageCount FROM {nameof(Album)} A");
+
+            db.Close();
+
+            return lists;
+        }
+
         public IEnumerable<Album> GetAlbums()
         {
             using var db = OpenConnection();
 
-            var lists = db.Query<Album>($"SELECT * FROM {nameof(Album)}");
+            var lists = db.Query<Album>($"SELECT Id, Name, [Order], LastUpdated FROM {nameof(Album)}");
 
             db.Close();
 
@@ -26,7 +37,7 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var lists = db.Query<Album>($"SELECT * FROM {nameof(Album)} ORDER BY LastUpdated DESC LIMIT ?", limit);
+            var lists = db.Query<Album>($"SELECT Id, Name, [Order], LastUpdated FROM {nameof(Album)} ORDER BY LastUpdated DESC LIMIT ?", limit);
 
             db.Close();
 

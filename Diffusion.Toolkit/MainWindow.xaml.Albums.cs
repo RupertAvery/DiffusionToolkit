@@ -8,6 +8,7 @@ using System.Linq;
 using System.Collections.ObjectModel;
 using ICSharpCode.AvalonEdit.Editing;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit
 {
@@ -15,7 +16,7 @@ namespace Diffusion.Toolkit
     {
         private void InitAlbums()
         {
-            _model.AddSekectedImagesToAlbum = AddSelectedImagesToAlbum;
+            _model.AddSelectedImagesToAlbum = AddSelectedImagesToAlbum;
 
 
             _model.AddAlbumCommand = new RelayCommand<object>((o) =>
@@ -32,7 +33,7 @@ namespace Diffusion.Toolkit
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
                 _dataStore.AddImagesToAlbum(album.Id, images);
                 Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
-                //ThumbnailListView.ReloadAlbums();
+                LoadAlbums();
             });
 
             _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
@@ -42,17 +43,12 @@ namespace Diffusion.Toolkit
                 _dataStore.RemoveImagesFromAlbum(album.Id, images);
                 Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
                 _search.SearchImages(null);
+                LoadAlbums();
             });
 
             _model.RemoveAlbumCommand = new RelayCommand<object>((o) =>
             {
-                //_selectedAlbum = new Album()
-                //{
-                //    Name = ThumbnailListView.SelectedImageEntry!.Name,
-                //    Id = ThumbnailListView.SelectedImageEntry!.Id
-                //};
-
-                var album = o as Album;
+                var album = o as AlbumListItem;
 
                 _model.SelectedAlbum = album;
 
@@ -62,12 +58,7 @@ namespace Diffusion.Toolkit
 
             _model.RenameAlbumCommand = new RelayCommand<object>((o) =>
             {
-                //_selectedAlbum = new Album()
-                //{
-                //    Name = ThumbnailListView.SelectedImageEntry!.Name,
-                //    Id = ThumbnailListView.SelectedImageEntry!.Id
-                //};
-                var album = o as Album;
+                var album = o as AlbumListItem;
 
                 _model.SelectedAlbum = album;
 
@@ -85,19 +76,26 @@ namespace Diffusion.Toolkit
 
         private void LoadAlbums()
         {
-            var albums = _dataStore.GetAlbums();
-            
+            var albums = _dataStore.GetAlbumsView().Select(a => new AlbumModel()
+            {
+                Id = a.Id,
+                Name = a.Name,
+                LastUpdated = a.LastUpdated,
+                ImageCount = a.ImageCount,
+                Order = a.Order,
+            });
+
 
             switch (_settings.SortAlbumsBy)
             {
                 case "Name":
-                    _model.Albums = new ObservableCollection<Album>(albums.OrderBy(a => a.Name));
+                    _model.Albums = new ObservableCollection<AlbumModel>(albums.OrderBy(a => a.Name));
                     break;
                 case "Date":
-                    _model.Albums = new ObservableCollection<Album>(albums.OrderBy(a => a.LastUpdated));
+                    _model.Albums = new ObservableCollection<AlbumModel>(albums.OrderBy(a => a.LastUpdated));
                     break;
                 case "Custom":
-                    _model.Albums = new ObservableCollection<Album>(albums.OrderBy(a => a.Order));
+                    _model.Albums = new ObservableCollection<AlbumModel>(albums.OrderBy(a => a.Order));
                     break;
             }
         }
@@ -249,13 +247,14 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private void AddSelectedImagesToAlbum(Album album)
+        private void AddSelectedImagesToAlbum(IAlbumInfo album)
         {
             if (_model.SelectedImages != null)
             {
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
                 _dataStore.AddImagesToAlbum(album.Id, images);
                 Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
+                LoadAlbums();
             }
         }
 

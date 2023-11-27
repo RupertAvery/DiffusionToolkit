@@ -224,7 +224,7 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Album && _model.SelectedImageEntry.EntryType == EntryType.Album)
                 {
-                    _model.MainModel.CurrentAlbum = new Album()
+                    _model.MainModel.CurrentAlbum = new AlbumModel()
                     {
                         Name = _model.SelectedImageEntry.Name,
                         Id = _model.SelectedImageEntry.Id
@@ -563,6 +563,14 @@ namespace Diffusion.Toolkit.Pages
                 if (_model.SelectedImageEntry != null)
                 {
                     LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
+                }
+                else
+                {
+                    _model.CurrentImage = new ImageViewModel();
+                    foreach (var album in _model.MainModel.Albums)
+                    {
+                        album.IsTicked = false;
+                    }
                 }
             }
             else if (e.PropertyName == nameof(SearchModel.SortBy))
@@ -1565,8 +1573,8 @@ namespace Diffusion.Toolkit.Pages
 
         private void DropImagesOnAlbum(object sender, DragEventArgs e)
         {
-            var album = (Album)((FrameworkElement)sender).DataContext;
-            _model.MainModel.AddSekectedImagesToAlbum(album);
+            var album = (AlbumModel)((FrameworkElement)sender).DataContext;
+            _model.MainModel.AddSelectedImagesToAlbum(album);
         }
 
         private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
@@ -1582,7 +1590,7 @@ namespace Diffusion.Toolkit.Pages
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
-            _model.MainModel.CurrentAlbum = ((Album)((Button)sender).DataContext);
+            _model.MainModel.CurrentAlbum = ((AlbumModel)((Button)sender).DataContext);
             SetMode("albums");
             SearchImages(null);
         }
