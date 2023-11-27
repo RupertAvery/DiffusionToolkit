@@ -1,11 +1,11 @@
-﻿<UserControl x:Class="Diffusion.Toolkit.Controls.Search"
+﻿<UserControl x:Class="Diffusion.Toolkit.Controls.FilterControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
-             d:DataContext="{d:DesignInstance local:SearchControlModel, IsDesignTimeCreatable=True}"
+             d:DataContext="{d:DesignInstance local:FilterControlModel, IsDesignTimeCreatable=True}"
              mc:Ignorable="d" 
              d:DesignHeight="660" d:DesignWidth="600">
     <UserControl.Resources>
@@ -24,8 +24,14 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <CheckBox IsChecked="{Binding UsePrompt}" VerticalContentAlignment="Center">Prompt</CheckBox>
-                    <TextBox Text="{Binding Prompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
+                    <TextBox x:Name="PromptTextBox" 
+                            Text="{Binding Prompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
+                             Height="60"
                              ToolTip="Separate terms with commas"
+                             HorizontalScrollBarVisibility="Disabled"
+                             VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
                              ></TextBox>
                 </Grid>
                 <Grid Margin="0,0,0,5">
@@ -34,8 +40,13 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <CheckBox IsChecked="{Binding UseNegativePrompt}" VerticalContentAlignment="Center">Negative Prompt</CheckBox>
-                    <TextBox Text="{Binding NegativePrompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
+                    <TextBox Text="{Binding NegativePrompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
+                             Height="60"
                              ToolTip="Separate terms with commas"
+                             HorizontalScrollBarVisibility="Disabled"
+                             VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
                              ></TextBox>
                 </Grid>
                 <Grid Margin="0,0,0,5">

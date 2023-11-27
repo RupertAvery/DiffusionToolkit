@@ -2,7 +2,7 @@
 
 namespace Diffusion.Toolkit.Controls;
 
-public class SearchControlModel : BaseNotify
+public class FilterControlModel : BaseNotify
 {
     private bool _usePrompt;
     private string _prompt;
@@ -54,7 +54,7 @@ public class SearchControlModel : BaseNotify
     private bool _useNoMetadata;
     private bool _noMetadata;
 
-    public SearchControlModel()
+    public FilterControlModel()
     {
         PropertyChanged += SearchControlModel_PropertyChanged;
     }

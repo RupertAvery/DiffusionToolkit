@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
+using Filter = Diffusion.Database.Filter;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -40,7 +41,7 @@ public class SearchModel : BaseNotify
     private ICommand _showFilter;
     private ICommand _clearSearch;
     private bool _isFilterVisible;
-    private SearchControlModel _filter;
+    private FilterControlModel _filter;
     private ICommand _filterCommand;
     private ICommand _clearCommand;
     private string _sortBy;
@@ -66,7 +67,7 @@ public class SearchModel : BaseNotify
         _images = new ObservableCollection<ImageEntry>();
         _searchHistory = new ObservableCollection<string>();
         _currentImage = new ImageViewModel();
-        _filter = new SearchControlModel();
+        _filter = new FilterControlModel();
         _imageOpacity = 1;
         _isEmpty = true;
         _resultStatus = "Type anything to begin";
@@ -83,7 +84,7 @@ public class SearchModel : BaseNotify
         _images = new ObservableCollection<ImageEntry>();
         _searchHistory = new ObservableCollection<string>();
         _currentImage = new ImageViewModel();
-        _filter = new SearchControlModel();
+        _filter = new FilterControlModel();
         _imageOpacity = 1;
         _isEmpty = true;
         _resultStatus = "Type anything to begin";
@@ -94,13 +95,6 @@ public class SearchModel : BaseNotify
     }
 
     public MainModel MainModel => _mainModel;
-
-    //public DataStore DataStore
-    //{
-    //    get;
-    //    set;
-    //}
-
 
     public ObservableCollection<ImageEntry>? Images
     {
@@ -275,7 +269,7 @@ public class SearchModel : BaseNotify
         set => SetField(ref _isFilterVisible, value);
     }
 
-    public SearchControlModel Filter
+    public FilterControlModel Filter
     {
         get => _filter;
         set => SetField(ref _filter, value);
@@ -358,7 +352,7 @@ public class SearchModel : BaseNotify
 
 public static class SearchControlModelExtensions
 {
-    public static Filter AsFilter(this SearchControlModel model)
+    public static Filter AsFilter(this FilterControlModel model)
     {
         var filter = new Filter();
 

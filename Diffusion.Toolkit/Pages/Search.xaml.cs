@@ -28,6 +28,7 @@ using SQLite;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
 using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
+using Filter = Diffusion.Database.Filter;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -196,7 +197,7 @@ namespace Diffusion.Toolkit.Pages
             _model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
-            _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = !_model.IsFilterVisible);
+            _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = true);
             _model.ClearSearch = new RelayCommand<object>((o) => ClearQueryFilter());
 
             _model.FilterCommand = new RelayCommand<object>((o) =>
@@ -310,6 +311,11 @@ namespace Diffusion.Toolkit.Pages
             {
                 DataStore.SetDeleted(id, b);
                 Update(id);
+            };
+
+            FilterPopup.Closed += (sender, args) =>
+            {
+                ThumbnailListView.Focus();
             };
 
             //PreviewPane.OnNext = Next;
@@ -618,7 +624,7 @@ namespace Diffusion.Toolkit.Pages
                     _model.CurrentImage.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
                 }
 
-                _model.CurrentImage.Image = GetBitmapImage(path);
+                    _model.CurrentImage.Image = GetBitmapImage(path);
                 _model.CurrentImage.Path = parameters.Path;
                 _model.CurrentImage.Prompt = parameters.Prompt;
                 _model.CurrentImage.NegativePrompt = parameters.NegativePrompt;
@@ -1471,11 +1477,11 @@ namespace Diffusion.Toolkit.Pages
             var imageData = DataStore.GetImage(id);
             var image = _model.Images.FirstOrDefault(i => i.Id == id);
 
-            image.NSFW = imageData.NSFW;
-            image.Favorite = imageData.Favorite;
-            image.Rating = imageData.Rating;
-            image.ForDeletion = imageData.ForDeletion;
-        }
+                image.NSFW = imageData.NSFW;
+                image.Favorite = imageData.Favorite;
+                image.Rating = imageData.Rating;
+                image.ForDeletion = imageData.ForDeletion;
+            }
 
         private void PreviewPane_OnDrop(object sender, DragEventArgs e)
         {
@@ -1593,6 +1599,14 @@ namespace Diffusion.Toolkit.Pages
             _model.MainModel.CurrentAlbum = ((AlbumModel)((Button)sender).DataContext);
             SetMode("albums");
             SearchImages(null);
+        }
+
+        private void FilterPopup_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                _model.IsFilterVisible = false;
+            }
         }
     }
 }

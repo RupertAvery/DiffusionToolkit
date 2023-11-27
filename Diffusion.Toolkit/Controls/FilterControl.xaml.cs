@@ -10,13 +10,13 @@ namespace Diffusion.Toolkit.Controls
     /// <summary>
     /// Interaction logic for Search.xaml
     /// </summary>
-    public partial class Search : UserControl
+    public partial class FilterControl : UserControl
     {
         public static readonly DependencyProperty FilterProperty =
             DependencyProperty.Register(
                 name: nameof(Filter),
-                propertyType: typeof(SearchControlModel),
-                ownerType: typeof(Search),
+                propertyType: typeof(FilterControlModel),
+                ownerType: typeof(FilterControl),
                 typeMetadata: new FrameworkPropertyMetadata(
                     defaultValue: null,
                     propertyChangedCallback: PropertyChangedCallback)
@@ -26,7 +26,7 @@ namespace Diffusion.Toolkit.Controls
             DependencyProperty.Register(
                 name: nameof(SearchCommand),
                 propertyType: typeof(ICommand),
-                ownerType: typeof(Search),
+                ownerType: typeof(FilterControl),
                 typeMetadata: new FrameworkPropertyMetadata(
                     defaultValue: null,
                     propertyChangedCallback: PropertyChangedCallback)
@@ -34,7 +34,7 @@ namespace Diffusion.Toolkit.Controls
 
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var search = d as Search;
+            var search = d as FilterControl;
 
             if (e.Property.Name == nameof(Filter))
             {
@@ -43,7 +43,7 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
-        static PropertyInfo[] props = typeof(SearchControlModel).GetProperties();
+        static PropertyInfo[] props = typeof(FilterControlModel).GetProperties();
 
         private static void FilterOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -65,23 +65,33 @@ namespace Diffusion.Toolkit.Controls
         }
 
 
-        public SearchControlModel Filter
+        public FilterControlModel Filter
         {
-            get => (SearchControlModel)GetValue(FilterProperty);
+            get => (FilterControlModel)GetValue(FilterProperty);
             set => SetValue(FilterProperty, value);
         }
 
-        public Search()
+        public FilterControl()
         {
             InitializeComponent();
+            Loaded += OnLoaded;
         }
 
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            PromptTextBox.Focus();
+        }
 
 
         private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
         {
             var textBox = sender as TextBox;
             var binding = textBox.GetBindingExpression(TextBox.TextProperty);
+
+            if (e.Key == Key.Escape)
+            {
+                return;
+            }
 
             if (e.Key == Key.Enter)
             {
