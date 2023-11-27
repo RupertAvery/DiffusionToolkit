@@ -79,6 +79,78 @@ namespace Diffusion.Toolkit
             });
         }
 
+        private async void FixFolders()
+        {
+            var updated = await Task.Run(FixFoldersInternal);
+
+            if (updated > 0)
+            {
+                _search.SearchImages();
+            }
+        }
+
+        private int FixFoldersInternal()
+        {
+            int progress = 0;
+            int updated = 0;
+
+            var images = _dataStore.GetImagePaths().ToList();
+            var folders = _dataStore.GetFolders();
+
+            var folderIdCache = folders.ToDictionary(f => f.Path, f => f.Id);
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.Status = "Fixing Folders...s";
+                _model.TotalProgress = images.Count;
+                _model.CurrentProgress = 0;
+            });
+
+            foreach (var image in images)
+            {
+                var dirName = Path.GetDirectoryName(image.Path);
+
+                var skip = false;
+
+                if (folderIdCache.TryGetValue(dirName, out var folderId))
+                {
+                    if (image.FolderId == folderId)
+                    {
+                        skip = true;
+                    }
+                }
+
+                if (!skip)
+                {
+                    _dataStore.UpdateImageFolderId(image.Id, image.Path, folderIdCache);
+                    updated++;
+                }
+
+                var currentProgress = progress;
+                if (currentProgress % 113 == 0)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _model.CurrentProgress = currentProgress;
+                        _model.Status = $"Checking {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
+                    });
+                }
+
+                progress++;
+            }
+
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.Status = "";
+                _model.TotalProgress = Int32.MaxValue;
+                _model.CurrentProgress = 0;
+                Toast($"{updated} files were updated.", "Fix folders");
+            });
+
+            return updated;
+        }
+
         private async Task MoveFiles(ICollection<ImageEntry> images, string path, bool remove)
         {
 
@@ -95,6 +167,8 @@ namespace Diffusion.Toolkit
 
             var moved = 0;
 
+            var folderIdCache = new Dictionary<string, int>();
+
             foreach (var image in images)
             {
                 var fileName = Path.GetFileName(image.Path);
@@ -109,16 +183,20 @@ namespace Diffusion.Toolkit
                     }
                     else
                     {
-                        _dataStore.MoveImage(image.Id, newPath);
+                        _dataStore.MoveImage(image.Id, newPath, folderIdCache);
                     }
 
                     var moved1 = moved;
-                    Dispatcher.Invoke(() =>
+                    if (moved % 113 == 0)
                     {
-                        image.Path = newPath;
-                        _model.CurrentProgress = moved1;
-                        _model.Status = $"Moving {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
-                    });
+                        Dispatcher.Invoke(() =>
+                        {
+                            image.Path = newPath;
+                            _model.CurrentProgress = moved1;
+                            _model.Status = $"Moving {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
+                        });
+                    }
+
                     moved++;
                 }
                 else

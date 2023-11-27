@@ -97,6 +97,8 @@
                 </MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="_Auto tag NSFW" Command="{Binding AutoTagNSFW}"/>
+                <Separator></Separator>
+                <MenuItem Header="_Fix missing images in folders" Command="{Binding FixFoldersCommand}"/>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="{Binding AboutCommand}"/>

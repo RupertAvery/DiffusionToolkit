@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Diffusion.Database
 {
@@ -252,13 +253,27 @@ namespace Diffusion.Database
             db.Commit();
         }
 
+        public IEnumerable<Folder> GetFolders()
+        {
+            using var db = OpenConnection();
+
+            var falders = db.Query<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate FROM Folder");
+
+            foreach (var folder in falders)
+            {
+                yield return folder;
+            }
+
+            db.Close();
+        }
+
         public IEnumerable<ImagePath> GetImagePaths()
         {
             //List<ImagePath> paths = new List<ImagePath>();
 
             using var db = OpenConnection();
 
-            var images = db.Query<ImagePath>("SELECT Id, Path FROM Image");
+            var images = db.Query<ImagePath>("SELECT Id, FolderId, Path FROM Image");
 
             foreach (var image in images)
             {
@@ -271,12 +286,36 @@ namespace Diffusion.Database
             //return paths;
         }
 
-        public void MoveImage(int id, string newPath)
+        public void UpdateImageFolderId(int id, string path, Dictionary<string, int> folderIdCache)
         {
             using var db = OpenConnection();
 
+            var dirName = Path.GetDirectoryName(path);
+            
+            if (!folderIdCache.TryGetValue(dirName, out var folderId))
+            {
+                folderId = AddOrUpdateFolder(db, dirName);
+                folderIdCache.Add(dirName, folderId);
+            }
 
-            db.Execute("UPDATE Image SET Path = ? WHERE Id = ?", newPath, id);
+            db.Execute("UPDATE Image SET FolderId = ? WHERE Id = ?", folderId, id);
+
+            db.Close();
+        }
+
+        public void MoveImage(int id, string newPath, Dictionary<string, int> folderIdCache)
+        {
+            using var db = OpenConnection();
+
+            var dirName = Path.GetDirectoryName(newPath);
+
+            if (!folderIdCache.TryGetValue(dirName, out var folderId))
+            {
+                folderId = AddOrUpdateFolder(db, dirName);
+                folderIdCache.Add(dirName, folderId);
+            }
+
+            db.Execute("UPDATE Image SET Path = ?, FolderId = ? WHERE Id = ?", newPath, folderId, id);
 
             db.Close();
         }

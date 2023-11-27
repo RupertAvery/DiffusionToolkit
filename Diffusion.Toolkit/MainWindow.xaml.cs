@@ -131,6 +131,7 @@ namespace Diffusion.Toolkit
             _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
             _model.AddMatchingToAlbum = new RelayCommand<object>((o) => AddMatchingToAlbum());
             _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
+            _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
 
             _model.ToggleAlbum = new RelayCommand<object>((o) => ToggleAlbum());
 
@@ -476,7 +477,7 @@ namespace Diffusion.Toolkit
 
             _search.SetThumbnailSize(_settings.ThumbnailSize);
             _search.SetPageSize(_settings.PageSize);
-            
+
             _prompts.SetThumbnailSize(_settings.ThumbnailSize);
             _prompts.SetPageSize(_settings.PageSize);
 
@@ -522,6 +523,8 @@ namespace Diffusion.Toolkit
             {
                 _navigatorService.Goto("prompts");
             });
+
+
 
             if (_settings.WatchFolders)
             {
@@ -620,7 +623,7 @@ namespace Diffusion.Toolkit
                 {
                     Process.Start(processInfo);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     MessageBox.Show(this, ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
@@ -816,7 +819,7 @@ namespace Diffusion.Toolkit
 
                         }
                     }
-                   
+
                 }
 
                 //foreach (var model in _modelsCollection.ToList())
@@ -856,7 +859,7 @@ namespace Diffusion.Toolkit
                             });
                         }
                     }
-           
+
                 }
 
             }

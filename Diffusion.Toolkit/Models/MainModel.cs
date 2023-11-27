@@ -427,4 +427,11 @@ public class MainModel : BaseNotify
 
     public ICommand CreateAlbumCommand { get; set; }
     public Action<Album> AddSekectedImagesToAlbum { get; set; }
+
+
+    public ICommand FixFoldersCommand
+    {
+        get => _fixFoldersCommand;
+        set => SetField(ref _fixFoldersCommand, value);
+    }
 }

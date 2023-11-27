@@ -183,6 +183,7 @@ public partial class DataStore
 public class ImagePath
 {
     public int Id { get; set; }
+    public int FolderId { get; set; }
     public string Path { get; set; }
 }
 
