@@ -154,7 +154,7 @@ namespace Diffusion.Database
                     query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                 }
 
-                var allcount = db.ExecuteScalar<int>(query);
+                var allcount = db.ExecuteScalar<long>(query);
 
                 return allcount;
             }
