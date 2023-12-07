@@ -6,8 +6,6 @@ using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Threading.Tasks.Sources;
 using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
 
@@ -37,6 +35,7 @@ public class Metadata
         InvokeAI2,
         EasyDiffusion,
         ComfyUI,
+        RuinedFooocus,
         Unknown,
     }
 
@@ -67,8 +66,9 @@ public class Metadata
                                 {
                                     if (tag.Description.StartsWith("parameters:"))
                                     {
-                                        format = MetaFormat.A1111;
-                                        fileParameters = ReadA111Parameters(tag.Description);
+                                        var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
+                                        format = isJson ? MetaFormat.RuinedFooocus : MetaFormat.A1111;
+                                        fileParameters = isJson ? ReadRuinedFooocusParameters(tag.Description) : ReadA111Parameters(tag.Description);
                                     }
                                     else if (tag.Description == "Software: NovelAI")
                                     {
@@ -801,6 +801,34 @@ public class Metadata
         fileParameters.OtherParameters = otherParam;
 
         return fileParameters;
+    }
+
+    private static FileParameters ReadRuinedFooocusParameters(string data)
+    {
+        var json = JsonDocument.Parse(data.Substring("parameters: ".Length));
+
+        var root = json.RootElement;
+
+        var fp = new FileParameters();
+        
+        var software = root.GetProperty("software").GetString();
+
+        if (software == "RuinedFooocus")
+        {
+            fp.Prompt = root.GetProperty("Prompt").GetString();
+            fp.NegativePrompt = root.GetProperty("Negative").GetString();
+            fp.Steps = root.GetProperty("steps").GetInt32();
+            fp.CFGScale = root.GetProperty("cfg").GetDecimal();
+            fp.Width = root.GetProperty("width").GetInt32();
+            fp.Height = root.GetProperty("height").GetInt32();
+            fp.Seed = root.GetProperty("seed").GetInt64();
+            fp.Sampler = root.GetProperty("sampler_name").GetString();
+            fp.Model = root.GetProperty("base_model_name").GetString();
+            fp.ModelHash = root.GetProperty("base_model_hash").GetString();
+            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
+        }
+
+        return fp;
     }
 
     private static FileParameters ReadA111Parameters(string data)
