@@ -827,9 +827,9 @@ namespace Diffusion.Toolkit
                         }
                     }
                 }
-                catch (JsonException e)
+                catch (Exception e)
                 {
-                    MessageBox.Show($"Error parsing JSON file '{_settings.HashCache}':\n{e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"Error loading JSON file '{_settings.HashCache}':\n{e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 //foreach (var model in _modelsCollection.ToList())
