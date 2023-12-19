@@ -791,35 +791,45 @@ namespace Diffusion.Toolkit
 
             if (!string.IsNullOrEmpty(_settings.HashCache))
             {
-                var hashes = JsonSerializer.Deserialize<Hashes>(File.ReadAllText(_settings.HashCache));
-
-                var modelLookup = _modelsCollection.ToDictionary(m => m.Path);
-
-                var index = "checkpoint/".Length;
-
-                foreach (var hash in hashes.hashes)
+                try
                 {
-                    if (index < hash.Key.Length)
+                    string text = File.ReadAllText(_settings.HashCache);
+
+                    // Fix unquoted "NaN" strings, which sometimes show up in SafeTensor metadata.
+                    text = text.Replace("NaN", "null");
+
+                    var hashes = JsonSerializer.Deserialize<Hashes>(text);
+                    var modelLookup = _modelsCollection.ToDictionary(m => m.Path);
+
+                    var index = "checkpoint/".Length;
+
+                    foreach (var hash in hashes.hashes)
                     {
-                        var path = hash.Key.Substring(index);
+                        if (index < hash.Key.Length)
+                        {
+                            var path = hash.Key.Substring(index);
 
-                        if (modelLookup.TryGetValue(path, out var model))
-                        {
-                            model.SHA256 = hash.Value.sha256;
-                        }
-                        else
-                        {
-                            _modelsCollection.Add(new Model()
+                            if (modelLookup.TryGetValue(path, out var model))
                             {
-                                Filename = Path.GetFileNameWithoutExtension(path),
-                                Path = path,
-                                SHA256 = hash.Value.sha256,
-                                IsLocal = true
-                            });
+                                model.SHA256 = hash.Value.sha256;
+                            }
+                            else
+                            {
+                                _modelsCollection.Add(new Model()
+                                {
+                                    Filename = Path.GetFileNameWithoutExtension(path),
+                                    Path = path,
+                                    SHA256 = hash.Value.sha256,
+                                    IsLocal = true
+                                });
 
+                            }
                         }
                     }
-
+                }
+                catch (JsonException e)
+                {
+                    MessageBox.Show($"Error parsing JSON file '{_settings.HashCache}':\n{e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 //foreach (var model in _modelsCollection.ToList())
