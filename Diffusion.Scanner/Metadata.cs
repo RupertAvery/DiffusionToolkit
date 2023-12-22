@@ -152,7 +152,15 @@ public class Metadata
                     if (aestheticScore > 0)
                     {
                         fileParameters ??= new FileParameters();
-                        fileParameters.OtherParameters ??= $"aesthetic_score: {fileParameters.AestheticScore}";
+                        fileParameters.AestheticScore = aestheticScore;
+                        if(fileParameters.OtherParameters == null)
+                        {
+                            fileParameters.OtherParameters = $"aesthetic_score: {fileParameters.AestheticScore}";
+                        }
+                        else
+                        {
+                            fileParameters.OtherParameters += $"\naesthetic_score: {fileParameters.AestheticScore}";
+                        }
                     }
 
 
@@ -1096,7 +1104,15 @@ public class Metadata
         if (aestheticScore > 0)
         {
             fileParameters ??= new FileParameters();
-            fileParameters.OtherParameters ??= $"aesthetic_score: {fileParameters.AestheticScore}";
+            fileParameters.AestheticScore = aestheticScore;
+            if(fileParameters.OtherParameters == null)
+            {
+                fileParameters.OtherParameters = $"aesthetic_score: {fileParameters.AestheticScore}";
+            }
+            else
+            {
+                fileParameters.OtherParameters += $"\naesthetic_score: {fileParameters.AestheticScore}";
+            }
         }
 
         return fileParameters;
