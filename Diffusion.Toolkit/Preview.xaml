@@ -5,6 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Diffusion.Toolkit"
         xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
         MenuWidth="0"
         TitleWidth="*"
         mc:Ignorable="d"
@@ -12,6 +14,21 @@
         d:DataContext="{d:DesignInstance local:PreviewModel, IsDesignTimeCreatable=True}"
         BorderThickness="0"
         Height="450" Width="800">
+    <Window.Resources>
+        <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVisCol"></converters:InverseBoolToVisibilityCollapsedConverter>
+        <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
+        <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
+        <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
+        <converters:BoolToBlurIntConverter x:Key="boolToBlur"></converters:BoolToBlurIntConverter>
+        <converters:BoolToBlurIntMultiConverter x:Key="boolToBlurMulti"></converters:BoolToBlurIntMultiConverter>
+        <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
+        <converters:BoolToVisibilityMultiConverter x:Key="boolToVisMulti"></converters:BoolToVisibilityMultiConverter>
+        <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
+        <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
+        <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
+        <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
+        <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
+    </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Close}"></KeyBinding>
         <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding ToggleFitToPreview}"></KeyBinding>
@@ -19,6 +36,7 @@
         <KeyBinding Key="F11" Command="{Binding ToggleFullScreen}"></KeyBinding>
     </Window.InputBindings>
     <Grid Name="BackgroundGrid" Margin="-2">
+
         <controls:PreviewPane 
             NSFWBlur="{Binding NSFWBlur}" 
             Image="{Binding CurrentImage}"
@@ -27,6 +45,304 @@
             x:Name="PreviewPane" 
             AllowDrop="True" 
             Drop="PreviewPane_OnDrop"></controls:PreviewPane>
+
+
+        <Grid Background="{x:Null}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="500"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="1" Background="{x:Null}" >
+                <Grid Background="{x:Null}" IsHitTestVisible="False" DataContext="{Binding CurrentImage}">
+                    <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
+                        <fa:ImageAwesome.Visibility>
+                            <MultiBinding Converter="{StaticResource boolToVisMulti}" ConverterParameter="20">
+                                <Binding Path="NSFW" ></Binding>
+                                <Binding Path="MainModel.NSFWBlurCommand" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                            </MultiBinding>
+                        </fa:ImageAwesome.Visibility>
+                    </fa:ImageAwesome>
+                </Grid>
+
+                <Grid  Margin="10"  Background="{x:Null}">
+
+                    <Grid  Background="{x:Null}" DataContext="{Binding CurrentImage}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="48"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="56"/>
+                        </Grid.RowDefinitions>
+
+
+                        <Grid  Grid.Row="1" Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Margin="10" Background="Transparent">
+                            <Grid Margin="-20" Background="Transparent"></Grid>
+
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+
+                                <StackPanel Background="#AF000000">
+
+                                    <Grid Background="#80000000" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="80"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Style="{StaticResource SmallCaps}" Margin="10,0,0,0">PROMPT</Label>
+                                        <Button Grid.Column="1" Command="{Binding CopyParametersCommand}">Copy All</Button>
+                                        <Button Grid.Column="2" Command="{Binding CopyPromptCommand}">Copy</Button>
+                                    </Grid>
+
+
+                                    <Grid  Background="Transparent" Margin="10">
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                    IsReadOnly="True"
+                                    Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
+                                    </Grid>
+
+                                    <Grid  Background="#80000000"  >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">NEGATIVE PROMPT</Label>
+                                        <Button Grid.Column="1" Command="{Binding CopyNegativePromptCommand}">Copy</Button>
+                                    </Grid>
+
+                                    <Grid Background="Transparent" Margin="10">
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                    IsReadOnly="True"
+                                    Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
+                                    </Grid>
+
+                                    <Grid  Background="#80000000"  >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">OTHERS</Label>
+                                        <Button Grid.Column="1" Command="{Binding CopyOthersCommand}">Copy</Button>
+                                    </Grid>
+
+                                    <Grid Background="Transparent" Margin="10">
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                    IsReadOnly="True"
+                                    Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
+                                    </Grid>
+
+
+                                    <Grid Background="#80000000" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">MODEL NAME</Label>
+                                        <Label Grid.Column="1" Style="{DynamicResource SmallCaps}">MODEL HASH</Label>
+                                        <Button Grid.Column="2" Command="{Binding SearchModelCommand}">Search</Button>
+                                    </Grid>
+
+
+                                    <Grid  Background="Transparent"  Margin="10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="100"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
+                                        <TextBox Grid.Column="1" Foreground="White" FontSize="14" BorderThickness="0"
+                                IsReadOnly="True" Padding="5" Background="Transparent"   Text="{Binding ModelHash}"></TextBox>
+                                    </Grid>
+
+
+
+                                    <Grid  Background="Transparent" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="32"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
+                                        <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding SearchModelCommand}" >
+                                            <Image Source="{DynamicResource SearchIcon}" Height="16" Width="16" ToolTip="Search Civitai"></Image>
+                                        </Button>
+                                    </Grid>
+
+
+
+                                    <Grid  Background="#80000000" >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="80"/>
+                                            <ColumnDefinition Width="80"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">PATH</Label>
+                                        <Button Grid.Column="1" Command="{Binding ShowInExplorerCommand}">Show</Button>
+                                        <Button Grid.Column="2" Command="{Binding CopyPathCommand}">Copy</Button>
+                                    </Grid>
+
+                                    <Grid  Background="Transparent" Margin="10">
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                    IsReadOnly="True"
+                                    Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"></TextBox>
+                                    </Grid>
+
+                                    <Grid  Background="#80000000" >
+                                        <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">DATE</Label>
+                                    </Grid>
+
+
+                                    <Grid  Background="Transparent" Margin="10">
+                                        <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
+                                    </Grid>
+
+                                    <Grid  Background="#80000000" >
+                                        <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">ALBUMS</Label>
+                                    </Grid>
+
+
+                                    <Grid  Background="Transparent" Margin="10">
+                                        <ItemsControl ItemsSource="{Binding Path=Albums}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Foreground="White" FontSize="14" BorderThickness="0"
+                                            IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Name}"></TextBox>
+
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <Grid Grid.Row="2" Background="{x:Null}" IsHitTestVisible="true">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="16"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyParametersCommand}">
+                                <fa:ImageAwesome ToolTip="Copy Parameters" Icon="FileText" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <fa:ImageAwesome.Effect>
+                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                    </fa:ImageAwesome.Effect>
+                                </fa:ImageAwesome>
+                            </Button>
+
+                            <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding ShowInExplorerCommand}">
+                                <fa:ImageAwesome ToolTip="Show in Explorer" Icon="ExternalLink" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <fa:ImageAwesome.Effect>
+                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                    </fa:ImageAwesome.Effect>
+                                </fa:ImageAwesome>
+                            </Button>
+
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleParameters}">
+                                <fa:ImageAwesome ToolTip="Show info (I)" Icon="Eye" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <fa:ImageAwesome.Effect>
+                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                                    </fa:ImageAwesome.Effect>
+                                </fa:ImageAwesome>
+                            </Button>
+
+                        </Grid>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="2" >
+                            <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=ForDeletion, Converter={StaticResource boolToVisCol}}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+
+                            <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=2}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=3}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=4}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=5}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=6}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=7}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=8}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=9}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=10}">
+                                <Image.Effect>
+                                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                                </Image.Effect>
+                            </Image>
+
+                            <Border Height="40" Width="40" CornerRadius="5" Background="#90000000" Visibility="{Binding Path=AestheticScore, Converter={StaticResource strToVis}, ConverterParameter=10}">
+                                <Label FontSize="18" FontWeight="Bold" Content="{Binding AestheticScore}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+                            </Border>
+
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+
+
 
     </Grid>
 </local:BorderlessWindow>

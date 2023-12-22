@@ -3,8 +3,6 @@ using System.Windows.Media.Imaging;
 using Diffusion.Toolkit.Thumbnails;
 
 namespace Diffusion.Toolkit;
-
-
 public enum EntryType
 {
     File,
@@ -104,19 +102,6 @@ public class ImageEntry : BaseNotify
             Height = Height,
             Width = Width
         };
-
-        //await ThumbnailLoader.Instance.QueueAsync(job, (d) =>
-        //{
-        //    Thumbnail = d;
-        //    OnPropertyChanged(nameof(Thumbnail));
-        //});
-
-
-        //Task.Run(() =>
-        //{
-        //    Thumbnail = ThumbnailLoader.Instance.GetThumbnailDirect(Path, Width, Height);
-        //    OnPropertyChanged(nameof(Thumbnail));
-        //});
 
         _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
         {

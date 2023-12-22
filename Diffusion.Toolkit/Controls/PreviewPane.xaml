@@ -129,7 +129,7 @@
                 </Image>
             </ScrollViewer>
 
-            <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
+            <!--<Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
                   DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
                   >
                 <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
@@ -169,10 +169,10 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="56"/>
                     </Grid.RowDefinitions>
-                    <!--
+                    --><!--
                         Remove Fade effect as showing the preview causes it to flicker on momentarily
                         classes:VisibilityAnimation.AnimationType="Fade" 
-                    -->
+                    --><!--
                     <Grid  Grid.Row="1" MaxWidth="600" 
                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
                     >
@@ -256,7 +256,7 @@
                                 </Grid>
 
 
-                                <!--<Grid  Background="Transparent" >
+                                --><!--<Grid  Background="Transparent" >
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition/>
                                         <ColumnDefinition Width="32"/>
@@ -266,7 +266,7 @@
                                     <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding SearchModelCommand}" >
                                         <Image Source="{DynamicResource SearchIcon}" Height="16" Width="16" ToolTip="Search Civitai"></Image>
                                     </Button>
-                                </Grid>-->
+                                </Grid>--><!--
 
 
                                 <Grid  Background="#80000000" >
@@ -436,7 +436,7 @@
 
                     </StackPanel>
                 </Grid>
-            </Grid>
+            </Grid>-->
 
         </Grid>
 

@@ -57,6 +57,8 @@ namespace Diffusion.Toolkit.Pages
         private readonly SearchModel _model;
         private NavigatorService _navigatorService;
         private IOptions<DataStore> _dataStoreOptions;
+
+
         private DataStore DataStore => _dataStoreOptions.Value;
 
         private Settings _settings;
@@ -195,6 +197,7 @@ namespace Diffusion.Toolkit.Pages
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
             _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = true);
+            _model.HideFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = false);
             _model.ClearSearch = new RelayCommand<object>((o) => ClearQueryFilter());
 
             _model.FilterCommand = new RelayCommand<object>((o) =>
@@ -778,6 +781,7 @@ namespace Diffusion.Toolkit.Pages
                 if (_startIndex == _model.Images.Count - 1)
                 {
                     ThumbnailListView.GoNextPage();
+                    _startIndex = 0;
                 }
             }
 
@@ -803,6 +807,7 @@ namespace Diffusion.Toolkit.Pages
                 if (_startIndex == 0)
                 {
                     ThumbnailListView.GoPrevPage(true);
+                    _startIndex =_model.Images.Count - 1;
                 }
             }
 

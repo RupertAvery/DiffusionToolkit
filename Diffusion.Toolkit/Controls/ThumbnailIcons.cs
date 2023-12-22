@@ -64,7 +64,6 @@ public class ThumbnailIcons : FrameworkElement
         if (Data == null)
             return;
 
-
         var x = 0;
         var y = 0;
 

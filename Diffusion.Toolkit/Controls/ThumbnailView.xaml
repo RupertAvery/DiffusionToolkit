@@ -35,25 +35,23 @@
             </DataTemplate>
 
             <DataTemplate x:Key="AlbumDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
-                <Grid>
-                    <fa:ImageAwesome Icon="FilePhotoOutline"
-                                     Foreground="{DynamicResource ForegroundBrush}" 
-                                     Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                     Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                     HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <fa:ImageAwesome.ContextMenu>
-                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>
-                                <MenuItem Header="Remove Album" Click="RemoveAlbum_OnClick"></MenuItem>
-                            </ContextMenu>
-                        </fa:ImageAwesome.ContextMenu>
+                <fa:ImageAwesome Icon="FilePhotoOutline"
+                                 Foreground="{DynamicResource ForegroundBrush}" 
+                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                                 HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <fa:ImageAwesome.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>
+                            <MenuItem Header="Remove Album" Click="RemoveAlbum_OnClick"></MenuItem>
+                        </ContextMenu>
+                    </fa:ImageAwesome.ContextMenu>
 
-                    </fa:ImageAwesome>
-                </Grid>
+                </fa:ImageAwesome>
             </DataTemplate>
 
             <DataTemplate x:Key="FileDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
-                <Grid>
+                <Grid Background="Transparent">
                     <local:Thumbnail 
                         Source="{Binding Thumbnail}" 
                         Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
@@ -101,7 +99,25 @@
                HorizontalContentAlignment="Center" 
         ></Label>
 
-        <ListView Grid.Row="0" x:Name="ThumbnailListView" Margin="2" Padding="10" ItemsSource="{Binding Images}"
+
+        <!--<ListView Grid.Row="0" x:Name="ThumbnailListView2" Margin="2" Padding="10" ItemsSource="{Binding Images}">
+            <ListView.Template>
+                <ControlTemplate >
+                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Background="Transparent">
+                        <WrapPanel IsItemsHost="True" />
+                    </ScrollViewer>
+                </ControlTemplate>
+            </ListView.Template>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" Background="Transparent" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+        </ListView>-->
+
+
+        <ListView Grid.Row="0" x:Name="ThumbnailListView"   Margin="2" Padding="10" ItemsSource="{Binding Images}"
                   SelectionMode="Extended"
                   SelectedItem="{Binding SelectedImageEntry}"
                   SelectionChanged="ThumbnailListView_OnSelectionChanged"
@@ -128,8 +144,22 @@
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsSelected" Value="true">
                                         <Setter TargetName="Border" Property="Background"
-                                                    Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                                                    Value="{DynamicResource HighlightBrush}"/>
                                     </Trigger>
+                                    <Trigger Property="IsFocused" Value="true">
+                                        <Setter TargetName="Border" Property="Background"
+                                                Value="{DynamicResource FocusedBrush}"/>
+                                    </Trigger>
+                                    <MultiTrigger>
+                                        <MultiTrigger.Conditions>
+                                            <Condition Property="IsSelected" Value="True" />
+                                            <Condition Property="IsFocused" Value="True" />
+                                        </MultiTrigger.Conditions>
+                                        <MultiTrigger.Setters>
+                                            <Setter TargetName="Border" Property="Background"
+                                                    Value="{DynamicResource HighlightFocusedBrush}"/>
+                                        </MultiTrigger.Setters>
+                                    </MultiTrigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Setter.Value>
@@ -205,12 +235,12 @@
             </ItemsControl.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
+                    <Grid Background="Transparent">
                         <Grid.RowDefinitions>
                             <RowDefinition></RowDefinition>
                             <RowDefinition></RowDefinition>
                         </Grid.RowDefinitions>
-                        <Border CornerRadius="5" BorderBrush="LightGray" BorderThickness="2"
+                        <Border 
                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                                 Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12" >
                             <ContentControl Content="{Binding Path=.}" ContentTemplateSelector="{DynamicResource ThumbnailTemplateSelector}"/>

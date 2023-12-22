@@ -1,6 +1,6 @@
 # Diffusion Toolkit
 
-Diffusion Toolkit is an image metadata-indexer and viewer for AI-generated images. It aims to help you organize, search and sort your ever-growing collection, using the data that's right there on the images.
+Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image metadata-indexer and viewer for AI-generated images. It aims to help you organize, search and sort your ever-growing collection, using the data that's right there on the images.
 
 # Usage
 
