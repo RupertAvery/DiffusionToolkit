@@ -86,25 +86,27 @@ You can even use it on images without metadata and still use the other features 
 
 # What's New in v1.5
 
-* Metadata Viewer:
+* Metadata Viewer changes
   * Metadata is now always shown below the preview
   * In the popout/fullscreen, it it shown to the right
   * Added separate sections for Seed, CFG, Steps and Size after Negative Prompt
 * Fixes to keyboard navigation
-  * Fixed navigation issues when using Pageup/Pagedown
+  * Fixed navigation issues when using Page up/Page down
   * Fixed multi-selection issues with CTRL
-* Support for RuinedFooocus metadata
+* Support for **RuinedFooocus** metadata
 * Folders
-  * Images might be missing in folders after a move.  Run Tools > Folders > Fix missing images if you don't see indexed images in folder view.  
+  * Images might be missing in folders after a move.  
+  * Run **Tools > Folders > Fix missing images** if you don't see indexed images in folder view.  
 * Excluded Folders
-   * Adding an excluded folder will now remove any indexed images
-   * Run Tools > Folders > Remove excluded images to remove them manually 
+   * Adding an excluded folder will now remove any indexed images that are under the excluded folder
+   * Run **Tools > Folders > Remove excluded images** to remove them manually 
    * To re-add previously excluded images, perform a Scan.
 * Albums enhancements and fixes
    * Implemented a cleaner album list with image counts
    * Indicator in thumbnail view shows if an image is already in an album
    * Images were not being removed from the Album-Image tracking table when removing an album
    resulting in orphaned entries. The app will run a cleanup on each run. This is fast and should be unnoticeable.
+   * Fixed scrolling for Album list
 * Filter UI enhancements
     * Press CTRL+F to open the filter
     * Now displays as a popup instead of fully covering the thumbnail view
