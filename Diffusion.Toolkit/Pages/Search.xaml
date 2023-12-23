@@ -543,8 +543,9 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                   IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Name}"></TextBox>
-
+                                           IsReadOnly="True" Padding="5" Background="Transparent" 
+                                           TextWrapping="WrapWithOverflow" Text="{Binding Name}"
+                                           PreviewMouseDown="UIElement_OnMouseDown" Cursor="Hand"></TextBox>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                                 <ItemsControl.ItemsPanel>

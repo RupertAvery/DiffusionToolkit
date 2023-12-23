@@ -1662,12 +1662,30 @@ namespace Diffusion.Toolkit.Pages
             SearchImages(null);
         }
 
+
+
         private void FilterPopup_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
                 _model.IsFilterVisible = false;
             }
+        }
+
+        private void UIElement_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var album = ((Album)((TextBox)sender).DataContext);
+
+            var albumModel = new AlbumModel()
+            {
+                Id = album.Id,
+                Name = album.Name,
+            };
+
+            _model.MainModel.CurrentAlbum = albumModel;
+
+            SetMode("albums");
+            SearchImages(null);
         }
     }
 }

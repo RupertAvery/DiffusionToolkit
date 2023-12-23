@@ -107,6 +107,7 @@ You can even use it on images without metadata and still use the other features 
    * Images were not being removed from the Album-Image tracking table when removing an album
    resulting in orphaned entries. The app will run a cleanup on each run. This is fast and should be unnoticeable.
    * Fixed scrolling for Album list
+   * Click on an album in metadata list to open the album in the thumbnail view.
 * Filter UI enhancements
     * Press CTRL+F to open the filter
     * Now displays as a popup instead of fully covering the thumbnail view
