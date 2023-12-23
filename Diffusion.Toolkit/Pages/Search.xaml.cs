@@ -576,6 +576,7 @@ namespace Diffusion.Toolkit.Pages
                 if (_model.SelectedImageEntry != null)
                 {
                     LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
+                    ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
                 }
                 else
                 {

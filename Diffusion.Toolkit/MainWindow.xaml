@@ -73,7 +73,6 @@
                     <MenuItem Header="512x512" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=512}" Command="{Binding SetThumbnailSize}" CommandParameter="512"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="Show/Hide _Info" Command="{Binding ToggleInfoCommand}" InputGestureText="I"/>
                 <MenuItem Header="_Blur NSFW" IsChecked="{Binding NSFWBlurCommand}" InputGestureText="B" Command="{Binding ToggleNSFWBlurCommand}"/>
                 <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFWCommand}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
                 <Separator/>
