@@ -28,6 +28,8 @@
         <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
         <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
         <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
+        <converters:SizeConverter x:Key="SizeConverter"></converters:SizeConverter>
+        <converters:ZeroConverter x:Key="ZeroConverter"></converters:ZeroConverter>
     </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Close}"></KeyBinding>
@@ -65,7 +67,7 @@
                     </fa:ImageAwesome>
                 </Grid>
 
-                <Grid  Margin="10"  Background="{x:Null}">
+                <Grid Background="{x:Null}">
 
                     <Grid  Background="{x:Null}" DataContext="{Binding CurrentImage}">
                         <Grid.RowDefinitions>
@@ -114,6 +116,42 @@
                                     IsReadOnly="True"
                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
                                     </Grid>
+
+
+                                    <Grid  Background="#80000000"  >
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="95"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Label Grid.Column="0" Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">SEED</Label>
+                                        <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">CFG</Label>
+                                        <Label Grid.Column="2" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">STEPS</Label>
+                                        <Label Grid.Column="3" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">SIZE</Label>
+                                    </Grid>
+
+                                    <Grid Background="Transparent" Margin="10,10,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="95"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Seed, Converter={StaticResource ZeroConverter}}"></TextBox>
+                                        <TextBox Grid.Column="1" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding CFGScale, Converter={StaticResource ZeroConverter}}"></TextBox>
+                                        <TextBox Grid.Column="2" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Steps, Converter={StaticResource ZeroConverter}}"></TextBox>
+                                        <TextBox Grid.Column="3" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding ., Converter={StaticResource SizeConverter}}"></TextBox>
+                                    </Grid>
+
 
                                     <Grid  Background="#80000000"  >
                                         <Grid.ColumnDefinitions>
@@ -232,24 +270,9 @@
                                 <ColumnDefinition Width="16"/>
                             </Grid.ColumnDefinitions>
 
-                            <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyParametersCommand}">
-                                <fa:ImageAwesome ToolTip="Copy Parameters" Icon="FileText" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <fa:ImageAwesome.Effect>
-                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                                    </fa:ImageAwesome.Effect>
-                                </fa:ImageAwesome>
-                            </Button>
-
-                            <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding ShowInExplorerCommand}">
-                                <fa:ImageAwesome ToolTip="Show in Explorer" Icon="ExternalLink" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <fa:ImageAwesome.Effect>
-                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                                    </fa:ImageAwesome.Effect>
-                                </fa:ImageAwesome>
-                            </Button>
-
+                   
                             <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleParameters}">
-                                <fa:ImageAwesome ToolTip="Show info (I)" Icon="Eye" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome ToolTip="Show info (I)" Icon="InfoCircle" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
                                     <fa:ImageAwesome.Effect>
                                         <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
                                     </fa:ImageAwesome.Effect>

@@ -63,8 +63,10 @@ public class Settings : IScanOptions
     {
 
     }
-    
-    public Settings(bool initialize)
+
+
+
+   public Settings(bool initialize)
     {
         DontShowWelcomeOnStartup = false;
         ImagePaths = new List<string>();

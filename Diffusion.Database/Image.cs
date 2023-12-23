@@ -42,6 +42,10 @@ public class Image
     public int? ENSD { get; set; }
     public long FileSize { get; set; }
     public bool NoMetadata { get; set; }
+}
 
+
+public class ImageView : Image
+{
     public int AlbumCount { get; set; }
 }

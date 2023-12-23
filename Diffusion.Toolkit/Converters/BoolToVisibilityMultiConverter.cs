@@ -9,12 +9,22 @@ public class BoolToVisibilityMultiConverter : IMultiValueConverter
 {
     public object Convert(object[] value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value[0] is bool && value[1] is bool)
+        var result = true;
+
+        foreach (var o in value)
         {
-            return (bool)value[0] && (bool)value[1] ? Visibility.Visible : Visibility.Hidden;
+            if (o is bool b)
+            {
+                result &= b;
+            }
+            else
+            {
+                result = false;
+                break;
+            }
         }
 
-        return Visibility.Hidden;
+        return result ? Visibility.Visible : Visibility.Hidden;
     }
 
     public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)

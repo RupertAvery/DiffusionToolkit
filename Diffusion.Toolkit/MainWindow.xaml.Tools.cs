@@ -220,6 +220,8 @@ namespace Diffusion.Toolkit
 
                 }
 
+                _search.ReloadMatches(null);
+
                 Toast($"{ids.Count} images added to album {albumName}.", "Add to Album");
             }
 

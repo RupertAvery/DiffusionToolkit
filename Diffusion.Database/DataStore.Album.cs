@@ -117,6 +117,18 @@ namespace Diffusion.Database
             return album;
         }
 
+
+        public void CleanupOrphanedAlbumImages()
+        {
+            using var db = OpenConnection();
+
+            var query = "DELETE FROM AlbumImage WHERE AlbumId IN (SELECT AlbumId FROM AlbumImage WHERE AlbumId NOT IN (SELECT Id FROM Album))";
+
+            var command = db.CreateCommand(query);
+
+            command.ExecuteNonQuery();
+        }
+
         public void RemoveAlbum(int id)
         {
             using var db = OpenConnection();
@@ -126,6 +138,8 @@ namespace Diffusion.Database
             var command = db.CreateCommand(query);
 
             command.Bind("@Id", id);
+
+            command.ExecuteNonQuery();
 
             query = $"DELETE FROM {nameof(Album)} WHERE Id = @Id";
 

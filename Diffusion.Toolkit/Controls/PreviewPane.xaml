@@ -129,7 +129,7 @@
                 </Image>
             </ScrollViewer>
 
-            <!--<Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
+            <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
                   DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
                   >
                 <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
@@ -162,18 +162,15 @@
             <Grid  Grid.Row="0" RowSpan="3"  Margin="10"  Background="{x:Null}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 >
                 <Grid  Background="{x:Null}"
-                       DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                       DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
                        >
                     <Grid.RowDefinitions>
                         <RowDefinition Height="48"/>
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="56"/>
                     </Grid.RowDefinitions>
-                    --><!--
-                        Remove Fade effect as showing the preview causes it to flicker on momentarily
-                        classes:VisibilityAnimation.AnimationType="Fade" 
-                    --><!--
-                    <Grid  Grid.Row="1" MaxWidth="600" 
+           
+                    <!--<Grid  Grid.Row="1" MaxWidth="600" 
                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
                     >
                         <Grid Margin="-20" Background="Transparent"></Grid>
@@ -256,7 +253,7 @@
                                 </Grid>
 
 
-                                --><!--<Grid  Background="Transparent" >
+                                <Grid  Background="Transparent" >
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition/>
                                         <ColumnDefinition Width="32"/>
@@ -266,7 +263,7 @@
                                     <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding SearchModelCommand}" >
                                         <Image Source="{DynamicResource SearchIcon}" Height="16" Width="16" ToolTip="Search Civitai"></Image>
                                     </Button>
-                                </Grid>--><!--
+                                </Grid>
 
 
                                 <Grid  Background="#80000000" >
@@ -319,9 +316,9 @@
                                 </Grid>
                             </StackPanel>
                         </ScrollViewer>
-                    </Grid>
+                    </Grid>-->
 
-                    <Grid Grid.Row="2" Background="{x:Null}" IsHitTestVisible="true">
+                    <!--<Grid Grid.Row="2" Background="{x:Null}" IsHitTestVisible="true">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="40"/>
@@ -354,89 +351,10 @@
                             </fa:ImageAwesome>
                         </Button>
 
-                    </Grid>
+                    </Grid>-->
 
-                    <StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}">
-                        <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=ForDeletion, Converter={StaticResource boolToVisCol}}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-
-                        <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=2}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=3}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=4}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=5}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=6}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=7}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=8}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=9}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=10}">
-                            <Image.Effect>
-                                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                            </Image.Effect>
-                        </Image>
-
-                        <Border Height="40" Width="40" CornerRadius="5" Background="#90000000" Visibility="{Binding Path=AestheticScore, Converter={StaticResource strToVis}, ConverterParameter=10}">
-                            <Label FontSize="18" FontWeight="Bold" Content="{Binding AestheticScore}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
-                        </Border>
-
-                    </StackPanel>
                 </Grid>
-            </Grid>-->
+            </Grid>
 
         </Grid>
 

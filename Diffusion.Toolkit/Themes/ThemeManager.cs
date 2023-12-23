@@ -10,12 +10,16 @@ namespace Diffusion.Toolkit.Themes
 
         private const string RegistryValueName = "AppsUseLightTheme";
 
+        public static string CurrentTheme { get; private set; }
+
         public static void ChangeTheme(string themeName)
         {
             if (string.IsNullOrEmpty(themeName) || themeName  == "System")
             {
                 themeName = GetWindowsTheme();
             }
+
+            CurrentTheme = themeName;
 
             var app = (App)Application.Current;
             app.Resources.MergedDictionaries.Clear();

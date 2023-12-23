@@ -21,6 +21,8 @@ public partial class DataStore
     {
         DatabasePath = databasePath;
         Create();
+
+        CleanupOrphanedAlbumImages();
     }
 
     public bool CheckIsValid()

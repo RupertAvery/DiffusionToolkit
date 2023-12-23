@@ -25,6 +25,7 @@ public class ImageEntry : BaseNotify
     private bool _isFolder;
     private EntryType _entryType;
     private string? _score;
+    private int _albumCount;
 
     public ImageEntry(long requestId)
     {
@@ -114,5 +115,10 @@ public class ImageEntry : BaseNotify
     public int Width { get; set; }
     public string Path { get; set; }
     public DateTime CreatedDate { get; set; }
-    public int AlbumCount { get; set; }
+
+    public int AlbumCount
+    {
+        get => _albumCount;
+        set => SetField(ref _albumCount, value);
+    }
 }

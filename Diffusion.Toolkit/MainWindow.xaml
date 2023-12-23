@@ -63,6 +63,7 @@
                 <MenuItem Header="Download _Civitai Models" Command="{Binding DownloadCivitai}"/>
             </MenuItem>
             <MenuItem Header="_View">
+                <MenuItem Header="Filter" Command="{Binding ShowFilterCommand}" InputGestureText="CTRL+F"/>
                 <MenuItem Header="Refresh" Command="{Binding Refresh}" InputGestureText="F5"/>
                 <Separator/>
                 <MenuItem Header="Thumbnails">
@@ -97,7 +98,10 @@
                 <Separator></Separator>
                 <MenuItem Header="_Auto tag NSFW" Command="{Binding AutoTagNSFW}"/>
                 <Separator></Separator>
-                <MenuItem Header="_Fix missing images in folders" Command="{Binding FixFoldersCommand}"/>
+                <MenuItem Header="_Folders">
+                    <MenuItem Header="_Fix missing images" Command="{Binding FixFoldersCommand}"/>
+                    <MenuItem Header="_Remove excluded images" Command="{Binding RemoveExcludedImagesCommand}"/>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Command="{Binding AboutCommand}"/>

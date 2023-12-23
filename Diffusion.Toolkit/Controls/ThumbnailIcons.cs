@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Diffusion.Toolkit.Themes;
 
 namespace Diffusion.Toolkit.Controls;
 
@@ -10,6 +11,8 @@ public class ThumbnailIcons : FrameworkElement
 {
     private static BitmapImage? _starIcon;
     private static BitmapImage? _heartIcon;
+    private static BitmapImage? _darkAlbumIcon;
+    private static BitmapImage? _lightAlbumIcon;
     private static Typeface _typeFace = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
     public static readonly DependencyProperty DataProperty =
@@ -25,6 +28,7 @@ public class ThumbnailIcons : FrameworkElement
             {
                 switch (args.PropertyName)
                 {
+                    case nameof(ImageEntry.AlbumCount):
                     case nameof(ImageEntry.ForDeletion):
                     case nameof(ImageEntry.Favorite):
                     case nameof(ImageEntry.Rating):
@@ -49,6 +53,10 @@ public class ThumbnailIcons : FrameworkElement
 
     private static void InitIcons()
     {
+        Uri darkAlbumIconUri = new Uri("pack://application:,,,/Icons/Dark/gallery-32.png", UriKind.RelativeOrAbsolute);
+        _darkAlbumIcon = new BitmapImage(darkAlbumIconUri);
+        Uri lightAlbumIconUri = new Uri("pack://application:,,,/Icons/Light/gallery-32.png", UriKind.RelativeOrAbsolute);
+        _lightAlbumIcon = new BitmapImage(lightAlbumIconUri);
         Uri heartIconUri = new Uri("pack://application:,,,/Icons/blue-heart-32.png", UriKind.RelativeOrAbsolute);
         _heartIcon = new BitmapImage(heartIconUri);
         Uri starIconUri = new Uri("pack://application:,,,/Icons/star-32.png", UriKind.RelativeOrAbsolute);
@@ -66,6 +74,19 @@ public class ThumbnailIcons : FrameworkElement
 
         var x = 0;
         var y = 0;
+
+        if (Data.AlbumCount > 0)
+        {
+            if (ThemeManager.CurrentTheme == "Dark")
+            {
+                drawingContext.DrawImage(_darkAlbumIcon, new Rect(new Point(x, y), new Size(24, 24)));
+            }
+            else if (ThemeManager.CurrentTheme == "Light")
+            {
+                drawingContext.DrawImage(_lightAlbumIcon, new Rect(new Point(x, y), new Size(24, 24)));
+            }
+            x += 24;
+        }
 
         if (Data.Favorite)
         {

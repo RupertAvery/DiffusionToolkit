@@ -34,6 +34,7 @@ namespace Diffusion.Toolkit
                 _dataStore.AddImagesToAlbum(album.Id, images);
                 Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
                 LoadAlbums();
+                _search.ReloadMatches(null);
             });
 
             _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
@@ -42,15 +43,20 @@ namespace Diffusion.Toolkit
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
                 _dataStore.RemoveImagesFromAlbum(album.Id, images);
                 Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
-                _search.SearchImages(null);
+                //_search.SearchImages(null);
                 LoadAlbums();
+                _search.ReloadMatches(null);
             });
 
             _model.RemoveAlbumCommand = new RelayCommand<object>((o) =>
             {
-                var album = o as AlbumListItem;
+                var album = o as AlbumModel;
 
-                _model.SelectedAlbum = album;
+                _model.SelectedAlbum = new AlbumListItem()
+                {
+                    Id = album.Id,
+                    Name = album.Name,
+                };
 
                 RemoveAlbumMessage.Text = $"Are you sure you want to remove \"{album.Name}\"?";
                 RemoveAlbumPopup.IsOpen = true;
@@ -58,9 +64,13 @@ namespace Diffusion.Toolkit
 
             _model.RenameAlbumCommand = new RelayCommand<object>((o) =>
             {
-                var album = o as AlbumListItem;
+                var album = o as AlbumModel;
 
-                _model.SelectedAlbum = album;
+                _model.SelectedAlbum = new AlbumListItem()
+                {
+                    Id = album.Id,
+                    Name = album.Name,
+                };
 
                 RenewAlbumName.Text = album.Name;
                 RenameAlbumPopup.IsOpen = true;
@@ -134,6 +144,11 @@ namespace Diffusion.Toolkit
 
                 LoadAlbums();
 
+                foreach (var imageEntry in imageEntries)
+                {
+                    imageEntry.AlbumCount++;
+                }
+                //_search.ReloadMatches(null);
                 AddAlbumPopup.Tag = null;
                 //UpdateAlbums();
             }
@@ -165,6 +180,7 @@ namespace Diffusion.Toolkit
                 RemoveAlbumPopup.IsOpen = false;
 
                 LoadAlbums();
+                _search.ReloadMatches(null);
                 //SearchImages(null);
                 //UpdateAlbums();
             }
@@ -255,6 +271,11 @@ namespace Diffusion.Toolkit
                 _dataStore.AddImagesToAlbum(album.Id, images);
                 Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
                 LoadAlbums();
+                foreach (var image in _model.SelectedImages)
+                {
+                    image.AlbumCount++;
+                }
+                //_search.ReloadMatches(null);
             }
         }
 

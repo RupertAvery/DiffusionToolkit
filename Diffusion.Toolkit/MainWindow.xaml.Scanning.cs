@@ -81,11 +81,18 @@ namespace Diffusion.Toolkit
 
         private async void FixFolders()
         {
-            var updated = await Task.Run(FixFoldersInternal);
+            var message = "This will fix scanned images missing in folders\r\n\r\n" +
+                          "Are you sure you want to continue?";
 
-            if (updated > 0)
+            var result = await _messagePopupManager.ShowCustom(message, "Fix Folders", PopupButtons.YesNo, 500, 250);
+            if (result == PopupResult.Yes)
             {
-                _search.SearchImages();
+                var updated = await Task.Run(FixFoldersInternal);
+
+                if (updated > 0)
+                {
+                    _search.SearchImages();
+                }
             }
         }
 
@@ -459,17 +466,36 @@ namespace Diffusion.Toolkit
 
         }
 
-        private void CleanExcludedPaths(IEnumerable<string> excludedPaths)
+        private async void CleanExcludedPaths()
         {
+            var message = "This will remove any remaining images in excluded folders from the database. The images on disk will not be deleted.\r\n\r\n" +
+                          "Are you sure you want to continue?";
+
+            var result = await _messagePopupManager.ShowCustom(message, "Remove Excluded Images", PopupButtons.YesNo, 500, 250);
+            if (result == PopupResult.Yes)
+            {
+                var total = CleanExcludedPaths(_settings.ExcludePaths);
+
+                Toast($"{total} images removed from database", "");
+            }
+        }
+
+        private int CleanExcludedPaths(IEnumerable<string> excludedPaths)
+        {
+            int total = 0;
+
             foreach (var excludedPath in excludedPaths)
             {
                 var folder = _dataStore.GetFolder(excludedPath);
                 if (folder != null)
                 {
-                    var images = _dataStore.GetFolderImages(folder.Id);
+                    var images = _dataStore.GetFolderImages(folder.Id).ToList();
                     _dataStore.RemoveImages(images.Select(i => i.Id));
+                    total += images.Count();
                 }
             }
+
+            return total;
         }
 
         private void SetTotalFilesStatus()

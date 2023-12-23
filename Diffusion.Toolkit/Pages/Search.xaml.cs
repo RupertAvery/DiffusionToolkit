@@ -203,7 +203,7 @@ namespace Diffusion.Toolkit.Pages
             _model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
-            _model.ShowFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = true);
+            _model.ShowFilter = new RelayCommand<object>((o) => ShowFilter());
             _model.HideFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = false);
             _model.ClearSearch = new RelayCommand<object>((o) => ClearQueryFilter());
 
@@ -328,6 +328,11 @@ namespace Diffusion.Toolkit.Pages
             //PreviewPane.OnNext = Next;
             //PreviewPane.OnPrev = Prev;
             GetRandomHint();
+        }
+
+        public void ShowFilter()
+        {
+            _model.IsFilterVisible = true;
         }
 
         private void ClearQueryFilter()
@@ -576,7 +581,7 @@ namespace Diffusion.Toolkit.Pages
                 if (_model.SelectedImageEntry != null)
                 {
                     LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
-                    ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
+            
                 }
                 else
                 {
@@ -623,20 +628,20 @@ namespace Diffusion.Toolkit.Pages
 
                 var old = _model.CurrentImage.IsParametersVisible;
 
-                _model.CurrentImage = new ImageViewModel();
-                _model.CurrentImage.IsParametersVisible = old;
-                _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
+                var imageViewModel = new ImageViewModel();
+                imageViewModel.IsParametersVisible = old;
+                imageViewModel.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
 
                 if (image != null)
                 {
-                    _model.CurrentImage.Id = image.Id;
-                    _model.CurrentImage.Favorite = image.Favorite;
-                    _model.CurrentImage.Date = image.CreatedDate.ToString();
-                    _model.CurrentImage.Rating = image.Rating;
-                    _model.CurrentImage.NSFW = image.NSFW;
-                    _model.CurrentImage.ForDeletion = image.ForDeletion;
-                    _model.CurrentImage.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
-                    var albumLookup = _model.CurrentImage.Albums.ToDictionary(x => x.Id);
+                    imageViewModel.Id = image.Id;
+                    imageViewModel.Favorite = image.Favorite;
+                    imageViewModel.Date = image.CreatedDate.ToString();
+                    imageViewModel.Rating = image.Rating;
+                    imageViewModel.NSFW = image.NSFW;
+                    imageViewModel.ForDeletion = image.ForDeletion;
+                    imageViewModel.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
+                    var albumLookup = imageViewModel.Albums.ToDictionary(x => x.Id);
 
                     foreach (var album in _model.MainModel.Albums)
                     {
@@ -647,41 +652,56 @@ namespace Diffusion.Toolkit.Pages
 
                 Task.Run(() =>
                 {
-                    _model.CurrentImage.Image = GetBitmapImage(path);
+                    Dispatcher.Invoke(() =>
+                    {
+                        _model.CurrentImage.Image = GetBitmapImage(path);
+                    });
                 });
 
-                _model.CurrentImage.Path = parameters.Path;
-                _model.CurrentImage.Prompt = parameters.Prompt;
-                _model.CurrentImage.NegativePrompt = parameters.NegativePrompt;
-                _model.CurrentImage.OtherParameters = parameters.OtherParameters;
-
-                _model.CurrentImage.ModelHash = parameters.ModelHash;
-                _model.CurrentImage.Seed = parameters.Seed;
-                _model.CurrentImage.AestheticScore = $"{parameters.AestheticScore}";
-
-
-                if (_modelLookup != null)
+                if (parameters != null)
                 {
-                    var models = _modelLookup.Where(m =>
-                        !IsNullOrEmpty(parameters.ModelHash) &&
-                        (String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase)
-                         ||
-                         (m.SHA256 != null && string.Equals(m.SHA256.Substring(0, parameters.ModelHash.Length), parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase))
-                    ));
+                    imageViewModel.Path = parameters.Path;
+                    imageViewModel.Prompt = parameters.Prompt;
+                    imageViewModel.NegativePrompt = parameters.NegativePrompt;
+                    imageViewModel.OtherParameters = parameters.OtherParameters;
+                    imageViewModel.CFGScale = parameters.CFGScale;
+                    imageViewModel.Steps = parameters.Steps;
+                    imageViewModel.Sampler = parameters.Sampler;
 
-                    if (models.Any())
+                    imageViewModel.Width = parameters.Width;
+                    imageViewModel.Height = parameters.Height;
+
+                    imageViewModel.ModelHash = parameters.ModelHash;
+                    imageViewModel.Seed = parameters.Seed;
+                    imageViewModel.AestheticScore = $"{parameters.AestheticScore}";
+
+
+                    if (_modelLookup != null)
                     {
-                        _model.CurrentImage.ModelName = Join(", ", models.Select(m => m.Filename));
+                        var models = _modelLookup.Where(m =>
+                            !IsNullOrEmpty(parameters.ModelHash) &&
+                            (String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase)
+                             ||
+                             (m.SHA256 != null && string.Equals(m.SHA256.Substring(0, parameters.ModelHash.Length), parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase))
+                            ));
+
+                        if (models.Any())
+                        {
+                            _model.CurrentImage.ModelName = Join(", ", models.Select(m => m.Filename));
+                        }
+                        else
+                        {
+                            _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
+                        }
                     }
                     else
                     {
                         _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
                     }
+
                 }
-                else
-                {
-                    _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
-                }
+
+                _model.CurrentImage = imageViewModel;
 
                 PreviewPane.ResetZoom();
 
@@ -783,12 +803,17 @@ namespace Diffusion.Toolkit.Pages
             {
                 ThumbnailListView.ShowItem(currentIndex + 1);
                 _model.SelectedImageEntry = _model.Images[currentIndex + 1];
+                ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
             }
             else
             {
                 if (_startIndex == _model.Images.Count - 1)
                 {
-                    ThumbnailListView.GoNextPage(() => _model.SelectedImageEntry = _model.Images[0]);
+                    ThumbnailListView.GoNextPage(() =>
+                    {
+                        _model.SelectedImageEntry = _model.Images[0];
+                        ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
+                    });
                     _startIndex = 0;
 
                 }
@@ -809,12 +834,17 @@ namespace Diffusion.Toolkit.Pages
             {
                 ThumbnailListView.ShowItem(currentIndex - 1);
                 _model.SelectedImageEntry = _model.Images[currentIndex - 1];
+                ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
             }
             else
             {
                 if (_startIndex == 0)
                 {
-                    ThumbnailListView.GoPrevPage(() => _model.SelectedImageEntry = _model.Images[^1], true);
+                    ThumbnailListView.GoPrevPage(() =>
+                    {
+                        _model.SelectedImageEntry = _model.Images[^1];
+                        ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
+                    }, true);
                     _startIndex = _model.Images.Count - 1;
 
                 }
@@ -967,7 +997,7 @@ namespace Diffusion.Toolkit.Pages
             }
 
 
-            IEnumerable<Image> matches = Enumerable.Empty<Image>();
+            IEnumerable<ImageView> matches = Enumerable.Empty<ImageView>();
 
             if (UseFilter)
             {

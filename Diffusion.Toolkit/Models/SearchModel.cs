@@ -71,7 +71,7 @@ public class SearchModel : BaseNotify
         _filter = new FilterControlModel();
         _imageOpacity = 1;
         _isEmpty = true;
-        _resultStatus = "Type anything to begin";
+        //_resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
         _sortBy = "Date Created";
         _sortDirection = "Z-A";
@@ -88,7 +88,7 @@ public class SearchModel : BaseNotify
         _filter = new FilterControlModel();
         _imageOpacity = 1;
         _isEmpty = true;
-        _resultStatus = "Type anything to begin";
+        //_resultStatus = "Type anything to begin";
         _searchHint = "Search for the answer to the the question of life, the universe, and everything";
         _sortBy = "Date Created";
         _sortDirection = "Z-A";

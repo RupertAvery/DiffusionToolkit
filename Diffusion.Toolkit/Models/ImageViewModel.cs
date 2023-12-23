@@ -38,6 +38,11 @@ public class ImageViewModel : BaseNotify
     private string? _aestheticScore;
     private ICommand _searchModelCommand;
     private IEnumerable<Album> _albums;
+    private decimal _cfgScale;
+    private int _height;
+    private int _width;
+    private int _steps;
+    private string? _sampler;
 
     public ImageViewModel()
     {
@@ -57,24 +62,41 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _path, value);
     }
 
-    public string Prompt
+    public string? Prompt
     {
         get => _prompt;
         set => SetField(ref _prompt, value);
     }
 
-    public string NegativePrompt
+    public string? NegativePrompt
     {
         get => _negativePrompt;
         set => SetField(ref _negativePrompt, value);
     }
 
-    public string OtherParameters
+    public string? OtherParameters
     {
         get => _otherParameters;
         set => SetField(ref _otherParameters, value);
     }
 
+    public decimal CFGScale
+    {
+        get => _cfgScale;
+        set => SetField(ref _cfgScale, value);
+    }
+
+    public int Height
+    {
+        get => _height;
+        set => SetField(ref _height, value);
+    }
+
+    public int Width
+    {
+        get => _width;
+        set => SetField(ref _width, value);
+    }
 
     public string ModelName
     {
@@ -192,7 +214,7 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _seed, value);
     }
 
-    public string ModelHash
+    public string? ModelHash
     {
         get => _modelHash;
         set => SetField(ref _modelHash, value);
@@ -208,5 +230,17 @@ public class ImageViewModel : BaseNotify
     {
         get => _albums;
         set => SetField(ref _albums, value);
+    }
+
+    public string? Sampler
+    {
+        get => _sampler;
+        set => SetField(ref _sampler, value);
+    }
+
+    public int Steps
+    {
+        get => _steps;
+        set => SetField(ref _steps, value);
     }
 }

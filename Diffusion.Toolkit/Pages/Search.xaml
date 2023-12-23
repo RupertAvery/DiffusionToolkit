@@ -20,11 +20,15 @@
     </Page.InputBindings>
     <Page.Resources>
         <ResourceDictionary>
+            <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
+            <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
             <converters:FolderModeVisibilityConverter x:Key="addrVis"></converters:FolderModeVisibilityConverter>
             <converters:AlbumModeVisibilityConverter x:Key="albVis"></converters:AlbumModeVisibilityConverter>
             <converters:FilterActiveConverter x:Key="FilterActiveConverter"></converters:FilterActiveConverter>
+            <converters:SizeConverter x:Key="SizeConverter"></converters:SizeConverter>
+            <converters:ZeroConverter x:Key="ZeroConverter"></converters:ZeroConverter>
         </ResourceDictionary>
     </Page.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -274,7 +278,97 @@
                                   PreviewKeyUp="PreviewPane_OnPreviewKeyUp"
                                   PreviewKeyDown="PreviewPane_OnPreviewKeyDown"
                                   Drop="PreviewPane_OnDrop"></controls:PreviewPane>
-            
+
+            <Grid Background="{x:Null}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="48"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="56"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding CurrentImage}">
+                    <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=ForDeletion, Converter={StaticResource boolToVisCol}}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+
+                    <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=2}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=3}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=4}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=5}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=6}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=7}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=8}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=9}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=10}">
+                        <Image.Effect>
+                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                        </Image.Effect>
+                    </Image>
+
+                    <Border Height="40" Width="40" CornerRadius="5" Background="#90000000" Visibility="{Binding Path=AestheticScore, Converter={StaticResource strToVis}, ConverterParameter=10}">
+                        <Label FontSize="18" FontWeight="Bold" Content="{Binding AestheticScore}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+
+
+
+
             <GridSplitter x:Name="GridSplitterPreview"  
                           Grid.Row="1"
 
@@ -325,6 +419,41 @@
                         <Grid  Background="#80000000"  >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="95"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">SEED</Label>
+                            <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">CFG</Label>
+                            <Label Grid.Column="2" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">STEPS</Label>
+                            <Label Grid.Column="3" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">SIZE</Label>
+                        </Grid>
+
+                        <Grid Background="Transparent" Margin="10,10,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="95"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Seed, Converter={StaticResource ZeroConverter}}"></TextBox>
+                            <TextBox Grid.Column="1" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding CFGScale, Converter={StaticResource ZeroConverter}}"></TextBox>
+                            <TextBox Grid.Column="2" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Steps, Converter={StaticResource ZeroConverter}}"></TextBox>
+                            <TextBox Grid.Column="3" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding ., Converter={StaticResource SizeConverter}}"></TextBox>
+                        </Grid>
+
+
+                        <Grid  Background="#80000000"  >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
                             <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">OTHERS</Label>
@@ -336,7 +465,6 @@
                            IsReadOnly="True"
                            Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
                         </Grid>
-
 
                         <Grid Background="#80000000" >
                             <Grid.ColumnDefinitions>
@@ -350,7 +478,7 @@
                         </Grid>
 
 
-                        <Grid  Background="Transparent"  Margin="10">
+                        <Grid  Background="Transparent"  Margin="10,10,0,10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="100"/>

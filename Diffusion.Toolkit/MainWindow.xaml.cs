@@ -132,6 +132,8 @@ namespace Diffusion.Toolkit
             _model.AddMatchingToAlbum = new RelayCommand<object>((o) => AddMatchingToAlbum());
             _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
             _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
+            _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
+            _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
 
             _model.ToggleAlbum = new RelayCommand<object>((o) => ToggleAlbum());
 

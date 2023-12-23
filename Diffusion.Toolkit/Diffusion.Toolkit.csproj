@@ -22,6 +22,7 @@
     <None Remove="Icons\Dark\search-32.png" />
     <None Remove="Icons\Dark\settings-32.png" />
     <None Remove="Icons\Dark\trash-32.png" />
+    <None Remove="Icons\Dark\gallery-32.png" />
     <None Remove="Icons\favorite-32.png" />
     <None Remove="Icons\filter-32.png" />
     <None Remove="Icons\grab.cur" />
@@ -39,6 +40,7 @@
     <None Remove="Icons\Light\search-32.png" />
     <None Remove="Icons\Light\settings-32.png" />
     <None Remove="Icons\Light\trash-32.png" />
+    <None Remove="Icons\Light\gallery-32.png" />
     <None Remove="Icons\link-32.png" />
     <None Remove="Icons\models-32.png" />
     <None Remove="Icons\rebuild-32.png" />
@@ -95,6 +97,7 @@
     <Resource Include="Icons\Dark\search-32.png" />
     <Resource Include="Icons\Dark\settings-32.png" />
     <Resource Include="Icons\Dark\trash-32.png" />
+    <Resource Include="Icons\Dark\gallery-32.png" />
     <Resource Include="Icons\grab.cur" />
     <Resource Include="Icons\hand.cur" />
     <Resource Include="Icons\icons8-blue-heart-48.png" />
@@ -108,6 +111,7 @@
     <Resource Include="Icons\Light\search-32.png" />
     <Resource Include="Icons\Light\settings-32.png" />
     <Resource Include="Icons\Light\trash-32.png" />
+    <Resource Include="Icons\Light\gallery-32.png" />
     <Resource Include="Icons\star-32.png" />
     <Resource Include="Icons\x-mark-16.png" />
     <Resource Include="Icons\x-mark-32.png" />

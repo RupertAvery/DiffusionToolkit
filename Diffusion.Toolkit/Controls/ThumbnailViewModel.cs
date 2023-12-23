@@ -69,7 +69,7 @@ public class ThumbnailViewModel : BaseNotify
         _currentImage = new ImageViewModel();
         _imageOpacity = 1;
         _isEmpty = true;
-        _resultStatus = "Type anything to begin";
+        //_resultStatus = "Type anything to begin";
         _thumbnailSize = 128;
     }
 
