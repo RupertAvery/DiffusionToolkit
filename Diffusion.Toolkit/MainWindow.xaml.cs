@@ -738,6 +738,11 @@ namespace Diffusion.Toolkit
                         }
                     }
 
+                    if (_settings.IsPropertyDirty(nameof(Settings.ExcludePaths)))
+                    {
+                        CleanExcludedPaths(_settings.ExcludePaths);
+                    }
+
 
                     if (_settings.IsPropertyDirty(nameof(Settings.PortableMode)))
                     {

@@ -29,6 +29,13 @@ using Microsoft.Extensions.Options;
 
 namespace Diffusion.Toolkit.Pages
 {
+    public class ReloadOptions
+    {
+        public bool Focus { get; set; }
+        public Action? OnCompleted { get; set; }
+        public bool GotoEnd { get; set; }
+    }
+
     public class ModeSettings
     {
         public ModeSettings()
@@ -188,7 +195,7 @@ namespace Diffusion.Toolkit.Pages
                 SearchImages(null);
             });
 
-            _model.Refresh = new RelayCommand<object>((o) => ReloadMatches());
+            _model.Refresh = new RelayCommand<object>((o) => ReloadMatches(null));
             _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
             _model.CopyFiles = new RelayCommand<object>((o) => CopyFiles());
 
@@ -271,7 +278,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
             {
-                ReloadMatches(true, o.GotoEnd);
+                ReloadMatches(new ReloadOptions() { Focus = true, GotoEnd = o.GotoEnd, OnCompleted = o.OnCompleted });
             });
 
             //var albums = DataStore.GetAlbums();
@@ -552,7 +559,7 @@ namespace Diffusion.Toolkit.Pages
 
 
 
-                ReloadMatches((string)obj != "ManualSearch");
+                ReloadMatches(new ReloadOptions() { Focus = (string)obj != "ManualSearch" });
             }
             catch (Exception e)
             {
@@ -581,11 +588,11 @@ namespace Diffusion.Toolkit.Pages
             }
             else if (e.PropertyName == nameof(SearchModel.SortBy))
             {
-                ReloadMatches(true);
+                ReloadMatches(new ReloadOptions() { Focus = true });
             }
             else if (e.PropertyName == nameof(SearchModel.SortDirection))
             {
-                ReloadMatches(true);
+                ReloadMatches(new ReloadOptions() { Focus = true });
             }
 
             //else if (e.PropertyName == nameof(SearchModel.Page))
@@ -614,7 +621,7 @@ namespace Diffusion.Toolkit.Pages
                 PreviewPane.ResetZoom();
 
                 var old = _model.CurrentImage.IsParametersVisible;
-                
+
                 _model.CurrentImage = new ImageViewModel();
                 _model.CurrentImage.IsParametersVisible = old;
                 _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
@@ -628,13 +635,13 @@ namespace Diffusion.Toolkit.Pages
                     _model.CurrentImage.NSFW = image.NSFW;
                     _model.CurrentImage.ForDeletion = image.ForDeletion;
                     _model.CurrentImage.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
-                    var albumLookup = _model.CurrentImage.Albums.ToDictionary(x=>x.Id);
+                    var albumLookup = _model.CurrentImage.Albums.ToDictionary(x => x.Id);
 
                     foreach (var album in _model.MainModel.Albums)
                     {
                         album.IsTicked = albumLookup.ContainsKey(album.Id);
                     }
-                    
+
                 }
 
                 Task.Run(() =>
@@ -715,12 +722,13 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        public void ReloadMatches(bool focus = true, bool gotoEnd = false)
+        public void ReloadMatches(ReloadOptions? options)
         {
             Task.Run(() =>
             {
                 LoadMatches();
-                ThumbnailListView.ResetView(focus, gotoEnd);
+                ThumbnailListView.ResetView(options?.Focus ?? true, options?.GotoEnd ?? false);
+                Dispatcher.Invoke(() => { options?.OnCompleted?.Invoke(); });
             });
         }
 
@@ -772,16 +780,16 @@ namespace Diffusion.Toolkit.Pages
 
             if (currentIndex < _model.Images.Count - 1)
             {
-                _model.SelectedImageEntry = _model.Images[currentIndex + 1];
-
                 ThumbnailListView.ShowItem(currentIndex + 1);
+                _model.SelectedImageEntry = _model.Images[currentIndex + 1];
             }
             else
             {
                 if (_startIndex == _model.Images.Count - 1)
                 {
-                    ThumbnailListView.GoNextPage();
+                    ThumbnailListView.GoNextPage(() => _model.SelectedImageEntry = _model.Images[0]);
                     _startIndex = 0;
+
                 }
             }
 
@@ -798,16 +806,16 @@ namespace Diffusion.Toolkit.Pages
 
             if (currentIndex > 0)
             {
-                _model.SelectedImageEntry = _model.Images[currentIndex - 1];
-
                 ThumbnailListView.ShowItem(currentIndex - 1);
+                _model.SelectedImageEntry = _model.Images[currentIndex - 1];
             }
             else
             {
                 if (_startIndex == 0)
                 {
-                    ThumbnailListView.GoPrevPage(true);
-                    _startIndex =_model.Images.Count - 1;
+                    ThumbnailListView.GoPrevPage(() => _model.SelectedImageEntry = _model.Images[^1], true);
+                    _startIndex = _model.Images.Count - 1;
+
                 }
             }
 
@@ -1358,7 +1366,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.Key == Key.Enter)
             {
-                ReloadMatches();
+                ReloadMatches(null);
                 e.Handled = true;
             }
         }
@@ -1560,7 +1568,7 @@ namespace Diffusion.Toolkit.Pages
         {
             EndNavigateCursor();
         }
-        
+
         public void ExtOnKeyDown(object sender, KeyEventArgs e)
         {
             StartNavigateCursor();

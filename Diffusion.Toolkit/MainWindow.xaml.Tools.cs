@@ -41,14 +41,14 @@ namespace Diffusion.Toolkit
 
                 await Task.Run(() =>
                 {
-                    UpdateByBatch(ids, 50, subset => _dataStore.DeleteImages(subset));
+                    UpdateByBatch(ids, 50, subset => _dataStore.RemoveImages(subset));
                 });
 
                 message = $"{ids.Count} images were removed";
 
                 await _messagePopupManager.ShowMedium(message, "Remove images from Database", PopupButtons.OK);
 
-                _search.ReloadMatches();
+                _search.ReloadMatches(null);
 
                 //await _search.ReloadMatches();
             }
@@ -78,7 +78,7 @@ namespace Diffusion.Toolkit
                     UpdateByBatch(ids, 50, subset => _dataStore.SetDeleted(subset, true));
                 });
 
-                _search.ReloadMatches();
+                _search.ReloadMatches(null);
 
                 //await _search.ReloadMatches();
             }
@@ -107,7 +107,7 @@ namespace Diffusion.Toolkit
                     UpdateByBatch(ids, 50, subset => _dataStore.SetDeleted(subset, false));
                 });
 
-                _search.ReloadMatches();
+                _search.ReloadMatches(null);
 
                 //await _search.ReloadMatches();
             }
@@ -134,7 +134,7 @@ namespace Diffusion.Toolkit
 
                 await _messagePopupManager.ShowMedium(message, "Auto Tag NSFW", PopupButtons.OK);
 
-                _search.ReloadMatches();
+                _search.ReloadMatches(null);
 
                 //await _search.ReloadMatches();
             }

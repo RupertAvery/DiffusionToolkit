@@ -379,7 +379,7 @@ namespace Diffusion.Toolkit
                 if (removedList.Any())
                 {
                     removed = removedList.Count;
-                    _dataStore.DeleteImages(removedList.Select(i => i.Id));
+                    _dataStore.RemoveImages(removedList.Select(i => i.Id));
                 }
 
                 var filesToScan = new List<string>();
@@ -457,6 +457,19 @@ namespace Diffusion.Toolkit
                 SetTotalFilesStatus();
             });
 
+        }
+
+        private void CleanExcludedPaths(IEnumerable<string> excludedPaths)
+        {
+            foreach (var excludedPath in excludedPaths)
+            {
+                var folder = _dataStore.GetFolder(excludedPath);
+                if (folder != null)
+                {
+                    var images = _dataStore.GetFolderImages(folder.Id);
+                    _dataStore.RemoveImages(images.Select(i => i.Id));
+                }
+            }
         }
 
         private void SetTotalFilesStatus()

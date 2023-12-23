@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Windows;
 using Diffusion.Database;
 
@@ -8,35 +9,39 @@ namespace Diffusion.Toolkit.Controls
     {
         public int Page { get; set; }
         public bool GotoEnd { get; set; }
+        public Action? OnCompleted { get; set; }
     }
 
     public partial class ThumbnailView
     {
-        public void GoFirstPage()
+        public void GoFirstPage(Action? onCompleted)
         {
             Model.Page = 1;
 
             var args = new PageChangedEventArgs()
             {
-                Page = Model.Page
+                Page = Model.Page,
+                OnCompleted = onCompleted
+
             };
 
             PageChangedCommand?.Execute(args);
         }
 
-        public void GoLastPage()
+        public void GoLastPage(Action? onCompleted)
         {
             Model.Page = Model.Pages;
             
             var args = new PageChangedEventArgs()
             {
-                Page = Model.Page
+                Page = Model.Page,
+                OnCompleted = onCompleted
             };
 
             PageChangedCommand?.Execute(args);
         }
 
-        public void GoPrevPage(bool gotoEnd = false)
+        public void GoPrevPage(Action? onCompleted, bool gotoEnd = false)
         {
             if (Model.Page > 1)
             {
@@ -46,7 +51,8 @@ namespace Diffusion.Toolkit.Controls
                 var args = new PageChangedEventArgs()
                 {
                     Page = Model.Page,
-                    GotoEnd = gotoEnd
+                    GotoEnd = gotoEnd,
+                    OnCompleted = onCompleted
                 };
 
                 PageChangedCommand?.Execute(args);
@@ -54,7 +60,7 @@ namespace Diffusion.Toolkit.Controls
 
         }
 
-        public void GoNextPage()
+        public void GoNextPage(Action? onCompleted)
         {
             if (Model.Page < Model.Pages)
             {
@@ -63,7 +69,8 @@ namespace Diffusion.Toolkit.Controls
 
                 var args = new PageChangedEventArgs()
                 {
-                    Page = Model.Page
+                    Page = Model.Page,
+                    OnCompleted = onCompleted
                 };
 
                 PageChangedCommand?.Execute(args);

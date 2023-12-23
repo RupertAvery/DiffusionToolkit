@@ -110,10 +110,10 @@ namespace Diffusion.Toolkit.Controls
             Model.RemoveEntryCommand = new RelayCommand<object>(o => RemoveEntry());
             Model.MoveCommand = new RelayCommand<object>(o => MoveSelected());
 
-            Model.NextPage = new RelayCommand<object>((o) => GoNextPage());
-            Model.PrevPage = new RelayCommand<object>((o) => GoPrevPage());
-            Model.FirstPage = new RelayCommand<object>((o) => GoFirstPage());
-            Model.LastPage = new RelayCommand<object>((o) => GoLastPage());
+            Model.NextPage = new RelayCommand<object>((o) => GoNextPage(null));
+            Model.PrevPage = new RelayCommand<object>((o) => GoPrevPage(null));
+            Model.FirstPage = new RelayCommand<object>((o) => GoFirstPage(null));
+            Model.LastPage = new RelayCommand<object>((o) => GoLastPage(null));
             //_model.Refresh = new RelayCommand<object>((o) => ReloadMatches());
             //_model.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
             //_model.CopyFiles = new RelayCommand<object>((o) => CopyFiles());
@@ -315,14 +315,14 @@ namespace Diffusion.Toolkit.Controls
                             case -1 when currentItemIndex == 0 && !e.IsRepeat:
                                 if (ThumbnailListView.SelectedItems.Count == 1)
                                 {
-                                    GoPrevPage(true);
+                                    GoPrevPage(null, true);
                                     e.Handled = true;
                                 }
                                 return;
                             case 1 when currentItemIndex == ThumbnailListView.Items.Count - 1 && !e.IsRepeat:
                                 if (ThumbnailListView.SelectedItems.Count == 1)
                                 {
-                                    GoNextPage();
+                                    GoNextPage(null);
                                     e.Handled = true;
                                 }
                                 return;
@@ -488,7 +488,7 @@ namespace Diffusion.Toolkit.Controls
                         Model.Images.Remove(image);
                     }
 
-                    DataStore.DeleteImages(ids);
+                    DataStore.RemoveImages(ids);
                 }
             }
         }
@@ -644,7 +644,7 @@ namespace Diffusion.Toolkit.Controls
                 {
                     var index = gotoEnd ? Model.Images.Count - 1 : 0;
 
-                    ShowItem(index, focus && this.ThumbnailListView.IsFocused);
+                    ShowItem(index, focus);
                 }
             });
         }
@@ -667,22 +667,22 @@ namespace Diffusion.Toolkit.Controls
 
         private void FirstPage_OnClick(object sender, RoutedEventArgs e)
         {
-            GoFirstPage();
+            GoFirstPage(null);
         }
 
         private void PrevPage_OnClick(object sender, RoutedEventArgs e)
         {
-            GoPrevPage();
+            GoPrevPage(null);
         }
 
         private void NextPage_OnClick(object sender, RoutedEventArgs e)
         {
-            GoNextPage();
+            GoNextPage(null);
         }
 
         private void LastPage_OnClick(object sender, RoutedEventArgs e)
         {
-            GoLastPage();
+            GoLastPage(null);
         }
 
         private void Page_OnKeyDown(object sender, KeyEventArgs e)

@@ -35,7 +35,7 @@ namespace Diffusion.Database
             command.ExecuteNonQuery();
         }
 
-        public void DeleteImages(IEnumerable<int> ids)
+        public void RemoveImages(IEnumerable<int> ids)
         {
             using var db = OpenConnection();
 
@@ -64,13 +64,27 @@ namespace Diffusion.Database
 
             foreach (var image in images)
             {
-                //paths.Add(image);
                 yield return image;
             }
 
             db.Close();
 
             //return paths;
+        }
+
+
+        public IEnumerable<ImagePath> GetFolderImages(int folderId)
+        {
+            using var db = OpenConnection();
+
+            var images =  db.Query<ImagePath>("SELECT Id, FolderId, Path FROM Image WHERE FolderId = ?", folderId);
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+
+            db.Close();
         }
 
         public int DeleteMarkedImages()
@@ -257,14 +271,23 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var falders = db.Query<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate FROM Folder");
+            var folders = db.Query<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate FROM Folder");
 
-            foreach (var folder in falders)
+            foreach (var folder in folders)
             {
                 yield return folder;
             }
 
             db.Close();
+        }
+
+        public Folder? GetFolder(string path)
+        {
+            using var db = OpenConnection();
+
+            var folder = db.FindWithQuery<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate FROM Folder WHERE Path = ?", path);
+
+            return folder;
         }
 
         public IEnumerable<ImagePath> GetImagePaths()

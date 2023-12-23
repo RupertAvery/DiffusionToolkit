@@ -163,7 +163,7 @@ namespace Diffusion.Toolkit
 
                             SetTotalFilesStatus();
 
-                            _search.ReloadMatches();
+                            _search.ReloadMatches(null);
 
                             //await _search.ReloadMatches();
 
