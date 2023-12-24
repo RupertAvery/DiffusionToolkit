@@ -56,18 +56,39 @@ public class CivitaiClient : IDisposable
 
             if (response.IsSuccessStatusCode)
             {
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    Converters =
-                    {
-                        new JsonStringEnumConverter()
-                    }
-                };
+                //var options = new JsonSerializerOptions
+                //{
+                //    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                //    Converters =
+                //    {
+                //        new JsonStringEnumConverter()
+                //    }
+                //};
+
+                var options = new JsonSerializerOptions();
+                options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                options.Converters.Add(new JsonStringEnumConverterWithAttributeSupport());
 
                 using (var responseStream = await response.Content.ReadAsStreamAsync(token))
                 {
                     results = await JsonSerializer.DeserializeAsync<T>(responseStream, options);
+
+                    //using var buffer = new MemoryStream();
+                    //await responseStream.CopyToAsync(buffer);
+                    //responseStream.Flush();
+                    //responseStream.Close();
+
+                    //buffer.Position = 0;
+                    //using var fs = new FileStream($"civitai-{DateTime.Now:yyyyMMddhhmmss}.json", FileMode.Create, FileAccess.Write);
+                    //await buffer.CopyToAsync(fs);
+                    //fs.Flush();
+                    //fs.Close();
+
+                    //buffer.Position = 0;
+                    //results = await JsonSerializer.DeserializeAsync<T>(buffer, options);
+
+                    //buffer.Close();
+
                 }
             }
             else

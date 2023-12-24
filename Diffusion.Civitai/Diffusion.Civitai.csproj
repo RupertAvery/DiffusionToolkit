@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="EnumExtensions.System.Text.Json" Version="1.1.0" />
+  </ItemGroup>
+
 </Project>

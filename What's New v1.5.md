@@ -114,6 +114,7 @@ You can even use it on images without metadata and still use the other features 
 
 ## Bugfixes
 
+* Add "Core ML" to CivitAI model formats
 * Loading a large image should no longer block the UI
 * Folder not updating after move (#152)
 * Crash opening app: "An unhandled exception occured: 'N' is an invalid start of a value  (#155) (thanks to kwaegel)

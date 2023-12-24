@@ -25,7 +25,7 @@ namespace Diffusion.Toolkit
 
             var message = "This will download Civitai model info.\r\n\r\n" + "Are you sure you want to continue?";
 
-            var result = await _messagePopupManager.Show(message, "Download Civitai models", PopupButtons.YesNo);
+            var result = await _messagePopupManager.ShowCustom(message, "Download Civitai models", PopupButtons.YesNo, 500, 250);
 
             if (result == PopupResult.Yes)
             {
