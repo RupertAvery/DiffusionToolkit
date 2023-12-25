@@ -147,6 +147,7 @@ namespace Diffusion.Toolkit
                                 _model.TotalProgress = 100;
                                 _model.CurrentProgress = 0;
 
+                                LoadAlbums();
 
                                 if (cancelled || _progressCancellationTokenSource.IsCancellationRequested)
                                 {
@@ -154,6 +155,7 @@ namespace Diffusion.Toolkit
                                 }
 
                                 Toast($"{count} images were deleted", "Empty recycle bin");
+
                             });
 
                         }

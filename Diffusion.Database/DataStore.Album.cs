@@ -117,17 +117,24 @@ namespace Diffusion.Database
             return album;
         }
 
+        //public void CleanupOrphanedAlbumImages()
+        //{
+        //    using var db = OpenConnection();
 
-        public void CleanupOrphanedAlbumImages()
-        {
-            using var db = OpenConnection();
+        //    var query = "DELETE FROM AlbumImage WHERE AlbumId IN (SELECT AlbumId FROM AlbumImage WHERE AlbumId NOT IN (SELECT Id FROM Album))";
 
-            var query = "DELETE FROM AlbumImage WHERE AlbumId IN (SELECT AlbumId FROM AlbumImage WHERE AlbumId NOT IN (SELECT Id FROM Album))";
+        //    var command = db.CreateCommand(query);
 
-            var command = db.CreateCommand(query);
+        //    command.ExecuteNonQuery();
 
-            command.ExecuteNonQuery();
-        }
+
+        //    query = "DELETE FROM AlbumImage WHERE ImageId NOT IN(SELECT Id FROM Image)";
+
+        //    command = db.CreateCommand(query);
+
+        //    command.ExecuteNonQuery();
+
+        //}
 
         public void RemoveAlbum(int id)
         {

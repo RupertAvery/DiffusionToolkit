@@ -26,7 +26,7 @@ Make sure to read the help file to see how you can sort and filter your images.
 
 # Installation
 
-* [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/v1.4
+* [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/v1.5
 ) (Windows)
 * Requires [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) 
 

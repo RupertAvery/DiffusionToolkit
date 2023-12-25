@@ -26,10 +26,17 @@ namespace Diffusion.Database
         public void DeleteImage(int id)
         {
             using var db = OpenConnection();
-
-            var query = "DELETE FROM Image WHERE Id = @Id";
+            
+            var query = "DELETE FROM AlbumImage WHERE ImageId = @Id";
 
             var command = db.CreateCommand(query);
+            command.Bind("@Id", id);
+
+            command.ExecuteNonQuery();
+
+            query = "DELETE FROM Image WHERE Id = @Id";
+
+            command = db.CreateCommand(query);
             command.Bind("@Id", id);
 
             command.ExecuteNonQuery();
@@ -41,12 +48,17 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            var query = "DELETE FROM Image WHERE Id = @Id";
+            var albumQuery = "DELETE FROM AlbumImage WHERE ImageId = @Id";
+            var albumCommand = db.CreateCommand(albumQuery);
 
+            var query = "DELETE FROM Image WHERE Id = @Id";
             var command = db.CreateCommand(query);
 
             foreach (var id in ids)
             {
+                albumCommand.Bind("@Id", id);
+                albumCommand.ExecuteNonQuery();
+
                 command.Bind("@Id", id);
                 command.ExecuteNonQuery();
             }
@@ -87,18 +99,17 @@ namespace Diffusion.Database
             db.Close();
         }
 
-        public int DeleteMarkedImages()
-        {
-            using var db = OpenConnection();
+        //public int DeleteMarkedImages()
+        //{
+        //    using var db = OpenConnection();
 
-            var query = "DELETE FROM Image WHERE ForDeletion = 1";
+        //    var query = "DELETE FROM Image WHERE ForDeletion = 1";
 
+        //    var command = db.CreateCommand(query);
+        //    var result = command.ExecuteNonQuery();
 
-            var command = db.CreateCommand(query);
-            var result = command.ExecuteNonQuery();
-
-            return result;
-        }
+        //    return result;
+        //}
 
         public int UpdateImagesByPath(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, int> folderIdCache, CancellationToken cancellationToken)
         {

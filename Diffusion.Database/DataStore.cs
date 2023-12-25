@@ -1,4 +1,9 @@
 ﻿using SQLite;
+using static System.Net.Mime.MediaTypeNames;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics.Metrics;
+using System.Xml.Linq;
 
 namespace Diffusion.Database;
 
@@ -9,7 +14,7 @@ public partial class DataStore
 
     public SQLiteConnection OpenConnection()
     {
-        var db= new SQLiteConnection(DatabasePath);
+        var db = new SQLiteConnection(DatabasePath);
 
         //db.EnableLoadExtension(true);
         //db.Execute("SELECT load_extension(?)", "dlls/path0");
@@ -21,8 +26,6 @@ public partial class DataStore
     {
         DatabasePath = databasePath;
         Create();
-
-        CleanupOrphanedAlbumImages();
     }
 
     public bool CheckIsValid()
@@ -40,7 +43,7 @@ public partial class DataStore
             };
 
             using var db = OpenConnection();
-            
+
             if (db.TableExist(nameof(Image)))
             {
                 isValid = true;
@@ -76,20 +79,11 @@ public partial class DataStore
 
         using var db = OpenConnection();
 
-        db.CreateTable<Album>();
-        db.CreateIndex<Album>(album => album.Name, true);
-        db.CreateIndex<Album>(album => album.LastUpdated);
+        var migrations = new Migrations(db);
 
-        db.CreateTable<AlbumImage>();
-        db.CreateIndex<AlbumImage>(album => album.AlbumId);
-        db.CreateIndex<AlbumImage>(album => album.ImageId);
 
-        db.CreateTable<Folder>();
-        db.CreateIndex<Folder>(folder => folder.ParentId);
 
-        //db.CreateTable<File>();
         db.CreateTable<Image>();
-
         db.CreateIndex<Image>(image => image.FolderId);
         db.CreateIndex<Image>(image => image.Path);
         db.CreateIndex<Image>(image => image.ModelHash);
@@ -110,9 +104,38 @@ public partial class DataStore
         db.CreateIndex<Image>(image => image.HyperNetworkStrength);
         db.CreateIndex<Image>(image => image.FileSize);
 
+        CreateAlbumImageTable(db);
+        db.CreateTable<Album>();
+        db.CreateIndex<Album>(album => album.Name, true);
+        db.CreateIndex<Album>(album => album.LastUpdated);
+
+        db.CreateTable<AlbumImage>();
+        db.CreateIndex<AlbumImage>(album => album.AlbumId);
+        db.CreateIndex<AlbumImage>(album => album.ImageId);
+
+        db.CreateTable<Folder>();
+        db.CreateIndex<Folder>(folder => folder.ParentId);
+
+        migrations.Update();
+
         db.Close();
 
     }
+
+    void CreateAlbumImageTable(SQLiteConnection db)
+    {
+        var sql = @"
+        CREATE TABLE IF NOT EXISTS ""AlbumImage""(
+            ""AlbumId""   integer,
+            ""ImageId""   integer,
+            CONSTRAINT ""FK_AlbumImage_AlbumId"" FOREIGN KEY(""AlbumId"") REFERENCES Album(""Id""),
+            CONSTRAINT ""FK_AlbumImage_ImageId"" FOREIGN KEY(""ImageId"") REFERENCES Image(""Id"")
+        );
+        ";
+        var command = db.CreateCommand(sql);
+        command.ExecuteNonQuery();
+    }
+
 
     public void Close(SQLiteConnection connection)
     {
