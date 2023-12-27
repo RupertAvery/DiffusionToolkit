@@ -81,8 +81,6 @@ public partial class DataStore
 
         var migrations = new Migrations(db);
 
-
-
         db.CreateTable<Image>();
         db.CreateIndex<Image>(image => image.FolderId);
         db.CreateIndex<Image>(image => image.Path);
@@ -104,11 +102,11 @@ public partial class DataStore
         db.CreateIndex<Image>(image => image.HyperNetworkStrength);
         db.CreateIndex<Image>(image => image.FileSize);
 
-        CreateAlbumImageTable(db);
         db.CreateTable<Album>();
         db.CreateIndex<Album>(album => album.Name, true);
         db.CreateIndex<Album>(album => album.LastUpdated);
 
+        CreateAlbumImageTable(db);
         db.CreateTable<AlbumImage>();
         db.CreateIndex<AlbumImage>(album => album.AlbumId);
         db.CreateIndex<AlbumImage>(album => album.ImageId);
