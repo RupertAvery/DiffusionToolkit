@@ -27,6 +27,8 @@ public class Settings : IScanOptions
     private int _pageSize;
     private string _mainGridWidth;
     private string _mainGridWidth2;
+    private string _previewGridHeight;
+    private string _previewGridHeight2;
     private WindowState? _windowState;
     private Size? _windowSize;
     private bool _dontShowWelcomeOnStartup;
@@ -158,6 +160,33 @@ public class Settings : IScanOptions
         set => UpdateValue(ref _mainGridWidth2, value);
     }
 
+    public string PreviewGridHeight
+    {
+        get => _previewGridHeight;
+        set => UpdateValue(ref _previewGridHeight, value);
+    }
+
+    public string PreviewGridHeight2
+    {
+        get => _previewGridHeight2;
+        set => UpdateValue(ref _previewGridHeight2, value);
+    }
+
+    private double? _top;
+    private double? _left;
+    
+    public double? Top
+    {
+        get => _top;
+        set => UpdateValue(ref _top, value);
+    }
+
+    public double? Left
+    {
+        get => _left;
+        set => UpdateValue(ref _left, value);
+    }
+    
     public WindowState? WindowState
     {
         get => _windowState;

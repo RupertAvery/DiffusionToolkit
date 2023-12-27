@@ -164,19 +164,19 @@ namespace Diffusion.Toolkit.Pages
                 MainGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.MainGridWidth2);
             }
 
-            //if (_settings.PreviewGridHeight != null)
-            //{
-            //    PreviewGrid.RowDefinitions[0].Height = GetGridLength(_settings.PreviewGridHeight);
-            //    PreviewGrid.RowDefinitions[2].Height = GetGridLength(_settings.PreviewGridHeight2);
-            //}
+            if (_settings.PreviewGridHeight != null)
+            {
+                PreviewGrid.RowDefinitions[0].Height = GetGridLength(_settings.PreviewGridHeight);
+                PreviewGrid.RowDefinitions[2].Height = GetGridLength(_settings.PreviewGridHeight2);
+            }
 
             var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
             widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[0], WidthChanged);
             widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[2], WidthChanged2);
 
-            //var heightDescriptor = DependencyPropertyDescriptor.FromProperty(RowDefinition.HeightProperty, typeof(ItemsControl));
-            //heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[0], HeightChanged);
-            //heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[2], HeightChanged2);
+            var heightDescriptor = DependencyPropertyDescriptor.FromProperty(RowDefinition.HeightProperty, typeof(ItemsControl));
+            heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[0], HeightChanged);
+            heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[2], HeightChanged2);
 
             _model = new SearchModel(mainModel);
             //_model.DataStore = _dataStoreOptions;
@@ -363,6 +363,16 @@ namespace Diffusion.Toolkit.Pages
         private void WidthChanged2(object? sender, EventArgs e)
         {
             _settings.MainGridWidth2 = MainGrid.ColumnDefinitions[2].Width.ToString();
+        }
+
+        private void HeightChanged(object? sender, EventArgs e)
+        {
+            _settings.PreviewGridHeight = MainGrid.ColumnDefinitions[0].Width.ToString();
+        }
+
+        private void HeightChanged2(object? sender, EventArgs e)
+        {
+            _settings.PreviewGridHeight2 = MainGrid.ColumnDefinitions[2].Width.ToString();
         }
 
         public Settings Settings
