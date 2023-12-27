@@ -32,19 +32,19 @@ namespace Diffusion.Toolkit
 
         private void WatcherOnCreated(object sender, FileSystemEventArgs e)
         {
-            if (e.ChangeType == WatcherChangeTypes.Created)
+            if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
-                {
-                    AddFile(e.FullPath);
-                }
+                QueueFile(e.FullPath);
             }
-            else if (e.ChangeType == WatcherChangeTypes.Renamed)
+        }
+
+        private void WatcherOnRenamed(object sender, RenamedEventArgs e)
+        {
+            var wasTmp = Path.GetExtension(e.OldFullPath).ToLowerInvariant() == ".tmp";
+            
+            if (wasTmp && _settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
-                {
-                    AddFile(e.FullPath);
-                }
+                QueueFile(e.FullPath);
             }
         }
 
@@ -60,6 +60,7 @@ namespace Diffusion.Toolkit
                         IncludeSubdirectories = _settings.RecurseFolders.GetValueOrDefault(true)
                     };
                     watcher.Created += WatcherOnCreated;
+                    watcher.Renamed += WatcherOnRenamed;
                     _watchers.Add(watcher);
                 }
             }
@@ -73,17 +74,15 @@ namespace Diffusion.Toolkit
             }
             _watchers.Clear();
         }
-
-
-
-        private void AddFile(string path)
+        
+        private void QueueFile(string path)
         {
             lock (_lock)
             {
                 if (t == null)
                 {
                     _detectedFiles = new List<string>();
-                    t = new Timer(Callback, null, 2000, Timeout.Infinite);
+                    t = new Timer(ProcessQueueCallback, null, 2000, Timeout.Infinite);
                 }
                 else
                 {
@@ -95,7 +94,7 @@ namespace Diffusion.Toolkit
 
         private int addedTotal = 0;
 
-        private void Callback(object? state)
+        private void ProcessQueueCallback(object? state)
         {
             int added;
             float elapsed;
