@@ -697,16 +697,16 @@ namespace Diffusion.Toolkit.Pages
 
                         if (models.Any())
                         {
-                            _model.CurrentImage.ModelName = Join(", ", models.Select(m => m.Filename));
+                            imageViewModel.ModelName = Join(", ", models.Select(m => m.Filename).Distinct());
                         }
                         else
                         {
-                            _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
+                            imageViewModel.ModelName = $"Not found";
                         }
                     }
                     else
                     {
-                        _model.CurrentImage.ModelName = $"Not found ({parameters.ModelHash})";
+                        imageViewModel.ModelName = $"Not found";
                     }
 
                 }
