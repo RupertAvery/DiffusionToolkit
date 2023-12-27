@@ -133,7 +133,12 @@ namespace Diffusion.Toolkit
 
                 if (AddAlbumPopup.Tag is string and "AddImages" && images.Any())
                 {
-                    _dataStore.AddImagesToAlbum(album.Id, imageEntries.Select(i => i.Id));
+                    _dataStore.AddImagesToAlbum(album.Id, images.Select(i => i.Id));
+
+                    foreach (var imageEntry in images)
+                    {
+                        imageEntry.AlbumCount++;
+                    }
 
                     Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to new album \"{album.Name}\".", "Add to Album");
                 }
@@ -144,10 +149,6 @@ namespace Diffusion.Toolkit
 
                 LoadAlbums();
 
-                foreach (var imageEntry in imageEntries)
-                {
-                    imageEntry.AlbumCount++;
-                }
                 //_search.ReloadMatches(null);
                 AddAlbumPopup.Tag = null;
                 //UpdateAlbums();
