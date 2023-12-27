@@ -31,7 +31,7 @@
                                 <ControlTemplate TargetType="{x:Type TabItem}">
                                     <Grid>
                                         <Border Name="Border" Background="{DynamicResource PrimaryBrush}" Margin="2,2,-8,0" BorderBrush="{DynamicResource SecondaryBrush}" BorderThickness="1,1,1,1" CornerRadius="5,5,0,0">
-                                            <ContentPresenter x:Name="ContentSite" ContentSource="Header" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,4,15,4" RecognizesAccessKey="True"/>
+                                            <ContentPresenter x:Name="ContentSite" ContentSource="Header" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="15,4,15,4" RecognizesAccessKey="True" TextBlock.Foreground="{DynamicResource ForegroundBrush}"/>
                                         </Border>
                                     </Grid>
                                     <ControlTemplate.Triggers>
@@ -118,7 +118,7 @@
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding ModelRootPath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
                             <Button Height="26" Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
                         </Grid>
-                        <TextBlock Margin="10" TextWrapping="Wrap">
+                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="10" TextWrapping="Wrap">
                             Set the Model Root to the path of the AUTOMATIC111 models\Stable-diffusion folder to list 
                             all your models in the Model Tab
                         </TextBlock>
@@ -131,7 +131,7 @@
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding HashCache, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
                             <Button Height="26" Grid.Column="1" Click="BrowseHashCache_OnClick">Browse</Button>
                         </Grid>
-                        <TextBlock Margin="10" TextWrapping="Wrap">
+                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="10" TextWrapping="Wrap">
                             Set the A1111 Cache to the path of the AUTOMATIC111 cache.json file to allow model name searches 
                             if your metadata contains only the hash. SHA256 model hashes are also read from this file.
                         </TextBlock>

@@ -184,7 +184,7 @@
                     </Border.Effect>
                 </Border>
                 <Grid Background="Transparent" Margin="10,25,10,20" IsHitTestVisible="False">
-                    <TextBlock TextAlignment="Center" TextWrapping="WrapWithOverflow" x:Name="ToastMessage" Width="280" Padding="10"></TextBlock>
+                    <TextBlock Foreground="{DynamicResource ForegroundBrush}" TextAlignment="Center" TextWrapping="WrapWithOverflow" x:Name="ToastMessage" Width="280" Padding="10"></TextBlock>
                 </Grid>
             </Grid>
         </Popup>
@@ -212,7 +212,7 @@
                             <RowDefinition Height="36"/>
                         </Grid.RowDefinitions>
                         <Label FontWeight="Bold" Grid.Row="0" Content="Add Album" HorizontalAlignment="Center" FontSize="16"></Label>
-                        <TextBlock TextWrapping="WrapWithOverflow" Grid.Row="1" Text="Enter a name for the new album" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" TextWrapping="WrapWithOverflow" Grid.Row="1" Text="Enter a name for the new album" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
                         <TextBox x:Name="NewAlbumName" KeyDown="NewAlbumName_OnKeyDown" Grid.Row="2" FontSize="16" Height="32" VerticalContentAlignment="Center"></TextBox>
                         <Grid Grid.Row="3">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
@@ -246,7 +246,7 @@
                             <RowDefinition Height="36"/>
                         </Grid.RowDefinitions>
                         <Label FontWeight="Bold" Grid.Row="0" Content="Add Album" HorizontalAlignment="Center" FontSize="16"></Label>
-                        <TextBlock x:Name="NewAlbumMessage" TextWrapping="WrapWithOverflow" Grid.Row="1" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" x:Name="NewAlbumMessage" TextWrapping="WrapWithOverflow" Grid.Row="1" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
                         <Grid Grid.Row="3">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
                                 <Button Width="80" Height="30" Margin="0,0,0,0" Click="NewAlbumMessageOK_Click">OK</Button>
@@ -279,7 +279,7 @@
                             <RowDefinition Height="36"/>
                         </Grid.RowDefinitions>
                         <Label FontWeight="Bold" Grid.Row="0" Content="Rename Album" HorizontalAlignment="Center" FontSize="16"></Label>
-                        <TextBlock TextWrapping="WrapWithOverflow" Grid.Row="1" Text="Enter a new name for the album" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
+                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" TextWrapping="WrapWithOverflow" Grid.Row="1" Text="Enter a new name for the album" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
                         <TextBox x:Name="RenewAlbumName" Grid.Row="2" FontSize="16" Height="32" VerticalContentAlignment="Center"
                                  KeyDown="RenewAlbumName_OnKeyDown"
                                  ></TextBox>
@@ -315,7 +315,7 @@
                             <RowDefinition Height="36"/>
                         </Grid.RowDefinitions>
                         <Label FontWeight="Bold" Grid.Row="0" Content="Remove Album" HorizontalAlignment="Center" FontSize="16"></Label>
-                        <TextBlock x:Name="RemoveAlbumMessage" TextWrapping="WrapWithOverflow" Grid.Row="1" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock x:Name="RemoveAlbumMessage" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="WrapWithOverflow" Grid.Row="1" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center">
                         </TextBlock>
                         <Grid Grid.Row="3">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >

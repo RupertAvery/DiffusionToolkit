@@ -166,7 +166,7 @@
                                             <ColumnDefinition/>
                                             <ColumnDefinition Width="26"/>
                                         </Grid.ColumnDefinitions>
-                                        <Label Grid.Column="0" >Albums</Label>
+                                        <Label FontWeight="Bold" Grid.Column="0">Albums</Label>
                                         <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="Create Album" Command="{Binding MainModel.CreateAlbumCommand}">
                                             +
                                         </Button>
@@ -267,7 +267,7 @@
                       Width="5"
         />
 
-        <Grid Grid.Row="0" Grid.Column="2" >
+        <Grid x:Name="PreviewGrid" Grid.Row="0" Grid.Column="2" >
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="5"/>
@@ -398,9 +398,9 @@
 
 
                         <Grid  Background="Transparent" Margin="10">
-                            <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
-                           IsReadOnly="True"
-                           Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
+                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
                         </Grid>
 
                         <Grid  Background="#80000000"  >
@@ -413,7 +413,7 @@
                         </Grid>
 
                         <Grid Background="Transparent" Margin="10">
-                            <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                            <TextBox  Background="#00000000" FontSize="14" BorderThickness="0"
                            IsReadOnly="True"
                            Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
                         </Grid>
@@ -438,16 +438,16 @@
                                 <ColumnDefinition Width="50"/>
                                 <ColumnDefinition Width="95"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Seed, Converter={StaticResource ZeroConverter}}"></TextBox>
-                            <TextBox Grid.Column="1" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                            <TextBox Grid.Column="1" Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding CFGScale, Converter={StaticResource ZeroConverter}}"></TextBox>
-                            <TextBox Grid.Column="2" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                            <TextBox Grid.Column="2" Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Steps, Converter={StaticResource ZeroConverter}}"></TextBox>
-                            <TextBox Grid.Column="3" Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
+                            <TextBox Grid.Column="3" Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding ., Converter={StaticResource SizeConverter}}"></TextBox>
                         </Grid>
@@ -463,9 +463,9 @@
                         </Grid>
 
                         <Grid Background="Transparent" Margin="10">
-                            <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
-                           IsReadOnly="True"
-                           Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
+                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
                         </Grid>
 
                         <Grid Background="#80000000" >
@@ -486,9 +486,9 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                       IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
-                            <TextBox Grid.Column="1" Foreground="White" FontSize="14" BorderThickness="0"
+                            <TextBox Grid.Column="0" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
+                            <TextBox Grid.Column="1" FontSize="14" BorderThickness="0"
                        IsReadOnly="True" Padding="5" Background="Transparent"   Text="{Binding ModelHash}"></TextBox>
                         </Grid>
 
@@ -518,9 +518,9 @@
                         </Grid>
 
                         <Grid  Background="Transparent" Margin="10">
-                            <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
-                           IsReadOnly="True"
-                           Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"></TextBox>
+                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"></TextBox>
                         </Grid>
 
                         <Grid  Background="#80000000" >
@@ -529,8 +529,8 @@
 
 
                         <Grid  Background="Transparent" Margin="10">
-                            <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                       IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
+                            <TextBox FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
                         </Grid>
 
                         <Grid  Background="#80000000" >
@@ -542,10 +542,10 @@
                             <ItemsControl ItemsSource="{Binding Path=Albums}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                           IsReadOnly="True" Padding="5" Background="Transparent" 
-                                           TextWrapping="WrapWithOverflow" Text="{Binding Name}"
-                                           PreviewMouseDown="UIElement_OnMouseDown" Cursor="Hand"></TextBox>
+                                        <TextBox FontSize="14" BorderThickness="0"
+                                                 IsReadOnly="True" Padding="5" Background="Transparent" 
+                                                 TextWrapping="WrapWithOverflow" Text="{Binding Name}"
+                                                 PreviewMouseDown="UIElement_OnMouseDown" Cursor="Hand"></TextBox>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                                 <ItemsControl.ItemsPanel>
