@@ -378,6 +378,16 @@ namespace Diffusion.Toolkit
                 this.Height = _settings.WindowSize.Value.Height;
             }
 
+            if (_settings.Top.HasValue)
+            {
+                this.Top = _settings.Top.Value;
+            }
+
+            if (_settings.Left.HasValue)
+            {
+                this.Left = _settings.Left.Value;
+            }
+
             _model.HideNSFWCommand = _settings.HideNSFW;
             QueryBuilder.HideNFSW = _model.HideNSFWCommand;
             _model.NSFWBlurCommand = _settings.NSFWBlur;
@@ -388,6 +398,8 @@ namespace Diffusion.Toolkit
             Activated += OnActivated;
             StateChanged += OnStateChanged;
             SizeChanged += OnSizeChanged;
+            LocationChanged+= OnLocationChanged;
+            
 
             Logger.Log($"Initializing pages");
 
@@ -602,6 +614,7 @@ namespace Diffusion.Toolkit
             //_previewWindow.Show();
 
         }
+
 
         private void OnCurrentImageOpen(ImageViewModel obj)
         {

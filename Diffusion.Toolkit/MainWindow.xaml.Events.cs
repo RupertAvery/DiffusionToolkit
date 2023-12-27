@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Diffusion.Common;
+using System.Windows.Forms;
+using System.Windows.Interop;
 
 namespace Diffusion.Toolkit
 {
@@ -210,12 +212,32 @@ namespace Diffusion.Toolkit
         private void OnStateChanged(object? sender, EventArgs e)
         {
             _settings.WindowState = this.WindowState;
+            if (this.WindowState == WindowState.Maximized)
+            {
+                Screen screen = Screen.FromHandle((new WindowInteropHelper(this)).Handle);
+                _settings.Top = screen.WorkingArea.Top;
+                _settings.Left = screen.WorkingArea.Left;
+            }
+            else if (this.WindowState == WindowState.Normal)
+            {
+                _settings.Top = this.Top;
+                _settings.Left = this.Left;
+            }
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             _settings.WindowSize = e.NewSize;
+            _settings.Top = this.Top;
+            _settings.Left = this.Left;
         }
+
+        private void OnLocationChanged(object? sender, EventArgs e)
+        {
+            _settings.Top = this.Top;
+            _settings.Left = this.Left;
+        }
+
 
         private void OnClosing(object? sender, CancelEventArgs e)
         {
