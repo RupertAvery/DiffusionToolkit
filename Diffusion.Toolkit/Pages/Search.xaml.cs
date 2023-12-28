@@ -1128,7 +1128,8 @@ namespace Diffusion.Toolkit.Pages
                     FileName = Path.GetFileName(file.Path),
                     NSFW = file.NSFW,
                     EntryType = EntryType.File,
-                    AlbumCount = file.AlbumCount
+                    AlbumCount = file.AlbumCount,
+                    Dispatcher = Dispatcher
                 };
 
                 images.Add(imageEntry);
@@ -1151,7 +1152,7 @@ namespace Diffusion.Toolkit.Pages
             Dispatcher.Invoke(() =>
             {
                 _model.Images = new ObservableCollection<ImageEntry>(images);
-                RefreshThumbnails();
+                //RefreshThumbnails();
 
             });
 
@@ -1360,7 +1361,8 @@ namespace Diffusion.Toolkit.Pages
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
                     NSFW = file.NSFW,
-                    EntryType = EntryType.File
+                    EntryType = EntryType.File,
+                    Dispatcher = Dispatcher
                 };
 
                 images.Add(imageEntry);

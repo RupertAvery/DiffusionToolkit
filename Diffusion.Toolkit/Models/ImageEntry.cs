@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Diffusion.Toolkit.Thumbnails;
 
 namespace Diffusion.Toolkit;
@@ -8,6 +11,13 @@ public enum EntryType
     File,
     Folder,
     Album
+}
+
+public enum LoadState
+{
+    Unloaded,
+    Loading,
+    Loaded,
 }
 
 public class ImageEntry : BaseNotify
@@ -26,10 +36,12 @@ public class ImageEntry : BaseNotify
     private EntryType _entryType;
     private string? _score;
     private int _albumCount;
+    private IEnumerable<string> _albums;
 
     public ImageEntry(long requestId)
     {
         _requestId = requestId;
+        LoadState = LoadState.Unloaded;
     }
 
     public int Id
@@ -93,8 +105,14 @@ public class ImageEntry : BaseNotify
         set => SetField(ref _thumbnail, value);
     }
 
+    public LoadState LoadState { get; set; }
+
+    public Dispatcher? Dispatcher { get; set; }
+
     public void LoadThumbnail()
     {
+        LoadState = LoadState.Loading;
+
         var job = new ThumbnailJob()
         {
             RequestId = _requestId,
@@ -106,8 +124,20 @@ public class ImageEntry : BaseNotify
 
         _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
         {
-            Thumbnail = d;
-            OnPropertyChanged(nameof(Thumbnail));
+            LoadState = LoadState.Loaded;
+            if (Dispatcher != null)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    Thumbnail = d;
+                });
+            }
+            else
+            {
+                Thumbnail = d;
+            }
+            //Debug.WriteLine($"Finished job {job.RequestId}");
+            //OnPropertyChanged(nameof(Thumbnail));
         });
     }
 
@@ -120,5 +150,11 @@ public class ImageEntry : BaseNotify
     {
         get => _albumCount;
         set => SetField(ref _albumCount, value);
+    }
+
+    public IEnumerable<string> Albums
+    {
+        get => _albums;
+        set => SetField(ref _albums, value);
     }
 }

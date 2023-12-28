@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Windows;
-using Diffusion.Database;
+using System.Windows.Controls;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -31,7 +29,7 @@ namespace Diffusion.Toolkit.Controls
         public void GoLastPage(Action? onCompleted)
         {
             Model.Page = Model.Pages;
-            
+
             var args = new PageChangedEventArgs()
             {
                 Page = Model.Page,
@@ -82,5 +80,32 @@ namespace Diffusion.Toolkit.Controls
             Model.SetPagingEnabled(Model.Page);
         }
 
+        private void ScrollViewer_OnScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+
+            if (wrapPanel.Children.Count == 0)
+            {
+                return;
+            }
+
+            var item = wrapPanel.Children[0] as ListViewItem;
+            var columnWidth = (int)(wrapPanel.ActualWidth / item.ActualWidth);
+
+            var start = ((int)e.VerticalOffset / (int)item.ActualHeight * columnWidth);
+            var end = ((int)(e.VerticalOffset + e.ViewportHeight) / (int)item.ActualHeight * columnWidth + columnWidth);
+
+            end = Math.Min(wrapPanel.Children.Count, end);
+
+            for (int i = start; i < end; i++)
+            {
+                item = wrapPanel.Children[i] as ListViewItem;
+
+                if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
+                {
+                    imageEntry.LoadThumbnail();
+                }
+            }
+        }
     }
 }

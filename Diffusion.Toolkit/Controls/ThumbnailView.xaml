@@ -223,7 +223,7 @@
             </ListView.ContextMenu>
             <ListView.Template>
                 <ControlTemplate >
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Background="Transparent">
+                    <ScrollViewer ScrollChanged="ScrollViewer_OnScrollChanged" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Background="Transparent">
                         <WrapPanel IsItemsHost="True" />
                     </ScrollViewer>
                 </ControlTemplate>
