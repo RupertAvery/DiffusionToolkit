@@ -102,6 +102,7 @@
                 <MenuItem Header="_Folders">
                     <MenuItem Header="_Fix missing images" Command="{Binding FixFoldersCommand}"/>
                     <MenuItem Header="_Remove excluded images" Command="{Binding RemoveExcludedImagesCommand}"/>
+                    <MenuItem Header="_Clean removed folders" Command="{Binding CleanRemovedFoldersCommand}"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="_Help">

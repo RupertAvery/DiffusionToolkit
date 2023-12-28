@@ -68,6 +68,7 @@ public class MainModel : BaseNotify
     private AlbumModel? _currentAlbum;
     private ICommand _fixFoldersCommand;
     private ICommand _removeExcludedImagesCommand;
+    private ICommand _cleanRemovedFoldersCommand;
     private ICommand _showFilterCommand;
     private ICommand _toggleAutoRefresh;
     private bool _autoRefresh;
@@ -448,6 +449,13 @@ public class MainModel : BaseNotify
         get => _removeExcludedImagesCommand;
         set => SetField(ref _removeExcludedImagesCommand, value);
     }
+
+    public ICommand CleanRemovedFoldersCommand
+    {
+        get => _cleanRemovedFoldersCommand;
+        set => SetField(ref _cleanRemovedFoldersCommand, value);
+    }
+
 
     public ICommand ShowFilterCommand
     {

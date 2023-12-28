@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -386,6 +387,21 @@ namespace Diffusion.Database
             {
                 db.Close();
             }
+        }
+
+        public int CleanRemovedFolders(IEnumerable<string> watchedFolders)
+        {
+            using var db = OpenConnection();
+
+            var whereClause = string.Join(" AND ", watchedFolders.Select(f => "PATH NOT LIKE ? || '\\%'"));
+
+            var query = $"DELETE FROM Image WHERE {whereClause}";
+
+            var result = db.Execute(query, watchedFolders.ToArray());
+
+            db.Close();
+
+            return result;
         }
     }
 }

@@ -498,6 +498,30 @@ namespace Diffusion.Toolkit
             return total;
         }
 
+        private async Task CleanRemovedFolders()
+        {
+            var message = "This will remove any remaining images in removed folders from the database. The images on disk will not be deleted.\r\n\r\n" +
+                          "Are you sure you want to continue?";
+
+            var result = await _messagePopupManager.ShowCustom(message, "Clean Removed Folders", PopupButtons.YesNo, 500, 250);
+            if (result == PopupResult.Yes)
+            {
+                CleanRemovedFoldersInternal();
+            }
+        }
+
+        private void CleanRemovedFoldersInternal()
+        {
+            var total  = _dataStore.CleanRemovedFolders(_settings.ImagePaths);
+
+            if (total > 0)
+            {
+                _search.ReloadMatches(null);
+
+                Toast($"{total} images removed from database", "");
+            }
+        }
+
         private void SetTotalFilesStatus()
         {
             var total = _dataStore.GetTotal();

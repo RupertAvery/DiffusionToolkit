@@ -133,6 +133,8 @@ namespace Diffusion.Toolkit
             _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
             _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
             _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
+            _model.CleanRemovedFoldersCommand = new AsyncCommand(CleanRemovedFolders);
+
             _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
             _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
 
@@ -747,6 +749,8 @@ namespace Diffusion.Toolkit
                     if (_settings.IsPropertyDirty(nameof(Settings.ImagePaths)))
                     {
                         await TryScanFolders();
+
+                        CleanRemovedFoldersInternal();
 
                         // Rebuild watchers in case paths were added or removed
 
