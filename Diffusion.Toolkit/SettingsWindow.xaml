@@ -75,10 +75,13 @@
                             <StackPanel Grid.Column="1">
                                 <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26">Add Folder</Button>
                                 <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26">Remove Folder</Button>
-                                <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" ToolTip="Automatically scan newly added images in folders">Watch Folders</CheckBox>
-                                <CheckBox IsChecked="{Binding RecurseFolders}" Margin="0,10,0,0"  VerticalContentAlignment="Center">Recursive</CheckBox>
                             </StackPanel>
                         </Grid>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                            <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" ToolTip="Automatically scan newly added images in folders">Watch Folders</CheckBox>
+                            <CheckBox IsChecked="{Binding AutoRefresh}" Margin="10,0,0,0" ToolTip="Refresh results automatically when new images are added">Auto Refresh</CheckBox>
+                            <CheckBox IsChecked="{Binding RecurseFolders}" Margin="10,0,0,0"  VerticalContentAlignment="Center">Recursive</CheckBox>
+                        </StackPanel>
                         <Label>Excluded Folders</Label>
                         <Grid Height="100">
                             <Grid.ColumnDefinitions>

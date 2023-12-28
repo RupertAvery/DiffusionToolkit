@@ -126,6 +126,11 @@ namespace Diffusion.Toolkit
                         }
                     }
                 });
+
+                if (_settings.AutoRefresh)
+                {
+                    _search.ReloadMatches(null);
+                }
             }
         }
 

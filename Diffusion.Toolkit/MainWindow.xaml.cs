@@ -134,6 +134,8 @@ namespace Diffusion.Toolkit
             _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
             _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
             _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
+            _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
+
 
             _model.ToggleAlbum = new RelayCommand<object>((o) => ToggleAlbum());
 
@@ -184,6 +186,12 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void ToggleAutoRefresh()
+        {
+            _settings.AutoRefresh = !_settings.AutoRefresh;
+            _model.AutoRefresh = _settings.AutoRefresh;
         }
 
         private void Escape()
@@ -367,6 +375,14 @@ namespace Diffusion.Toolkit
             }
 
 
+            _settings.SettingChanged += (s, args) =>
+            {
+                if (args.SettingName == nameof(Settings.AutoRefresh))
+                {
+                    _model.AutoRefresh = _settings.AutoRefresh;
+                }
+            };
+
             if (_settings.WindowState.HasValue)
             {
                 this.WindowState = _settings.WindowState.Value;
@@ -388,6 +404,7 @@ namespace Diffusion.Toolkit
                 this.Left = _settings.Left.Value;
             }
 
+            _model.AutoRefresh = _settings.AutoRefresh;
             _model.HideNSFWCommand = _settings.HideNSFW;
             QueryBuilder.HideNFSW = _model.HideNSFWCommand;
             _model.NSFWBlurCommand = _settings.NSFWBlur;

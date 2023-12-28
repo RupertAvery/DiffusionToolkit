@@ -47,6 +47,7 @@ namespace Diffusion.Toolkit
             _model.PageSize = settings.PageSize;
             _model.Theme = settings.Theme;
             _model.WatchFolders = settings.WatchFolders;
+            _model.AutoRefresh = settings.AutoRefresh;
             _model.CheckForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
             _model.ScanForNewImagesOnStartup = settings.ScanForNewImagesOnStartup;
             _model.AutoTagNSFW = settings.AutoTagNSFW;
@@ -76,6 +77,8 @@ namespace Diffusion.Toolkit
                 settings.Theme = _model.Theme;
                 settings.PageSize = _model.PageSize;
                 settings.WatchFolders = _model.WatchFolders;
+                settings.AutoRefresh = _model.AutoRefresh;
+
                 settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
                 settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
                 settings.AutoTagNSFW = _model.AutoTagNSFW;

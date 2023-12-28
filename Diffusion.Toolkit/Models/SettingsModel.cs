@@ -28,6 +28,7 @@ public class SettingsModel : BaseNotify
     private bool _useCustomViewer;
     private string _customCommandLine;
     private string _customCommandLineArgs;
+    private bool _autoRefresh;
 
     public SettingsModel()
     {
@@ -81,6 +82,13 @@ public class SettingsModel : BaseNotify
         get => _watchFolders;
         set => SetField(ref _watchFolders, value);
     }
+    
+    public bool AutoRefresh
+    {
+        get => _autoRefresh;
+        set => SetField(ref _autoRefresh, value);
+    }
+
 
     public bool CheckForUpdatesOnStartup
     {

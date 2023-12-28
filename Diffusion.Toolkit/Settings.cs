@@ -18,6 +18,16 @@ public interface IScanOptions
 
 }
 
+public class SettingChangedEventArgs
+{
+    public string SettingName { get; set; }
+    public object? OldValue { get; set; }
+    public object? NewValue { get; set; }
+}
+
+public delegate void SettingChangedEventHander(object sender, SettingChangedEventArgs args);
+
+
 public class Settings : IScanOptions
 {
     private List<string> _imagePaths;
@@ -320,6 +330,15 @@ public class Settings : IScanOptions
         set => UpdateValue(ref _sortAlbumsBy, value);
     }
 
+
+    private bool _autoRefresh;
+
+    public bool AutoRefresh
+    {
+        get => _autoRefresh;
+        set => UpdateValue(ref _autoRefresh, value);
+    }
+
     public void Apply(Settings settings)
     {
         var props = typeof(Settings).GetProperties();
@@ -331,12 +350,27 @@ public class Settings : IScanOptions
         }
     }
 
+    public event SettingChangedEventHander SettingChanged;
+
     private void UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return;
+
+        var oldValue = field;
+
         field = value;
+        
         _isPropertyDirty[propertyName] = true;
+        
         _isDirty = true;
+
+        SettingChanged?.Invoke(this, new SettingChangedEventArgs()
+        {
+            SettingName = propertyName,
+            OldValue = oldValue,
+            NewValue = value,
+        });
+
     }
 
     private void UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")

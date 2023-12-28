@@ -65,6 +65,7 @@
             <MenuItem Header="_View">
                 <MenuItem Header="Filter" Command="{Binding ShowFilterCommand}" InputGestureText="CTRL+F"/>
                 <MenuItem Header="Refresh" Command="{Binding Refresh}" InputGestureText="F5"/>
+                <MenuItem Header="Auto Refresh" IsChecked="{Binding AutoRefresh}" Command="{Binding ToggleAutoRefresh}"/>
                 <Separator/>
                 <MenuItem Header="Thumbnails">
                     <MenuItem Header="128x128" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=128}" Command="{Binding SetThumbnailSize}" CommandParameter="128"/>

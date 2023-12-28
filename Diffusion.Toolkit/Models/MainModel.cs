@@ -69,6 +69,8 @@ public class MainModel : BaseNotify
     private ICommand _fixFoldersCommand;
     private ICommand _removeExcludedImagesCommand;
     private ICommand _showFilterCommand;
+    private ICommand _toggleAutoRefresh;
+    private bool _autoRefresh;
 
     public MainModel()
     {
@@ -451,5 +453,17 @@ public class MainModel : BaseNotify
     {
         get => _showFilterCommand;
         set => SetField(ref _showFilterCommand, value);
+    }
+
+    public ICommand ToggleAutoRefresh
+    {
+        get => _toggleAutoRefresh;
+        set => SetField(ref _toggleAutoRefresh, value);
+    }
+
+    public bool AutoRefresh
+    {
+        get => _autoRefresh;
+        set => SetField(ref _autoRefresh, value);
     }
 }
