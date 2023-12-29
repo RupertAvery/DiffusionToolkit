@@ -80,7 +80,7 @@ namespace Diffusion.Toolkit.Controls
             Model.SetPagingEnabled(Model.Page);
         }
 
-        private void ScrollViewer_OnScrollChanged(object sender, ScrollChangedEventArgs e)
+        public void ReloadThumbnailsView(double offset)
         {
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;
 
@@ -89,11 +89,18 @@ namespace Diffusion.Toolkit.Controls
                 return;
             }
 
+            var scrollViewer = GetChildOfType<ScrollViewer>(this)!;
+
+            var height = scrollViewer.ViewportHeight;
+
             var item = wrapPanel.Children[0] as ListViewItem;
+
+            if (item.ActualWidth == 0) return;
+
             var columnWidth = (int)(wrapPanel.ActualWidth / item.ActualWidth);
 
-            var start = ((int)e.VerticalOffset / (int)item.ActualHeight * columnWidth);
-            var end = ((int)(e.VerticalOffset + e.ViewportHeight) / (int)item.ActualHeight * columnWidth + columnWidth);
+            var start = ((int)offset / (int)item.ActualHeight * columnWidth);
+            var end = ((int)(offset + height) / (int)item.ActualHeight * columnWidth + columnWidth);
 
             end = Math.Min(wrapPanel.Children.Count, end);
 
@@ -106,6 +113,11 @@ namespace Diffusion.Toolkit.Controls
                     imageEntry.LoadThumbnail();
                 }
             }
+        }
+
+        private void ScrollViewer_OnScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            ReloadThumbnailsView(e.VerticalOffset);
         }
     }
 }

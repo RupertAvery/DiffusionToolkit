@@ -933,10 +933,10 @@ namespace Diffusion.Toolkit.Pages
 
         private void LoadMatches()
         {
-            Dispatcher.Invoke(() =>
-            {
-                _model.Images?.Clear();
-            });
+            //Dispatcher.Invoke(() =>
+            //{
+            //    _model.Images?.Clear();
+            //});
 
             var images = new List<ImageEntry>();
 
@@ -1151,7 +1151,20 @@ namespace Diffusion.Toolkit.Pages
 
             Dispatcher.Invoke(() =>
             {
-                _model.Images = new ObservableCollection<ImageEntry>(images);
+                if (_model.Images == null || _model.Images.Count != images.Count)
+                {
+                    _model.Images = new ObservableCollection<ImageEntry>(images);
+                }
+                else
+                {
+                    for (var i = 0; i < images.Count; i++)
+                    {
+                        _model.Images[i] = images[i];
+                    }
+                }
+
+                ThumbnailListView.ReloadThumbnailsView(0);
+                
                 //RefreshThumbnails();
 
             });
@@ -1380,8 +1393,18 @@ namespace Diffusion.Toolkit.Pages
 
             Dispatcher.Invoke(() =>
             {
-                _model.Images = new ObservableCollection<ImageEntry>(images);
-                RefreshThumbnails();
+                if (_model.Images == null || _model.Images.Count != images.Count)
+                {
+                    _model.Images = new ObservableCollection<ImageEntry>(images);
+                }
+                else
+                {
+                    for (var i = 0; i < images.Count; i++)
+                    {
+                        _model.Images[i] = images[i];
+                    }
+                }
+                //RefreshThumbnails();
             });
 
 
