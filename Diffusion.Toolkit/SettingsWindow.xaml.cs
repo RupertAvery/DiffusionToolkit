@@ -139,7 +139,7 @@ namespace Diffusion.Toolkit
         private void RemoveFolder_OnClick(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(this,
-                "Are you sure you want to remove this folder? This will prevent you from scanning new images in this folder. Images in the database will not be affected.",
+                "Are you sure you want to remove this folder? Images and any custom metadata will be removed.",
                 "Remove folder", MessageBoxButton.YesNo,
                 MessageBoxImage.Question, MessageBoxResult.No);
 
