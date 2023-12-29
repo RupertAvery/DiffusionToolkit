@@ -10,14 +10,22 @@
 ## Bugfixes
 
 * Remove images from metadata when folder is removed (#170)
-    * Manually cleanup images with **Tools > Folders > Clean Removed Folders**
+    * Removing a folder after scanning it currently leaves the images in the database.
+    * This version will now remove images when the folder is removed.
+      * A backup of your database will be created automatically before removal.
+    * You can manually cleanup leftover images with **Tools > Folders > Clean Removed Folders**
 * Fixed A1111 generated images not triggering watched folders
-* Fixed missing highlight on mouseover on menu items and context menus.
+    * Some time ago A1111 stopped triggering the watched folder when a new image was generated
+    * This seems to be caused by A1111 first generating a .tmp file before renaming it to the final filename
+* Fixed missing highlight on mouseover on menu items and context menus
 * Fixed theme issues - metadata not visible in light mode (#166)
 * Fixed ModelName not appearing (introduced in v1.5)
 * Reduce duplicate model names appearing
-* Fixed several issues related to Album image counts (#165)
+* Fixed issues related to Album image counts (#165)
+    * Removed images were left in the Album-Image reference table
+    * This version will now correctly remove the references to images when they are deleted
+    * It will also cleanup the reference table to correct the counts
 
-**NOTE:** This version makes changes to the database. On startup, a copy of your database will be created before changes are made. 
+**NOTE:** This version makes changes to the database schema. On startup, a copy of your database will be created before changes are made. 
 
 https://github.com/RupertAvery/DiffusionToolkit/releases/tag/v1.5.1

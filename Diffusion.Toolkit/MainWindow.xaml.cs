@@ -714,7 +714,7 @@ namespace Diffusion.Toolkit
         {
             try
             {
-                var oldPathCount = _settings.ImagePaths.Count;
+                var oldImagePaths = _settings.ImagePaths.ToList();
 
                 var settings = new SettingsWindow(_dataStore, _settings);
                 settings.Owner = this;
@@ -748,9 +748,13 @@ namespace Diffusion.Toolkit
 
                     if (_settings.IsPropertyDirty(nameof(Settings.ImagePaths)))
                     {
-                        await TryScanFolders();
+                        if (oldImagePaths.Except(_settings.ImagePaths).Any())
+                        {
+                            _dataStore.CreateBackup();
+                            CleanRemovedFoldersInternal();
+                        }
 
-                        CleanRemovedFoldersInternal();
+                        await TryScanFolders();
 
                         // Rebuild watchers in case paths were added or removed
 
