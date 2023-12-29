@@ -13,14 +13,14 @@
         WindowStyle="ToolWindow"
         Style="{StaticResource BorderlessWindowStyle}"
         ResizeMode="NoResize"
-        Title="Settings" Height="540" Width="600">
+        Title="Settings" Height="600" Width="600">
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
     </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
         <Grid Margin="20">
             <TabControl x:Name="TabControl" Padding="10" Background="{DynamicResource PrimaryBrush}">
@@ -216,6 +216,16 @@
             </TabControl>
 
         </Grid>
-        <Label Grid.Row="1" HorizontalAlignment="Center">Settings will be applied on exit</Label>
+        <Grid Grid.Row="1" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button Width="150" x:Name="Close" Click="Close_OnClick">Cancel</Button>
+                <Button Width="150" x:Name="OK" Click="OK_OnClick">Apply</Button>
+            </StackPanel>
+        </Grid>
     </Grid>
 </local:BorderlessWindow>

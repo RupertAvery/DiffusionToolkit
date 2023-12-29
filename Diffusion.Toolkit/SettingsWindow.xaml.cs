@@ -11,6 +11,7 @@ using System.Windows.Input;
 using Diffusion.Toolkit.Themes;
 using System.Diagnostics;
 using System.IO;
+using static Dapper.SqlMapper;
 
 namespace Diffusion.Toolkit
 {
@@ -20,6 +21,7 @@ namespace Diffusion.Toolkit
     public partial class SettingsWindow : BorderlessWindow
     {
         private readonly DataStore _dataStore;
+        private readonly Settings _settings;
         private readonly SettingsModel _model;
 
         public SettingsWindow()
@@ -37,6 +39,7 @@ namespace Diffusion.Toolkit
         public SettingsWindow(DataStore dataStore, Settings settings) : this()
         {
             _dataStore = dataStore;
+            _settings = settings;
 
             _model = new SettingsModel();
             _model.PropertyChanged += ModelOnPropertyChanged;
@@ -66,34 +69,6 @@ namespace Diffusion.Toolkit
             _model.Escape = new RelayCommand<object>(o => Close());
 
             DataContext = _model;
-
-            Closing += (sender, args) =>
-            {
-                settings.SetPristine();
-                settings.ImagePaths = _model.ImagePaths.ToList();
-                settings.ExcludePaths = _model.ExcludePaths.ToList();
-                settings.ModelRootPath = _model.ModelRootPath;
-                settings.FileExtensions = _model.FileExtensions;
-                settings.Theme = _model.Theme;
-                settings.PageSize = _model.PageSize;
-                settings.WatchFolders = _model.WatchFolders;
-                settings.AutoRefresh = _model.AutoRefresh;
-
-                settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
-                settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
-                settings.AutoTagNSFW = _model.AutoTagNSFW;
-                settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-                settings.HashCache = _model.HashCache;
-                settings.PortableMode = _model.PortableMode;
-                settings.RecurseFolders = _model.RecurseFolders;
-
-                settings.UseBuiltInViewer = _model.UseBuiltInViewer;
-                settings.OpenInFullScreen = _model.OpenInFullScreen;
-                settings.UseSystemDefault = _model.UseSystemDefault;
-                settings.UseCustomViewer = _model.UseCustomViewer;
-                settings.CustomCommandLine = _model.CustomCommandLine;
-                settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
-            };
 
             //var str = new System.Text.StringBuilder();
             //using (var writer = new System.IO.StringWriter(str))
@@ -139,9 +114,9 @@ namespace Diffusion.Toolkit
         private void RemoveFolder_OnClick(object sender, RoutedEventArgs e)
         {
             var result = MessageBox.Show(this,
-                "Are you sure you want to remove this folder? Images and any custom metadata will be removed.",
+                "Are you sure you want to remove this folder? Images and any custom metadata in the database will be removed. Images on disk will not be affected",
                 "Remove folder", MessageBoxButton.YesNo,
-                MessageBoxImage.Question, MessageBoxResult.No);
+                MessageBoxImage.Exclamation, MessageBoxResult.No);
 
             if (result == MessageBoxResult.Yes)
             {
@@ -183,11 +158,6 @@ namespace Diffusion.Toolkit
             }
         }
 
-
-        private void Close_OnClick(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
 
         private void BrowseModelPath_OnClick(object sender, RoutedEventArgs e)
         {
@@ -280,6 +250,45 @@ namespace Diffusion.Toolkit
             {
                 _model.CustomCommandLine = dialog.FileName;
             }
+        }
+
+        private void OK_OnClick(object sender, RoutedEventArgs e)
+        {
+            ApplySettings();
+            Close();
+        }
+
+        private void Close_OnClick(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
+
+        private void ApplySettings()
+        {
+            _settings.SetPristine();
+            _settings.ImagePaths = _model.ImagePaths.ToList();
+            _settings.ExcludePaths = _model.ExcludePaths.ToList();
+            _settings.ModelRootPath = _model.ModelRootPath;
+            _settings.FileExtensions = _model.FileExtensions;
+            _settings.Theme = _model.Theme;
+            _settings.PageSize = _model.PageSize;
+            _settings.WatchFolders = _model.WatchFolders;
+            _settings.AutoRefresh = _model.AutoRefresh;
+
+            _settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
+            _settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
+            _settings.AutoTagNSFW = _model.AutoTagNSFW;
+            _settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+            _settings.HashCache = _model.HashCache;
+            _settings.PortableMode = _model.PortableMode;
+            _settings.RecurseFolders = _model.RecurseFolders;
+
+            _settings.UseBuiltInViewer = _model.UseBuiltInViewer;
+            _settings.OpenInFullScreen = _model.OpenInFullScreen;
+            _settings.UseSystemDefault = _model.UseSystemDefault;
+            _settings.UseCustomViewer = _model.UseCustomViewer;
+            _settings.CustomCommandLine = _model.CustomCommandLine;
+            _settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
         }
     }
 }
