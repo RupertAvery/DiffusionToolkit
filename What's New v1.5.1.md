@@ -1,5 +1,9 @@
 # What's New in v1.5.1
 
+* Faster paging
+* Load thumbnails on demand instead of everyting up front
+  * Speeds up initial page load
+  * Quickly scrolling down will introduce a bit of a delay while items you scrolled through load.
 * **Auto Refresh** for watched folders
    * Watched folders will automatically add newly generated images to the database but does not refresh results in case you are in the middle of something. Auto Refresh will refresh the current query/filter when new images are added. 
    * Enable in **Settings > General tab > Diffusion Folders > Auto Refresh** or **View > Auto Refresh**

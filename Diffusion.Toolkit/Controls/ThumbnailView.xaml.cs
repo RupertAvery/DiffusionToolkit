@@ -281,6 +281,8 @@ namespace Diffusion.Toolkit.Controls
 
             var currentItemIndex = -1;
 
+            // Get the current item index based on focus
+            // This may be causing issues with page navigation from within the listview
             for (int i = 0; i < wrapPanel.Children.Count; i++)
             {
                 var child = wrapPanel.Children[i];
@@ -315,14 +317,26 @@ namespace Diffusion.Toolkit.Controls
                             case -1 when currentItemIndex == 0 && !e.IsRepeat:
                                 if (ThumbnailListView.SelectedItems.Count == 1)
                                 {
-                                    GoPrevPage(null, true);
+                                    GoPrevPage(() =>
+                                    {
+                                        var index = ThumbnailListView.Items.Count - 1;
+                                        SelectedImageEntry = (ImageEntry)ThumbnailListView.Items[^1];
+                                        ThumbnailListView.SelectedItem = SelectedImageEntry;
+                                        wrapPanel.Children[index].Focus();
+                                    }, true);
                                     e.Handled = true;
                                 }
                                 return;
                             case 1 when currentItemIndex == ThumbnailListView.Items.Count - 1 && !e.IsRepeat:
                                 if (ThumbnailListView.SelectedItems.Count == 1)
                                 {
-                                    GoNextPage(null);
+                                    GoNextPage(() =>
+                                    {
+                                        var index = 0;
+                                        SelectedImageEntry = (ImageEntry)ThumbnailListView.Items[0];
+                                        ThumbnailListView.SelectedItem = SelectedImageEntry;
+                                        wrapPanel.Children[index].Focus();
+                                    });
                                     e.Handled = true;
                                 }
                                 return;
