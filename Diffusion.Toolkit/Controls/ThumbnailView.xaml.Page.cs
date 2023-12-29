@@ -99,20 +99,51 @@ namespace Diffusion.Toolkit.Controls
 
             var columnWidth = (int)(wrapPanel.ActualWidth / item.ActualWidth);
 
-            var start = ((int)offset / (int)item.ActualHeight * columnWidth);
-            var end = ((int)(offset + height) / (int)item.ActualHeight * columnWidth + columnWidth);
+            double top = 0;
+            double left = 0;
+            var maxHeight = item.ActualHeight;
 
-            end = Math.Min(wrapPanel.Children.Count, end);
-
-            for (int i = start; i < end; i++)
+            for (var i = 0; i < wrapPanel.Children.Count; i++)
             {
                 item = wrapPanel.Children[i] as ListViewItem;
 
-                if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
+                if (top + item.ActualHeight >= offset && top <= offset + height)
                 {
-                    imageEntry.LoadThumbnail();
+                    if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
+                    {
+                        imageEntry.Rating = 1;
+                        imageEntry.LoadThumbnail();
+                    }
+                }
+
+                if (item.ActualHeight > maxHeight)
+                {
+                    maxHeight = item.ActualHeight;
+                }
+
+                left += item.ActualWidth;
+                if (left + item.ActualWidth > wrapPanel.ActualWidth)
+                {
+                    top += maxHeight;
+                    maxHeight = item.ActualHeight;
+                    left = 0;
                 }
             }
+
+            //var start = ((int)offset / (int)item.ActualHeight * columnWidth);
+            //var end = ((int)(offset + height) / (int)item.ActualHeight * columnWidth + columnWidth);
+
+            //end = Math.Min(wrapPanel.Children.Count, end);
+
+            //for (int i = start; i < end; i++)
+            //{
+            //    item = wrapPanel.Children[i] as ListViewItem;
+
+            //    if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
+            //    {
+            //        imageEntry.LoadThumbnail();
+            //    }
+            //}
         }
 
         private void ScrollViewer_OnScrollChanged(object sender, ScrollChangedEventArgs e)
