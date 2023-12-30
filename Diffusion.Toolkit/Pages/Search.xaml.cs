@@ -367,12 +367,12 @@ namespace Diffusion.Toolkit.Pages
 
         private void HeightChanged(object? sender, EventArgs e)
         {
-            _settings.PreviewGridHeight = MainGrid.ColumnDefinitions[0].Width.ToString();
+            _settings.PreviewGridHeight = PreviewGrid.RowDefinitions[0].Height.ToString();
         }
 
         private void HeightChanged2(object? sender, EventArgs e)
         {
-            _settings.PreviewGridHeight2 = MainGrid.ColumnDefinitions[2].Width.ToString();
+            _settings.PreviewGridHeight2 = PreviewGrid.RowDefinitions[2].Height.ToString();
         }
 
         public Settings Settings
