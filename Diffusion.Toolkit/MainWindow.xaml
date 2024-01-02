@@ -8,6 +8,11 @@
         xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
+        xmlns:lex="http://wpflocalizeextension.codeplex.com"
+        xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
+        lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
+        lex:LocalizeDictionary.Separation="."
+        lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
         mc:Ignorable="d"
         ResizeMode="CanResizeWithGrip"
         Style="{StaticResource BorderlessWindowStyle}"
@@ -36,7 +41,6 @@
         <ResourceDictionary>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
             <converters:ThumbnailSizeCheckedConverter x:Key="thumbSizeChecked"></converters:ThumbnailSizeCheckedConverter>
-
         </ResourceDictionary>
     </Window.Resources>
 
@@ -49,23 +53,23 @@
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0">
-            <MenuItem Header="_File">
-                <MenuItem Header="_Close" Command="{Binding Close}"/>
+            <MenuItem Header="{lex:Loc Menu.File}">
+                <MenuItem Header="{lex:Loc Menu.File.Close}" Command="{Binding CloseCommand}"/>
             </MenuItem>
-            <MenuItem Header="_Edit">
+            <MenuItem Header="{lex:Loc Menu.Edit}">
                 <!--<MenuItem Header="_Quick Copy" Command="{Binding QuickCopy}"/>
                 <Separator></Separator>-->
-                <MenuItem x:Name="EditMenu"  Header="_Settings" Command="{Binding Settings}"/>
+                <MenuItem x:Name="EditMenu"  Header="{lex:Loc Menu.Edit.Settings}" Command="{Binding Settings}"/>
                 <Separator></Separator>
-                <MenuItem Header="_Empty Recycle Bin" Command="{Binding RemoveMarked}"/>
-                <MenuItem Header="_Rebuild Metadata" Command="{Binding Rebuild}"/>
-                <MenuItem Header="_Reload Models" Command="{Binding ReloadHashes}"/>
-                <MenuItem Header="Download _Civitai Models" Command="{Binding DownloadCivitai}"/>
+                <MenuItem Header="{lex:Loc Menu.Edit.EmptyRecycleBin}" Command="{Binding RemoveMarked}"/>
+                <MenuItem Header="{lex:Loc Menu.Edit.RebuildMetadata}" Command="{Binding Rebuild}"/>
+                <MenuItem Header="{lex:Loc Menu.Edit.ReloadModels}" Command="{Binding ReloadHashes}"/>
+                <MenuItem Header="{lex:Loc Menu.Edit.DownloadCivitaiModels}" Command="{Binding DownloadCivitai}"/>
             </MenuItem>
-            <MenuItem Header="_View">
-                <MenuItem Header="Filter" Command="{Binding ShowFilterCommand}" InputGestureText="CTRL+F"/>
-                <MenuItem Header="Refresh" Command="{Binding Refresh}" InputGestureText="F5"/>
-                <MenuItem Header="Auto Refresh" IsChecked="{Binding AutoRefresh}" Command="{Binding ToggleAutoRefresh}"/>
+            <MenuItem Header="{lex:Loc Menu.View}">
+                <MenuItem Header="{lex:Loc Menu.View.Filter}" Command="{Binding ShowFilterCommand}" InputGestureText="CTRL+F"/>
+                <MenuItem Header="{lex:Loc Menu.View.Refresh}" Command="{Binding Refresh}" InputGestureText="F5"/>
+                <MenuItem Header="{lex:Loc Menu.View.AutoRefresh}" IsChecked="{Binding AutoRefresh}" Command="{Binding ToggleAutoRefresh}"/>
                 <Separator/>
                 <MenuItem Header="Thumbnails">
                     <MenuItem Header="128x128" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=128}" Command="{Binding SetThumbnailSize}" CommandParameter="128"/>
@@ -75,41 +79,41 @@
                     <MenuItem Header="512x512" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=512}" Command="{Binding SetThumbnailSize}" CommandParameter="512"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="_Blur NSFW" IsChecked="{Binding NSFWBlurCommand}" InputGestureText="B" Command="{Binding ToggleNSFWBlurCommand}"/>
-                <MenuItem Header="_Hide NSFW from Results" IsChecked="{Binding HideNSFWCommand}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
+                <MenuItem Header="{lex:Loc Menu.View.BlurNSFW}" IsChecked="{Binding NSFWBlurCommand}" InputGestureText="B" Command="{Binding ToggleNSFWBlurCommand}"/>
+                <MenuItem Header="{lex:Loc Menu.View.HideNSFWFromResults}" IsChecked="{Binding HideNSFWCommand}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
                 <Separator/>
-                <MenuItem Header="_Fit to Preview" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
-                <MenuItem Header="Show/Hide Preview" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
-                <MenuItem Header="_Popout Preview" Command="{Binding PoputPreview}"/>
+                <MenuItem Header="{lex:Loc Menu.View.FitToPreview}" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
+                <MenuItem Header="{lex:Loc Menu.View.TogglePreview}" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
+                <MenuItem Header="{lex:Loc Menu.View.PopoutPreview}" Command="{Binding PoputPreview}"/>
             </MenuItem>
-            <MenuItem Header="_Albums">
-                <MenuItem Header="_Album Pane" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
-                <MenuItem Header="Sort" Click="SortAlbums_OnClick"/>
+            <MenuItem Header="{lex:Loc Menu.Albums}">
+                <MenuItem Header="{lex:Loc Menu.Albums.AlbumPane}" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
+                <MenuItem Header="{lex:Loc Menu.Albums.Sort}" Click="SortAlbums_OnClick"/>
             </MenuItem>
-            <MenuItem Header="_Tools">
-                <MenuItem Header="_Search results">
+            <MenuItem Header="{lex:Loc Menu.Tools}">
+                <MenuItem Header="{lex:Loc Menu.Tools.SearchResults}">
                     <!--<MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
                     <Separator></Separator>-->
-                    <MenuItem Header="Add all search results to Album" Command="{Binding AddAllToAlbum}"/>
-                    <MenuItem Header="_Mark all search results for Deletion" Command="{Binding MarkAllForDeletion}"/>
-                    <MenuItem Header="_Unmark all search results for Deletion" Command="{Binding UnmarkAllForDeletion}"/>
+                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.AddAllToAlbum}" Command="{Binding AddAllToAlbum}"/>
+                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.MarkAllForDeletion}" Command="{Binding MarkAllForDeletion}"/>
+                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.UnmarkAllForDeletion}" Command="{Binding UnmarkAllForDeletion}"/>
                     <Separator></Separator>
-                    <MenuItem Header="_Remove all query results from the database" Command="{Binding RemoveMatching}"/>
+                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.RemoveMatching}" Command="{Binding RemoveMatching}"/>
                 </MenuItem>
                 <Separator></Separator>
-                <MenuItem Header="_Auto tag NSFW" Command="{Binding AutoTagNSFW}"/>
+                <MenuItem Header="{lex:Loc Menu.Tools.AutoTagNSFW}" Command="{Binding AutoTagNSFW}"/>
                 <Separator></Separator>
-                <MenuItem Header="_Folders">
-                    <MenuItem Header="_Fix missing images" Command="{Binding FixFoldersCommand}"/>
-                    <MenuItem Header="_Remove excluded images" Command="{Binding RemoveExcludedImagesCommand}"/>
-                    <MenuItem Header="_Clean removed folders" Command="{Binding CleanRemovedFoldersCommand}"/>
+                <MenuItem Header="{lex:Loc Menu.Tools.Folders}">
+                    <MenuItem Header="{lex:Loc Menu.Tools.Folders.FixMissingImages}" Command="{Binding FixFoldersCommand}"/>
+                    <MenuItem Header="{lex:Loc Menu.Tools.Folders.RemoveExcludedImages}" Command="{Binding RemoveExcludedImagesCommand}"/>
+                    <MenuItem Header="{lex:Loc Menu.Tools.Folders.CleanRemovedFolders}" Command="{Binding CleanRemovedFoldersCommand}"/>
                 </MenuItem>
             </MenuItem>
-            <MenuItem Header="_Help">
-                <MenuItem Header="_About" Command="{Binding AboutCommand}"/>
-                <MenuItem Header="_Getting Started" Command="{Binding HelpCommand}" InputGestureText="F1"/>
+            <MenuItem Header="{lex:Loc Menu.Help}">
+                <MenuItem Header="{lex:Loc Menu.Help.About}" Command="{Binding AboutCommand}"/>
+                <MenuItem Header="{lex:Loc Menu.Help.GettingStarted}" Command="{Binding HelpCommand}" InputGestureText="F1"/>
                 <Separator></Separator>
-                <MenuItem Header="_Check for updates" Click="MenuItem_OnClick"/>
+                <MenuItem Header="{lex:Loc Menu.Help.CheckForUpdates}" Click="MenuItem_OnClick"/>
             </MenuItem>
         </Menu>
         <ToolBar Grid.Row="1" Height="32" OverflowMode="Never">

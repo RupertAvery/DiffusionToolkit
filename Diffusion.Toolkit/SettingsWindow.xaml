@@ -4,6 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Diffusion.Toolkit"
+        xmlns:lex="http://wpflocalizeextension.codeplex.com"
+        xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
+        lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
+        lex:LocalizeDictionary.Separation="."
+        lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:SettingsModel, IsDesignTimeCreatable = True}"
         WindowStartupLocation="CenterOwner"
@@ -13,7 +18,7 @@
         WindowStyle="ToolWindow"
         Style="{StaticResource BorderlessWindowStyle}"
         ResizeMode="NoResize"
-        Title="Settings" Height="600" Width="600">
+        Title="{lex:Loc Settings}" Height="600" Width="600">
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
     </Window.InputBindings>
@@ -61,10 +66,10 @@
                         <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
                     </Style>
                 </TabControl.Resources>
-                <TabItem x:Name="TabItem" Header="General">
+                <TabItem x:Name="TabItem" Header="{lex:Loc Settings.General}">
                     <StackPanel Grid.Row="0">
                         <StackPanel Orientation="Horizontal">
-                            <Label VerticalContentAlignment="Center">Diffusion Folders</Label>
+                            <Label VerticalContentAlignment="Center" Content="{lex:Loc Settings.General.DiffusionFolders}"></Label>
                         </StackPanel>
                         <Grid Height="120" VerticalAlignment="Top">
                             <Grid.ColumnDefinitions>
@@ -73,16 +78,16 @@
                             </Grid.ColumnDefinitions>
                             <ListBox ItemsSource="{Binding ImagePaths}" SelectedIndex="{Binding SelectedIndex}" Margin="0,0,10,0"></ListBox>
                             <StackPanel Grid.Column="1">
-                                <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26">Add Folder</Button>
-                                <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26">Remove Folder</Button>
+                                <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.AddFolder}"></Button>
+                                <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}"></Button>
                             </StackPanel>
                         </Grid>
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                            <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" ToolTip="Automatically scan newly added images in folders">Watch Folders</CheckBox>
-                            <CheckBox IsChecked="{Binding AutoRefresh}" Margin="10,0,0,0" ToolTip="Refresh results automatically when new images are added">Auto Refresh</CheckBox>
-                            <CheckBox IsChecked="{Binding RecurseFolders}" Margin="10,0,0,0"  VerticalContentAlignment="Center">Recursive</CheckBox>
+                            <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" ToolTip="{lex:Loc Settings.General.WatchFolders.ToolTip}" Content="{lex:Loc Settings.General.WatchFolders}"></CheckBox>
+                            <CheckBox IsChecked="{Binding AutoRefresh}" Margin="10,0,0,0" ToolTip="{lex:Loc Settings.General.General.ToolTip}"  Content="{lex:Loc Settings.General.AutoRefresh}"></CheckBox>
+                            <CheckBox IsChecked="{Binding RecurseFolders}" Margin="10,0,0,0"  VerticalContentAlignment="Center" ToolTip="{lex:Loc Settings.General.Recursive.ToolTip}" Content="{lex:Loc Settings.General.Recursive}"></CheckBox>
                         </StackPanel>
-                        <Label>Excluded Folders</Label>
+                        <Label Content="{lex:Loc Settings.General.ExcludedFolders}"></Label>
                         <Grid Height="100">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -90,12 +95,12 @@
                             </Grid.ColumnDefinitions>
                             <ListBox ItemsSource="{Binding ExcludePaths}" SelectedIndex="{Binding ExcludedSelectedIndex}" Grid.RowSpan="2" Margin="0,0,10,0"></ListBox>
                             <StackPanel Grid.Column="1">
-                                <Button Click="ExcludedAddFolder_OnClick" Margin="0,0,0,10" Height="26">Add Folder</Button>
-                                <Button Click="ExcludedRemoveFolder_OnClick" Margin="0,0,0,10" Height="26">Remove Folder</Button>
+                                <Button Click="ExcludedAddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.AddFolder}"></Button>
+                                <Button Click="ExcludedRemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}"></Button>
                             </StackPanel>
 
                         </Grid>
-                        <Label>File Extensions</Label>
+                        <Label Content="{lex:Loc Settings.General.FileExtensions}"></Label>
                         <Grid >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -104,45 +109,41 @@
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
                         </Grid>
 
-                        <CheckBox IsChecked="{Binding CheckForUpdatesOnStartup}" Margin="0,10,0,0">Check for updates on startup</CheckBox>
+                        <CheckBox IsChecked="{Binding CheckForUpdatesOnStartup}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.CheckForUpdatesOnStartup}"></CheckBox>
 
-                        <CheckBox IsChecked="{Binding PortableMode}" Margin="0,10,0,0">Portable Mode</CheckBox>
+                        <CheckBox IsChecked="{Binding PortableMode}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.PortableMode}"></CheckBox>
                     </StackPanel>
 
                 </TabItem>
-                <TabItem Header="Checkpoints">
+                <TabItem Header="{lex:Loc Settings.Checkpoints}">
                     <StackPanel>
-                        <Label>Model Root</Label>
+                        <Label Content="{lex:Loc Settings.Checkpoints.ModelRoot}"></Label>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="120"/>
                             </Grid.ColumnDefinitions>
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding ModelRootPath, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
-                            <Button Height="26" Grid.Column="1" Click="BrowseModelPath_OnClick">Browse</Button>
+                            <Button Height="26" Grid.Column="1" Click="BrowseModelPath_OnClick" Content="{lex:Loc Common.Buttons.Browse}"></Button>
                         </Grid>
-                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="10" TextWrapping="Wrap">
-                            Set the Model Root to the path of the AUTOMATIC111 models\Stable-diffusion folder to list 
-                            all your models in the Model Tab
+                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="10" TextWrapping="Wrap" Text="{lex:Loc Settings.Checkpoints.ModelRoot.Description}">
                         </TextBlock>
-                        <Label>A1111 Cache (cache.json)</Label>
+                        <Label Content="{lex:Loc Settings.Checkpoints.A1111Cache}"></Label>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="120"/>
                             </Grid.ColumnDefinitions>
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding HashCache, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
-                            <Button Height="26" Grid.Column="1" Click="BrowseHashCache_OnClick">Browse</Button>
+                            <Button Height="26" Grid.Column="1" Click="BrowseHashCache_OnClick" Content="{lex:Loc Common.Buttons.Browse}"></Button>
                         </Grid>
-                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="10" TextWrapping="Wrap">
-                            Set the A1111 Cache to the path of the AUTOMATIC111 cache.json file to allow model name searches 
-                            if your metadata contains only the hash. SHA256 model hashes are also read from this file.
+                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="10" TextWrapping="Wrap" Text="{lex:Loc Settings.Checkpoints.A1111Cache.Description}">
                         </TextBlock>
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="Images">
+                <TabItem Header="{lex:Loc Settings.Images}">
                     <StackPanel HorizontalAlignment="Stretch">
-                        <Label>Thumbnails per Page</Label>
+                        <Label Content="{lex:Loc Settings.Images.ThumbnailsPerPage}"></Label>
                         <Grid HorizontalAlignment="Stretch">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -204,6 +205,16 @@
                                 <ComboBoxItem>Dark</ComboBoxItem>
                             </ComboBox>
                         </Grid>
+
+                        <Label>Language</Label>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox ItemsSource="{Binding Cultures}" DisplayMemberPath="Name" SelectedValuePath="Culture" SelectedValue="{Binding Culture}" Height="26" VerticalContentAlignment="Center"  Margin="0,0,10,0">
+                            </ComboBox>
+                        </Grid>
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="Database">
@@ -223,8 +234,8 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button Width="150" x:Name="Close" Click="Close_OnClick">Cancel</Button>
-                <Button Width="150" x:Name="OK" Click="OK_OnClick">Apply</Button>
+                <Button Width="150" x:Name="Close" Click="Close_OnClick" Content="{lex:Loc Common.Buttons.Close}"></Button>
+                <Button Width="150" x:Name="OK" Click="OK_OnClick" Content="{lex:Loc Common.Buttons.Apply}"></Button>
             </StackPanel>
         </Grid>
     </Grid>

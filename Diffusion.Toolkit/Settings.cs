@@ -30,6 +30,8 @@ public delegate void SettingChangedEventHander(object sender, SettingChangedEven
 
 public class Settings : IScanOptions
 {
+    public static Settings Instance { get; private set; }
+
     private List<string> _imagePaths;
     private List<string> _excludePaths;
     private string _modelRootPath;
@@ -73,7 +75,7 @@ public class Settings : IScanOptions
 
     public Settings() : this(false)
     {
-
+        Instance = this;
     }
 
 
@@ -92,6 +94,7 @@ public class Settings : IScanOptions
         OpenInFullScreen = true;
         CustomCommandLineArgs = "%1";
         SortAlbumsBy = "Name";
+        Culture = "default";
 
         if (initialize)
         {
@@ -337,6 +340,14 @@ public class Settings : IScanOptions
     {
         get => _autoRefresh;
         set => UpdateValue(ref _autoRefresh, value);
+    }
+
+    private string? _culture;
+
+    public string? Culture
+    {
+        get => _culture;
+        set => UpdateValue(ref _culture, value);
     }
 
     public void Apply(Settings settings)

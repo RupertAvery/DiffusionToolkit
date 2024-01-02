@@ -53,6 +53,7 @@
     <None Remove="Icons\x-mark-32.png" />
     <None Remove="Images\diffusion-toolkit.png" />
     <None Remove="Images\thumbnail.png" />
+    <None Remove="Localization\default.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -60,9 +61,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Localization\default.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
     <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
+    <PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
     <PackageReference Include="XmpCore" Version="6.1.10.1" />
   </ItemGroup>
 
@@ -132,6 +140,15 @@
 
   <ItemGroup>
     <None Update="hints.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Localization\en-US.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Localization\ja-JP.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Localization\languages.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="samplers.txt">
