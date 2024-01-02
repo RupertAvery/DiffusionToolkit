@@ -1,4 +1,5 @@
-﻿using Diffusion.Toolkit.Models;
+﻿using System;
+using Diffusion.Toolkit.Models;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -7,6 +8,29 @@ using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Controls
 {
+    public class MessagePopupHandle
+    {
+        private readonly MessagePopup _popup;
+        private Action _closing;
+
+        public MessagePopupHandle(MessagePopup popup)
+        {
+            _popup = popup;
+        }
+
+        public MessagePopupHandle ContinueWith(Action closing)
+        {
+            _closing = closing;
+            return this;
+        }
+
+        public void Close()
+        {
+            _popup.Close();
+            _closing?.Invoke();
+        }
+    }
+
     /// <summary>
     /// Interaction logic for MessagePopup.xaml
     /// </summary>
@@ -141,6 +165,27 @@ namespace Diffusion.Toolkit.Controls
             //_tcs = new TaskCompletionSource<PopupResult>();
 
             return _tcs.Task;
+        }
+
+        public MessagePopupHandle ShowMessage(string message, string title, int width = 400, int height = 200)
+        {
+            _model.Width = width;
+            _model.Height = height;
+
+            _model.IsVisible = true;
+            _model.Title = title;
+            _model.Message = message;
+
+            _model.HasOk = false;
+            _model.HasCancel = false;
+            _model.HasYes = false;
+            _model.HasNo = false;
+
+            _defaultResult = PopupResult.OK;
+
+            //_tcs = new TaskCompletionSource<PopupResult>();
+
+            return new MessagePopupHandle(this);
         }
 
         private PopupResult _defaultResult;

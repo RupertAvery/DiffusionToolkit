@@ -20,7 +20,7 @@ namespace Diffusion.Toolkit
     /// </summary>
     public partial class SettingsWindow : BorderlessWindow
     {
-        private readonly DataStore _dataStore;
+        private DataStore _dataStore;
         private readonly Settings _settings;
         private readonly SettingsModel _model;
 

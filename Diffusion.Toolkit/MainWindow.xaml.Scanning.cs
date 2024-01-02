@@ -275,6 +275,7 @@ namespace Diffusion.Toolkit
                         Prompt = file.Prompt,
                         NegativePrompt = file.NegativePrompt,
                         Path = file.Path,
+                        FileName = Path.GetFileName(file.Path),
                         Width = file.Width,
                         Height = file.Height,
                         ModelHash = file.ModelHash,

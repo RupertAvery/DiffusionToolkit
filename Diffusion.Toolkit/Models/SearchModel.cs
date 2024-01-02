@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Common;
@@ -6,6 +7,18 @@ using Diffusion.Toolkit.Controls;
 using Filter = Diffusion.Database.Filter;
 
 namespace Diffusion.Toolkit.Models;
+
+public class SortOption
+{
+    public string Name { get; }
+    public string Value { get; }
+
+    public SortOption(string name, string value)
+    {
+        Name = name;
+        Value = value;
+    }
+}
 
 public class SearchModel : BaseNotify
 {
@@ -61,6 +74,7 @@ public class SearchModel : BaseNotify
     private ObservableCollection<Album> _albums;
     private bool _showAlbumPanel;
     private ICommand _pageChangedCommand;
+    private IEnumerable<SortOption> _sortOptions;
 
     public SearchModel()
     {
@@ -294,12 +308,17 @@ public class SearchModel : BaseNotify
         set => SetField(ref _clearCommand, value);
     }
 
+    public IEnumerable<SortOption> SortOptions
+    {
+        get => _sortOptions;
+        set => SetField(ref _sortOptions, value);
+    }
+
     public string SortBy
     {
         get => _sortBy;
         set => SetField(ref _sortBy, value);
     }
-
 
     public string SortDirection
     {

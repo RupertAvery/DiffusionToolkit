@@ -89,6 +89,20 @@ public class MessagePopupManager
             });
     }
 
+    public MessagePopupHandle ShowMessage(string message, string title, int timeout = 0)
+    {
+        _host.Visibility = Visibility.Visible;
+        var popup = new MessagePopup(this, _placementTarget, timeout);
+        _popups.Add(popup);
+        _host.Children.Add(popup);
+        return popup.ShowMessage(message, title).ContinueWith(() =>
+        {
+            _dispatcher.Invoke(() =>
+            {
+                _host.Visibility = Visibility.Hidden;
+            });
+        });
+    }
 
     public Task<PopupResult> Show(string message, string title, int timeout = 0)
     {
@@ -144,7 +158,7 @@ public class MessagePopupManager
             });
     }
 
-    public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons,  int width, int height, int timeout = 0)
+    public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons, int width, int height, int timeout = 0)
     {
         _host.Visibility = Visibility.Visible;
         var popup = new MessagePopup(this, _placementTarget, timeout);

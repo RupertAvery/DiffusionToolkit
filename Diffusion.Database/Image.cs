@@ -8,6 +8,7 @@ public class Image
     public int Id { get; set; }
     public int FolderId { get; set; }
     public string Path { get; set; }
+    public string FileName { get; set; }
     public string? Prompt { get; set; }
     public string? NegativePrompt { get; set; }
     public int Steps { get; set; }

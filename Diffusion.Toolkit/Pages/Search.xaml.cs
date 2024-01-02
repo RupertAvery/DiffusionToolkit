@@ -285,6 +285,16 @@ namespace Diffusion.Toolkit.Pages
 
             //_model.Albums = new ObservableCollection<Album>(albums);
 
+            _model.SortOptions = new List<SortOption>()
+            {
+                new("Date Created","Date Created"),
+                new("Rating", "Rating"),
+                new("Aesthetic Score","Aesthetic Score"),
+                new("Name", "Name"),
+            };
+
+            _model.SortBy = _settings.SortBy;
+            _model.SortDirection = _settings.SortDirection;
 
             SetMode("search");
 
@@ -604,10 +614,14 @@ namespace Diffusion.Toolkit.Pages
             }
             else if (e.PropertyName == nameof(SearchModel.SortBy))
             {
+                _settings.SortBy = _model.SortBy;
+
                 ReloadMatches(new ReloadOptions() { Focus = true });
             }
             else if (e.PropertyName == nameof(SearchModel.SortDirection))
             {
+                _settings.SortDirection = _model.SortDirection;
+
                 ReloadMatches(new ReloadOptions() { Focus = true });
             }
 

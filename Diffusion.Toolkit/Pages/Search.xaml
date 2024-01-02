@@ -56,10 +56,7 @@
                 </Grid.ColumnDefinitions>
                 <Label FontSize="24" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
                 <Label Grid.Column="2" FontSize="12" VerticalContentAlignment="Center">Sort by:</Label>
-                <ComboBox Height="28" VerticalContentAlignment="Center" SelectedValue="{Binding SortBy}" SelectedValuePath="Content"  Grid.Column="3" Margin="0,0,10,0">
-                    <ComboBoxItem>Date Created</ComboBoxItem>
-                    <ComboBoxItem>Rating</ComboBoxItem>
-                    <ComboBoxItem>Aesthetic Score</ComboBoxItem>
+                <ComboBox Height="28" VerticalContentAlignment="Center" ItemsSource="{Binding SortOptions}" DisplayMemberPath="Name" SelectedValue="{Binding SortBy}" SelectedValuePath="Value"  Grid.Column="3" Margin="0,0,10,0">
                 </ComboBox>
                 <ComboBox Height="28" Width="60" VerticalContentAlignment="Center" SelectedValue="{Binding SortDirection}" SelectedValuePath="Content" Grid.Column="4" Margin="0,0,10,0">
                     <ComboBoxItem>A-Z</ComboBoxItem>
