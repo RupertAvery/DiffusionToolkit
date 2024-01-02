@@ -67,6 +67,8 @@ public class Settings : IScanOptions
     private string _customCommandLine;
     private string _customCommandLineArgs;
     private string _sortAlbumsBy;
+    private string _sortBy;
+    private string _sortDirection;
 
     public bool IsDirty()
     {
@@ -95,6 +97,8 @@ public class Settings : IScanOptions
         CustomCommandLineArgs = "%1";
         SortAlbumsBy = "Name";
         Culture = "default";
+        SortBy = "Date Created";
+        SortDirection = "Z-A";
 
         if (initialize)
         {
@@ -331,6 +335,18 @@ public class Settings : IScanOptions
     {
         get => _sortAlbumsBy;
         set => UpdateValue(ref _sortAlbumsBy, value);
+    }
+
+    public string SortBy
+    {
+        get => _sortBy;
+        set => UpdateValue(ref _sortBy, value);
+    }
+
+    public string SortDirection
+    {
+        get => _sortDirection;
+        set => UpdateValue(ref _sortDirection, value);
     }
 
 

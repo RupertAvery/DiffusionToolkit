@@ -12,7 +12,8 @@ public enum PopupButtons
     OkCancel = OK | Cancel,
     Yes = 4,
     No = 8,
-    YesNo = Yes | No
+    YesNo = Yes | No,
+    None = 1024
 }
 
 

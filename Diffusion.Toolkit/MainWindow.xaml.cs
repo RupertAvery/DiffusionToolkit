@@ -33,6 +33,7 @@ using System.Text.Json.Serialization;
 using Diffusion.Civitai.Models;
 using Diffusion.Toolkit.Localization;
 using WPFLocalizeExtension.Engine;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit
 {
@@ -55,7 +56,7 @@ namespace Diffusion.Toolkit
         private Pages.Models _models;
         private bool _tipsOpen;
         private MessagePopupManager _messagePopupManager;
-
+        private string _dbPath;
 
 
         private DataStore _dataStore => _dataStoreOptions.Value;
@@ -67,7 +68,7 @@ namespace Diffusion.Toolkit
 
 
             var settingsPath = Path.Combine(AppInfo.AppDir, "config.json");
-            var dbPath = Path.Combine(AppInfo.AppDir, "diffusion-toolkit.db");
+            _dbPath = Path.Combine(AppInfo.AppDir, "diffusion-toolkit.db");
 
             var isPortable = true;
 
@@ -75,16 +76,10 @@ namespace Diffusion.Toolkit
             {
                 isPortable = false;
                 settingsPath = Path.Combine(AppInfo.AppDataPath, "config.json");
-                dbPath = Path.Combine(AppInfo.AppDataPath, "diffusion-toolkit.db");
+                _dbPath = Path.Combine(AppInfo.AppDataPath, "diffusion-toolkit.db");
             }
 
             _configuration = new Configuration<Settings>(settingsPath, isPortable);
-
-            Logger.Log($"Opening database at {dbPath}");
-
-            var dataStore = new DataStore(dbPath);
-
-            _dataStoreOptions = new DataStoreOptions(dataStore);
 
             InitializeComponent();
 
@@ -157,11 +152,6 @@ namespace Diffusion.Toolkit
             _model.Escape = new RelayCommand<object>((o) => Escape());
 
             _model.PropertyChanged += ModelOnPropertyChanged;
-
-            var total = _dataStore.GetTotal();
-
-            _model.Status = $"{total:###,###,##0} images in database";
-            _model.TotalProgress = 100;
 
 
             this.Loaded += OnLoaded;
@@ -323,6 +313,8 @@ namespace Diffusion.Toolkit
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
+            var dataStore = new DataStore(_dbPath);
+            
             if (!_configuration.TryLoad(out _settings))
             {
                 Logger.Log($"Opening Settings for first time");
@@ -335,7 +327,7 @@ namespace Diffusion.Toolkit
                 welcome.Owner = this;
                 welcome.ShowDialog();
 
-                var settings = new SettingsWindow(_dataStore, _settings);
+                var settings = new SettingsWindow(dataStore, _settings);
                 settings.Owner = this;
                 settings.ShowDialog();
 
@@ -434,6 +426,23 @@ namespace Diffusion.Toolkit
             
 
             Logger.Log($"Initializing pages");
+
+            MessagePopupHandle handle = null;
+
+            await dataStore.Create(() =>
+            {
+                handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
+            },
+            () => {
+                handle?.Close();
+            });
+
+            _dataStoreOptions = new DataStoreOptions(dataStore);
+            
+            var total = _dataStore.GetTotal();
+
+            _model.Status = $"{total:###,###,##0} images in database";
+            _model.TotalProgress = 100;
 
             _models = new Pages.Models(_dataStoreOptions, _settings);
 

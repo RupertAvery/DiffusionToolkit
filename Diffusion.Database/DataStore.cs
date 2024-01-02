@@ -1,9 +1,4 @@
 ﻿using SQLite;
-using static System.Net.Mime.MediaTypeNames;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics.Metrics;
-using System.Xml.Linq;
 
 namespace Diffusion.Database;
 
@@ -25,50 +20,9 @@ public partial class DataStore
     public DataStore(string databasePath)
     {
         DatabasePath = databasePath;
-        Create();
     }
 
-    public bool CheckIsValid()
-    {
-        var isValid = false;
-        try
-        {
-            var baseImageColumns = new[]
-            {
-                nameof(Image.Path),
-                nameof(Image.Prompt),
-                nameof(Image.Seed),
-                nameof(Image.Sampler),
-                nameof(Image.CFGScale),
-            };
-
-            using var db = OpenConnection();
-
-            if (db.TableExist(nameof(Image)))
-            {
-                isValid = true;
-
-                var columns = db.GetTableInfo(nameof(Image));
-
-                var columnNames = columns.Select(cc => cc.Name).ToList();
-
-                if (!baseImageColumns.All(c => columnNames.Any(cc => cc == c)))
-                {
-                    isValid = false;
-                }
-
-            }
-        }
-        catch (Exception e)
-        {
-            return false;
-        }
-
-
-        return isValid;
-    }
-
-    public void Create()
+    public async Task Create(Action notify, Action complete)
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
 
@@ -79,11 +33,16 @@ public partial class DataStore
 
         using var db = OpenConnection();
 
+        db.EnableLoadExtension(true);
+        db.LoadExtension("dlls\\path0.dll");
+
+
         var migrations = new Migrations(db);
 
         db.CreateTable<Image>();
         db.CreateIndex<Image>(image => image.FolderId);
         db.CreateIndex<Image>(image => image.Path);
+        db.CreateIndex<Image>(image => image.FileName);
         db.CreateIndex<Image>(image => image.ModelHash);
         db.CreateIndex<Image>(image => image.Model);
         db.CreateIndex<Image>(image => image.Seed);
@@ -114,10 +73,23 @@ public partial class DataStore
         db.CreateTable<Folder>();
         db.CreateIndex<Folder>(folder => folder.ParentId);
 
-        migrations.Update();
+        if (migrations.RequiresMigration())
+        {
+            notify?.Invoke();
+            try
+            {
+                await Task.Run(() =>
+                {
+                    migrations.Update();
+                });
+            }
+            finally
+            {
+                complete?.Invoke();
+            }
+        }
 
         db.Close();
-
     }
 
     void CreateAlbumImageTable(SQLiteConnection db)
@@ -189,17 +161,17 @@ public partial class DataStore
         File.Copy(DatabasePath, Path.Combine(path, backupFilename));
     }
 
-    public bool TryRestoreBackup(string path)
+    public  bool TryRestoreBackup(string path)
     {
-        var temp = new DataStore(path);
-        if (temp.CheckIsValid())
+        try
         {
             File.Copy(path, DatabasePath, true);
-            Create();
             return true;
         }
-
-        return false;
+        catch (Exception e)
+        {
+            return false;
+        }
     }
 }
 

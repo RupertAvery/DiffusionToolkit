@@ -352,6 +352,7 @@ namespace Diffusion.Database
                 "Date Created" => nameof(Image.CreatedDate),
                 "Rating" => nameof(Image.Rating),
                 "Aesthetic Score" => nameof(Image.AestheticScore),
+                "Name" => nameof(Image.FileName),
                 _ => nameof(Image.CreatedDate),
             };
 
@@ -409,6 +410,7 @@ namespace Diffusion.Database
                 "Date Created" => nameof(Image.CreatedDate),
                 "Rating" => nameof(Image.Rating),
                 "Aesthetic Score" => nameof(Image.AestheticScore),
+                "Name" => nameof(Image.FileName),
                 _ => nameof(Image.CreatedDate),
             };
 

@@ -22,7 +22,7 @@ public class Migrations
         File.Copy(_db.DatabasePath, Path.Combine(path, backupFilename));
     }
 
-    public void Update()
+    private IReadOnlyCollection<MethodInfo> GetMigrations()
     {
         var existingMigrations = _db.Query<Migration>("SELECT Id, Name FROM Migration");
 
@@ -30,7 +30,17 @@ public class Migrations
 
         var migrations = methods.Where(m => m.GetCustomAttributes<MigrateAttribute>().Any());
 
-        var newMigrations = migrations.Where(m => !existingMigrations.Select(p => p.Name).Contains(m.Name)).OrderBy(m => m.Name).ToList();
+        return migrations.Where(m => !existingMigrations.Select(p => p.Name).Contains(m.Name)).OrderBy(m => m.Name).ToList();
+    }
+
+    public bool RequiresMigration()
+    {
+        return GetMigrations().Any();
+    }
+
+    public void Update()
+    {
+        var newMigrations = GetMigrations();
 
         try
         {
@@ -80,6 +90,11 @@ public class Migrations
         }
     }
 
+    [Migrate]
+    private string RupertAvery20240102_0001_LoadFileNamesFromPaths()
+    {
+        return "UPDATE Image SET FileName = path_basename(replace(Path, '\\','/'))";
+    }
 
     [Migrate]
     private string RupertAvery20231224_0001_CleanupOrphanedAlbumImageEntries()
