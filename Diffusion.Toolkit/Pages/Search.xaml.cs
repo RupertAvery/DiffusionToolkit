@@ -26,6 +26,7 @@ using Diffusion.IO;
 using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
+using Diffusion.Toolkit.Localization;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -287,10 +288,10 @@ namespace Diffusion.Toolkit.Pages
 
             _model.SortOptions = new List<SortOption>()
             {
-                new("Date Created","Date Created"),
-                new("Rating", "Rating"),
-                new("Aesthetic Score","Aesthetic Score"),
-                new("Name", "Name"),
+                new(GetLocalizedText("Search.SortBy.DateCreated"),"Date Created"),
+                new(GetLocalizedText("Search.SortBy.Rating"), "Rating"),
+                new(GetLocalizedText("Search.SortBy.AestheticScore"),"Aesthetic Score"),
+                new(GetLocalizedText("Search.SortBy.Name"), "Name"),
             };
 
             _model.SortBy = _settings.SortBy;
@@ -363,7 +364,10 @@ namespace Diffusion.Toolkit.Pages
             Clipboard.SetFileDropList(paths);
         }
 
-
+        private string GetLocalizedText(string key)
+        {
+            return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+        }
 
         private void WidthChanged(object? sender, EventArgs e)
         {
@@ -430,7 +434,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (!_settings.ImagePaths.Any())
             {
-                MessageBox.Show("No image paths configured!", "Error",
+                MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -556,7 +560,12 @@ namespace Diffusion.Toolkit.Pages
                         ssize = $"{fsize:#,##0.00} KiB";
                     }
 
-                    _model.Results = $"{count:###,###,##0} results found ({ssize})";
+                    var text = GetLocalizedText("Search.Results");
+
+                    text = text.Replace("{count}", $"{count:###,###,##0}")
+                        .Replace("{size{", $"{ssize}");
+
+                    _model.Results = text;
 
                     if (_currentModeSettings.ViewMode == ViewMode.Folder)
                     {
@@ -569,8 +578,10 @@ namespace Diffusion.Toolkit.Pages
                     {
                         if (_model.IsEmpty)
                         {
+                            var noResults = GetLocalizedText("Search.NoResults");
+
                             _model.Page = 0;
-                            _model.ResultStatus = "No results found";
+                            _model.ResultStatus = noResults;
                             //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
                             //    MessageBoxButton.OK,
                             //    MessageBoxImage.Information);
@@ -588,7 +599,7 @@ namespace Diffusion.Toolkit.Pages
             }
             catch (Exception e)
             {
-                MessageBox.Show(_navigatorService.Host, e.Message, "Error",
+                MessageBox.Show(_navigatorService.Host, e.Message, GetLocalizedText("Messages.Captions.Error"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -698,7 +709,8 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.ModelHash = parameters.ModelHash;
                     imageViewModel.Seed = parameters.Seed;
                     imageViewModel.AestheticScore = $"{parameters.AestheticScore}";
-
+                    
+                    var notFound = GetLocalizedText("Metadata.Modelname.NotFound");
 
                     if (_modelLookup != null)
                     {
@@ -715,12 +727,12 @@ namespace Diffusion.Toolkit.Pages
                         }
                         else
                         {
-                            imageViewModel.ModelName = $"Not found";
+                            imageViewModel.ModelName = notFound;
                         }
                     }
                     else
                     {
-                        imageViewModel.ModelName = $"Not found";
+                        imageViewModel.ModelName = notFound;
                     }
 
                 }
@@ -733,7 +745,10 @@ namespace Diffusion.Toolkit.Pages
             }
             catch (FileNotFoundException)
             {
-                MessageBox.Show(_navigatorService.Host, "The source image could not be located. This can happen when you move or rename the file outside of Diffusion Toolkit.", "Load image failed", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                var notFound = GetLocalizedText("Search.LoadPreview.ImageNotFound");
+                var caption = GetLocalizedText("Search.LoadPreview.ImageNotFound.Caption");
+
+                MessageBox.Show(_navigatorService.Host, notFound, caption, MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
             catch (Exception ex)
             {

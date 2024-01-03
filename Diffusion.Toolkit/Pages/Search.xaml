@@ -60,7 +60,7 @@
                     <ColumnDefinition Width="70"/>
                 </Grid.ColumnDefinitions>
                 <Label FontSize="24" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
-                <Label Grid.Column="2" FontSize="12" VerticalContentAlignment="Center">Sort by:</Label>
+                <Label Grid.Column="2" FontSize="12" VerticalContentAlignment="Center" Content="{lex:Loc Search.SortBy}"></Label>
                 <ComboBox Height="28" VerticalContentAlignment="Center" ItemsSource="{Binding SortOptions}" DisplayMemberPath="Name" SelectedValue="{Binding SortBy}" SelectedValuePath="Value"  Grid.Column="3" Margin="0,0,10,0">
                 </ComboBox>
                 <ComboBox Height="28" Width="60" VerticalContentAlignment="Center" SelectedValue="{Binding SortDirection}" SelectedValuePath="Content" Grid.Column="4" Margin="0,0,10,0">
@@ -114,15 +114,15 @@
                         </TextBlock.Style>
                     </TextBlock>
                 </Grid>
-                <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Command="{Binding ShowFilter}" Background="{Binding Filter.IsActive, Converter={StaticResource FilterActiveConverter}}">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowFilter.Tooltip}" Grid.Column="3" Command="{Binding ShowFilter}" Background="{Binding Filter.IsActive, Converter={StaticResource FilterActiveConverter}}">
                     <fa:ImageAwesome ToolTip="Advanced Filter" Icon="Filter" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Width="28" Command="{Binding ClearSearch}" >
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Clear.Tooltip}" Grid.Column="2" Width="28" Command="{Binding ClearSearch}" >
                     <fa:ImageAwesome ToolTip="Clear Query/Filter" Icon="Close" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Width="28" Command="{Binding Refresh}" >
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Refresh.Tooltip}" Grid.Column="1" Width="28" Command="{Binding Refresh}" >
                     <fa:ImageAwesome ToolTip="Refresh" Icon="Search" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
@@ -393,9 +393,9 @@
                                 <ColumnDefinition Width="80"/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <Label Style="{StaticResource SmallCaps}" Margin="10,0,0,0">PROMPT</Label>
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyParametersCommand}">Copy All</Button>
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding CopyPromptCommand}">Copy</Button>
+                            <Label Style="{StaticResource SmallCaps}" Margin="10,0,0,0" Content="{lex:Loc Metadata.Prompt}"></Label>
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyParametersCommand}" Content="{lex:Loc Metadata.Buttons.CopyAll}"></Button>
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding CopyPromptCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"></Button>
                         </Grid>
 
 
@@ -410,8 +410,8 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">NEGATIVE PROMPT</Label>
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyNegativePromptCommand}">Copy</Button>
+                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0" Content="{lex:Loc Metadata.NegativePrompt}"></Label>
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyNegativePromptCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"></Button>
                         </Grid>
 
                         <Grid Background="Transparent" Margin="10">
@@ -427,10 +427,10 @@
                                 <ColumnDefinition Width="50"/>
                                 <ColumnDefinition Width="95"/>
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Column="0" Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">SEED</Label>
-                            <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">CFG</Label>
-                            <Label Grid.Column="2" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">STEPS</Label>
-                            <Label Grid.Column="3" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0">SIZE</Label>
+                            <Label Grid.Column="0" Style="{DynamicResource SmallCaps}" Margin="10,0,0,0" Content="{lex:Loc Metadata.Seed}"></Label>
+                            <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0" Content="{lex:Loc Metadata.CFGScale}"></Label>
+                            <Label Grid.Column="2" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0" Content="{lex:Loc Metadata.Steps}"></Label>
+                            <Label Grid.Column="3" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0" Content="{lex:Loc Metadata.Size}"></Label>
                         </Grid>
 
                         <Grid Background="Transparent" Margin="10,10,0,10">
@@ -460,8 +460,8 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">OTHERS</Label>
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyOthersCommand}">Copy</Button>
+                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0" Content="{lex:Loc Metadata.Others}"></Label>
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyOthersCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"></Button>
                         </Grid>
 
                         <Grid Background="Transparent" Margin="10">
@@ -476,9 +476,9 @@
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">MODEL NAME</Label>
-                            <Label Grid.Column="1" Style="{DynamicResource SmallCaps}">MODEL HASH</Label>
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding SearchModelCommand}">Search</Button>
+                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0" Content="{lex:Loc Metadata.ModelName}"></Label>
+                            <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Content="{lex:Loc Metadata.ModelHash}"></Label>
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding SearchModelCommand}" Content="{lex:Loc Metadata.Buttons.SearchHash}"></Button>
                         </Grid>
 
 
@@ -490,8 +490,7 @@
                             </Grid.ColumnDefinitions>
                             <TextBox Grid.Column="0" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
-                            <TextBox Grid.Column="1" FontSize="14" BorderThickness="0"
-                       IsReadOnly="True" Padding="5" Background="Transparent"   Text="{Binding ModelHash}"></TextBox>
+                            <TextBox Grid.Column="1" FontSize="14" BorderThickness="0" IsReadOnly="True" Padding="5" Background="Transparent" Text="{Binding ModelHash}"></TextBox>
                         </Grid>
 
 
@@ -514,9 +513,9 @@
                                 <ColumnDefinition Width="80"/>
                                 <ColumnDefinition Width="80"/>
                             </Grid.ColumnDefinitions>
-                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">PATH</Label>
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding ShowInExplorerCommand}">Show</Button>
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding CopyPathCommand}">Copy</Button>
+                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0" Content="{lex:Loc Metadata.Path}"></Label>
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding ShowInExplorerCommand}" Content="{lex:Loc Metadata.Buttons.ShowInExplorer}"></Button>
+                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding CopyPathCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"></Button>
                         </Grid>
 
                         <Grid  Background="Transparent" Margin="10">
@@ -526,7 +525,7 @@
                         </Grid>
 
                         <Grid  Background="#80000000" >
-                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">DATE</Label>
+                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0" Content="{lex:Loc Metadata.Date}"></Label>
                         </Grid>
 
 
@@ -536,9 +535,8 @@
                         </Grid>
 
                         <Grid  Background="#80000000" >
-                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">ALBUMS</Label>
+                            <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0" Content="{lex:Loc Metadata.Albums}"></Label>
                         </Grid>
-
 
                         <Grid  Background="Transparent" Margin="10">
                             <ItemsControl ItemsSource="{Binding Path=Albums}">
