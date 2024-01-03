@@ -20,6 +20,7 @@ namespace Diffusion.Toolkit
             if (_settings.ImagePaths.Any())
             {
                 await Scan();
+                _search.ThumbnailListView.ReloadThumbnailsView(0);
             }
             else
             {
