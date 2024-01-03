@@ -565,7 +565,7 @@ namespace Diffusion.Toolkit.Pages
                     var text = GetLocalizedText("Search.Results");
 
                     text = text.Replace("{count}", $"{count:###,###,##0}")
-                        .Replace("{size{", $"{ssize}");
+                        .Replace("{size}", $"{ssize}");
 
                     _model.Results = text;
 
