@@ -150,13 +150,15 @@ namespace Diffusion.Toolkit.Pages
                 ThumbnailLoader.Instance.Stop();
             };
 
+
+
             _modeSettings = new Dictionary<string, ModeSettings>()
             {
-                { "search", new ModeSettings() { Name="Diffusions", ViewMode = ViewMode.Search } },
-                { "folders", new ModeSettings() { Name="Folders", ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
-                { "albums", new ModeSettings() { Name="Albums", ViewMode = ViewMode.Album } },
-                { "favorites", new ModeSettings() { Name="Favorites", ViewMode = ViewMode.Search, IsFavorite = true } },
-                { "deleted", new ModeSettings() { Name="Recycle Bin", ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
+                { "search", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
+                { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
+                { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
+                { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
+                { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.RecycleBin"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
             };
 
             if (_settings.MainGridWidth != null)
@@ -612,7 +614,7 @@ namespace Diffusion.Toolkit.Pages
                 if (_model.SelectedImageEntry != null)
                 {
                     LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
-            
+
                 }
                 else
                 {
@@ -709,7 +711,7 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.ModelHash = parameters.ModelHash;
                     imageViewModel.Seed = parameters.Seed;
                     imageViewModel.AestheticScore = $"{parameters.AestheticScore}";
-                    
+
                     var notFound = GetLocalizedText("Metadata.Modelname.NotFound");
 
                     if (_modelLookup != null)
@@ -1193,7 +1195,7 @@ namespace Diffusion.Toolkit.Pages
                 }
 
                 ThumbnailListView.ReloadThumbnailsView(0);
-                
+
                 //RefreshThumbnails();
 
             });
