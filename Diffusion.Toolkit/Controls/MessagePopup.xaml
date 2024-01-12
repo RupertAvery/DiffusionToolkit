@@ -4,6 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
+             xmlns:lex="http://wpflocalizeextension.codeplex.com"
+             xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
+             lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
+             lex:LocalizeDictionary.Separation="."
+             lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
              d:DataContext="{d:DesignInstance models:MessagePopupModel}"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
@@ -41,10 +46,10 @@
                     </StackPanel>
                     <Grid Grid.Row="2">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
-                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding OKCommand}" Visibility="{Binding HasOk, Converter={StaticResource boolToVisCol}}">OK</Button>
-                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding CancelCommand}" Visibility="{Binding HasCancel, Converter={StaticResource boolToVisCol}}">Cancel</Button>
-                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding YesCommand}" Visibility="{Binding HasYes, Converter={StaticResource boolToVisCol}}">Yes</Button>
-                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding NoCommand}" Visibility="{Binding HasNo, Converter={StaticResource boolToVisCol}}">No</Button>
+                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding OKCommand}" Visibility="{Binding HasOk, Converter={StaticResource boolToVisCol}}" Content="{lex:Loc Common.Buttons.OK}"></Button>
+                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding CancelCommand}" Visibility="{Binding HasCancel, Converter={StaticResource boolToVisCol}}" Content="{lex:Loc Common.Buttons.Cancel}"></Button>
+                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding YesCommand}" Visibility="{Binding HasYes, Converter={StaticResource boolToVisCol}}" Content="{lex:Loc Common.Buttons.Yes}"></Button>
+                            <Button Width="80" Height="30" Margin="0,0,10,0" Command="{Binding NoCommand}" Visibility="{Binding HasNo, Converter={StaticResource boolToVisCol}}" Content="{lex:Loc Common.Buttons.No}"></Button>
                         </StackPanel>
                     </Grid>
                 </Grid>

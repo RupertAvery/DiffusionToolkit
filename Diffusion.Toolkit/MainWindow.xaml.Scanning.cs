@@ -260,6 +260,8 @@ namespace Diffusion.Toolkit
                 includeProperties.Add(nameof(Image.NSFW));
             }
 
+            var scanning = GetLocalizedText("Actions.Scanning.Status");
+
             foreach (var file in MetadataScanner.Scan(filesToScan))
             {
                 if (cancellationToken.IsCancellationRequested)
@@ -333,7 +335,12 @@ namespace Diffusion.Toolkit
                     Dispatcher.Invoke(() =>
                     {
                         _model.CurrentProgress = scanned;
-                        _model.Status = $"Scanning {_model.CurrentProgress:#,###,##0} of {_model.TotalProgress:#,###,##0}...";
+
+                        var text = scanning
+                            .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
+                            .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
+
+                        _model.Status = text;
                     });
                 }
             }
@@ -355,7 +362,11 @@ namespace Diffusion.Toolkit
             {
                 if (_model.TotalProgress > 0)
                 {
-                    _model.Status = $"Scanning {_model.TotalProgress:#,###,##0} of {_model.TotalProgress:#,###,##0}...";
+                    var text = scanning
+                        .Replace("{current}", $"{_model.TotalProgress:#,###,##0}")
+                        .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
+
+                    _model.Status = text;
                 }
                 _model.TotalProgress = Int32.MaxValue;
                 _model.CurrentProgress = 0;
@@ -378,20 +389,37 @@ namespace Diffusion.Toolkit
 
             var removed = 0;
             var added = 0;
+            
+            Dispatcher.Invoke(() =>
+            {
+                _model.Status = GetLocalizedText("Actions.Scanning.BeginScanning");
+            });
 
             try
             {
                 var existingImages = _dataStore.GetImagePaths().ToList();
 
+                Dispatcher.Invoke(() =>
+                {
+                    _model.Status = GetLocalizedText("Actions.Scanning.CheckRemoved");
+                });
+
                 var removedList = existingImages.Where(img => !File.Exists(img.Path)).ToList();
 
                 if (removedList.Any())
                 {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _model.Status = GetLocalizedText("Actions.Scanning.Cleanup");
+                    });
+
                     removed = removedList.Count;
                     _dataStore.RemoveImages(removedList.Select(i => i.Id));
                 }
 
                 var filesToScan = new List<string>();
+
+                var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
 
                 foreach (var path in settings.ImagePaths)
                 {
@@ -401,8 +429,12 @@ namespace Diffusion.Toolkit
                     }
 
                     if (Directory.Exists(path))
+                    Dispatcher.Invoke(() =>
                     {
-                        var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
+                        _model.Status = gatheringFilesMessage.Replace("{path}", path);
+                    });
+
+                    var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
                         filesToScan.AddRange(MetadataScanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), settings.ExcludePaths).ToList());
                     }
@@ -427,6 +459,10 @@ namespace Diffusion.Toolkit
             {
                 _model.IsBusy = false;
 
+                Dispatcher.Invoke(() =>
+                {
+                    _model.Status = GetLocalizedText("Actions.Scanning.Completed");
+                });
             }
 
 
@@ -437,15 +473,26 @@ namespace Diffusion.Toolkit
         {
             Dispatcher.Invoke(() =>
             {
+                var scanComplete = GetLocalizedText("Actions.Scanning.ScanComplete.Caption");
+
                 if (added == 0 && removed == 0)
                 {
-                    Toast($"No new images found", "Scan Complete");
+                    var message = GetLocalizedText("Actions.Scanning.NoNewImages.Toast");
+                    Toast(message, scanComplete);
                 }
                 else
                 {
-                    var newOrOpdated = updateImages ? $"{added:#,###,##0} images updated" : $"{added:#,###,##0} new images added";
+                    var updatedMessage = GetLocalizedText("Actions.Scanning.ImagesUpdated.Toast");
+                    var addedMessage = GetLocalizedText("Actions.Scanning.ImagesAdded.Toast");
+                    var removedMessage = GetLocalizedText("Actions.Scanning.MissingImagesRemoved.Toast");
 
-                    var missing = removed > 0 ? $"{removed:#,###,##0} missing images removed" : string.Empty;
+                    updatedMessage = updatedMessage.Replace("{count}", $"{added:#,###,##0}");
+                    addedMessage = addedMessage.Replace("{count}", $"{added:#,###,##0}");
+                    removedMessage = removedMessage.Replace("{count}", $"{removed:#,###,##0}");
+
+                    var newOrOpdated = updateImages ? updatedMessage : addedMessage;
+
+                    var missing = removed > 0 ? removedMessage : string.Empty;
 
                     var messages = new[] { newOrOpdated, missing };
 
@@ -455,11 +502,13 @@ namespace Diffusion.Toolkit
 
                     if (updateImages)
                     {
-                        Toast(message, "Rebuild Complete");
+                        var rebuildComplete = GetLocalizedText("Actions.Scanning.RebuildComplete.Caption");
+
+                        Toast(message, rebuildComplete);
                     }
                     else
                     {
-                        Toast(message, "Scan Complete", 10);
+                        Toast(message, scanComplete, 10);
                     }
                 }
 

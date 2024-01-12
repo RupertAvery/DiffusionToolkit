@@ -5,11 +5,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 using Microsoft.Extensions.Options;
 
@@ -42,7 +44,7 @@ namespace Diffusion.Toolkit.Controls
         {
             var albumMenuItem = new MenuItem()
             {
-                Header = "_New Album",
+                Header = GetLocalizedText("Thumbnail.ContextMenu.AddToAlbum.NewAlbum"),
             };
 
             albumMenuItem.Click += CreateAlbum_OnClick;
@@ -64,6 +66,12 @@ namespace Diffusion.Toolkit.Controls
                 Model.AlbumMenuItems.Add(menuItem);
             }
         }
+
+        private string GetLocalizedText(string key)
+        {
+            return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+        }
+
 
         //private void AlbumMenuItem_Click(object sender, RoutedEventArgs e)
         //{
@@ -486,9 +494,10 @@ namespace Diffusion.Toolkit.Controls
             {
                 var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
-                var message = "This will remove the entry from the database, but will not delete the image. You can use this to remove duplicates. \r\n\r\n You will lose any ratings or favorites set on the images! Are you sure you want to continue?";
+                var message = GetLocalizedText("Actions.RemoveEntry.Message");
+                var caption = GetLocalizedText("Actions.RemoveEntry.Caption");
 
-                var result = await MessagePopupManager.ShowMedium(message, "Remove Entries", PopupButtons.YesNo);
+                var result = await MessagePopupManager.ShowMedium(message, caption, PopupButtons.YesNo);
 
                 if (result == PopupResult.Yes)
                 {

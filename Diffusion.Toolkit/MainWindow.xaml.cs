@@ -31,6 +31,8 @@ using DragDropEffects = System.Windows.Forms.DragDropEffects;
 using DragEventArgs = System.Windows.Forms.DragEventArgs;
 using System.Text.Json.Serialization;
 using Diffusion.Civitai.Models;
+using Diffusion.Toolkit.Localization;
+using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit
@@ -154,7 +156,7 @@ namespace Diffusion.Toolkit
 
             this.Loaded += OnLoaded;
             this.Closing += OnClosing;
-            _model.Close = new RelayCommand<object>(o =>
+            _model.CloseCommand = new RelayCommand<object>(o =>
             {
                 this.Close();
             });
@@ -396,6 +398,17 @@ namespace Diffusion.Toolkit
             if (_settings.Left.HasValue)
             {
                 this.Left = _settings.Left.Value;
+            }
+
+            _settings.Culture ??= "default";
+
+            if (_settings.Culture == "default")
+            {
+                LocalizeDictionary.Instance.Culture = CultureInfo.CurrentCulture;
+            }
+            else
+            {
+                LocalizeDictionary.Instance.Culture = new CultureInfo(_settings.Culture);
             }
 
             _model.AutoRefresh = _settings.AutoRefresh;
@@ -802,6 +815,18 @@ namespace Diffusion.Toolkit
                         else
                         {
                             GoLocal();
+                        }
+                    }
+
+                    if (_settings.IsPropertyDirty(nameof(Settings.Culture)))
+                    {
+                        if (_settings.Culture == "default")
+                        {
+                            LocalizeDictionary.Instance.Culture = CultureInfo.CurrentCulture;
+                        }
+                        else
+                        {
+                            LocalizeDictionary.Instance.Culture = new CultureInfo(_settings.Culture);
                         }
                     }
 

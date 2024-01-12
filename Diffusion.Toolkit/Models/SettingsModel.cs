@@ -1,7 +1,21 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace Diffusion.Toolkit;
+
+public class Langauge
+{
+    public string Name { get; set; }
+    public string Culture { get; set; }
+
+    public Langauge(string name, string culture)
+    {
+        Name = name;
+        Culture = culture;
+    }
+}
+
 
 public class SettingsModel : BaseNotify
 {
@@ -12,6 +26,7 @@ public class SettingsModel : BaseNotify
     private string _fileExtensions;
     private int _pageSize;
     private string _theme;
+    private string _culture;
     private bool _checkForUpdatesOnStartup;
     private bool _scanForNewImagesOnStartup;
     private bool _autoTagNsfw;
@@ -29,6 +44,7 @@ public class SettingsModel : BaseNotify
     private string _customCommandLine;
     private string _customCommandLineArgs;
     private bool _autoRefresh;
+    private IEnumerable<Langauge> _cultures;
 
     public SettingsModel()
     {
@@ -75,6 +91,18 @@ public class SettingsModel : BaseNotify
     {
         get => _theme;
         set => SetField(ref _theme, value);
+    }
+
+    public string Culture
+    {
+        get => _culture;
+        set => SetField(ref _culture, value);
+    }
+
+    public IEnumerable<Langauge> Cultures
+    {
+        get => _cultures;
+        set => SetField(ref _cultures, value);
     }
 
     public bool WatchFolders

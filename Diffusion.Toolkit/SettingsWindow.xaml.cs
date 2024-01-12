@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Diffusion.Database;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using System.Collections.ObjectModel;
@@ -11,7 +12,8 @@ using System.Windows.Input;
 using Diffusion.Toolkit.Themes;
 using System.Diagnostics;
 using System.IO;
-using static Dapper.SqlMapper;
+using System.Text.Json;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit
 {
@@ -27,7 +29,6 @@ namespace Diffusion.Toolkit
         public SettingsWindow()
         {
             InitializeComponent();
-
         }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -66,7 +67,32 @@ namespace Diffusion.Toolkit
             _model.CustomCommandLine = settings.CustomCommandLine;
             _model.CustomCommandLineArgs = settings.CustomCommandLineArgs;
 
+            _model.Culture = settings.Culture;
+
             _model.Escape = new RelayCommand<object>(o => Close());
+
+            var cultures = new List<Langauge>
+            {
+                new ("Default", "default"),
+            };
+
+            try
+            {
+                var configPath = Path.Combine(AppInfo.AppDir, "Localization", "languages.json");
+
+                var langs = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(configPath));
+
+                foreach (var (name, culture) in langs)
+                {
+                    cultures.Add(new Langauge(name, culture));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error loading languages.json: {ex.Message}");
+            }
+
+            _model.Cultures = new ObservableCollection<Langauge>(cultures);
 
             DataContext = _model;
 
@@ -289,6 +315,8 @@ namespace Diffusion.Toolkit
             _settings.UseCustomViewer = _model.UseCustomViewer;
             _settings.CustomCommandLine = _model.CustomCommandLine;
             _settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
+
+            _settings.Culture = _model.Culture;
         }
     }
 }
