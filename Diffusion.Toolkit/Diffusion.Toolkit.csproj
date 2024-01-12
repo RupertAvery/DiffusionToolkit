@@ -62,7 +62,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Localization\default.json">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 

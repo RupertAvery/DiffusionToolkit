@@ -13,6 +13,7 @@ using Diffusion.Toolkit.Themes;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit
 {
@@ -70,18 +71,25 @@ namespace Diffusion.Toolkit
 
             _model.Escape = new RelayCommand<object>(o => Close());
 
-            var configPath = Path.Combine(AppInfo.AppDir, "Localization", "languages.json");
-
-            var langs = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(configPath));
-
             var cultures = new List<Langauge>
             {
                 new ("Default", "default"),
             };
-            
-            foreach (var (name, culture) in langs)
+
+            try
             {
-                cultures.Add(new Langauge(name, culture));
+                var configPath = Path.Combine(AppInfo.AppDir, "Localization", "languages.json");
+
+                var langs = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(configPath));
+
+                foreach (var (name, culture) in langs)
+                {
+                    cultures.Add(new Langauge(name, culture));
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error loading languages.json: {ex.Message}");
             }
 
             _model.Cultures = new ObservableCollection<Langauge>(cultures);

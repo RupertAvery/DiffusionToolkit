@@ -389,20 +389,37 @@ namespace Diffusion.Toolkit
 
             var removed = 0;
             var added = 0;
+            
+            Dispatcher.Invoke(() =>
+            {
+                _model.Status = GetLocalizedText("Actions.Scanning.BeginScanning");
+            });
 
             try
             {
                 var existingImages = _dataStore.GetImagePaths().ToList();
 
+                Dispatcher.Invoke(() =>
+                {
+                    _model.Status = GetLocalizedText("Actions.Scanning.CheckRemoved");
+                });
+
                 var removedList = existingImages.Where(img => !File.Exists(img.Path)).ToList();
 
                 if (removedList.Any())
                 {
+                    Dispatcher.Invoke(() =>
+                    {
+                        _model.Status = GetLocalizedText("Actions.Scanning.Cleanup");
+                    });
+
                     removed = removedList.Count;
                     _dataStore.RemoveImages(removedList.Select(i => i.Id));
                 }
 
                 var filesToScan = new List<string>();
+
+                var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
 
                 foreach (var path in settings.ImagePaths)
                 {
@@ -412,8 +429,12 @@ namespace Diffusion.Toolkit
                     }
 
                     if (Directory.Exists(path))
+                    Dispatcher.Invoke(() =>
                     {
-                        var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
+                        _model.Status = gatheringFilesMessage.Replace("{path}", path);
+                    });
+
+                    var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
                         filesToScan.AddRange(MetadataScanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), settings.ExcludePaths).ToList());
                     }
@@ -438,6 +459,10 @@ namespace Diffusion.Toolkit
             {
                 _model.IsBusy = false;
 
+                Dispatcher.Invoke(() =>
+                {
+                    _model.Status = GetLocalizedText("Actions.Scanning.Completed");
+                });
             }
 
 
