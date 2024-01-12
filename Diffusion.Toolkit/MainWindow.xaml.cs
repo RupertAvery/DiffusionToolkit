@@ -314,7 +314,7 @@ namespace Diffusion.Toolkit
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             var dataStore = new DataStore(_dbPath);
-            
+
             if (!_configuration.TryLoad(out _settings))
             {
                 Logger.Log($"Opening Settings for first time");
@@ -422,8 +422,8 @@ namespace Diffusion.Toolkit
             Activated += OnActivated;
             StateChanged += OnStateChanged;
             SizeChanged += OnSizeChanged;
-            LocationChanged+= OnLocationChanged;
-            
+            LocationChanged += OnLocationChanged;
+
 
             Logger.Log($"Initializing pages");
 
@@ -433,12 +433,13 @@ namespace Diffusion.Toolkit
             {
                 handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
             },
-            () => {
+            () =>
+            {
                 handle?.Close();
             });
 
             _dataStoreOptions = new DataStoreOptions(dataStore);
-            
+
             var total = _dataStore.GetTotal();
 
             _model.Status = $"{total:###,###,##0} images in database";
@@ -639,7 +640,10 @@ namespace Diffusion.Toolkit
 
                 _progressCancellationTokenSource = new CancellationTokenSource();
 
-                await ScanInternal(_settings, false, false, _progressCancellationTokenSource.Token);
+                _ = Task.Run(async () =>
+                {
+                    await ScanInternal(_settings, false, false, _progressCancellationTokenSource.Token);
+                });
             }
 
             if (_settings.ImagePaths.Any())
@@ -967,7 +971,7 @@ namespace Diffusion.Toolkit
             {
                 if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {
-                    await Scan();
+                    Scan();
                 };
             }
             else

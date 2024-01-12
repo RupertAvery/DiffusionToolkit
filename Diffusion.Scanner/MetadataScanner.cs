@@ -1,5 +1,4 @@
 ﻿using Diffusion.Common;
-using static System.IO.Directory;
 
 namespace Diffusion.IO
 {
@@ -9,13 +8,27 @@ namespace Diffusion.IO
         {
             var files = Enumerable.Empty<string>();
 
-            if (Exists(path))
+
+            if (Directory.Exists(path))
             {
 
                 foreach (var extension in extensions.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
-                    files = files.Concat(EnumerateFiles(path, $"*{extension}",
-                        recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly));
+                    try
+                    {
+                        var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
+                        {
+                            RecurseSubdirectories = recursive,
+                            IgnoreInaccessible = true
+                        });
+
+                        files = files.Concat(dirFiles);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log($"MetadataScanner.GetFiles: {ex}");
+                    }
+
                 }
 
                 if (ignoreFiles != null)

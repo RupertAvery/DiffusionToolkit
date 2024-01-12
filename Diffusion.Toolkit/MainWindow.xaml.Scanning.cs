@@ -19,8 +19,10 @@ namespace Diffusion.Toolkit
         {
             if (_settings.ImagePaths.Any())
             {
-                await Scan();
-                _search.ThumbnailListView.ReloadThumbnailsView(0);
+                _ = Scan().ContinueWith((t) =>
+                {
+                    _search.ThumbnailListView.ReloadThumbnailsView(0);
+                });
             }
             else
             {
@@ -51,12 +53,11 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private async Task Scan()
+        private Task Scan()
         {
-
             _progressCancellationTokenSource = new CancellationTokenSource();
 
-            await Task.Run(async () =>
+            return Task.Run(async () =>
             {
                 var result = await ScanInternal(_settings!, false, true, _progressCancellationTokenSource.Token);
                 if (result && _search != null)
@@ -389,7 +390,7 @@ namespace Diffusion.Toolkit
 
             var removed = 0;
             var added = 0;
-            
+
             Dispatcher.Invoke(() =>
             {
                 _model.Status = GetLocalizedText("Actions.Scanning.BeginScanning");
@@ -429,12 +430,13 @@ namespace Diffusion.Toolkit
                     }
 
                     if (Directory.Exists(path))
-                    Dispatcher.Invoke(() =>
                     {
-                        _model.Status = gatheringFilesMessage.Replace("{path}", path);
-                    });
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.Status = gatheringFilesMessage.Replace("{path}", path);
+                        });
 
-                    var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
+                        var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
                         filesToScan.AddRange(MetadataScanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), settings.ExcludePaths).ToList());
                     }
@@ -563,7 +565,7 @@ namespace Diffusion.Toolkit
 
         private void CleanRemovedFoldersInternal()
         {
-            var total  = _dataStore.CleanRemovedFolders(_settings.ImagePaths);
+            var total = _dataStore.CleanRemovedFolders(_settings.ImagePaths);
 
             if (total > 0)
             {
