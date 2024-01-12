@@ -34,7 +34,7 @@ public partial class DataStore
         using var db = OpenConnection();
 
         db.EnableLoadExtension(true);
-        db.LoadExtension("dlls\\path0.dll");
+        db.LoadExtension("extensions\\path0.dll");
 
 
         var migrations = new Migrations(db);
