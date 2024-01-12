@@ -21,7 +21,10 @@ namespace Diffusion.Toolkit
             {
                 _ = Scan().ContinueWith((t) =>
                 {
-                    _search.ThumbnailListView.ReloadThumbnailsView(0);
+                    Dispatcher.Invoke(() =>
+                    {
+                        _search.ThumbnailListView.ReloadThumbnailsView(0);
+                    });
                 });
             }
             else
