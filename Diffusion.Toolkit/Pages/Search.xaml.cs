@@ -291,6 +291,8 @@ namespace Diffusion.Toolkit.Pages
                 new("Rating", "Rating"),
                 new("Aesthetic Score","Aesthetic Score"),
                 new("Name", "Name"),
+                new("Prompt", "Prompt"),
+                new("Shuffle", "Shuffle")
             };
 
             _model.SortBy = _settings.SortBy;
