@@ -8,6 +8,7 @@ using Dir = System.IO.Directory;
 using System.Globalization;
 using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
+using System.Linq;
 
 namespace Diffusion.IO;
 
@@ -57,6 +58,8 @@ public class Metadata
 
                     decimal aestheticScore = 0;
 
+                    //string tagData = null;
+
                     foreach (var directory in directories)
                     {
                         if (directory.Name == "PNG-tEXt")
@@ -67,19 +70,36 @@ public class Metadata
                                 {
                                     if (tag.Description.StartsWith("parameters:"))
                                     {
-                                        var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
-                                        format = isJson ? MetaFormat.RuinedFooocus : MetaFormat.A1111;
-                                        fileParameters = isJson ? ReadRuinedFooocusParameters(tag.Description) : ReadA111Parameters(tag.Description);
+                                        if (fileParameters == null)
+                                        {
+                                            var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
+                                            format = isJson ? MetaFormat.RuinedFooocus : MetaFormat.A1111;
+                                            fileParameters = isJson ? ReadRuinedFooocusParameters(tag.Description) : ReadA111Parameters(tag.Description);
+                                        }
                                     }
                                     else if (tag.Description.StartsWith("Comment:"))
                                     {
-                                        format = MetaFormat.FooocusMRE;
-                                        fileParameters = ReadFooocusMREParameters(tag.Description);
+                                        if (fileParameters == null)
+                                        {
+                                            if (directory.Tags.Any(t => t.Description == "Software: NovelAI"))
+                                            {
+                                                format = MetaFormat.NovelAI;
+                                                fileParameters = ReadNovelAIParameters(file, directories);
+                                            }
+                                            else
+                                            {
+                                                format = MetaFormat.FooocusMRE;
+                                                fileParameters = ReadFooocusMREParameters(tag.Description);
+                                            }
+                                        }
                                     }
                                     else if (tag.Description == "Software: NovelAI")
                                     {
-                                        format = MetaFormat.NovelAI;
-                                        fileParameters = ReadNovelAIParameters(file, directories);
+                                        if (fileParameters == null)
+                                        {
+                                            format = MetaFormat.NovelAI;
+                                            fileParameters = ReadNovelAIParameters(file, directories);
+                                        }
                                     }
                                     else if (tag.Description.StartsWith("Dream: "))
                                     {
@@ -98,9 +118,12 @@ public class Metadata
                                     }
                                     else if (tag.Description.StartsWith("prompt: "))
                                     {
-                                        var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
-                                        format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
-                                        fileParameters = isJson ? ReadComfyUIParameters(file, tag.Description) : ReadEasyDiffusionParameters(file, directories);
+                                        if (fileParameters == null)
+                                        {
+                                            var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
+                                            format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
+                                            fileParameters = isJson ? ReadComfyUIParameters(file, tag.Description) : ReadEasyDiffusionParameters(file, directories);
+                                        }
                                     }
                                     else if (tag.Description.StartsWith("Score:"))
                                     {
@@ -153,7 +176,7 @@ public class Metadata
                     {
                         fileParameters ??= new FileParameters();
                         fileParameters.AestheticScore = aestheticScore;
-                        if(fileParameters.OtherParameters == null)
+                        if (fileParameters.OtherParameters == null)
                         {
                             fileParameters.OtherParameters = $"aesthetic_score: {fileParameters.AestheticScore}";
                         }
@@ -653,6 +676,7 @@ public class Metadata
 
         var propList = new List<string>();
 
+
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Comment:"), out tag))
         {
             var json = JsonDocument.Parse(tag.Description.Substring("Comment: ".Length));
@@ -666,7 +690,7 @@ public class Metadata
 
             foreach (var property in properties)
             {
-                if (property.Name != "uc")
+                if (property.Name != "uc" && property.Name != "prompt")
                 {
                     propList.Add($"{property.Name}: {property.Value.ToString()}");
                 }
@@ -1105,7 +1129,7 @@ public class Metadata
         {
             fileParameters ??= new FileParameters();
             fileParameters.AestheticScore = aestheticScore;
-            if(fileParameters.OtherParameters == null)
+            if (fileParameters.OtherParameters == null)
             {
                 fileParameters.OtherParameters = $"aesthetic_score: {fileParameters.AestheticScore}";
             }
