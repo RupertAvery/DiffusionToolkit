@@ -698,9 +698,9 @@ namespace Diffusion.Toolkit.Pages
                 if (parameters != null)
                 {
                     imageViewModel.Path = parameters.Path;
-                    imageViewModel.Prompt = parameters.Prompt;
-                    imageViewModel.NegativePrompt = parameters.NegativePrompt;
-                    imageViewModel.OtherParameters = parameters.OtherParameters;
+                    imageViewModel.Prompt = parameters.Prompt?.Trim();
+                    imageViewModel.NegativePrompt = parameters.NegativePrompt?.Trim();
+                    imageViewModel.OtherParameters = parameters.OtherParameters?.Trim();
                     imageViewModel.CFGScale = parameters.CFGScale;
                     imageViewModel.Steps = parameters.Steps;
                     imageViewModel.Sampler = parameters.Sampler;
@@ -1752,6 +1752,28 @@ namespace Diffusion.Toolkit.Pages
 
             SetMode("albums");
             SearchImages(null);
+        }
+
+        private void CollapseAll_Click(object sender, RoutedEventArgs e)
+        {
+            SetMetadataState(AccordionState.Collapsed);
+        }
+
+        private void ExpandAll_Click(object sender, RoutedEventArgs e)
+        {
+            SetMetadataState(AccordionState.Expanded);
+        }
+
+        private void SetMetadataState(AccordionState state)
+        {
+            PromptMetadata.State = state;
+            NegativePromptMetadata.State = state;
+            SeedMetadata.State = state;
+            ModelMetadata.State = state;
+            PathMetadata.State = state;
+            OtherMetadata.State = state;
+            AlbumMetadata.State = state;
+            DateMetadata.State = state;
         }
     }
 }

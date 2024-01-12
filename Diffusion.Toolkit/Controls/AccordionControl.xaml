@@ -1,0 +1,50 @@
+﻿<UserControl x:Class="Diffusion.Toolkit.Controls.AccordionControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="400">
+    <UserControl.Template>
+        <ControlTemplate>
+            <StackPanel>
+                <Grid Background="{Binding HeaderBackground, RelativeSource={RelativeSource TemplatedParent}}" MouseDown="ButtonBase_OnClick" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Style="{StaticResource BorderlessButton}" Margin="5,0,0,0"  Background="Transparent" BorderThickness="0" BorderBrush="Transparent" Height="16" Click="ButtonBase_OnClick">
+                        <fa:ImageAwesome Icon="AngleRight" Height="10" Foreground="White"  Rotation="{Binding Rotation, RelativeSource={RelativeSource TemplatedParent}}"></fa:ImageAwesome>
+                    </Button>
+                    <Label Style="{StaticResource SmallCaps}" Grid.Column="1" Margin="0,0,0,0" Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"></Label>
+                    <ContentControl Grid.Column="2" Content="{Binding ButtonAreaContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+                </Grid>
+
+                <Grid Background="Transparent" Margin="10" Visibility="{Binding ContentVisibility, RelativeSource={RelativeSource TemplatedParent}}">
+                    <ContentPresenter Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" />
+                </Grid>
+            </StackPanel>
+        </ControlTemplate>
+    </UserControl.Template>
+
+    <!--<Grid DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
+        <StackPanel Background="Blue">
+
+            <Grid Background="#80000000" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <fa:ImageAwesome Icon="AngleRight" Height="10" Foreground="White" Rotation="90"></fa:ImageAwesome>
+                <Label Style="{StaticResource SmallCaps}" Grid.Column="1" Margin="10,0,0,0" Content="{Binding Header}"></Label>
+            </Grid>
+
+            <Grid  Background="Transparent" Margin="10">
+                <ContentControl Content="{Binding Content}"/>
+            </Grid>
+        </StackPanel>
+    </Grid>-->
+</UserControl>
