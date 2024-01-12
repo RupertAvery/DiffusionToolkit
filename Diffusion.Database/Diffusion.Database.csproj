@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <None Update="dlls\path0.dll">
+    <None Update="e_sqlite3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
