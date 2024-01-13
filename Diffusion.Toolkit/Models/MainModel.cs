@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Diffusion.Database;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Common;
 using WPFLocalizeExtension.Providers;
 
 namespace Diffusion.Toolkit.Models;
@@ -73,6 +75,7 @@ public class MainModel : BaseNotify
     private ICommand _showFilterCommand;
     private ICommand _toggleAutoRefresh;
     private bool _autoRefresh;
+    private IEnumerable<ModelViewModel> _imageModels;
 
     public MainModel()
     {
@@ -435,6 +438,14 @@ public class MainModel : BaseNotify
         set => SetField(ref _currentAlbum, value);
     }
 
+    private ModelViewModel? _currentModel;
+
+    public ModelViewModel? CurrentModel
+    {
+        get => _currentModel;
+        set => SetField(ref _currentModel, value);
+    }
+
     public ICommand CreateAlbumCommand { get; set; }
     public Action<IAlbumInfo> AddSelectedImagesToAlbum { get; set; }
 
@@ -474,5 +485,11 @@ public class MainModel : BaseNotify
     {
         get => _autoRefresh;
         set => SetField(ref _autoRefresh, value);
+    }
+
+    public IEnumerable<ModelViewModel> ImageModels
+    {
+        get => _imageModels;
+        set => SetField(ref _imageModels, value);
     }
 }

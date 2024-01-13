@@ -28,6 +28,8 @@ public static partial class QueryBuilder
     private static readonly Regex SamplerRegex = new Regex("sampler:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex ModelNameRegex = new Regex("\\bmodel:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex ModelNameOrHashRegex = new Regex("\\bmodel_or_hash:\\s*(?:\"(?<name>[^\"]*)\"\\|(?<hash>[0-9a-f]*))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
     private static readonly Regex HashRegex = new Regex("\\b(?:model_hash|model hash):\\s*([0-9a-f]+)(?:\\s*\\|\\s*([0-9a-f]+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex CfgRegex = new Regex("\\b(?:cfg|cfg_scale|cfg scale):\\s*(\\d+(?:\\.\\d+)?)(?:\\s*\\|\\s*(\\d+(?:\\.\\d+)?))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex SizeRegex = new Regex("\\bsize:\\s*((?:(?<width>\\d+|\\?)\\s*x\\s*(?<height>\\d+|\\?))|(?:(?<width>\\d+|\\?)\\s*:\\s*(?<height>\\d+|\\?)))[\\b]?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -91,7 +93,10 @@ public static partial class QueryBuilder
         ParseSteps(ref prompt, conditions);
         ParseSampler(ref prompt, conditions);
         ParseHash(ref prompt, conditions);
+
         ParseModelName(ref prompt, conditions);
+        ParseModelNameOrHash(ref prompt, conditions);
+
         ParseCFG(ref prompt, conditions);
         ParseSize(ref prompt, conditions);
         ParseAestheticScore(ref prompt, conditions);
@@ -528,16 +533,69 @@ public static partial class QueryBuilder
                 {
                     if (model.Filename.Contains(name, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ?)", model.Hash));
+                        orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", model.Hash));
                         if (!string.IsNullOrEmpty(model.SHA256))
                         {
-                            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ?)", model.SHA256.Substring(0, 10)));
+                            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", model.SHA256.Substring(0, 10)));
                         }
                     }
                 }
 
                 orConditions.Add(new KeyValuePair<string, object>("(Model LIKE ?)", name.Replace("*", "%")));
             }
+
+            if (orConditions.Any())
+            {
+                var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
+                var values = orConditions.Select(c => c.Value);
+
+                conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
+            }
+            else
+            {
+                conditions.Add(new KeyValuePair<string, object>($"(0 == 1)", null));
+            }
+        }
+    }
+
+
+    private static void ParseModelNameOrHash(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        var match = ModelNameOrHashRegex.Match(prompt);
+        if (match.Success)
+        {
+            prompt = ModelNameOrHashRegex.Replace(prompt, String.Empty);
+            var orConditions = new List<KeyValuePair<string, object>>();
+
+            var name = match.Groups["name"].Value;
+            var hash = match.Groups["hash"].Value;
+
+            //foreach (var model in _models)
+            //{
+            //    if (model.Filename.Contains(name, StringComparison.InvariantCultureIgnoreCase))
+            //    {
+            //        if (!string.IsNullOrEmpty(model.Hash))
+            //        {
+            //            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", model.Hash));
+            //        }
+
+            //        if (!string.IsNullOrEmpty(model.SHA256))
+            //        {
+            //            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", model.SHA256.Substring(0, 10)));
+            //        }
+            //    }
+            //}
+
+            if (!string.IsNullOrEmpty(name.Trim()))
+            {
+                orConditions.Add(new KeyValuePair<string, object>("(Model = ? COLLATE NOCASE)", name));
+            }
+
+            if (!string.IsNullOrEmpty(hash.Trim()))
+            {
+                orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", hash));
+            }
+
 
             if (orConditions.Any())
             {

@@ -3,9 +3,6 @@ using System;
 
 namespace Diffusion.Toolkit.Models;
 
-
-
-
 public class AlbumModel : BaseNotify, IAlbumInfo
 {
     private bool _isTicked;

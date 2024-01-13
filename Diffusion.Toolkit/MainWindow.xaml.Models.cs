@@ -16,6 +16,16 @@ namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
+        public void LoadImageModels()
+        {
+            _model.ImageModels = _dataStore.GetImageModels().Select(m=> new ModelViewModel()
+            {
+                Name = m.Name ?? m.Hash,
+                Hash = m.Hash,
+                ImageCount = m.ImageCount
+            });
+        }
+
         public async void DownloadCivitaiModels()
         {
             if (_model.IsBusy)

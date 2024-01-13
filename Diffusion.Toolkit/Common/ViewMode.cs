@@ -3,5 +3,6 @@
 public enum ViewMode {
     Search,
     Folder,
-    Album
+    Album,
+    Model
 }

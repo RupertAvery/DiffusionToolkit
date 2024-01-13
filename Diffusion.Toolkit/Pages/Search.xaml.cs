@@ -27,6 +27,7 @@ using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
 using Diffusion.Toolkit.Localization;
+using static System.Net.WebRequestMethods;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -155,6 +156,7 @@ namespace Diffusion.Toolkit.Pages
             _modeSettings = new Dictionary<string, ModeSettings>()
             {
                 { "search", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
+                { "models", new ModeSettings() { Name = GetLocalizedText("Search.Models"), ViewMode = ViewMode.Model } },
                 { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
                 { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
                 { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
@@ -478,6 +480,14 @@ namespace Diffusion.Toolkit.Pages
                                 filter.Album = _model.MainModel.CurrentAlbum.Name;
                             }
                         }
+                        else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                        {
+                            if (_model.MainModel.CurrentAlbum != null)
+                            {
+                                filter.ModelHash = _model.MainModel.CurrentModel.Hash;
+                                filter.ModelName = _model.MainModel.CurrentModel.Name;
+                            }
+                        }
 
                         count = DataStore.Count(filter);
                         size = DataStore.CountFileSize(filter);
@@ -523,6 +533,13 @@ namespace Diffusion.Toolkit.Pages
                             if (_model.MainModel.CurrentAlbum != null)
                             {
                                 query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                            }
+                        }
+                        else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                        {
+                            if (_model.MainModel.CurrentModel != null)
+                            {
+                                query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
                             }
                         }
 
@@ -1077,6 +1094,17 @@ namespace Diffusion.Toolkit.Pages
                         showImages = false;
                     }
                 }
+                else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                {
+                    if (_model.MainModel.CurrentModel != null)
+                    {
+                        filter.ModelHash = _model.MainModel.CurrentModel.Hash;
+                    }
+                    else
+                    {
+                        showImages = false;
+                    }
+                }
 
                 if (showImages)
                 {
@@ -1116,6 +1144,17 @@ namespace Diffusion.Toolkit.Pages
                     if (_model.MainModel.CurrentAlbum != null)
                     {
                         query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                    }
+                    else
+                    {
+                        showImages = false;
+                    }
+                }
+                else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                {
+                    if (_model.MainModel.CurrentModel != null)
+                    {
+                        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
                     }
                     else
                     {
@@ -1324,6 +1363,17 @@ namespace Diffusion.Toolkit.Pages
                         showImages = false;
                     }
                 }
+                else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                {
+                    if (_model.MainModel.CurrentModel != null)
+                    {
+                        filter.ModelHash = _model.MainModel.CurrentModel.Hash;
+                    }
+                    else
+                    {
+                        showImages = false;
+                    }
+                }
 
                 if (showImages)
                 {
@@ -1363,6 +1413,17 @@ namespace Diffusion.Toolkit.Pages
                     if (_model.MainModel.CurrentAlbum != null)
                     {
                         query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                    }
+                    else
+                    {
+                        showImages = false;
+                    }
+                }
+                else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                {
+                    if (_model.MainModel.CurrentModel != null)
+                    {
+                        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
                     }
                     else
                     {
@@ -1721,13 +1782,20 @@ namespace Diffusion.Toolkit.Pages
             //SearchImages(null);
         }
 
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void Album_OnClick(object sender, RoutedEventArgs e)
         {
             _model.MainModel.CurrentAlbum = ((AlbumModel)((Button)sender).DataContext);
             SetMode("albums");
             SearchImages(null);
         }
 
+
+        private void Model_OnClick(object sender, RoutedEventArgs e)
+        {
+            _model.MainModel.CurrentModel = ((Toolkit.Models.ModelViewModel)((Button)sender).DataContext);
+            SetMode("models");
+            SearchImages(null);
+        }
 
 
         private void FilterPopup_OnKeyDown(object sender, KeyEventArgs e)

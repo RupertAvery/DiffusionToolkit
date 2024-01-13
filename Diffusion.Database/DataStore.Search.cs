@@ -1,17 +1,28 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static SQLite.SQLite3;
-using static System.Net.Mime.MediaTypeNames;
+﻿using Diffusion.Common;
 
 namespace Diffusion.Database
 {
     public partial class DataStore
     {
+        public IEnumerable<ModelView> GetImageModels()
+        {
+            using var db = OpenConnection();
+
+            string whereClause = "";
+
+            if (QueryBuilder.HideNFSW)
+            {
+                whereClause = "WHERE (NSFW = 0 OR NSFW IS NULL)";
+            }
+
+            var query = $"SELECT Model AS Name, ModelHash AS Hash, COUNT(*) AS ImageCount FROM Image {whereClause} GROUP BY Model, ModelHash";
+
+            var models = db.Query<ModelView>(query);
+
+            db.Close();
+
+            return models;
+        }
 
         public int GetTotal()
         {

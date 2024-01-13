@@ -36,6 +36,7 @@ namespace Diffusion.Toolkit
 
             _prompts.ReloadPrompts();
             _prompts.LoadImages();
+            LoadImageModels();
         }
 
         private void ToggleNSFWBlur()

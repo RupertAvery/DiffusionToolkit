@@ -319,10 +319,10 @@ namespace Diffusion.Database
                     {
                         if (model.Filename.Contains(name, StringComparison.InvariantCultureIgnoreCase))
                         {
-                            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ?)", model.Hash));
+                            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", model.Hash));
                             if (!string.IsNullOrEmpty(model.SHA256))
                             {
-                                orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ?)", model.SHA256.Substring(0, 10)));
+                                orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", model.SHA256.Substring(0, 10)));
                             }
                         }
                     }
