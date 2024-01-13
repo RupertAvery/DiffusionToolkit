@@ -98,6 +98,8 @@
   "Search.SortBy.Name": "Name",
   "Search.SortBy.Rating": "Rating",
   "Search.SortBy.AestheticScore": "Aesthetic Score",
+  "Search.SortBy.Prompt": "Prompt",
+  "Search.SortBy.Random": "Random",
   "Search.Results": "{count} results found ({size})",
   "Search.NoResults": "No results found",
   "Search.LoadPreview.ImageNotFound": "The source image could not be located. This can happen when you move or rename the file outside of Diffusion Toolkit.",
