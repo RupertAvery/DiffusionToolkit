@@ -3,6 +3,7 @@ using Diffusion.Database;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
+using WPFLocalizeExtension.Providers;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -10,7 +11,7 @@ public class MainModel : BaseNotify
 {
     private Page _page;
     private ICommand _rescan;
-    private ICommand _close;
+    private ICommand _closeCommand;
     private ICommand _settings;
     private ICommand _rebuild;
     private bool _showIcons;
@@ -113,10 +114,10 @@ public class MainModel : BaseNotify
         set => SetField(ref _settings, value);
     }
 
-    public ICommand Close
+    public ICommand CloseCommand
     {
-        get => _close;
-        set => SetField(ref _close, value);
+        get => _closeCommand;
+        set => SetField(ref _closeCommand, value);
     }
 
     public ICommand Rebuild

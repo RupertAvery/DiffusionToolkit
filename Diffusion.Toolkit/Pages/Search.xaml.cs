@@ -26,6 +26,7 @@ using Diffusion.IO;
 using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
+using Diffusion.Toolkit.Localization;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -149,13 +150,15 @@ namespace Diffusion.Toolkit.Pages
                 ThumbnailLoader.Instance.Stop();
             };
 
+
+
             _modeSettings = new Dictionary<string, ModeSettings>()
             {
-                { "search", new ModeSettings() { Name="Diffusions", ViewMode = ViewMode.Search } },
-                { "folders", new ModeSettings() { Name="Folders", ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
-                { "albums", new ModeSettings() { Name="Albums", ViewMode = ViewMode.Album } },
-                { "favorites", new ModeSettings() { Name="Favorites", ViewMode = ViewMode.Search, IsFavorite = true } },
-                { "deleted", new ModeSettings() { Name="Recycle Bin", ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
+                { "search", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
+                { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
+                { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
+                { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
+                { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.RecycleBin"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
             };
 
             if (_settings.MainGridWidth != null)
@@ -287,12 +290,10 @@ namespace Diffusion.Toolkit.Pages
 
             _model.SortOptions = new List<SortOption>()
             {
-                new("Date Created","Date Created"),
-                new("Rating", "Rating"),
-                new("Aesthetic Score","Aesthetic Score"),
-                new("Name", "Name"),
-                new("Prompt", "Prompt"),
-                new("Shuffle", "Shuffle")
+                new(GetLocalizedText("Search.SortBy.DateCreated"),"Date Created"),
+                new(GetLocalizedText("Search.SortBy.Rating"), "Rating"),
+                new(GetLocalizedText("Search.SortBy.AestheticScore"),"Aesthetic Score"),
+                new(GetLocalizedText("Search.SortBy.Name"), "Name"),
             };
 
             _model.SortBy = _settings.SortBy;
@@ -365,7 +366,10 @@ namespace Diffusion.Toolkit.Pages
             Clipboard.SetFileDropList(paths);
         }
 
-
+        private string GetLocalizedText(string key)
+        {
+            return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+        }
 
         private void WidthChanged(object? sender, EventArgs e)
         {
@@ -432,7 +436,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (!_settings.ImagePaths.Any())
             {
-                MessageBox.Show("No image paths configured!", "Error",
+                MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
@@ -558,7 +562,12 @@ namespace Diffusion.Toolkit.Pages
                         ssize = $"{fsize:#,##0.00} KiB";
                     }
 
-                    _model.Results = $"{count:###,###,##0} results found ({ssize})";
+                    var text = GetLocalizedText("Search.Results");
+
+                    text = text.Replace("{count}", $"{count:###,###,##0}")
+                        .Replace("{size}", $"{ssize}");
+
+                    _model.Results = text;
 
                     if (_currentModeSettings.ViewMode == ViewMode.Folder)
                     {
@@ -571,8 +580,10 @@ namespace Diffusion.Toolkit.Pages
                     {
                         if (_model.IsEmpty)
                         {
+                            var noResults = GetLocalizedText("Search.NoResults");
+
                             _model.Page = 0;
-                            _model.ResultStatus = "No results found";
+                            _model.ResultStatus = noResults;
                             //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
                             //    MessageBoxButton.OK,
                             //    MessageBoxImage.Information);
@@ -590,7 +601,7 @@ namespace Diffusion.Toolkit.Pages
             }
             catch (Exception e)
             {
-                MessageBox.Show(_navigatorService.Host, e.Message, "Error",
+                MessageBox.Show(_navigatorService.Host, e.Message, GetLocalizedText("Messages.Captions.Error"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -603,7 +614,7 @@ namespace Diffusion.Toolkit.Pages
                 if (_model.SelectedImageEntry != null)
                 {
                     LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
-            
+
                 }
                 else
                 {
@@ -687,9 +698,9 @@ namespace Diffusion.Toolkit.Pages
                 if (parameters != null)
                 {
                     imageViewModel.Path = parameters.Path;
-                    imageViewModel.Prompt = parameters.Prompt;
-                    imageViewModel.NegativePrompt = parameters.NegativePrompt;
-                    imageViewModel.OtherParameters = parameters.OtherParameters;
+                    imageViewModel.Prompt = parameters.Prompt?.Trim();
+                    imageViewModel.NegativePrompt = parameters.NegativePrompt?.Trim();
+                    imageViewModel.OtherParameters = parameters.OtherParameters?.Trim();
                     imageViewModel.CFGScale = parameters.CFGScale;
                     imageViewModel.Steps = parameters.Steps;
                     imageViewModel.Sampler = parameters.Sampler;
@@ -701,6 +712,7 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.Seed = parameters.Seed;
                     imageViewModel.AestheticScore = $"{parameters.AestheticScore}";
 
+                    var notFound = GetLocalizedText("Metadata.Modelname.NotFound");
 
                     if (_modelLookup != null)
                     {
@@ -717,12 +729,12 @@ namespace Diffusion.Toolkit.Pages
                         }
                         else
                         {
-                            imageViewModel.ModelName = $"Not found";
+                            imageViewModel.ModelName = notFound;
                         }
                     }
                     else
                     {
-                        imageViewModel.ModelName = $"Not found";
+                        imageViewModel.ModelName = notFound;
                     }
 
                 }
@@ -735,7 +747,10 @@ namespace Diffusion.Toolkit.Pages
             }
             catch (FileNotFoundException)
             {
-                MessageBox.Show(_navigatorService.Host, "The source image could not be located. This can happen when you move or rename the file outside of Diffusion Toolkit.", "Load image failed", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                var notFound = GetLocalizedText("Search.LoadPreview.ImageNotFound");
+                var caption = GetLocalizedText("Search.LoadPreview.ImageNotFound.Caption");
+
+                MessageBox.Show(_navigatorService.Host, notFound, caption, MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
             catch (Exception ex)
             {
@@ -1180,7 +1195,7 @@ namespace Diffusion.Toolkit.Pages
                 }
 
                 ThumbnailListView.ReloadThumbnailsView(0);
-                
+
                 //RefreshThumbnails();
 
             });
@@ -1737,6 +1752,28 @@ namespace Diffusion.Toolkit.Pages
 
             SetMode("albums");
             SearchImages(null);
+        }
+
+        private void CollapseAll_Click(object sender, RoutedEventArgs e)
+        {
+            SetMetadataState(AccordionState.Collapsed);
+        }
+
+        private void ExpandAll_Click(object sender, RoutedEventArgs e)
+        {
+            SetMetadataState(AccordionState.Expanded);
+        }
+
+        private void SetMetadataState(AccordionState state)
+        {
+            PromptMetadata.State = state;
+            NegativePromptMetadata.State = state;
+            SeedMetadata.State = state;
+            ModelMetadata.State = state;
+            PathMetadata.State = state;
+            OtherMetadata.State = state;
+            AlbumMetadata.State = state;
+            DateMetadata.State = state;
         }
     }
 }

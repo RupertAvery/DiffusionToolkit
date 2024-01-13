@@ -3,9 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Diffusion.Toolkit"
              xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
+             xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
+            <localization:JsonLocalizationProvider x:Key="LocalizationProvider"></localization:JsonLocalizationProvider>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Themes/Light.xaml"/>
                 <ResourceDictionary Source="/Themes/Common.xaml"/>

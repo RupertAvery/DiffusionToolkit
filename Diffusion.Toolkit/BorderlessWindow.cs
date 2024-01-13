@@ -511,7 +511,7 @@ namespace Diffusion.Toolkit
 
             double currentDPIScaleFactor = SystemHelper.GetCurrentDPIScaleFactor();
             Point position = e.GetPosition(this);
-            Debug.WriteLine(position);
+            //Debug.WriteLine(position);
             Point screen = PointToScreen(position);
             double x = mouseDownPosition.X - position.X;
             double y = mouseDownPosition.Y - position.Y;

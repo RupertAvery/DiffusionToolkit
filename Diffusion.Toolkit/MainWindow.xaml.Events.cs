@@ -2,6 +2,7 @@
 using Diffusion.Toolkit.Models;
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,10 @@ using System.Windows;
 using Diffusion.Common;
 using System.Windows.Forms;
 using System.Windows.Interop;
+using WPFLocalizeExtension.Providers;
+using System.Collections.ObjectModel;
+using Diffusion.Toolkit.Localization;
+using WPFLocalizeExtension.Engine;
 
 namespace Diffusion.Toolkit
 {
@@ -201,7 +206,7 @@ namespace Diffusion.Toolkit
 
         private async Task CancelProgress()
         {
-            var dialogResult = await _messagePopupManager.Show("Are you sure you want to cancel the operation?", "Cancel", PopupButtons.YesNo);
+            var dialogResult = await _messagePopupManager.Show(GetLocalizedText("Common.MessageBox.ConfirmCancelOperation"), GetLocalizedText("Common.MessageBox.Cancel"), PopupButtons.YesNo);
 
             if (dialogResult == PopupResult.Yes)
             {
@@ -247,6 +252,11 @@ namespace Diffusion.Toolkit
             }
         }
 
+
+        private string GetLocalizedText(string key)
+        {
+            return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+        }
 
     }
 }

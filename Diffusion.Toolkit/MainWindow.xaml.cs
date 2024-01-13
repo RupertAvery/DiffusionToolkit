@@ -31,6 +31,8 @@ using DragDropEffects = System.Windows.Forms.DragDropEffects;
 using DragEventArgs = System.Windows.Forms.DragEventArgs;
 using System.Text.Json.Serialization;
 using Diffusion.Civitai.Models;
+using Diffusion.Toolkit.Localization;
+using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit
@@ -154,7 +156,7 @@ namespace Diffusion.Toolkit
 
             this.Loaded += OnLoaded;
             this.Closing += OnClosing;
-            _model.Close = new RelayCommand<object>(o =>
+            _model.CloseCommand = new RelayCommand<object>(o =>
             {
                 this.Close();
             });
@@ -312,7 +314,7 @@ namespace Diffusion.Toolkit
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             var dataStore = new DataStore(_dbPath);
-            
+
             if (!_configuration.TryLoad(out _settings))
             {
                 Logger.Log($"Opening Settings for first time");
@@ -398,6 +400,17 @@ namespace Diffusion.Toolkit
                 this.Left = _settings.Left.Value;
             }
 
+            _settings.Culture ??= "default";
+
+            if (_settings.Culture == "default")
+            {
+                LocalizeDictionary.Instance.Culture = CultureInfo.CurrentCulture;
+            }
+            else
+            {
+                LocalizeDictionary.Instance.Culture = new CultureInfo(_settings.Culture);
+            }
+
             _model.AutoRefresh = _settings.AutoRefresh;
             _model.HideNSFWCommand = _settings.HideNSFW;
             QueryBuilder.HideNFSW = _model.HideNSFWCommand;
@@ -409,8 +422,8 @@ namespace Diffusion.Toolkit
             Activated += OnActivated;
             StateChanged += OnStateChanged;
             SizeChanged += OnSizeChanged;
-            LocationChanged+= OnLocationChanged;
-            
+            LocationChanged += OnLocationChanged;
+
 
             Logger.Log($"Initializing pages");
 
@@ -420,12 +433,13 @@ namespace Diffusion.Toolkit
             {
                 handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
             },
-            () => {
+            () =>
+            {
                 handle?.Close();
             });
 
             _dataStoreOptions = new DataStoreOptions(dataStore);
-            
+
             var total = _dataStore.GetTotal();
 
             _model.Status = $"{total:###,###,##0} images in database";
@@ -626,7 +640,10 @@ namespace Diffusion.Toolkit
 
                 _progressCancellationTokenSource = new CancellationTokenSource();
 
-                await ScanInternal(_settings, false, false, _progressCancellationTokenSource.Token);
+                _ = Task.Run(async () =>
+                {
+                    await ScanInternal(_settings, false, false, _progressCancellationTokenSource.Token);
+                });
             }
 
             if (_settings.ImagePaths.Any())
@@ -805,6 +822,18 @@ namespace Diffusion.Toolkit
                         }
                     }
 
+                    if (_settings.IsPropertyDirty(nameof(Settings.Culture)))
+                    {
+                        if (_settings.Culture == "default")
+                        {
+                            LocalizeDictionary.Instance.Culture = CultureInfo.CurrentCulture;
+                        }
+                        else
+                        {
+                            LocalizeDictionary.Instance.Culture = new CultureInfo(_settings.Culture);
+                        }
+                    }
+
                     _settings.SetPristine();
 
                 }
@@ -942,7 +971,7 @@ namespace Diffusion.Toolkit
             {
                 if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {
-                    await Scan();
+                    Scan();
                 };
             }
             else

@@ -69,39 +69,6 @@
                 <ScrollViewer.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Fit to Preview" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
-                        <!--<MenuItem Header="Favorite (F)" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
-                <MenuItem Header="Rate">
-                    <MenuItem Header="1" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
-                    <MenuItem Header="2" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
-                    <MenuItem Header="3" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
-                    <MenuItem Header="4" Command="{Binding RatingCommand}" CommandParameter="4"></MenuItem>
-                    <MenuItem Header="5" Command="{Binding RatingCommand}" CommandParameter="5"></MenuItem>
-                    <MenuItem Header="6" Command="{Binding RatingCommand}" CommandParameter="6"></MenuItem>
-                    <MenuItem Header="7" Command="{Binding RatingCommand}" CommandParameter="7"></MenuItem>
-                    <MenuItem Header="8" Command="{Binding RatingCommand}" CommandParameter="8"></MenuItem>
-                    <MenuItem Header="9" Command="{Binding RatingCommand}" CommandParameter="9"></MenuItem>
-                    <MenuItem Header="10" Command="{Binding RatingCommand}" CommandParameter="10"></MenuItem>
-                    <Separator></Separator>
-                    <MenuItem Header="Remove rating" Click="Unrate_OnClick"></MenuItem>
-                </MenuItem>-->
-                        <!--<MenuItem Header="NSFW (N)" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
-                <Separator />
-                <MenuItem Header="Copy prompt"  Command="{Binding CopyPromptCommand}"/>
-                <MenuItem Header="Copy negative prompt"  Command="{Binding CopyNegativePromptCommand}"/>
-                <MenuItem Header="Copy seed"  Command="{Binding CopySeedCommand}"/>
-                <MenuItem Header="Copy hash"  Command="{Binding CopyHashCommand}"/>
-                <MenuItem Header="Copy all parameters"  Command="{Binding CopyParametersCommand}"/>
-                <Separator />
-                <MenuItem Header="Move"  Command="{Binding MoveCommand}"/>
-                <Separator />
-                <MenuItem Header="Show in explorer"  Command="{Binding ShowInExplorerCommand}"/>-->
-                        <!--<Separator />
-                                            <MenuItem Header="Add to Album" />
-                                            <MenuItem Header="Remove from Album" />-->
-                        <!--<Separator />
-                <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="Send to Trash (X/Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
-                <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="Restore (X/Del)" ToolTip="Del" Command="{Binding DeleteCommand}"/>
-                <MenuItem Header="Remove Entry (Ctrl+X/Del)"  Command="{Binding RemoveEntryCommand}"/>-->
                     </ContextMenu>
 
                 </ScrollViewer.ContextMenu>
@@ -135,8 +102,8 @@
                 <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
                     <fa:ImageAwesome.Visibility>
                         <MultiBinding Converter="{StaticResource boolToVisMulti}" ConverterParameter="20">
-                            <Binding Path="NSFW" ></Binding>
-                            <Binding Path="MainModel.NSFWBlurCommand" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                            <Binding Path="NSFW"></Binding>
+                            <Binding Path="MainModel.NSFWBlurCommand" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
                         </MultiBinding>
                     </fa:ImageAwesome.Visibility>
                 </fa:ImageAwesome>
