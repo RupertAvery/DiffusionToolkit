@@ -1,9 +1,12 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -41,6 +44,20 @@ namespace Diffusion.Toolkit.Controls
                 search.Filter.PropertyChanged += FilterOnPropertyChanged;
 
             }
+        }
+
+        public static readonly DependencyProperty ModelsProperty =
+            DependencyProperty.Register(
+                name: nameof(Models),
+                propertyType: typeof(IEnumerable<string>),
+                ownerType: typeof(FilterControl),
+                typeMetadata: new UIPropertyMetadata(null)
+            );
+
+        public IEnumerable<string> Models
+        {
+            get => (IEnumerable<string>)GetValue(ModelsProperty);
+            set => SetValue(ModelsProperty, value);
         }
 
         static PropertyInfo[] props = typeof(FilterControlModel).GetProperties();
@@ -85,8 +102,19 @@ namespace Diffusion.Toolkit.Controls
 
         private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
         {
-            var textBox = sender as TextBox;
-            var binding = textBox.GetBindingExpression(TextBox.TextProperty);
+            BindingExpression? binding = null;
+
+            if (sender is TextBox textBox)
+            {
+                binding = textBox.GetBindingExpression(TextBox.TextProperty);
+            }
+            else
+            {
+                if (sender is ComboBox comboBox)
+                {
+                    binding = comboBox.GetBindingExpression(ComboBox.TextProperty);
+                }
+            }
 
             if (e.Key == Key.Escape)
             {
@@ -95,7 +123,7 @@ namespace Diffusion.Toolkit.Controls
 
             if (e.Key == Key.Enter)
             {
-                binding.UpdateSource();
+                binding?.UpdateSource();
 
                 if (SearchCommand.CanExecute(null))
                 {
@@ -147,6 +175,11 @@ namespace Diffusion.Toolkit.Controls
             {
                 prop.SetValue(Filter, true);
             }
+        }
+
+        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Filter.UseModelName = true;
         }
     }
 

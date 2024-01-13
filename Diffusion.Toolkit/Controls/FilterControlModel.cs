@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Windows;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls;
 
@@ -53,6 +57,8 @@ public class FilterControlModel : BaseNotify
     private double _hyperNetStr;
     private bool _useNoMetadata;
     private bool _noMetadata;
+
+
 
     public FilterControlModel()
     {

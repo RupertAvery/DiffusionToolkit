@@ -617,7 +617,12 @@
                 <Grid >
                     <ScrollViewer  VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <controls:FilterControl  Filter="{Binding Filter}" SearchCommand="{Binding FilterCommand}" VerticalAlignment="Stretch"/>
+                            <controls:FilterControl  
+                                Models="{Binding MainModel.ImageModelNames}"
+                                Filter="{Binding Filter}" 
+                                SearchCommand="{Binding FilterCommand}" 
+                                                     
+                                VerticalAlignment="Stretch"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>

@@ -123,7 +123,11 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <CheckBox IsChecked="{Binding UseModelName}" VerticalContentAlignment="Center">Model Name</CheckBox>
-                    <TextBox Text="{Binding ModelName}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
+                    <ComboBox IsEditable="True" ItemsSource="{Binding Models, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" 
+                              Text="{Binding ModelName}" KeyDown="UIElement_OnKeyDown" 
+                              SelectionChanged="Selector_OnSelectionChanged"
+                              Grid.Column="1" Height="20">
+                    </ComboBox>
                 </Grid>
                 <!--<Grid Margin="0,0,0,5">
                     <Grid.ColumnDefinitions>

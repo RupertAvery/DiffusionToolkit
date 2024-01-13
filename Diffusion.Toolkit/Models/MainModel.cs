@@ -76,6 +76,7 @@ public class MainModel : BaseNotify
     private ICommand _toggleAutoRefresh;
     private bool _autoRefresh;
     private IEnumerable<ModelViewModel> _imageModels;
+    private IEnumerable<string> _imageModelNames;
 
     public MainModel()
     {
@@ -492,4 +493,11 @@ public class MainModel : BaseNotify
         get => _imageModels;
         set => SetField(ref _imageModels, value);
     }
+
+    public IEnumerable<string> ImageModelNames
+    {
+        get => _imageModelNames;
+        set => SetField(ref _imageModelNames, value);
+    }
+
 }

@@ -18,12 +18,17 @@ namespace Diffusion.Toolkit
     {
         public void LoadImageModels()
         {
-            _model.ImageModels = _dataStore.GetImageModels().Select(m => new ModelViewModel()
+            var imageModels = _dataStore.GetImageModels();
+
+            _model.ImageModels = imageModels.Select(m => new ModelViewModel()
             {
                 Name = m.Name ?? ResolveModelName(m.Hash),
                 Hash = m.Hash,
                 ImageCount = m.ImageCount
-            }).OrderBy(x => x.Name);
+            }).Where(m=> !string.IsNullOrEmpty(m.Name) && !string.IsNullOrEmpty(m.Hash)).OrderBy(x => x.Name);
+
+            _model.ImageModelNames = imageModels.Where(m => !string.IsNullOrEmpty(m.Name)).Select(m=>m.Name).OrderBy(x => x);
+
         }
 
         private string ResolveModelName(string hash)
