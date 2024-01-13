@@ -306,6 +306,8 @@ namespace Diffusion.Database
                 "Date Created" => nameof(Image.CreatedDate),
                 "Rating" => nameof(Image.Rating),
                 "Aesthetic Score" => nameof(Image.AestheticScore),
+                "Prompt" => nameof(Image.Prompt),
+                "Random" => "RANDOM()",
                 _ => nameof(Image.CreatedDate),
             };
 
@@ -363,6 +365,8 @@ namespace Diffusion.Database
                 "Date Created" => nameof(Image.CreatedDate),
                 "Rating" => nameof(Image.Rating),
                 "Aesthetic Score" => nameof(Image.AestheticScore),
+                "Prompt" => nameof(Image.Prompt),
+                "Random" => "RANDOM()",
                 "Name" => nameof(Image.FileName),
                 _ => nameof(Image.CreatedDate),
             };
@@ -422,6 +426,8 @@ namespace Diffusion.Database
                 "Rating" => nameof(Image.Rating),
                 "Aesthetic Score" => nameof(Image.AestheticScore),
                 "Name" => nameof(Image.FileName),
+                "Prompt" => nameof(Image.Prompt),
+                "Random" => "RANDOM()",
                 _ => nameof(Image.CreatedDate),
             };
 
