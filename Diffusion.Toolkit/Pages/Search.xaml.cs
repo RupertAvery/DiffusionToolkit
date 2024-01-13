@@ -294,6 +294,8 @@ namespace Diffusion.Toolkit.Pages
                 new(GetLocalizedText("Search.SortBy.Rating"), "Rating"),
                 new(GetLocalizedText("Search.SortBy.AestheticScore"),"Aesthetic Score"),
                 new(GetLocalizedText("Search.SortBy.Name"), "Name"),
+                new(GetLocalizedText("Search.SortBy.Prompt"), "Prompt"),
+                new(GetLocalizedText("Search.SortBy.Random"), "Random"),
             };
 
             _model.SortBy = _settings.SortBy;
