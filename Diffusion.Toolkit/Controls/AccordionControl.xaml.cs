@@ -49,8 +49,16 @@ namespace Diffusion.Toolkit.Controls
                 nameof(State),
                 typeof(AccordionState),
                 typeof(AccordionControl),
-                new UIPropertyMetadata(null)
+                new UIPropertyMetadata(PropertyChangedCallback)
             );
+
+        private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property.Name == nameof(State))
+            {
+                ((AccordionControl)d).SetState();
+            }
+        }
 
         public static readonly DependencyProperty HeaderBackgroundProperty =
             DependencyProperty.Register(
@@ -72,11 +80,7 @@ namespace Diffusion.Toolkit.Controls
         public AccordionState State
         {
             get => (AccordionState)GetValue(StateProperty);
-            set
-            {
-                SetValue(StateProperty, value);
-                SetState();
-            }
+            set => SetValue(StateProperty, value);
         }
 
         public object ButtonAreaContent
@@ -106,7 +110,6 @@ namespace Diffusion.Toolkit.Controls
         public AccordionControl()
         {
             InitializeComponent();
-            State = AccordionState.Expanded;
             SetState();
         }
 

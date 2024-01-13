@@ -18,12 +18,31 @@ namespace Diffusion.Toolkit
     {
         public void LoadImageModels()
         {
-            _model.ImageModels = _dataStore.GetImageModels().Select(m=> new ModelViewModel()
+            _model.ImageModels = _dataStore.GetImageModels().Select(m => new ModelViewModel()
             {
-                Name = m.Name ?? m.Hash,
+                Name = m.Name ?? ResolveModelName(m.Hash),
                 Hash = m.Hash,
                 ImageCount = m.ImageCount
-            });
+            }).OrderBy(x => x.Name);
+        }
+
+        private string ResolveModelName(string hash)
+        {
+            var matches = _allModels.Where(m =>
+                !string.IsNullOrEmpty(hash) &&
+                (String.Equals(m.Hash, hash, StringComparison.CurrentCultureIgnoreCase)
+                 ||
+                 (m.SHA256 != null && string.Equals(m.SHA256.Substring(0, hash.Length), hash, StringComparison.CurrentCultureIgnoreCase))
+                )).ToList();
+
+            if (matches.Any())
+            {
+                return matches[0].Filename;
+            }
+            else
+            {
+                return hash;
+            }
         }
 
         public async void DownloadCivitaiModels()
@@ -149,7 +168,7 @@ namespace Diffusion.Toolkit
                     });
 
                     results = await GetPage(civitai, nextPage, token);
-                    
+
                     if (token.IsCancellationRequested)
                     {
                         break;

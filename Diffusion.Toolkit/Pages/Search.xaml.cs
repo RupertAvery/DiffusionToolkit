@@ -150,9 +150,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 ThumbnailLoader.Instance.Stop();
             };
-
-
-
+            
             _modeSettings = new Dictionary<string, ModeSettings>()
             {
                 { "search", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
@@ -169,6 +167,12 @@ namespace Diffusion.Toolkit.Pages
                 MainGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.MainGridWidth2);
             }
 
+            if (_settings.NavigationThumbnailGridWidth != null)
+            {
+                NavigationThumbnailGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.NavigationThumbnailGridWidth);
+                NavigationThumbnailGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.NavigationThumbnailGridWidth2);
+            }
+
             if (_settings.PreviewGridHeight != null)
             {
                 PreviewGrid.RowDefinitions[0].Height = GetGridLength(_settings.PreviewGridHeight);
@@ -178,6 +182,10 @@ namespace Diffusion.Toolkit.Pages
             var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
             widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[0], WidthChanged);
             widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[2], WidthChanged2);
+
+            var navThumbWidthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
+            navThumbWidthDescriptor.AddValueChanged(NavigationThumbnailGrid.ColumnDefinitions[0], NavThumbWidthChanged);
+            navThumbWidthDescriptor.AddValueChanged(NavigationThumbnailGrid.ColumnDefinitions[2], NavThumbWidthChanged2);
 
             var heightDescriptor = DependencyPropertyDescriptor.FromProperty(RowDefinition.HeightProperty, typeof(ItemsControl));
             heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[0], HeightChanged);
@@ -303,6 +311,64 @@ namespace Diffusion.Toolkit.Pages
             _model.SortBy = _settings.SortBy;
             _model.SortDirection = _settings.SortDirection;
 
+            _model.MetadataSection.PropertyChanged += (sender, args) =>
+            {
+                switch (args.PropertyName)
+                {
+                    case nameof(MetadataSection.PromptState):
+                        _settings.MetadataSection.PromptState = _model.MetadataSection.PromptState;
+                        break;
+                    case nameof(MetadataSection.NegativePromptState):
+                        _settings.MetadataSection.NegativePromptState = _model.MetadataSection.NegativePromptState;
+                        break;
+                    case nameof(MetadataSection.SeedState):
+                        _settings.MetadataSection.SeedState = _model.MetadataSection.SeedState;
+                        break;
+                    case nameof(MetadataSection.OthersState):
+                        _settings.MetadataSection.OthersState = _model.MetadataSection.OthersState;
+                        break;
+                    case nameof(MetadataSection.ModelState):
+                        _settings.MetadataSection.ModelState = _model.MetadataSection.ModelState;
+                        break;
+                    case nameof(MetadataSection.PathState):
+                        _settings.MetadataSection.PathState = _model.MetadataSection.PathState;
+                        break;
+                    case nameof(MetadataSection.DateState):
+                        _settings.MetadataSection.DateState = _model.MetadataSection.DateState;
+                        break;
+                    case nameof(MetadataSection.AlbumState):
+                        _settings.MetadataSection.AlbumState = _model.MetadataSection.AlbumState;
+                        break;
+                }
+            };
+
+            _model.MetadataSection.PromptState = _settings.MetadataSection.PromptState;
+            _model.MetadataSection.NegativePromptState = _settings.MetadataSection.NegativePromptState;
+            _model.MetadataSection.SeedState = _settings.MetadataSection.SeedState;
+            _model.MetadataSection.OthersState = _settings.MetadataSection.OthersState;
+            _model.MetadataSection.ModelState = _settings.MetadataSection.ModelState;
+            _model.MetadataSection.PathState = _settings.MetadataSection.PathState;
+            _model.MetadataSection.DateState = _settings.MetadataSection.DateState;
+            _model.MetadataSection.AlbumState = _settings.MetadataSection.AlbumState;
+
+
+            _model.NavigationSection.PropertyChanged += (sender, args) =>
+            {
+                switch (args.PropertyName)
+                {
+                    case nameof(NavigationSection.ModelState):
+                        _settings.NavigationSection.ModelState = _model.NavigationSection.ModelState;
+                        break;
+                    case nameof(NavigationSection.AlbumState):
+                        _settings.NavigationSection.AlbumState = _model.NavigationSection.AlbumState;
+                        break;
+                }
+            };
+
+            _model.NavigationSection.ModelState = _settings.NavigationSection.ModelState;
+            _model.NavigationSection.AlbumState = _settings.NavigationSection.AlbumState;
+
+
             SetMode("search");
 
             DataContext = _model;
@@ -383,6 +449,16 @@ namespace Diffusion.Toolkit.Pages
         private void WidthChanged2(object? sender, EventArgs e)
         {
             _settings.MainGridWidth2 = MainGrid.ColumnDefinitions[2].Width.ToString();
+        }
+
+        private void NavThumbWidthChanged(object? sender, EventArgs e)
+        {
+            _settings.NavigationThumbnailGridWidth = NavigationThumbnailGrid.ColumnDefinitions[0].Width.ToString();
+        }
+
+        private void NavThumbWidthChanged2(object? sender, EventArgs e)
+        {
+            _settings.NavigationThumbnailGridWidth2 = NavigationThumbnailGrid.ColumnDefinitions[2].Width.ToString();
         }
 
         private void HeightChanged(object? sender, EventArgs e)
@@ -1542,7 +1618,7 @@ namespace Diffusion.Toolkit.Pages
             return settings;
         }
 
-        public void SetMode(string mode)
+        public void SetMode(string mode, string? context = null)
         {
             _currentModeSettings = GetModeSettings(mode);
             _model.IsFilterVisible = false;
@@ -1573,7 +1649,14 @@ namespace Diffusion.Toolkit.Pages
             _model.CurrentViewMode = _currentModeSettings.ViewMode;
             _model.SearchText = _currentModeSettings.LastQuery;
             _model.SearchHistory = new ObservableCollection<string?>(_currentModeSettings.History);
-            _model.ModeName = _currentModeSettings.Name;
+            if (context != null)
+            {
+                _model.ModeName = $"{_currentModeSettings.Name} - {context}";
+            }
+            else
+            {
+                _model.ModeName = _currentModeSettings.Name;
+            }
         }
 
         public void ShowSearch()
@@ -1787,7 +1870,7 @@ namespace Diffusion.Toolkit.Pages
         private void Album_OnClick(object sender, RoutedEventArgs e)
         {
             _model.MainModel.CurrentAlbum = ((AlbumModel)((Button)sender).DataContext);
-            SetMode("albums");
+            SetMode("albums", _model.MainModel.CurrentAlbum.Name);
             SearchImages(null);
         }
 
@@ -1795,7 +1878,7 @@ namespace Diffusion.Toolkit.Pages
         private void Model_OnClick(object sender, RoutedEventArgs e)
         {
             _model.MainModel.CurrentModel = ((Toolkit.Models.ModelViewModel)((Button)sender).DataContext);
-            SetMode("models");
+            SetMode("models", _model.MainModel.CurrentModel.Name);
             SearchImages(null);
         }
 
@@ -1820,7 +1903,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.MainModel.CurrentAlbum = albumModel;
 
-            SetMode("albums");
+            SetMode("albums", _model.MainModel.CurrentAlbum.Name);
             SearchImages(null);
         }
 

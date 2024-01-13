@@ -118,7 +118,7 @@ namespace Diffusion.Toolkit
 
             if (_configuration.TryLoad(out var settings))
             {
-                _settings.Apply(settings);
+                TypeHelpers.Copy(settings, _settings);
                 _settings.PortableMode = _configuration.Portable;
                 _settings.SetPristine();
             }

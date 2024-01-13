@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using Diffusion.Toolkit.Controls;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
@@ -28,7 +31,7 @@ public class SettingChangedEventArgs
 public delegate void SettingChangedEventHander(object sender, SettingChangedEventArgs args);
 
 
-public class Settings : IScanOptions
+public class Settings : SettingsContainer, IScanOptions
 {
     public static Settings Instance { get; private set; }
 
@@ -39,6 +42,8 @@ public class Settings : IScanOptions
     private int _pageSize;
     private string _mainGridWidth;
     private string _mainGridWidth2;
+    private string _navigationThumbnailGridWidth;
+    private string _navigationThumbnailGridWidth2;
     private string _previewGridHeight;
     private string _previewGridHeight2;
     private WindowState? _windowState;
@@ -58,8 +63,6 @@ public class Settings : IScanOptions
     private bool _portableMode;
     private bool? _showAlbumPanel;
     private bool? _recurseFolders;
-    private readonly Dictionary<string, bool> _isPropertyDirty = new Dictionary<string, bool>();
-    private bool _isDirty;
     private bool? _useBuiltInViewer;
     private bool? _openInFullScreen;
     private bool? _useSystemDefault;
@@ -70,18 +73,11 @@ public class Settings : IScanOptions
     private string _sortBy;
     private string _sortDirection;
 
-    public bool IsDirty()
-    {
-        return _isDirty;
-    }
-
     public Settings() : this(false)
     {
         Instance = this;
     }
-
-
-
+    
    public Settings(bool initialize)
     {
         DontShowWelcomeOnStartup = false;
@@ -99,6 +95,11 @@ public class Settings : IScanOptions
         Culture = "default";
         SortBy = "Date Created";
         SortDirection = "Z-A";
+        MetadataSection = new MetadataSectionSettings();
+        MetadataSection.Attach(this);
+
+        NavigationSection = new NavigationSectionSettings();
+        NavigationSection.Attach(this);
 
         if (initialize)
         {
@@ -106,21 +107,7 @@ public class Settings : IScanOptions
             RecurseFolders = true;
         }
     }
-
-  
- 
-    public bool IsPropertyDirty(string name)
-    {
-        return _isPropertyDirty.TryGetValue(name, out bool val) && val;
-    }
-
-    public void SetPristine()
-    {
-        _isDirty = false;
-        _isPropertyDirty.Clear();
-    }
-
-
+    
     public List<string> ImagePaths
     {
         get => _imagePaths;
@@ -176,6 +163,19 @@ public class Settings : IScanOptions
         get => _mainGridWidth2;
         set => UpdateValue(ref _mainGridWidth2, value);
     }
+
+    public string NavigationThumbnailGridWidth
+    {
+        get => _navigationThumbnailGridWidth;
+        set => UpdateValue(ref _navigationThumbnailGridWidth, value);
+    }
+
+    public string NavigationThumbnailGridWidth2
+    {
+        get => _navigationThumbnailGridWidth2;
+        set => UpdateValue(ref _navigationThumbnailGridWidth2, value);
+    }
+
 
     public string PreviewGridHeight
     {
@@ -366,29 +366,79 @@ public class Settings : IScanOptions
         set => UpdateValue(ref _culture, value);
     }
 
-    public void Apply(Settings settings)
+    public MetadataSectionSettings MetadataSection { get; set; }
+
+    public NavigationSectionSettings NavigationSection { get; set; }
+
+
+}
+
+public static class TypeHelpers
+{
+    public static void Copy(object source, object dest)
     {
-        var props = typeof(Settings).GetProperties();
+        var props = source.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
         foreach (var prop in props)
         {
-            var value = prop.GetValue(settings);
-            prop.SetValue(this, value);
+            var value = prop.GetValue(source);
+
+            //if (value.GetType().IsClass)
+            //{
+            //    var newObject = Activator.CreateInstance(value.GetType());
+            //    Copy(value, newObject);
+            //    prop.SetValue(dest, newObject);
+            //}
+            //else
+            //{
+            //    prop.SetValue(dest, value);
+            //}
+            prop.SetValue(dest, value);
         }
     }
+}
+
+
+public abstract class SettingsContainer
+{
+    private bool _isDirty;
+    private readonly Dictionary<string, bool> _isPropertyDirty = new Dictionary<string, bool>();
+
+    public bool IsPropertyDirty(string name)
+    {
+        return _isPropertyDirty.TryGetValue(name, out bool val) && val;
+    }
+
+    public void SetPristine()
+    {
+        _isDirty = false;
+        _isPropertyDirty.Clear();
+    }
+
+    public void SetDirty()
+    {
+        _isDirty = true;
+    }
+
+
+    public bool IsDirty()
+    {
+        return _isDirty;
+    }
+
 
     public event SettingChangedEventHander SettingChanged;
 
-    private void UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    protected void UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return;
 
         var oldValue = field;
 
         field = value;
-        
+
         _isPropertyDirty[propertyName] = true;
-        
+
         _isDirty = true;
 
         SettingChanged?.Invoke(this, new SettingChangedEventArgs()
@@ -400,7 +450,7 @@ public class Settings : IScanOptions
 
     }
 
-    private void UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")
+    protected void UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")
     {
         bool hasDiff = false;
         if (field != null && value != null)
@@ -425,4 +475,102 @@ public class Settings : IScanOptions
         _isDirty = true;
     }
 
+}
+
+public class NavigationSectionSettings : SettingsContainer
+{
+    private AccordionState _modelState;
+    private AccordionState _albumState;
+
+
+    public AccordionState ModelState
+    {
+        get => _modelState;
+        set => UpdateValue(ref _modelState, value);
+    }
+
+
+    public AccordionState AlbumState
+    {
+        get => _albumState;
+        set => UpdateValue(ref _albumState, value);
+    }
+
+
+    public void Attach(Settings settings)
+    {
+        SettingChanged += (sender, args) =>
+        {
+            settings.SetDirty();
+        };
+    }
+}
+
+
+public class MetadataSectionSettings : SettingsContainer
+{
+    private AccordionState _promptState;
+    private AccordionState _negativePromptState;
+    private AccordionState _seedState;
+    private AccordionState _pathState;
+    private AccordionState _albumState;
+    private AccordionState _othersState;
+    private AccordionState _modelState;
+    private AccordionState _dateState;
+
+    public void Attach(Settings settings)
+    {
+        SettingChanged += (sender, args) =>
+        {
+            settings.SetDirty();
+        };
+    }
+
+    public AccordionState PromptState
+    {
+        get => _promptState;
+        set => UpdateValue(ref _promptState, value);
+    }
+
+    public AccordionState NegativePromptState
+    {
+        get => _negativePromptState;
+        set => UpdateValue(ref _negativePromptState, value);
+    }
+
+    public AccordionState SeedState
+    {
+        get => _seedState;
+        set => UpdateValue(ref _seedState, value);
+    }
+
+    public AccordionState PathState
+    {
+        get => _pathState;
+        set => UpdateValue(ref _pathState, value);
+    }
+
+    public AccordionState AlbumState
+    {
+        get => _albumState;
+        set => UpdateValue(ref _albumState, value);
+    }
+
+    public AccordionState OthersState
+    {
+        get => _othersState;
+        set => UpdateValue(ref _othersState, value);
+    }
+
+    public AccordionState ModelState
+    {
+        get => _modelState;
+        set => UpdateValue(ref _modelState, value);
+    }
+
+    public AccordionState DateState
+    {
+        get => _dateState;
+        set => UpdateValue(ref _dateState, value);
+    }
 }

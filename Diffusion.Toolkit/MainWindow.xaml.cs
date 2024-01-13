@@ -344,6 +344,8 @@ namespace Diffusion.Toolkit
             }
             else
             {
+                _settings.MetadataSection.Attach(_settings);
+                _settings.NavigationSection.Attach(_settings);
                 _settings.ShowAlbumPanel ??= true;
                 _settings.RecurseFolders ??= true;
                 _settings.UseBuiltInViewer ??= true;
@@ -958,13 +960,17 @@ namespace Diffusion.Toolkit
 
             }
 
-            var allModels = _modelsCollection.Concat(otherModels).ToList();
+            _allModels = _modelsCollection.Concat(otherModels).ToList();
 
-            _search.SetModels(allModels);
+
+
+            _search.SetModels(_allModels);
             _models.SetModels(_modelsCollection);
 
-            QueryBuilder.SetModels(allModels);
+            QueryBuilder.SetModels(_allModels);
         }
+
+        private ICollection<Model> _allModels = new List<Model>();
 
         private async Task TryScanFolders()
         {

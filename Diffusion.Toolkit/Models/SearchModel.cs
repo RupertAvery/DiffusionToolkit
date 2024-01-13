@@ -91,6 +91,8 @@ public class SearchModel : BaseNotify
         _sortDirection = "Z-A";
         _isFilterVisible = false;
         _showAlbumPanel = true;
+        MetadataSection = new MetadataSection();
+        NavigationSection = new NavigationSection();
     }
 
     public SearchModel(MainModel mainModel)
@@ -107,6 +109,8 @@ public class SearchModel : BaseNotify
         _sortBy = "Date Created";
         _sortDirection = "Z-A";
         _isFilterVisible = false;
+        MetadataSection = new MetadataSection();
+        NavigationSection = new NavigationSection();
     }
 
     public MainModel MainModel => _mainModel;
@@ -374,6 +378,88 @@ public class SearchModel : BaseNotify
         get => _pageChangedCommand;
         set => SetField(ref _pageChangedCommand, value);
     }
+
+    public NavigationSection NavigationSection { get; set; }
+
+    public MetadataSection MetadataSection { get; set; }
+}
+
+public class NavigationSection : BaseNotify
+{
+    private AccordionState _modelState;
+    private AccordionState _albumState;
+
+    public AccordionState ModelState
+    {
+        get => _modelState;
+        set => SetField(ref _modelState, value);
+    }
+
+    public AccordionState AlbumState
+    {
+        get => _albumState;
+        set => SetField(ref _albumState, value);
+    }
+}
+
+public class MetadataSection : BaseNotify
+{
+    private AccordionState _promptState;
+    private AccordionState _negativePromptState;
+    private AccordionState _seedState;
+    private AccordionState _pathState;
+    private AccordionState _albumState;
+    private AccordionState _othersState;
+    private AccordionState _modelState;
+    private AccordionState _dateState;
+
+    public AccordionState PromptState
+    {
+        get => _promptState;
+        set => SetField(ref _promptState, value);
+    }
+
+    public AccordionState NegativePromptState
+    {
+        get => _negativePromptState;
+        set => SetField(ref _negativePromptState, value);
+    }
+
+    public AccordionState SeedState
+    {
+        get => _seedState;
+        set => SetField(ref _seedState, value);
+    }
+
+    public AccordionState OthersState
+    {
+        get => _othersState;
+        set => SetField(ref _othersState, value);
+    }
+
+    public AccordionState ModelState
+    {
+        get => _modelState;
+        set => SetField(ref _modelState, value);
+    }
+
+    public AccordionState PathState
+    {
+        get => _pathState;
+        set => SetField(ref _pathState, value);
+    }
+
+    public AccordionState DateState
+    {
+        get => _dateState;
+        set => SetField(ref _dateState, value);
+    }
+
+    public AccordionState AlbumState
+    {
+        get => _albumState;
+        set => SetField(ref _albumState, value);
+    }
 }
 
 public static class SearchControlModelExtensions
@@ -443,4 +529,6 @@ public static class SearchControlModelExtensions
 
         return filter;
     }
+
+
 }
