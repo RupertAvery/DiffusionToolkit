@@ -624,6 +624,8 @@ namespace Diffusion.Toolkit
             LoadAlbums();
             LoadModels();
             LoadImageModels();
+            LoadFolders();
+
 
             Logger.Log($"{_modelsCollection.Count} models loaded");
 

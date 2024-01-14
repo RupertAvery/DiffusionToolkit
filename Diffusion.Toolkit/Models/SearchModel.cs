@@ -394,9 +394,15 @@ public class SearchModel : BaseNotify
 
 public class NavigationSection : BaseNotify
 {
+    private AccordionState _folderState;
     private AccordionState _modelState;
     private AccordionState _albumState;
 
+    public AccordionState FolderState
+    {
+        get => _folderState;
+        set => SetField(ref _folderState, value);
+    }
     public AccordionState ModelState
     {
         get => _modelState;
@@ -445,6 +451,7 @@ public class MetadataSection : BaseNotify
         get => _samplerState;
         set => SetField(ref _samplerState, value);
     }
+
     public AccordionState OthersState
     {
         get => _othersState;

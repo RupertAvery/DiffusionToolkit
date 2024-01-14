@@ -30,6 +30,7 @@ using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Themes;
 using static System.Net.WebRequestMethods;
 using WPFLocalizeExtension.Engine;
+using System.Windows.Documents;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -278,7 +279,7 @@ namespace Diffusion.Toolkit.Pages
                 _model.FolderPath = _currentModeSettings.CurrentFolder;
                 SearchImages(null);
             });
-            
+
             _model.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
             {
                 ReloadMatches(new ReloadOptions() { Focus = true, GotoEnd = o.GotoEnd, OnCompleted = o.OnCompleted });
@@ -1676,7 +1677,7 @@ namespace Diffusion.Toolkit.Pages
             _model.CurrentMode = mode;
             _model.CurrentViewMode = _currentModeSettings.ViewMode;
             _model.SearchText = _currentModeSettings.LastQuery;
-            
+
             _model.SearchHistory = new ObservableCollection<string?>(_currentModeSettings.History);
 
             if (context != null)
@@ -1912,6 +1913,125 @@ namespace Diffusion.Toolkit.Pages
             SearchImages(null);
         }
 
+        private void Folder_OnClick(object sender, RoutedEventArgs e)
+        {
+            var model = ((Toolkit.Models.FolderViewModel)((Button)sender).DataContext);
+
+            List<FolderViewModel> subFolders = model.Children;
+
+            if (subFolders == null)
+            {
+                subFolders = GetSubFolders(model);
+                model.HasChildren = subFolders.Any();
+                model.Children = subFolders;
+            }
+
+            SetMode("folders");
+            _model.FolderPath = model.Path;
+            _currentModeSettings.CurrentFolder = model.Path;
+
+            SearchImages(null);
+        }
+
+        private List<FolderViewModel> GetSubFolders(FolderViewModel folder)
+        {
+            return Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
+            {
+                IgnoreInaccessible = true
+            }).Select(path => new FolderViewModel()
+            {
+                HasChildren = true,
+                Visible = true,
+                Depth = folder.Depth + 1,
+                Name = path.EndsWith("\\") ? "Root" : Path.GetFileName(path),
+                Path = path
+            }).ToList();
+        }
+
+        private void Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var model = ((Toolkit.Models.FolderViewModel)((Button)sender).DataContext);
+
+            if (model.State == FolderState.Collapsed)
+            {
+                List<FolderViewModel> subFolders = model.Children;
+
+                if (subFolders == null)
+                {
+                    subFolders = GetSubFolders(model);
+                    model.HasChildren = subFolders.Any();
+                    model.Children = subFolders;
+
+                    if (subFolders.Any())
+                    {
+                        var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+
+                        foreach (var subFolder in subFolders.AsEnumerable().Reverse())
+                        {
+                            _model.MainModel.Folders.Insert(insertPoint, subFolder);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var child in model.Children.AsEnumerable().Reverse())
+                    {
+                        if (!_model.MainModel.Folders.Contains(child))
+                        {
+                            var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+
+                            _model.MainModel.Folders.Insert(insertPoint, child);
+                        }
+                        else
+                        {
+                            child.Visible = true;
+                            Expand(child);
+                        }
+                    }
+                }
+
+
+
+                model.State = FolderState.Expanded;
+            }
+            else
+            {
+                if (model.Children != null)
+                {
+                    Collapse(model);
+
+                    //model.Children = null;
+                }
+
+                model.State = FolderState.Collapsed;
+            }
+            e.Handled = true;
+        }
+
+        private void Collapse(FolderViewModel folder)
+        {
+            foreach (var child in folder.Children)
+            {
+                child.Visible = false;
+                if (child.Children != null)
+                {
+                    Collapse(child);
+                }
+            }
+        }
+
+        private void Expand(FolderViewModel folder)
+        {
+            if (folder.State == FolderState.Expanded && folder.Children != null)
+            {
+                foreach (var child in folder.Children)
+                {
+                    child.Visible = true;
+                    Expand(child);
+                }
+            }
+
+        }
 
         private void FilterPopup_OnKeyDown(object sender, KeyEventArgs e)
         {
@@ -1959,5 +2079,6 @@ namespace Diffusion.Toolkit.Pages
             AlbumMetadata.State = state;
             DateMetadata.State = state;
         }
+
     }
 }

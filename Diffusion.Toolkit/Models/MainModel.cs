@@ -77,7 +77,7 @@ public class MainModel : BaseNotify
     private bool _autoRefresh;
     private IEnumerable<ModelViewModel> _imageModels;
     private IEnumerable<string> _imageModelNames;
-
+    private ObservableCollection<FolderViewModel> _folders;
     public MainModel()
     {
         _status = "Ready";
@@ -488,6 +488,12 @@ public class MainModel : BaseNotify
         set => SetField(ref _autoRefresh, value);
     }
 
+
+    public ObservableCollection<FolderViewModel> Folders
+    {
+        get => _folders;
+        set => SetField(ref _folders, value);
+    }
     public IEnumerable<ModelViewModel> ImageModels
     {
         get => _imageModels;

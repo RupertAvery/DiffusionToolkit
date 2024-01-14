@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,21 @@ namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
+        public void LoadFolders()
+        {
+            var folders = _settings.ImagePaths;
+
+            _model.Folders= new ObservableCollection<FolderViewModel>(folders.Select(path => new FolderViewModel()
+            {
+                HasChildren = true,
+                Visible = true,
+                Depth = 0,
+                Name = path.EndsWith("\\") ? "Root" : Path.GetFileName(path),
+                Path = path
+            }));
+        }
+
+
         public void LoadImageModels()
         {
             var imageModels = _dataStore.GetImageModels();

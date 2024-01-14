@@ -35,6 +35,9 @@
             <converters:SizeConverter x:Key="SizeConverter"></converters:SizeConverter>
             <converters:ZeroConverter x:Key="ZeroConverter"></converters:ZeroConverter>
             <converters:NumberFormatConverter x:Key="NumberFormatConverter"></converters:NumberFormatConverter>
+            <converters:FolderDepthConverter x:Key="FolderDepthConverter"></converters:FolderDepthConverter>
+            <converters:FolderStateConverter x:Key="FolderStateConverter"></converters:FolderStateConverter>
+            <converters:FolderStateVisibilityConverter x:Key="FolderStateVisibilityConverter"></converters:FolderStateVisibilityConverter>
         </ResourceDictionary>
     </Page.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -168,12 +171,40 @@
                             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
 
+                                    <controls:AccordionControl HeaderBackground="#80000000" State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Folders}">
+                                        <ScrollViewer MaxHeight="500">
+                                            <ItemsControl ItemsSource="{Binding Path=MainModel.Folders}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Button Style="{StaticResource SmallButton}" 
+                                                                Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" 
+                                                                PreviewMouseDoubleClick="Folder_OnDoubleClick"
+                                                                Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
+                                                                Click="Folder_OnClick">
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="{x:Type Button}">
+                                                                    <Grid  Background="{TemplateBinding Panel.Background}">
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="{Binding Depth, Converter={StaticResource FolderDepthConverter}}"/>
+                                                                            <ColumnDefinition Width="10"/>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <fa:ImageAwesome Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="6" Grid.Column="1" Foreground="{StaticResource ForegroundBrush}"/>
+                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12" Padding="4" Grid.Column="2"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                    </Grid>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </ScrollViewer>
+                                    </controls:AccordionControl>
+
+
                                     <controls:AccordionControl HeaderBackground="#80000000" State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Models}">
                                         <ScrollViewer MaxHeight="500">
                                             <ItemsControl ItemsSource="{Binding Path=MainModel.ImageModels}">
-                                                <ItemsControl.Resources>
-                                                    <common:BindingProxy x:Key="Proxy" Data="{Binding MainModel}" />
-                                                </ItemsControl.Resources>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Button Style="{StaticResource SmallButton}" 
