@@ -76,6 +76,7 @@ public class SearchModel : BaseNotify
     private ICommand _pageChangedCommand;
     private IEnumerable<OptionValue> _sortOptions;
     private IEnumerable<OptionValue> _sortOrderOptions;
+    private FolderViewModel? _currentFolder;
 
     public SearchModel()
     {
@@ -361,6 +362,13 @@ public class SearchModel : BaseNotify
         set => SetField(ref _currentViewMode, value);
     }
 
+    public FolderViewModel? CurrentFolder
+    {
+        get => _currentFolder;
+        set => SetField(ref _currentFolder, value);
+    }
+
+    // TODO: merge this into above
     public string FolderPath
     {
         get => _folderPath;

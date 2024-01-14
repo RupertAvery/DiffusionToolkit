@@ -183,13 +183,23 @@
                                                                 Click="Folder_OnClick">
                                                             <Button.Template>
                                                                 <ControlTemplate TargetType="{x:Type Button}">
-                                                                    <Grid  Background="{TemplateBinding Panel.Background}">
+                                                                    <Grid >
+                                                                        <Grid.Style>
+                                                                            <Style TargetType="Grid">
+                                                                                <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                                                                                        <Setter Property="Background" Value="{StaticResource HighlightBrush}"></Setter>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Grid.Style>
                                                                         <Grid.ColumnDefinitions>
                                                                             <ColumnDefinition Width="{Binding Depth, Converter={StaticResource FolderDepthConverter}}"/>
                                                                             <ColumnDefinition Width="10"/>
                                                                             <ColumnDefinition Width="*"/>
                                                                         </Grid.ColumnDefinitions>
-                                                                        <fa:ImageAwesome Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="6" Grid.Column="1" Foreground="{StaticResource ForegroundBrush}"/>
+                                                                        <fa:ImageAwesome Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="6" Grid.Column="1" Foreground="{DynamicResource ForegroundBrush}"/>
                                                                         <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12" Padding="4" Grid.Column="2"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
                                                                     </Grid>
                                                                 </ControlTemplate>

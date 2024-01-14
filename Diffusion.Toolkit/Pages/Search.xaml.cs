@@ -1921,6 +1921,9 @@ namespace Diffusion.Toolkit.Pages
         {
             var model = ((Toolkit.Models.FolderViewModel)((Button)sender).DataContext);
 
+            if (_currentModeSettings.CurrentFolder == model.Path)
+                return;
+
             List<FolderViewModel> subFolders = model.Children;
 
             if (subFolders == null)
@@ -1929,6 +1932,15 @@ namespace Diffusion.Toolkit.Pages
                 model.HasChildren = subFolders.Any();
                 model.Children = subFolders;
             }
+
+            if (_model.CurrentFolder != null)
+            {
+                _model.CurrentFolder.IsSelected = false;
+            }
+
+            _model.CurrentFolder = model;
+
+            model.IsSelected = true;
 
             SetMode("folders");
             _model.FolderPath = model.Path;
