@@ -17,7 +17,48 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button Style="{StaticResource BorderlessButton}" Margin="5,0,0,0"  Background="Transparent" BorderThickness="0" BorderBrush="Transparent" Height="16" Click="ButtonBase_OnClick">
-                        <fa:ImageAwesome Icon="AngleRight" Height="10" Foreground="White"  Rotation="{Binding Rotation, RelativeSource={RelativeSource TemplatedParent}}"></fa:ImageAwesome>
+                        <fa:ImageAwesome Icon="AngleRight" Height="10" Foreground="White">
+                            <!--Rotation="{Binding Rotation, RelativeSource={RelativeSource TemplatedParent}}"-->
+                            <fa:ImageAwesome.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static local:AccordionState.Expanded}">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Rotation">
+                                                        <DoubleAnimation From="0" To="90" Duration="0:0:0.1"></DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Rotation">
+                                                        <DoubleAnimation From="90" To="0" Duration="0:0:0.1"></DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static local:AccordionState.Collapsed}">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Rotation">
+                                                        <DoubleAnimation From="90" To="0" Duration="0:0:0.1"></DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.EnterActions>
+                                            <DataTrigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard TargetProperty="Rotation">
+                                                        <DoubleAnimation From="0" To="90" Duration="0:0:0.1"></DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.ExitActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+
+                                </Style>
+                            </fa:ImageAwesome.Style>
+                        </fa:ImageAwesome>
                     </Button>
                     <Label Style="{StaticResource SmallCaps}" Grid.Column="1" Margin="0,0,0,0" Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"></Label>
                     <ContentControl Grid.Column="2" Content="{Binding ButtonAreaContent, RelativeSource={RelativeSource TemplatedParent}}"/>

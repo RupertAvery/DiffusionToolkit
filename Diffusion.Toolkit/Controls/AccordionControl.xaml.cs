@@ -67,8 +67,7 @@ namespace Diffusion.Toolkit.Controls
                 typeof(AccordionControl),
                 new UIPropertyMetadata(null)
             );
-
-        private float _rotation;
+        
 
         public Brush HeaderBackground
         {
@@ -94,13 +93,7 @@ namespace Diffusion.Toolkit.Controls
             get => (string)GetValue(HeaderProperty);
             set => SetValue(HeaderProperty, value);
         }
-
-        public float Rotation
-        {
-            get => _rotation;
-            set => SetField(ref _rotation, value);
-        }
-
+        
         public Visibility ContentVisibility
         {
             get => _contentVisibility;
@@ -136,12 +129,6 @@ namespace Diffusion.Toolkit.Controls
             {
                 AccordionState.Collapsed => Visibility.Collapsed,
                 AccordionState.Expanded => Visibility.Visible
-            };
-
-            Rotation = State switch
-            {
-                AccordionState.Collapsed => 0,
-                AccordionState.Expanded => 90
             };
 
         }
