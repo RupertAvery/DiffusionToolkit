@@ -390,11 +390,15 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSection.AlbumState):
                         _settings.NavigationSection.AlbumState = _model.NavigationSection.AlbumState;
                         break;
+                    case nameof(NavigationSection.FolderState):
+                        _settings.NavigationSection.FolderState = _model.NavigationSection.FolderState;
+                        break;
                 }
             };
 
             _model.NavigationSection.ModelState = _settings.NavigationSection.ModelState;
             _model.NavigationSection.AlbumState = _settings.NavigationSection.AlbumState;
+            _model.NavigationSection.FolderState = _settings.NavigationSection.FolderState;
 
 
             SetMode("search");

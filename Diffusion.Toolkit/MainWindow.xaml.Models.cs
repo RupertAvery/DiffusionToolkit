@@ -26,7 +26,7 @@ namespace Diffusion.Toolkit
                 HasChildren = true,
                 Visible = true,
                 Depth = 0,
-                Name = path.EndsWith("\\") ? "Root" : Path.GetFileName(path),
+                Name = path.EndsWith("\\") ? path : Path.GetFileName(path),
                 Path = path
             }));
         }

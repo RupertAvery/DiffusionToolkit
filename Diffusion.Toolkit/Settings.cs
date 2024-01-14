@@ -481,6 +481,7 @@ public class NavigationSectionSettings : SettingsContainer
 {
     private AccordionState _modelState;
     private AccordionState _albumState;
+    private AccordionState _folderState;
 
 
     public AccordionState ModelState
@@ -494,6 +495,12 @@ public class NavigationSectionSettings : SettingsContainer
     {
         get => _albumState;
         set => UpdateValue(ref _albumState, value);
+    }
+
+    public AccordionState FolderState
+    {
+        get => _folderState;
+        set => UpdateValue(ref _folderState, value);
     }
 
 
