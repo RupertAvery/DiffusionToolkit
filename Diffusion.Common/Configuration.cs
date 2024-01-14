@@ -18,6 +18,11 @@ namespace Diffusion.Common
             Portable = portable;
         }
 
+        public bool Exists()
+        {
+            return File.Exists(_settingsPath);
+        }
+
         public bool TryLoad(out T? obj)
         {
             try
@@ -39,6 +44,13 @@ namespace Diffusion.Common
 
                 return false;
             }
+        }
+
+
+        public void Load(out T? obj)
+        {
+            var json = File.ReadAllText(_settingsPath);
+            obj = JsonSerializer.Deserialize<T>(json);
         }
 
         public void Save(T obj)

@@ -34,6 +34,7 @@ using Diffusion.Civitai.Models;
 using Diffusion.Toolkit.Localization;
 using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
+using System.Configuration;
 
 namespace Diffusion.Toolkit
 {
@@ -278,7 +279,7 @@ namespace Diffusion.Toolkit
         {
             if (e.Category == UserPreferenceCategory.Color)
             {
-                UpdateTheme();
+                UpdateTheme(_settings.Theme);
             }
         }
 
@@ -315,13 +316,13 @@ namespace Diffusion.Toolkit
         {
             var dataStore = new DataStore(_dbPath);
 
-            if (!_configuration.TryLoad(out _settings))
+            if (!_configuration.Exists())
             {
                 Logger.Log($"Opening Settings for first time");
 
                 _settings = new Settings(true);
 
-                UpdateTheme();
+                UpdateTheme(_settings.Theme);
 
                 var welcome = new WelcomeWindow(_settings);
                 welcome.Owner = this;
@@ -344,32 +345,44 @@ namespace Diffusion.Toolkit
             }
             else
             {
-                _settings.MetadataSection.Attach(_settings);
-                _settings.NavigationSection.Attach(_settings);
-                _settings.ShowAlbumPanel ??= true;
-                _settings.RecurseFolders ??= true;
-                _settings.UseBuiltInViewer ??= true;
-                _settings.SortAlbumsBy ??= "Name";
-
-                UpdateTheme();
-
-                if (!_settings.DontShowWelcomeOnStartup)
+                try
                 {
-                    var welcome = new WelcomeWindow(_settings);
-                    welcome.Owner = this;
-                    welcome.ShowDialog();
+                    _configuration.Load(out _settings);
 
-                    if (_settings.IsDirty())
+                    _settings.MetadataSection.Attach(_settings);
+                    _settings.NavigationSection.Attach(_settings);
+                    _settings.ShowAlbumPanel ??= true;
+                    _settings.RecurseFolders ??= true;
+                    _settings.UseBuiltInViewer ??= true;
+                    _settings.SortAlbumsBy ??= "Name";
+                    _settings.Theme ??= "System";
+
+                    UpdateTheme(_settings.Theme);
+
+                    if (!_settings.DontShowWelcomeOnStartup)
                     {
-                        _configuration.Save(_settings);
-                        _settings.SetPristine();
+                        var welcome = new WelcomeWindow(_settings);
+                        welcome.Owner = this;
+                        welcome.ShowDialog();
+
+                        if (_settings.IsDirty())
+                        {
+                            _configuration.Save(_settings);
+                            _settings.SetPristine();
+                        }
                     }
+
+                    _settings.PortableMode = _configuration.Portable;
+                    _settings.SetPristine();
+
+                    ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
                 }
-
-                _settings.PortableMode = _configuration.Portable;
-                _settings.SetPristine();
-
-                ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
+                catch (Exception exception)
+                {
+                    MessageBox.Show(this, "An error occured while loading configuration settings. The application will exit", "Startup failed!", MessageBoxButton.OK, MessageBoxImage.Error);
+                    throw;
+                }
+              
             }
 
 
@@ -773,7 +786,7 @@ namespace Diffusion.Toolkit
 
                     if (_settings.IsPropertyDirty(nameof(Settings.Theme)))
                     {
-                        UpdateTheme();
+                        UpdateTheme(_settings.Theme);
                     }
 
 
@@ -851,9 +864,9 @@ namespace Diffusion.Toolkit
         }
 
 
-        private void UpdateTheme()
+        private void UpdateTheme(string theme)
         {
-            ThemeManager.ChangeTheme(_settings!.Theme);
+            ThemeManager.ChangeTheme(theme);
         }
 
 
