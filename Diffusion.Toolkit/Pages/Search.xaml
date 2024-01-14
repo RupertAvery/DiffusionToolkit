@@ -34,6 +34,7 @@
             <converters:FilterActiveConverter x:Key="FilterActiveConverter"></converters:FilterActiveConverter>
             <converters:SizeConverter x:Key="SizeConverter"></converters:SizeConverter>
             <converters:ZeroConverter x:Key="ZeroConverter"></converters:ZeroConverter>
+            <converters:NumberFormatConverter x:Key="NumberFormatConverter"></converters:NumberFormatConverter>
         </ResourceDictionary>
     </Page.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -55,8 +56,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition MinWidth="200"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="52"/>
-                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="70"/>
                 </Grid.ColumnDefinitions>
                 <Label VerticalAlignment="Center" FontSize="22" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
@@ -186,7 +187,7 @@
                                                                             <ColumnDefinition Width="50"/>
                                                                         </Grid.ColumnDefinitions>
                                                                         <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12" Padding="4" Grid.Column="0"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
-                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12"  Padding="4" Grid.Column="1" Text="{Binding ImageCount}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
+                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12"  Padding="4" Grid.Column="1" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
                                                                     </Grid>
                                                                 </ControlTemplate>
                                                             </Button.Template>
@@ -242,7 +243,7 @@
                                                                                 <ColumnDefinition Width="50"/>
                                                                             </Grid.ColumnDefinitions>
                                                                             <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12" Padding="4" Grid.Column="0"  Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
-                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12"  Padding="4" Grid.Column="1" Text="{Binding ImageCount}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
+                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12"  Padding="4" Grid.Column="1" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
                                                                         </Grid>
                                                                     </ControlTemplate>
                                                                 </Button.Template>

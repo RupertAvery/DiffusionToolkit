@@ -443,8 +443,10 @@ namespace Diffusion.Toolkit
             _dataStoreOptions = new DataStoreOptions(dataStore);
 
             var total = _dataStore.GetTotal();
+            
+            var text = GetLocalizedText("Main.Status.ImagesInDatabase").Replace("{count}", $"{total:n0}");
 
-            _model.Status = $"{total:###,###,##0} images in database";
+            _model.Status = text;
             _model.TotalProgress = 100;
 
             _models = new Pages.Models(_dataStoreOptions, _settings);
@@ -623,7 +625,7 @@ namespace Diffusion.Toolkit
 
                     if (hasUpdate)
                     {
-                        var result = await _messagePopupManager.Show("An update is available. Do you want to install now?", "Diffusion Toolkit", PopupButtons.YesNo);
+                        var result = await _messagePopupManager.Show(GetLocalizedText("Main.Update.UpdateAvailable"), "Diffusion Toolkit", PopupButtons.YesNo);
                         if (result == PopupResult.Yes)
                         {
                             CallUpdater();

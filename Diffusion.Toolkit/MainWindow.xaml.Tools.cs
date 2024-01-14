@@ -151,7 +151,7 @@ namespace Diffusion.Toolkit
             {
                 _model.TotalProgress = ids.Count;
                 _model.CurrentProgress = processed;
-                _model.Status = $"Updating {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
+                _model.Status = $"Updating {_model.CurrentProgress:n0} of {_model.TotalProgress:n0}...";
             });
 
             foreach (var chunk in ids.Chunk(size))
@@ -161,7 +161,7 @@ namespace Diffusion.Toolkit
                 Dispatcher.Invoke(() =>
                 {
                     _model.CurrentProgress = processed;
-                    _model.Status = $"Updating {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
+                    _model.Status = $"Updating {_model.CurrentProgress:n0} of {_model.TotalProgress:n0}...";
                 });
             }
 

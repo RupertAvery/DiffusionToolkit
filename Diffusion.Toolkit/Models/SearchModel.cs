@@ -389,6 +389,7 @@ public class SearchModel : BaseNotify
     public NavigationSection NavigationSection { get; set; }
 
     public MetadataSection MetadataSection { get; set; }
+    public string CurrentMode { get; set; }
 }
 
 public class NavigationSection : BaseNotify

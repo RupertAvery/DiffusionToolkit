@@ -120,25 +120,25 @@ namespace Diffusion.Toolkit.Pages
 
             float fsize = size;
 
-            var ssize = $"{fsize:#,##0} B";
+            var ssize = $"{fsize:n0} B";
 
             if (fsize > 1073741824)
             {
                 fsize /= 1073741824;
-                ssize = $"{fsize:#,##0.00} GiB";
+                ssize = $"{fsize:n2} GiB";
             }
             else if (fsize > 1048576)
             {
                 fsize /= 1048576;
-                ssize = $"{fsize:#,##0.00} MiB";
+                ssize = $"{fsize:n2} MiB";
             }
             else if (fsize > 1024)
             {
                 fsize /= 1024;
-                ssize = $"{fsize:#,##0.00} KiB";
+                ssize = $"{fsize:n2} KiB";
             }
 
-            _model.PromptsResults.Results = $"{count:###,###,##0} results found ({ssize})";
+            _model.PromptsResults.Results = $"{count:n0} results found ({ssize})";
 
             if (_model.PromptsResults.IsEmpty)
             {

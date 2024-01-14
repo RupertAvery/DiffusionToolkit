@@ -169,7 +169,7 @@ namespace Diffusion.Toolkit
                     {
                         _model.TotalProgress = totalPages;
                         _model.CurrentProgress = nextPage;
-                        _model.Status = $"Downloading set {nextPage} of {totalPages:#,###,###}...";
+                        _model.Status = $"Downloading set {nextPage} of {totalPages:n0}...";
                     });
 
                     results = await GetPage(civitai, nextPage, token);

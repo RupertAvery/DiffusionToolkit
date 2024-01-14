@@ -53,7 +53,10 @@
     <None Remove="Icons\x-mark-32.png" />
     <None Remove="Images\diffusion-toolkit.png" />
     <None Remove="Images\thumbnail.png" />
+    <None Remove="Localization\de-DE.json" />
     <None Remove="Localization\default.json" />
+    <None Remove="Localization\es-ES.json" />
+    <None Remove="Localization\fr-FR.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,6 +64,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Localization\de-DE.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Localization\es-ES.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Localization\fr-FR.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
     <EmbeddedResource Include="Localization\default.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

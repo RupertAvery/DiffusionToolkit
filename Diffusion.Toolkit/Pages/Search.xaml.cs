@@ -27,7 +27,9 @@ using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
 using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Themes;
 using static System.Net.WebRequestMethods;
+using WPFLocalizeExtension.Engine;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -149,16 +151,6 @@ namespace Diffusion.Toolkit.Pages
             navigatorService.Host.Closed += async (sender, args) =>
             {
                 ThumbnailLoader.Instance.Stop();
-            };
-            
-            _modeSettings = new Dictionary<string, ModeSettings>()
-            {
-                { "search", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
-                { "models", new ModeSettings() { Name = GetLocalizedText("Search.Models"), ViewMode = ViewMode.Model } },
-                { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
-                { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
-                { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
-                { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.RecycleBin"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
             };
 
             if (_settings.MainGridWidth != null)
@@ -286,36 +278,61 @@ namespace Diffusion.Toolkit.Pages
                 _model.FolderPath = _currentModeSettings.CurrentFolder;
                 SearchImages(null);
             });
-
-
-
+            
             _model.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
             {
                 ReloadMatches(new ReloadOptions() { Focus = true, GotoEnd = o.GotoEnd, OnCompleted = o.OnCompleted });
             });
 
-            //var albums = DataStore.GetAlbums();
-
-            //_model.Albums = new ObservableCollection<Album>(albums);
-
-            _model.SortOptions = new List<OptionValue>()
+            void PopulateSortOptions()
             {
-                new(GetLocalizedText("Search.SortBy.DateCreated"),"Date Created"),
-                new(GetLocalizedText("Search.SortBy.Rating"), "Rating"),
-                new(GetLocalizedText("Search.SortBy.AestheticScore"),"Aesthetic Score"),
-                new(GetLocalizedText("Search.SortBy.Name"), "Name"),
-                new(GetLocalizedText("Search.SortBy.Prompt"), "Prompt"),
-                new(GetLocalizedText("Search.SortBy.Random"), "Random"),
+                _modeSettings = new Dictionary<string, ModeSettings>()
+                {
+                    { "search", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
+                    { "models", new ModeSettings() { Name = GetLocalizedText("Search.Models"), ViewMode = ViewMode.Model } },
+                    { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
+                    { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
+                    { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
+                    { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.RecycleBin"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
+                };
+
+
+                _model.SortOptions = new List<OptionValue>()
+                {
+                    new(GetLocalizedText("Search.SortBy.DateCreated"), "Date Created"),
+                    new(GetLocalizedText("Search.SortBy.Rating"), "Rating"),
+                    new(GetLocalizedText("Search.SortBy.AestheticScore"), "Aesthetic Score"),
+                    new(GetLocalizedText("Search.SortBy.Name"), "Name"),
+                    new(GetLocalizedText("Search.SortBy.Prompt"), "Prompt"),
+                    new(GetLocalizedText("Search.SortBy.Random"), "Random"),
+                };
+
+                _model.SortOrderOptions = new List<OptionValue>()
+                {
+                    new(GetLocalizedText("Search.SortBy.Ascending"), "A-Z"),
+                    new(GetLocalizedText("Search.SortBy.Descending"), "Z-A")
+                };
+
+            }
+
+            LocalizeDictionary.Instance.PropertyChanged += (sender, args) =>
+            {
+                var sortBy = _model.SortBy;
+                var sortDirection = _model.SortDirection;
+                PopulateSortOptions();
+                _model.SortBy = sortBy;
+                _model.SortDirection = sortDirection;
+
+                SearchImages(null);
+                SetMode(_model.CurrentMode);
+                _model.MainModel.Status = "";
             };
 
-            _model.SortOrderOptions = new List<OptionValue>()
-            {
-                new(GetLocalizedText("Search.SortBy.Ascending"),"A-Z"),
-                new(GetLocalizedText("Search.SortBy.Descending"), "Z-A")
-            };
+            PopulateSortOptions();
 
             _model.SortBy = _settings.SortBy;
             _model.SortDirection = _settings.SortDirection;
+
 
             _model.MetadataSection.PropertyChanged += (sender, args) =>
             {
@@ -645,27 +662,27 @@ namespace Diffusion.Toolkit.Pages
 
                     float fsize = size;
 
-                    var ssize = $"{fsize:#,##0} B";
+                    var ssize = $"{fsize:n} B";
 
                     if (fsize > 1073741824)
                     {
                         fsize /= 1073741824;
-                        ssize = $"{fsize:#,##0.00} GiB";
+                        ssize = $"{fsize:n2} GiB";
                     }
                     else if (fsize > 1048576)
                     {
                         fsize /= 1048576;
-                        ssize = $"{fsize:#,##0.00} MiB";
+                        ssize = $"{fsize:n2} MiB";
                     }
                     else if (fsize > 1024)
                     {
                         fsize /= 1024;
-                        ssize = $"{fsize:#,##0.00} KiB";
+                        ssize = $"{fsize:n2} KiB";
                     }
 
                     var text = GetLocalizedText("Search.Results");
 
-                    text = text.Replace("{count}", $"{count:###,###,##0}")
+                    text = text.Replace("{count}", $"{count:n0}")
                         .Replace("{size}", $"{ssize}");
 
                     _model.Results = text;
@@ -1652,9 +1669,12 @@ namespace Diffusion.Toolkit.Pages
                 _model.Filter.ForDeletion = false;
             }
 
+            _model.CurrentMode = mode;
             _model.CurrentViewMode = _currentModeSettings.ViewMode;
             _model.SearchText = _currentModeSettings.LastQuery;
+            
             _model.SearchHistory = new ObservableCollection<string?>(_currentModeSettings.History);
+
             if (context != null)
             {
                 _model.ModeName = $"{_currentModeSettings.Name} - {context}";

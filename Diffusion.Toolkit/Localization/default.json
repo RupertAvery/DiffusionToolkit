@@ -95,7 +95,7 @@
   "Search.Favorites": "Favorites",
   "Search.RecycleBin": "Recycle Bin",
   "Search.SortBy": "Sort by:",
-  "Search.SortBy.DateCreated": "Date Created:",
+  "Search.SortBy.DateCreated": "Date Created",
   "Search.SortBy.Name": "Name",
   "Search.SortBy.Rating": "Rating",
   "Search.SortBy.AestheticScore": "Aesthetic Score",
@@ -179,5 +179,7 @@
   "Metadata.Modelname.NotFound": "Not found",
   "Metadata.Albums": "ALBUMS",
   "Messages.Captions.Error": "Error",
-  "Messages.Errors.NoImagePaths": "No image paths configured!"
+  "Messages.Errors.NoImagePaths": "No image paths configured!",
+  "Main.Status.ImagesInDatabase": "{count} images in database",
+  "Main.Update.UpdateAvailable": "An update is available. Do you want to install now?"
 }
