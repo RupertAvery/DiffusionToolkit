@@ -791,7 +791,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     imageViewModel.Id = image.Id;
                     imageViewModel.Favorite = image.Favorite;
-                    imageViewModel.Date = image.CreatedDate.ToString();
+                    imageViewModel.Date = image.CreatedDate.ToString("G", LocalizeDictionary.CurrentCulture);
                     imageViewModel.Rating = image.Rating;
                     imageViewModel.NSFW = image.NSFW;
                     imageViewModel.ForDeletion = image.ForDeletion;
