@@ -8,12 +8,12 @@ using Filter = Diffusion.Database.Filter;
 
 namespace Diffusion.Toolkit.Models;
 
-public class SortOption
+public class OptionValue
 {
     public string Name { get; }
     public string Value { get; }
 
-    public SortOption(string name, string value)
+    public OptionValue(string name, string value)
     {
         Name = name;
         Value = value;
@@ -74,7 +74,8 @@ public class SearchModel : BaseNotify
     private ObservableCollection<Album> _albums;
     private bool _showAlbumPanel;
     private ICommand _pageChangedCommand;
-    private IEnumerable<SortOption> _sortOptions;
+    private IEnumerable<OptionValue> _sortOptions;
+    private IEnumerable<OptionValue> _sortOrderOptions;
 
     public SearchModel()
     {
@@ -312,7 +313,7 @@ public class SearchModel : BaseNotify
         set => SetField(ref _clearCommand, value);
     }
 
-    public IEnumerable<SortOption> SortOptions
+    public IEnumerable<OptionValue> SortOptions
     {
         get => _sortOptions;
         set => SetField(ref _sortOptions, value);
@@ -322,6 +323,12 @@ public class SearchModel : BaseNotify
     {
         get => _sortBy;
         set => SetField(ref _sortBy, value);
+    }
+
+    public IEnumerable<OptionValue> SortOrderOptions
+    {
+        get => _sortOrderOptions;
+        set => SetField(ref _sortOrderOptions, value);
     }
 
     public string SortDirection

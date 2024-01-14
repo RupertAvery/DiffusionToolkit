@@ -298,7 +298,7 @@ namespace Diffusion.Toolkit.Pages
 
             //_model.Albums = new ObservableCollection<Album>(albums);
 
-            _model.SortOptions = new List<SortOption>()
+            _model.SortOptions = new List<OptionValue>()
             {
                 new(GetLocalizedText("Search.SortBy.DateCreated"),"Date Created"),
                 new(GetLocalizedText("Search.SortBy.Rating"), "Rating"),
@@ -306,6 +306,12 @@ namespace Diffusion.Toolkit.Pages
                 new(GetLocalizedText("Search.SortBy.Name"), "Name"),
                 new(GetLocalizedText("Search.SortBy.Prompt"), "Prompt"),
                 new(GetLocalizedText("Search.SortBy.Random"), "Random"),
+            };
+
+            _model.SortOrderOptions = new List<OptionValue>()
+            {
+                new(GetLocalizedText("Search.SortBy.Ascending"),"A-Z"),
+                new(GetLocalizedText("Search.SortBy.Descending"), "Z-A")
             };
 
             _model.SortBy = _settings.SortBy;
