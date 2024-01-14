@@ -511,6 +511,12 @@
                             </Grid>
                         </controls:AccordionControl>
 
+                        <controls:AccordionControl x:Name="SamplerMetadata"  State="{Binding DataContext.MetadataSection.SamplerState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Sampler}">
+                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
+                                     IsReadOnly="True"
+                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Sampler}"/>
+                        </controls:AccordionControl>
+
                         <controls:AccordionControl x:Name="OtherMetadata"  State="{Binding DataContext.MetadataSection.OthersState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Others}">
                             <controls:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">

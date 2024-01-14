@@ -171,6 +171,7 @@
   "Metadata.CFGScale": "CFG",
   "Metadata.Steps": "ステップ",
   "Metadata.Size": "サイズ",
+  "Metadata.Sampler": "サンプラー",
   "Metadata.Others": "その他",
   "Metadata.ModelName": "モデル名",
   "Metadata.ModelHash": "モデルハッシュ",

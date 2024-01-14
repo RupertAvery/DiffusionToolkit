@@ -512,6 +512,7 @@ public class MetadataSectionSettings : SettingsContainer
     private AccordionState _promptState;
     private AccordionState _negativePromptState;
     private AccordionState _seedState;
+    private AccordionState _samplerState;
     private AccordionState _pathState;
     private AccordionState _albumState;
     private AccordionState _othersState;
@@ -543,6 +544,12 @@ public class MetadataSectionSettings : SettingsContainer
         get => _seedState;
         set => UpdateValue(ref _seedState, value);
     }
+    
+    public AccordionState SamplerState
+    {
+        get => _samplerState;
+        set => UpdateValue(ref _samplerState, value);
+    }
 
     public AccordionState PathState
     {
@@ -573,4 +580,5 @@ public class MetadataSectionSettings : SettingsContainer
         get => _dateState;
         set => UpdateValue(ref _dateState, value);
     }
+
 }

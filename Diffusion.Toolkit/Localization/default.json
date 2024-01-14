@@ -171,6 +171,7 @@
   "Metadata.CFGScale": "CFG",
   "Metadata.Steps": "STEPS",
   "Metadata.Size": "SIZE",
+  "Metadata.Sampler": "SAMPLER",
   "Metadata.Others": "OTHERS",
   "Metadata.ModelName": "MODEL NAME",
   "Metadata.ModelHash": "MODEL HASH",

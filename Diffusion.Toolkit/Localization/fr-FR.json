@@ -171,6 +171,7 @@
   "Metadata.CFGScale": "CFG",
   "Metadata.Steps": "ÉTAPES",
   "Metadata.Size": "TAILLE",
+  "Metadata.Sampler": "ÉCHANTILLONNEUR",
   "Metadata.Others": "AUTRES",
   "Metadata.ModelName": "NOM DU MODÈLE",
   "Metadata.ModelHash": "HACHAGE DU MODÈLE",
@@ -182,5 +183,4 @@
   "Messages.Errors.NoImagePaths": "Aucun chemin d'image configuré !",
   "Main.Status.ImagesInDatabase": "{count} images dans la base de données",
   "Main.Update.UpdateAvailable": "Une mise à jour est disponible. Souhaitez-vous l'installer maintenant ?"
-
 }

@@ -415,6 +415,7 @@ public class MetadataSection : BaseNotify
     private AccordionState _promptState;
     private AccordionState _negativePromptState;
     private AccordionState _seedState;
+    private AccordionState _samplerState;
     private AccordionState _pathState;
     private AccordionState _albumState;
     private AccordionState _othersState;
@@ -439,6 +440,11 @@ public class MetadataSection : BaseNotify
         set => SetField(ref _seedState, value);
     }
 
+    public AccordionState SamplerState
+    {
+        get => _samplerState;
+        set => SetField(ref _samplerState, value);
+    }
     public AccordionState OthersState
     {
         get => _othersState;

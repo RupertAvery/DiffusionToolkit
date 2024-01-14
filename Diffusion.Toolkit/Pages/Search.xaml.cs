@@ -347,6 +347,9 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(MetadataSection.SeedState):
                         _settings.MetadataSection.SeedState = _model.MetadataSection.SeedState;
                         break;
+                    case nameof(MetadataSection.SamplerState):
+                        _settings.MetadataSection.SamplerState = _model.MetadataSection.SamplerState;
+                        break;
                     case nameof(MetadataSection.OthersState):
                         _settings.MetadataSection.OthersState = _model.MetadataSection.OthersState;
                         break;
@@ -368,6 +371,7 @@ namespace Diffusion.Toolkit.Pages
             _model.MetadataSection.PromptState = _settings.MetadataSection.PromptState;
             _model.MetadataSection.NegativePromptState = _settings.MetadataSection.NegativePromptState;
             _model.MetadataSection.SeedState = _settings.MetadataSection.SeedState;
+            _model.MetadataSection.SamplerState = _settings.MetadataSection.SamplerState;
             _model.MetadataSection.OthersState = _settings.MetadataSection.OthersState;
             _model.MetadataSection.ModelState = _settings.MetadataSection.ModelState;
             _model.MetadataSection.PathState = _settings.MetadataSection.PathState;
@@ -1948,9 +1952,10 @@ namespace Diffusion.Toolkit.Pages
             PromptMetadata.State = state;
             NegativePromptMetadata.State = state;
             SeedMetadata.State = state;
+            SamplerMetadata.State = state;
+            OtherMetadata.State = state;
             ModelMetadata.State = state;
             PathMetadata.State = state;
-            OtherMetadata.State = state;
             AlbumMetadata.State = state;
             DateMetadata.State = state;
         }
