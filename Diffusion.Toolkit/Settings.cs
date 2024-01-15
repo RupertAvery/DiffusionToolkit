@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.ComponentModel;
 
 namespace Diffusion.Toolkit;
 
@@ -98,12 +99,11 @@ public class Settings : SettingsContainer, IScanOptions
         MetadataSection = new MetadataSectionSettings();
         MetadataSection.Attach(this);
 
-        NavigationSection = new NavigationSectionSettings();
+        NavigationSection = new NavigationSectionSettings(initialize);
         NavigationSection.Attach(this);
 
         if (initialize)
         {
-            ShowAlbumPanel = true;
             RecurseFolders = true;
         }
     }
@@ -283,12 +283,6 @@ public class Settings : SettingsContainer, IScanOptions
         set => UpdateValue(ref _hashCache, value);
     }
 
-    public bool? ShowAlbumPanel
-    {
-        get => _showAlbumPanel;
-        set => UpdateValue(ref _showAlbumPanel, value);
-    }
-
     public bool PortableMode
     {
         get => _portableMode;
@@ -399,7 +393,7 @@ public static class TypeHelpers
 }
 
 
-public abstract class SettingsContainer
+public abstract class SettingsContainer : INotifyPropertyChanged
 {
     private bool _isDirty;
     private readonly Dictionary<string, bool> _isPropertyDirty = new Dictionary<string, bool>();
@@ -429,9 +423,16 @@ public abstract class SettingsContainer
 
     public event SettingChangedEventHander SettingChanged;
 
-    protected void UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
-        if (EqualityComparer<T>.Default.Equals(field, value)) return;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+    
+    protected bool UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
 
         var oldValue = field;
 
@@ -448,9 +449,12 @@ public abstract class SettingsContainer
             NewValue = value,
         });
 
+        OnPropertyChanged(propertyName);
+
+        return true;
     }
 
-    protected void UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")
+    protected bool UpdateList<T>(ref List<T>? field, List<T>? value, [CallerMemberName] string propertyName = "")
     {
         bool hasDiff = false;
         if (field != null && value != null)
@@ -469,10 +473,15 @@ public abstract class SettingsContainer
             hasDiff = value != null || value!.Any();
         }
 
-        if (!hasDiff) return;
+        if (!hasDiff) return false;
+
         field = value;
         _isPropertyDirty[propertyName] = true;
         _isDirty = true;
+
+        OnPropertyChanged(propertyName);
+
+        return true;
     }
 
 }
@@ -482,14 +491,30 @@ public class NavigationSectionSettings : SettingsContainer
     private AccordionState _modelState;
     private AccordionState _albumState;
     private AccordionState _folderState;
+    private bool _showFolders;
+    private bool _showModels;
+    private bool _showAlbums;
+    
+    public NavigationSectionSettings()
+    {
 
+    }
+
+    public NavigationSectionSettings(bool initialize)
+    {
+        if (initialize)
+        {
+            ShowFolders = true;
+            ShowModels = true;
+            ShowAlbums = true;
+        }
+    }
 
     public AccordionState ModelState
     {
         get => _modelState;
         set => UpdateValue(ref _modelState, value);
     }
-
 
     public AccordionState AlbumState
     {
@@ -503,6 +528,40 @@ public class NavigationSectionSettings : SettingsContainer
         set => UpdateValue(ref _folderState, value);
     }
 
+    public bool ShowFolders
+    {
+        get => _showFolders;
+        set
+        {
+            UpdateValue(ref _showFolders, value);
+            OnPropertyChanged(nameof(ShowSection));
+        }
+    }
+
+    public bool ShowModels
+    {
+        get => _showModels;
+        set
+        {
+            UpdateValue(ref _showModels, value);
+            OnPropertyChanged(nameof(ShowSection));
+        }
+    }
+
+    public bool ShowAlbums
+    {
+        get => _showAlbums;
+        set
+        {
+            UpdateValue(ref _showAlbums, value);
+            OnPropertyChanged(nameof(ShowSection));
+        }
+    }
+
+    public bool ShowSection
+    {
+        get => _showAlbums || _showFolders || ShowAlbums;
+    }
 
     public void Attach(Settings settings)
     {

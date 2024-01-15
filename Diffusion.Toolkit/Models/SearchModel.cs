@@ -72,7 +72,6 @@ public class SearchModel : BaseNotify
     private ICommand _removeAlbumCommand;
     private ICommand _renameAlbumCommand;
     private ObservableCollection<Album> _albums;
-    private bool _showAlbumPanel;
     private ICommand _pageChangedCommand;
     private IEnumerable<OptionValue> _sortOptions;
     private IEnumerable<OptionValue> _sortOrderOptions;
@@ -92,7 +91,6 @@ public class SearchModel : BaseNotify
         _sortBy = "Date Created";
         _sortDirection = "Z-A";
         _isFilterVisible = false;
-        _showAlbumPanel = true;
         MetadataSection = new MetadataSection();
         NavigationSection = new NavigationSection();
     }
@@ -381,13 +379,6 @@ public class SearchModel : BaseNotify
         set => SetField(ref _album, value);
     }
 
-
-    public bool ShowAlbumPanel
-    {
-        get => _showAlbumPanel;
-        set => SetField(ref _showAlbumPanel, value);
-    }
-
     public ICommand PageChangedCommand
     {
         get => _pageChangedCommand;
@@ -405,12 +396,34 @@ public class NavigationSection : BaseNotify
     private AccordionState _folderState;
     private AccordionState _modelState;
     private AccordionState _albumState;
+    private bool _showFolders;
+    private bool _showModels;
+    private bool _showAlbums;
+
+    public bool ShowFolders
+    {
+        get => _showFolders;
+        set => SetField(ref _showFolders, value);
+    }
+
+    public bool ShowModels
+    {
+        get => _showModels;
+        set => SetField(ref _showModels, value);
+    }
+
+    public bool ShowAlbums
+    {
+        get => _showAlbums;
+        set => SetField(ref _showAlbums, value);
+    }
 
     public AccordionState FolderState
     {
         get => _folderState;
         set => SetField(ref _folderState, value);
     }
+
     public AccordionState ModelState
     {
         get => _modelState;

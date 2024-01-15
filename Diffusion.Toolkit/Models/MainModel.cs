@@ -14,7 +14,7 @@ public class MainModel : BaseNotify
     private Page _page;
     private ICommand _rescan;
     private ICommand _closeCommand;
-    private ICommand _settings;
+    private ICommand _settingsCommand;
     private ICommand _rebuild;
     private bool _showIcons;
     private bool _hideIcons;
@@ -53,8 +53,6 @@ public class MainModel : BaseNotify
     private ICommand _showFolders;
     private ICommand _showAlbums;
     private ICommand _addMatchingToAlbum;
-    private bool _showAlbumPanel;
-    private ICommand _toggleAlbumCommand;
     private ICommand _sortAlbum;
     private ICommand _refresh;
     private ICommand _quickCopy;
@@ -113,10 +111,10 @@ public class MainModel : BaseNotify
     }
 
 
-    public ICommand Settings
+    public ICommand SettingsCommand
     {
-        get => _settings;
-        set => SetField(ref _settings, value);
+        get => _settingsCommand;
+        set => SetField(ref _settingsCommand, value);
     }
 
     public ICommand CloseCommand
@@ -244,6 +242,12 @@ public class MainModel : BaseNotify
         set => SetField(ref _toggleNsfwBlurCommand, value);
     }
 
+    public ICommand ToggleVisibilityCommand
+    {
+        get;
+        set;
+    }
+
     public ICommand ToggleHideNSFW
     {
         get => _toggleHideNsfw;
@@ -340,19 +344,7 @@ public class MainModel : BaseNotify
         get => _addMatchingToAlbum;
         set => SetField(ref _addMatchingToAlbum, value);
     }
-
-    public bool ShowAlbumPanel
-    {
-        get => _showAlbumPanel;
-        set => SetField(ref _showAlbumPanel, value);
-    }
-
-    public ICommand ToggleAlbumCommand
-    {
-        get => _toggleAlbumCommand;
-        set => SetField(ref _toggleAlbumCommand, value);
-    }
-
+    
     public ICommand SortAlbumCommand
     {
         get => _sortAlbum;
@@ -447,6 +439,7 @@ public class MainModel : BaseNotify
 
     private ModelViewModel? _currentModel;
     private string _activeView;
+    private Settings _settings;
 
     public ModelViewModel? CurrentModel
     {
@@ -517,5 +510,11 @@ public class MainModel : BaseNotify
     {
         get => _activeView;
         set => SetField(ref _activeView, value);
+    }
+
+    public Settings Settings
+    {
+        get => _settings;
+        set => SetField(ref _settings, value);
     }
 }

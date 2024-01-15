@@ -21,13 +21,6 @@ namespace Diffusion.Toolkit
 
     public partial class MainWindow
     {
-        private void ToggleAlbum()
-        {
-            _model.ShowAlbumPanel = !_model.ShowAlbumPanel;
-            _search.SetShowAlbumPanel(_model.ShowAlbumPanel);
-            _settings.ShowAlbumPanel = _model.ShowAlbumPanel;
-        }
-
         private void ToggleHideNSFW()
         {
             _model.HideNSFWCommand = !_model.HideNSFWCommand;

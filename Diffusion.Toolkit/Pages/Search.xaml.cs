@@ -190,7 +190,6 @@ namespace Diffusion.Toolkit.Pages
             _model.Pages = 0;
             _model.TotalFiles = 100;
             _model.Images = new ObservableCollection<ImageEntry>();
-            _model.ShowAlbumPanel = settings.ShowAlbumPanel.GetValueOrDefault(true);
             _model.PropertyChanged += ModelOnPropertyChanged;
             _model.SearchCommand = new RelayCommand<object>((o) =>
             {
@@ -379,6 +378,15 @@ namespace Diffusion.Toolkit.Pages
             _model.MetadataSection.DateState = _settings.MetadataSection.DateState;
             _model.MetadataSection.AlbumState = _settings.MetadataSection.AlbumState;
 
+            _model.MainModel.Settings.NavigationSection.PropertyChanged += (sender, args) =>
+            {
+                switch (args.PropertyName)
+                {
+                    case nameof(NavigationSectionSettings.ShowSection):
+                        SetNavigationVisible(_model.MainModel.Settings.NavigationSection.ShowSection);
+                        break;
+                }
+            };
 
             _model.NavigationSection.PropertyChanged += (sender, args) =>
             {
@@ -393,13 +401,26 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSection.FolderState):
                         _settings.NavigationSection.FolderState = _model.NavigationSection.FolderState;
                         break;
+                    //case nameof(NavigationSection.ShowFolders):
+                    //    _settings.NavigationSection.ShowFolders = _model.NavigationSection.ShowFolders;
+                    //    break;
+                    //case nameof(NavigationSection.ShowModels):
+                    //    _settings.NavigationSection.ShowModels = _model.NavigationSection.ShowModels;
+                    //    break;
+                    //case nameof(NavigationSection.ShowAlbums):
+                    //    _settings.NavigationSection.ShowAlbums = _model.NavigationSection.ShowAlbums;
+                    //    break;
                 }
             };
 
             _model.NavigationSection.ModelState = _settings.NavigationSection.ModelState;
             _model.NavigationSection.AlbumState = _settings.NavigationSection.AlbumState;
             _model.NavigationSection.FolderState = _settings.NavigationSection.FolderState;
+            //_model.NavigationSection.ShowFolders = _settings.NavigationSection.ShowFolders;
+            //_model.NavigationSection.ShowModels = _settings.NavigationSection.ShowModels;
+            //_model.NavigationSection.ShowAlbums = _settings.NavigationSection.ShowAlbums;
 
+            SetNavigationVisible(_model.MainModel.Settings.NavigationSection.ShowSection);
 
             SetMode("search");
 
@@ -1751,6 +1772,35 @@ namespace Diffusion.Toolkit.Pages
             RefreshThumbnails();
         }
 
+        public void SetNavigationVisible(bool visible)
+        {
+            var old = NavigationScrollViewer.Visibility;
+
+            NavigationScrollViewer.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            GridSplitter2.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+            if (NavigationScrollViewer.Visibility == old) return;
+
+            if (visible)
+            {
+                NavigationThumbnailGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.NavigationThumbnailGridWidth);
+                NavigationThumbnailGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.NavigationThumbnailGridWidth2);
+
+                var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
+                widthDescriptor.AddValueChanged(NavigationThumbnailGrid.ColumnDefinitions[0], NavThumbWidthChanged);
+                widthDescriptor.AddValueChanged(NavigationThumbnailGrid.ColumnDefinitions[2], NavThumbWidthChanged2);
+            }
+            else
+            {
+                var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
+                widthDescriptor.RemoveValueChanged(NavigationThumbnailGrid.ColumnDefinitions[0], NavThumbWidthChanged);
+                widthDescriptor.RemoveValueChanged(NavigationThumbnailGrid.ColumnDefinitions[2], NavThumbWidthChanged2);
+
+                NavigationThumbnailGrid.ColumnDefinitions[0].Width = new GridLength(0);
+                NavigationThumbnailGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+            }
+        }
+
         public void SetPreviewVisible(bool visible)
         {
             PreviewPane.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
@@ -1837,11 +1887,6 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public void SetShowAlbumPanel(bool showAlbumPanel)
-        {
-            _model.ShowAlbumPanel = showAlbumPanel;
-        }
-
         public void ExtOnKeyUp(object sender, KeyEventArgs e)
         {
             EndNavigateCursor();
@@ -1915,6 +1960,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.MainModel.CurrentAlbum.IsSelected = true;
 
+            _model.MainModel.ActiveView = "Albums";
             SetMode("albums", _model.MainModel.CurrentAlbum.Name);
             SearchImages(null);
         }
@@ -1952,6 +1998,7 @@ namespace Diffusion.Toolkit.Pages
 
             model.IsSelected = true;
 
+            _model.MainModel.ActiveView = "Folders";
             SetMode("folders");
             _model.FolderPath = model.Path;
             _currentModeSettings.CurrentFolder = model.Path;

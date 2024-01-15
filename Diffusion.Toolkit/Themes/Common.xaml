@@ -777,8 +777,29 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border Name="Border" BorderThickness="0" BorderBrush="{DynamicResource SecondaryBrush}" Background="{TemplateBinding Panel.Background}">
-                        <ContentPresenter Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Grid Background="{x:Null}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Grid x:Name="GridA" Background="{DynamicResource ForegroundBrush}">
+                                <Grid.Style>
+                                    <Style TargetType="{x:Type Grid}">
+                                        <Setter Property="Visibility" Value="Hidden"></Setter>
+                                    </Style>
+                                </Grid.Style>
+                            </Grid>
+                            <ContentPresenter Grid.Column="1" Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
                     </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="behaviors:DTBehaviors.IsSelected"  Value="True">
+                            <Setter TargetName="GridA" Property="Grid.Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="behaviors:DTBehaviors.IsSelected" Value="False">
+                            <Setter TargetName="GridA" Property="Grid.Visibility" Value="Hidden" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -788,6 +809,8 @@
             </Trigger>
             <Trigger Property="behaviors:DTBehaviors.IsSelected"  Value="True">
                 <Setter Property="StackPanel.Opacity" Value="1" />
+            </Trigger>
+            <Trigger Property="behaviors:DTBehaviors.IsSelected" Value="False">
             </Trigger>
         </Style.Triggers>
     </Style>

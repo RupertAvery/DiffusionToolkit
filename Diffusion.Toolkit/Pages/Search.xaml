@@ -151,10 +151,13 @@
                                 <ColumnDefinition Width="5"></ColumnDefinition>
                                 <ColumnDefinition Width="3*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+
+                            <ScrollViewer x:Name="NavigationScrollViewer" Grid.Column="0" VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
 
-                                    <controls:AccordionControl HeaderBackground="#80000000" State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Folders}">
+                                    <controls:AccordionControl HeaderBackground="#80000000" 
+                                                               Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
+                                                               State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Folders}">
                                         <ScrollViewer MaxHeight="500">
                                             <ItemsControl ItemsSource="{Binding Path=MainModel.Folders}">
                                                 <ItemsControl.ItemTemplate>
@@ -183,7 +186,7 @@
                                                                             <ColumnDefinition Width="*"/>
                                                                         </Grid.ColumnDefinitions>
                                                                         <fa:ImageAwesome Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="6" Grid.Column="1" Foreground="{DynamicResource ForegroundBrush}"/>
-                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12" Padding="4" Grid.Column="2"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="2"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
                                                                     </Grid>
                                                                 </ControlTemplate>
                                                             </Button.Template>
@@ -195,7 +198,9 @@
                                     </controls:AccordionControl>
 
 
-                                    <controls:AccordionControl HeaderBackground="#80000000" State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Models}">
+                                    <controls:AccordionControl HeaderBackground="#80000000" 
+                                                               Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowModels, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
+                                                               State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Models}">
                                         <ScrollViewer MaxHeight="500">
                                             <ItemsControl ItemsSource="{Binding Path=MainModel.ImageModels}">
                                                 <ItemsControl.ItemTemplate>
@@ -210,8 +215,8 @@
                                                                             <ColumnDefinition Width="*"/>
                                                                             <ColumnDefinition Width="50"/>
                                                                         </Grid.ColumnDefinitions>
-                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12" Padding="4" Grid.Column="0"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
-                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12"  Padding="4" Grid.Column="1" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
+                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="0"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16"  Padding="4" Grid.Column="1" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
                                                                     </Grid>
                                                                 </ControlTemplate>
                                                             </Button.Template>
@@ -223,7 +228,9 @@
 
                                     </controls:AccordionControl>
 
-                                    <controls:AccordionControl HeaderBackground="#80000000" State="{Binding DataContext.NavigationSection.AlbumState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  Header="{lex:Loc Search.Albums}">
+                                    <controls:AccordionControl HeaderBackground="#80000000" 
+                                                               Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowAlbums, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
+                                                               State="{Binding DataContext.NavigationSection.AlbumState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  Header="{lex:Loc Search.Navigation.Albums}">
                                         <controls:AccordionControl.ButtonAreaContent>
                                             <Grid Background="{x:Null}">
                                                 <Grid.ColumnDefinitions>
@@ -280,8 +287,8 @@
                                                                                 <ColumnDefinition Width="*"/>
                                                                                 <ColumnDefinition Width="50"/>
                                                                             </Grid.ColumnDefinitions>
-                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12" Padding="4" Grid.Column="0"  Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
-                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="12"  Padding="4" Grid.Column="1" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
+                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="0"  Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16"  Padding="4" Grid.Column="1" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
                                                                         </Grid>
                                                                     </ControlTemplate>
                                                                 </Button.Template>

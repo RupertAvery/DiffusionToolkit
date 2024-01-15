@@ -14,6 +14,9 @@
   "Menu.View.Thumbnails": "_Thumbnails",
   "Menu.View.BlurNSFW": "Blur _NSFW",
   "Menu.View.HideNSFWFromResults": "_Hide NSFW from Results",
+  "Menu.View.Folders": "Folders",
+  "Menu.View.Models": "Models",
+  "Menu.View.Albums": "Albums",
   "Menu.View.FitToPreview": "_Fit to Preview",
   "Menu.View.TogglePreview": "Show/Hide Preview",
   "Menu.View.PopoutPreview": "Popout Preview",
@@ -103,6 +106,9 @@
   "Search.SortBy.Random": "Random",
   "Search.SortBy.Ascending": "A-Z",
   "Search.SortBy.Descending": "Z-A",
+  "Search.Navigation.Folders": "FOLDERS",
+  "Search.Navigation.Models": "MODELS",
+  "Search.Navigation.Albums": "ALBUMS",
   "Search.Results": "{count} results found ({size})",
   "Search.NoResults": "No results found",
   "Search.LoadPreview.ImageNotFound": "The source image could not be located. This can happen when you move or rename the file outside of Diffusion Toolkit.",
@@ -110,6 +116,7 @@
   "Search.Buttons.ShowFilter.ToolTip": "Show filter",
   "Search.Buttons.Clear.ToolTip": "Clear",
   "Search.Buttons.Refresh.ToolTip": "Refresh",
+  "Search.Albums.Buttons.SortAlbums.ToopTip": "Sort",
   "Search.Albums.Buttons.CreateAlbum.ToopTip": "New Album",
   "Search.AddressBar.Buttons.Home.ToolTip": "Home",
   "Search.AddressBar.Buttons.UpOneLevel.ToolTip": "Up one level",
@@ -180,5 +187,7 @@
   "Metadata.Modelname.NotFound": "Not found",
   "Metadata.Albums": "ALBUMS",
   "Messages.Captions.Error": "Error",
-  "Messages.Errors.NoImagePaths": "No image paths configured!"
+  "Messages.Errors.NoImagePaths": "No image paths configured!",
+  "Main.Status.ImagesInDatabase": "{count} images in database",
+  "Main.Update.UpdateAvailable": "An update is available. Do you want to install now?"
 }

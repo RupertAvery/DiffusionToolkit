@@ -110,12 +110,14 @@ namespace Diffusion.Toolkit
                 await _messagePopupManager.Show("Models have been reloaded", "Diffusion Toolkit", PopupButtons.OK);
             });
             _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
-            _model.Settings = new RelayCommand<object>(ShowSettings);
+            _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
             _model.CancelCommand = new AsyncCommand(CancelProgress);
             _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
             _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
             _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
+
             _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
+
             _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
             _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
@@ -137,9 +139,10 @@ namespace Diffusion.Toolkit
             _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
             _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
 
-
-            _model.ToggleAlbumCommand = new RelayCommand<object>((o) => ToggleAlbum());
             _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
+
+
+            _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
 
 
             InitAlbums();
@@ -183,6 +186,22 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void ToggleVisibility(string s)
+        {
+            switch (s)
+            {
+                case "Navigation.Folders":
+                    _model.Settings.NavigationSection.ShowFolders = !_model.Settings.NavigationSection.ShowFolders;
+                    break;
+                case "Navigation.Models":
+                    _model.Settings.NavigationSection.ShowModels = !_model.Settings.NavigationSection.ShowModels;
+                    break;
+                case "Navigation.Albums":
+                    _model.Settings.NavigationSection.ShowAlbums = !_model.Settings.NavigationSection.ShowAlbums;
+                    break;
+            }
         }
 
         private void ToggleAutoRefresh()
@@ -353,7 +372,6 @@ namespace Diffusion.Toolkit
 
                     _settings.MetadataSection.Attach(_settings);
                     _settings.NavigationSection.Attach(_settings);
-                    _settings.ShowAlbumPanel ??= true;
                     _settings.RecurseFolders ??= true;
                     _settings.UseBuiltInViewer ??= true;
                     _settings.SortAlbumsBy ??= "Name";
@@ -434,7 +452,7 @@ namespace Diffusion.Toolkit
             _model.NSFWBlurCommand = _settings.NSFWBlur;
             _model.FitToPreview = _settings.FitToPreview;
 
-            _model.ShowAlbumPanel = _settings.ShowAlbumPanel.GetValueOrDefault(true);
+            _model.Settings = _settings;
 
             Activated += OnActivated;
             StateChanged += OnStateChanged;
