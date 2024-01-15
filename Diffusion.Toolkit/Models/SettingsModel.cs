@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit;
 
@@ -206,5 +207,7 @@ public class SettingsModel : BaseNotify
         get => _customCommandLineArgs;
         set => SetField(ref _customCommandLineArgs, value);
     }
+
+    public IEnumerable<OptionValue> ThemeOptions { get; set; }
 
 }

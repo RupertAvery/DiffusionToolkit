@@ -152,23 +152,23 @@
                             <Slider x:Name="Slider" Minimum="100" Maximum="500" Value="{Binding PageSize}" TickFrequency="50" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Orientation="Horizontal" Margin="0,0,10,0"></Slider>
                             <Label Grid.Column="1" Height="26" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="{Binding PageSize}" Margin="0,0,10,0"></Label>
                         </Grid>
-                        <Label>Open images using:</Label>
+                        <Label Content="{lex:Loc Settings.Images.OpenImagesUsing}"/>
                         <Grid Margin="0,10,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="140"/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
-                            <RadioButton GroupName="Viewer" IsChecked="{Binding UseBuiltInViewer}">Built-in viewer</RadioButton>
-                            <CheckBox  IsEnabled="{Binding UseBuiltInViewer}" Grid.Column="1" IsChecked="{Binding OpenInFullScreen}">Open in fullscreen</CheckBox>
+                            <RadioButton GroupName="Viewer" IsChecked="{Binding UseBuiltInViewer}" Content="{lex:Loc Settings.Images.OpenImagesUsing.BuiltInViewer}"></RadioButton>
+                            <CheckBox  IsEnabled="{Binding UseBuiltInViewer}" Grid.Column="1" IsChecked="{Binding OpenInFullScreen}" Content="{lex:Loc Settings.Images.OpenImagesUsing.BuiltInViewer.OpenInFullscreen}"></CheckBox>
                         </Grid>
-                        <RadioButton GroupName="Viewer" IsChecked="{Binding UseSystemDefault}" Margin="0,10,0,0">System default</RadioButton>
+                        <RadioButton GroupName="Viewer" IsChecked="{Binding UseSystemDefault}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.OpenImagesUsing.SystemDefault}"></RadioButton>
                         <Grid Margin="0,10,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="140"/>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="30"/>
                             </Grid.ColumnDefinitions>
-                            <RadioButton GroupName="Viewer" IsChecked="{Binding UseCustomViewer}">Custom</RadioButton>
+                            <RadioButton GroupName="Viewer" IsChecked="{Binding UseCustomViewer}" Content="{lex:Loc Settings.Images.OpenImagesUsing.Custom}"></RadioButton>
                             <TextBox  IsEnabled="{Binding UseCustomViewer}" Grid.Column="1" Text="{Binding CustomCommandLine}"></TextBox>
                             <Button  IsEnabled="{Binding UseCustomViewer}" Grid.Column="2" Click="BrowseCustomViewer_OnClick">...</Button>
                         </Grid>
@@ -178,35 +178,36 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="30"/>
                             </Grid.ColumnDefinitions>
-                            <Label>Arguments</Label>
+                            <Label Content="{lex:Loc Settings.Images.OpenImagesUsing.Custom.Arguments}"></Label>
                             <TextBox Grid.Column="1" Height="20"  Text="{Binding CustomCommandLineArgs}"></TextBox>
                         </Grid>
-                        <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,10,0,0">Scan for new images on startup</CheckBox>
+                        <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="NSFW">
+                <TabItem Header="{lex:Loc Settings.NSFW}">
                     <StackPanel>
-                        <Label>NFSW Tags: (one token on each line)</Label>
+                        <Label Content="{lex:Loc Settings.NSFW.NSFWTags}"></Label>
                         <TextBox Text="{Binding NSFWTags, UpdateSourceTrigger=PropertyChanged}" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Margin="0,10,0,10" Height="90"></TextBox>
-                        <CheckBox IsChecked="{Binding AutoTagNSFW}" ToolTip="Automatically tag added images as NSFW">Auto Tag NSFW</CheckBox>
+                        <CheckBox IsChecked="{Binding AutoTagNSFW}" ToolTip="Automatically tag added images as NSFW" Content="{lex:Loc Settings.NSFW.AutoTagNSFW}"></CheckBox>
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="Themes">
+                <TabItem Header="{lex:Loc Settings.Themes}">
                     <StackPanel>
-                        <Label>Theme</Label>
+                        <Label Content="{lex:Loc Settings.Themes.Theme}"></Label>
                         <Grid >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="120"/>
                             </Grid.ColumnDefinitions>
-                            <ComboBox Height="26" VerticalContentAlignment="Center" Text="{Binding Theme}" Margin="0,0,10,0">
-                                <ComboBoxItem>System</ComboBoxItem>
-                                <ComboBoxItem>Light</ComboBoxItem>
-                                <ComboBoxItem>Dark</ComboBoxItem>
+                            <ComboBox Height="26" VerticalContentAlignment="Center" 
+                                      ItemsSource="{Binding ThemeOptions}"
+                                      SelectedValue="{Binding Theme}"
+                                      DisplayMemberPath="Name"
+                                      SelectedValuePath="Value" Margin="0,0,10,0">
                             </ComboBox>
                         </Grid>
 
-                        <Label>Language</Label>
+                        <Label Content="{lex:Loc Settings.Themes.Language}"/>
                         <Grid >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -217,11 +218,11 @@
                         </Grid>
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="Database">
+                <TabItem Header="{lex:Loc Settings.Database}">
                     <StackPanel>
-                        <Button Click="Open_DB_Folder" Width="200" Height="26" Margin="0,0,0,10">Open Folder</Button>
-                        <Button Click="Backup_DB" Width="200" Height="26" Margin="0,0,0,10">Backup</Button>
-                        <Button Click="Restore_DB" Width="200" Height="26" >Restore</Button>
+                        <Button Click="Open_DB_Folder" Width="200" Height="26" Margin="0,0,0,10" Content="{lex:Loc Settings.Database.OpenFolder}"></Button>
+                        <Button Click="Backup_DB" Width="200" Height="26" Margin="0,0,0,10" Content="{lex:Loc Settings.Database.Backup}"></Button>
+                        <Button Click="Restore_DB" Width="200" Height="26" Content="{lex:Loc Settings.Database.Restore}"></Button>
                     </StackPanel>
                 </TabItem>
             </TabControl>

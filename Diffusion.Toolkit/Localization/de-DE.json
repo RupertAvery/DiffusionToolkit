@@ -76,7 +76,7 @@
   "Settings.Images.OpenImagesUsing.Custom.Arguments": "Argumente",
   "Settings.Images.ScanForNewImagesOnStartup": "Neue Bilder beim Start scannen",
   "Settings.NSFW": "NSFW",
-  "Settings.NSFW.NSFWTags": "NSFW-Tags (ein Token pro Zeile)",
+  "Settings.NSFW.NSFWTags": "NSFW-Tags: (ein Token pro Zeile)",
   "Settings.NSFW.AutoTagNSFW": "NSFW automatisch taggen",
   "Settings.Themes": "Themen",
   "Settings.Themes.Theme": "Thema",

@@ -14,6 +14,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using Diffusion.Common;
+using WPFLocalizeExtension.Engine;
+using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Localization;
+using System.Globalization;
 
 namespace Diffusion.Toolkit
 {
@@ -74,6 +78,13 @@ namespace Diffusion.Toolkit
             var cultures = new List<Langauge>
             {
                 new ("Default", "default"),
+            };
+
+            _model.ThemeOptions = new List<OptionValue>()
+            {
+                new (GetLocalizedText("Settings.Themes.Theme.System"), "System"),
+                new (GetLocalizedText("Settings.Themes.Theme.Light"), "Light"),
+                new (GetLocalizedText("Settings.Themes.Theme.Dark"), "Dark")
             };
 
             try
@@ -318,5 +329,11 @@ namespace Diffusion.Toolkit
 
             _settings.Culture = _model.Culture;
         }
+
+        private string GetLocalizedText(string key)
+        {
+            return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+        }
+
     }
 }
