@@ -129,6 +129,7 @@ namespace Diffusion.Toolkit
             _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
             _model.AddMatchingToAlbum = new RelayCommand<object>((o) => AddMatchingToAlbum());
             _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
+
             _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
             _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
             _model.CleanRemovedFoldersCommand = new AsyncCommand(CleanRemovedFolders);
@@ -137,7 +138,8 @@ namespace Diffusion.Toolkit
             _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
 
 
-            _model.ToggleAlbum = new RelayCommand<object>((o) => ToggleAlbum());
+            _model.ToggleAlbumCommand = new RelayCommand<object>((o) => ToggleAlbum());
+            _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
 
 
             InitAlbums();
@@ -428,7 +430,7 @@ namespace Diffusion.Toolkit
 
             _model.AutoRefresh = _settings.AutoRefresh;
             _model.HideNSFWCommand = _settings.HideNSFW;
-            QueryBuilder.HideNFSW = _model.HideNSFWCommand;
+            QueryBuilder.HideNSFW = _model.HideNSFWCommand;
             _model.NSFWBlurCommand = _settings.NSFWBlur;
             _model.FitToPreview = _settings.FitToPreview;
 
@@ -560,41 +562,48 @@ namespace Diffusion.Toolkit
             _model.ShowFavorite = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
+                _model.ActiveView = "Favorites";
                 _search.ShowFavorite();
             });
 
             _model.ShowMarked = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
+                _model.ActiveView = "Recycle Bin";
                 _search.ShowMarked();
             });
 
             _model.ShowSearch = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
+                _model.ActiveView = "Diffusions";
                 _search.ShowSearch();
             });
 
             _model.ShowFolders = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
+                _model.ActiveView = "Folders";
                 _search.ShowFolders();
             });
 
             _model.ShowAlbums = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("search");
+                _model.ActiveView = "Albums";
                 _search.ShowAlbums();
             });
 
             _model.ShowModels = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("models");
+                _model.ActiveView = "Models";
             });
 
             _model.ShowPromptsCommand = new RelayCommand<object>((o) =>
             {
                 _navigatorService.Goto("prompts");
+                _model.ActiveView = "Prompts";
             });
 
 
@@ -617,6 +626,7 @@ namespace Diffusion.Toolkit
             _navigatorService.SetPages(pages);
 
             _navigatorService.Goto("search");
+            _model.ActiveView = "Diffusions";
 
             Logger.Log($"Loading models");
 

@@ -18,6 +18,7 @@ using WPFLocalizeExtension.Engine;
 
 namespace Diffusion.Toolkit
 {
+
     public partial class MainWindow
     {
         private void ToggleAlbum()
@@ -30,7 +31,7 @@ namespace Diffusion.Toolkit
         private void ToggleHideNSFW()
         {
             _model.HideNSFWCommand = !_model.HideNSFWCommand;
-            QueryBuilder.HideNFSW = _model.HideNSFWCommand;
+            QueryBuilder.HideNSFW = _model.HideNSFWCommand;
             _settings.HideNSFW = _model.HideNSFWCommand;
             _search.SearchImages();
 

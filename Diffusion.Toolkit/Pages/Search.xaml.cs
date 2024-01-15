@@ -1904,7 +1904,17 @@ namespace Diffusion.Toolkit.Pages
 
         private void Album_OnClick(object sender, RoutedEventArgs e)
         {
-            _model.MainModel.CurrentAlbum = ((AlbumModel)((Button)sender).DataContext);
+            var model = ((AlbumModel)((Button)sender).DataContext);
+
+            if (_model.MainModel.CurrentAlbum != null)
+            {
+                _model.MainModel.CurrentAlbum.IsSelected = false;
+            }
+
+            _model.MainModel.CurrentAlbum = model;
+
+            _model.MainModel.CurrentAlbum.IsSelected = true;
+
             SetMode("albums", _model.MainModel.CurrentAlbum.Name);
             SearchImages(null);
         }

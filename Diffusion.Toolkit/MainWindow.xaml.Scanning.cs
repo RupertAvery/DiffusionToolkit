@@ -586,6 +586,11 @@ namespace Diffusion.Toolkit
 
         private void SortAlbums_OnClick(object sender, RoutedEventArgs e)
         {
+            SortAlbums();
+        }
+
+        private void SortAlbums()
+        {
             var window = new AlbumSortWindow(_dataStore, _settings);
             window.Owner = this;
             window.ShowDialog();

@@ -66,7 +66,7 @@ Diffusion Toolkit scans your AI-Generated images for metadata and stores it in a
    * drag from thumbnail to Imgur/Google drive/web site to upload
    * drag from thumbnail to Photoshop or any image editor to load
    * drag from Explorer to Preview Pane to view any image metadata
-* Auto-tag NFSW
+* Auto-tag NSFW
    * Set a list of tokens that will be used to detect if an image is NSFW
    * Auto-tag on scan, or auto-tag existing images.
 * Folders and Albums

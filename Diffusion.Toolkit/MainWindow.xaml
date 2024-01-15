@@ -10,6 +10,7 @@
         xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
         xmlns:lex="http://wpflocalizeextension.codeplex.com"
         xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
+        xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
         lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
         lex:LocalizeDictionary.Separation="."
         lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
@@ -32,7 +33,7 @@
         <KeyBinding Modifiers="Control" Key="D4" Command="{Binding ShowFavorite}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D5" Command="{Binding ShowMarked}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="R" Command="{Binding Rescan}"></KeyBinding>
-        <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleAlbum}"></KeyBinding>
+        <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleAlbumCommand}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="P" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="F" Command="{Binding ToggleFitToPreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="N" Command="{Binding ToggleHideNSFW}"></KeyBinding>
@@ -41,13 +42,13 @@
         <ResourceDictionary>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
             <converters:ThumbnailSizeCheckedConverter x:Key="thumbSizeChecked"></converters:ThumbnailSizeCheckedConverter>
+            <converters:StringMatchConverter x:Key="StringMatchConverter"></converters:StringMatchConverter>
         </ResourceDictionary>
     </Window.Resources>
 
     <Grid x:Name="Host">
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
-            <RowDefinition Height="48"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="28"/>
         </Grid.RowDefinitions>
@@ -86,10 +87,10 @@
                 <MenuItem Header="{lex:Loc Menu.View.TogglePreview}" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
                 <MenuItem Header="{lex:Loc Menu.View.PopoutPreview}" Command="{Binding PoputPreview}"/>
             </MenuItem>
-            <MenuItem Header="{lex:Loc Menu.Albums}">
+            <!--<MenuItem Header="{lex:Loc Menu.Albums}">
                 <MenuItem Header="{lex:Loc Menu.Albums.AlbumPane}" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
                 <MenuItem Header="{lex:Loc Menu.Albums.Sort}" Click="SortAlbums_OnClick"/>
-            </MenuItem>
+            </MenuItem>-->
             <MenuItem Header="{lex:Loc Menu.Tools}">
                 <MenuItem Header="{lex:Loc Menu.Tools.SearchResults}">
                     <!--<MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
@@ -116,7 +117,8 @@
                 <MenuItem Header="{lex:Loc Menu.Help.CheckForUpdates}" Click="MenuItem_OnClick"/>
             </MenuItem>
         </Menu>
-        <ToolBar Grid.Row="1" Height="32" OverflowMode="Never">
+
+        <!--<ToolBar Grid.Row="1" Height="32" OverflowMode="Never">
             <Button Command="{Binding ShowFolders}">
                 <fa:ImageAwesome MinWidth="32" ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
@@ -156,10 +158,70 @@
                 <fa:ImageAwesome MinWidth="32" ToolTip="Settings" Icon="Gear" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                 </fa:ImageAwesome>
             </Button>
-        </ToolBar>
+        </ToolBar>-->
 
-        <Frame x:Name="Frame" Grid.Row="2" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
-        <Grid Grid.Row="3" ColumnSpan="3">
+        <Grid Grid.Row="1">
+            <DockPanel>
+                <Grid>
+                    <StackPanel Orientation="Vertical">
+                        <Button Margin="5,5,5,5" Height="16" Width="16" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Folders}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFolders}">
+                            <fa:ImageAwesome ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="5,5,5,5" Height="16" Width="16" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Albums}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowAlbums}">
+                            <fa:ImageAwesome ToolTip="Albums (Ctrl+2)" Icon="FilePhotoOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="5,5,5,5" Height="16" Width="16" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Diffusions}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSearch}">
+                            <fa:ImageAwesome ToolTip="Search (Ctrl+3)" Icon="Search" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="5,5,5,5" Height="16" Width="16" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Favorites}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFavorite}">
+                            <fa:ImageAwesome ToolTip="Favorites (Ctrl+4)" Icon="HeartOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="5,5,5,5" Height="16" Width="16" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Recycle Bin}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowMarked}">
+                            <fa:ImageAwesome ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="5,5,5,5" Height="16" Width="16" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Prompts}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowPromptsCommand}">
+                            <fa:ImageAwesome ToolTip="Prompts (Ctrl+6)" Icon="FileTextOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="5,5,5,5" Height="16" Width="16" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Models}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowModels}">
+                            <fa:ImageAwesome ToolTip="Models" Icon="PuzzlePiece" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="5,5,5,5" Height="16" Width="16" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding Rescan}">
+                            <fa:ImageAwesome ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="5,5,5,5" Height="16" Width="16" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding Settings}">
+                            <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+                <Frame x:Name="Frame" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
+            </DockPanel>
+        </Grid>
+
+
+        <Grid Grid.Row="2" ColumnSpan="3">
             <DockPanel HorizontalAlignment="Stretch">
                 <Button DockPanel.Dock="Right"  Width="50" Visibility="{Binding IsBusy, Converter={StaticResource boolToVisCol}}" Command="{Binding CancelCommand}">Cancel</Button>
                 <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
@@ -168,6 +230,7 @@
                 </Grid>
             </DockPanel>
         </Grid>
+        
         <Grid RowSpan="4" x:Name="PopupHost" Visibility="Hidden"  Background="#000000" Opacity="0.5">
         </Grid>
 

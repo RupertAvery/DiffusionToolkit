@@ -132,23 +132,6 @@
             </Grid>
             <Grid Grid.Row="2"  Margin="2">
                 <DockPanel>
-                    <DockPanel Margin="0,0,0,5" Visibility="{Binding CurrentViewMode, Converter={StaticResource addrVis}}" DockPanel.Dock="Top">
-                        <Button ToolTip="{lex:Loc Search.AddressBar.Buttons.Home.ToolTip}" DockPanel.Dock="Left" Width="28" Command="{Binding GoHome}">
-                            <fa:ImageAwesome Icon="Home" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
-                        <Button ToolTip="{lex:Loc Search.AddressBar.Buttons.UpOneLevel.ToolTip}" DockPanel.Dock="Left" Width="28" Command="{Binding GoUp}">
-                            <fa:ImageAwesome Icon="ArrowUp" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
-                        <TextBox  Height="24"
-                                  Padding="5,0,0,0"
-                                  HorizontalAlignment="Stretch" 
-                                  VerticalContentAlignment="Center"
-                                  Text="{Binding FolderPath}"
-                                  KeyDown="FolderPath_OnKeyDown"
-                        ></TextBox>
-                    </DockPanel>
                     <!--<DockPanel Margin="0,0,0,5" Visibility="{Binding CurrentViewMode, Converter={StaticResource albVis}}" DockPanel.Dock="Top">
                         <Button ToolTip="{lex:Loc Search.AddressBar.Buttons.Home.ToolTop}" DockPanel.Dock="Left" Width="28" Command="{Binding GoHome}">
                             <fa:ImageAwesome Icon="Home" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -246,9 +229,13 @@
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition/>
                                                     <ColumnDefinition Width="26"/>
+                                                    <ColumnDefinition Width="26"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.CreateAlbum.ToopTip}" Command="{Binding MainModel.CreateAlbumCommand}">
-                                                    +
+                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.SortAlbums.ToopTip}" Command="{Binding MainModel.SortAlbumCommand}">
+                                                    <fa:FontAwesome Icon="Gear"></fa:FontAwesome>
+                                                </Button>
+                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.CreateAlbum.ToopTip}" Command="{Binding MainModel.CreateAlbumCommand}">
+                                                    <fa:FontAwesome Icon="Plus"></fa:FontAwesome>
                                                 </Button>
                                             </Grid>
                                         </controls:AccordionControl.ButtonAreaContent>
@@ -278,7 +265,17 @@
                                                                 </Button.ContextMenu>
                                                                 <Button.Template>
                                                                     <ControlTemplate TargetType="{x:Type Button}">
-                                                                        <Grid Background="{TemplateBinding Panel.Background}">
+                                                                        <Grid>
+                                                                            <Grid.Style>
+                                                                                <Style TargetType="Grid">
+                                                                                    <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
+                                                                                    <Style.Triggers>
+                                                                                        <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                                                                                            <Setter Property="Background" Value="{StaticResource HighlightBrush}"></Setter>
+                                                                                        </DataTrigger>
+                                                                                    </Style.Triggers>
+                                                                                </Style>
+                                                                            </Grid.Style>
                                                                             <Grid.ColumnDefinitions>
                                                                                 <ColumnDefinition Width="*"/>
                                                                                 <ColumnDefinition Width="50"/>
@@ -315,30 +312,53 @@
                                           Width="5"
                             />
 
-                            <controls:ThumbnailView 
-                                Grid.Column="2" 
-                                x:Name="ThumbnailListView" 
-                                Focusable="True"
-                                Images="{Binding Images}" 
-                                Page="{Binding Page, Mode=TwoWay}" 
-                                Pages="{Binding Pages}" 
-                                NSFWBlur="{Binding MainModel.NSFWBlurCommand}"
-                                SelectedImages="{Binding MainModel.SelectedImages, Mode=TwoWay}"
-                                IsEmpty="{Binding IsEmpty}"
-                                Results="{Binding Results}"
-                                PageChangedCommand="{Binding PageChangedCommand}"
-                                SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
-                                OpenCommand="{Binding OpenCommand}"
-                                Albums="{Binding MainModel.Albums}"
-                                AddAlbumCommand="{Binding MainModel.AddAlbumCommand}"
-                                AddToAlbumCommand="{Binding MainModel.AddToAlbumCommand}"
-                                RemoveFromAlbumCommand="{Binding MainModel.RemoveFromAlbumCommand}"
-                                RemoveAlbumCommand="{Binding MainModel.RemoveAlbumCommand}"
-                                RenameAlbumCommand="{Binding MainModel.RenameAlbumCommand}"
-                                CopyCommand="{Binding CopyFiles}"
-                                ViewMode="{Binding CurrentViewMode}"
-                                CurrentImage="{Binding CurrentImage}">
-                            </controls:ThumbnailView>
+                            <Grid Grid.Column="2">
+                                <DockPanel>
+                                    <DockPanel Margin="0,0,0,5" Visibility="{Binding CurrentViewMode, Converter={StaticResource addrVis}}" DockPanel.Dock="Top">
+                                        <Button ToolTip="{lex:Loc Search.AddressBar.Buttons.Home.ToolTip}" DockPanel.Dock="Left" Width="28" Command="{Binding GoHome}">
+                                            <fa:ImageAwesome Icon="Home" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            </fa:ImageAwesome>
+                                        </Button>
+                                        <Button ToolTip="{lex:Loc Search.AddressBar.Buttons.UpOneLevel.ToolTip}" DockPanel.Dock="Left" Width="28" Command="{Binding GoUp}">
+                                            <fa:ImageAwesome Icon="ArrowUp" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            </fa:ImageAwesome>
+                                        </Button>
+                                        <TextBox  Height="24"
+                                                  Padding="5,0,0,0"
+                                                  HorizontalAlignment="Stretch" 
+                                                  VerticalContentAlignment="Center"
+                                                  Text="{Binding FolderPath, UpdateSourceTrigger=PropertyChanged}"
+                                                  KeyDown="FolderPath_OnKeyDown"
+                                        ></TextBox>
+                                    </DockPanel>
+
+                                    <controls:ThumbnailView 
+                                        x:Name="ThumbnailListView" 
+                                        Focusable="True"
+                                        Images="{Binding Images}" 
+                                        Page="{Binding Page, Mode=TwoWay}" 
+                                        Pages="{Binding Pages}" 
+                                        NSFWBlur="{Binding MainModel.NSFWBlurCommand}"
+                                        SelectedImages="{Binding MainModel.SelectedImages, Mode=TwoWay}"
+                                        IsEmpty="{Binding IsEmpty}"
+                                        Results="{Binding Results}"
+                                        PageChangedCommand="{Binding PageChangedCommand}"
+                                        SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
+                                        OpenCommand="{Binding OpenCommand}"
+                                        Albums="{Binding MainModel.Albums}"
+                                        AddAlbumCommand="{Binding MainModel.AddAlbumCommand}"
+                                        AddToAlbumCommand="{Binding MainModel.AddToAlbumCommand}"
+                                        RemoveFromAlbumCommand="{Binding MainModel.RemoveFromAlbumCommand}"
+                                        RemoveAlbumCommand="{Binding MainModel.RemoveAlbumCommand}"
+                                        RenameAlbumCommand="{Binding MainModel.RenameAlbumCommand}"
+                                        CopyCommand="{Binding CopyFiles}"
+                                        ViewMode="{Binding CurrentViewMode}"
+                                        CurrentImage="{Binding CurrentImage}">
+                                    </controls:ThumbnailView>
+                                </DockPanel>
+
+                            </Grid>
+
                         </Grid>
 
 

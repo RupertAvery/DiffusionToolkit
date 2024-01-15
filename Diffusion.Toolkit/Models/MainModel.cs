@@ -54,7 +54,8 @@ public class MainModel : BaseNotify
     private ICommand _showAlbums;
     private ICommand _addMatchingToAlbum;
     private bool _showAlbumPanel;
-    private ICommand _toggleAlbum;
+    private ICommand _toggleAlbumCommand;
+    private ICommand _sortAlbum;
     private ICommand _refresh;
     private ICommand _quickCopy;
     private int _thumbnailSize;
@@ -183,8 +184,7 @@ public class MainModel : BaseNotify
         get => _showFolders;
         set => SetField(ref _showFolders, value);
     }
-
-
+    
     public ICommand ShowAlbums
     {
         get => _showAlbums;
@@ -347,10 +347,16 @@ public class MainModel : BaseNotify
         set => SetField(ref _showAlbumPanel, value);
     }
 
-    public ICommand ToggleAlbum
+    public ICommand ToggleAlbumCommand
     {
-        get => _toggleAlbum;
-        set => SetField(ref _toggleAlbum, value);
+        get => _toggleAlbumCommand;
+        set => SetField(ref _toggleAlbumCommand, value);
+    }
+
+    public ICommand SortAlbumCommand
+    {
+        get => _sortAlbum;
+        set => SetField(ref _sortAlbum, value);
     }
 
     public ICommand Refresh
@@ -440,6 +446,7 @@ public class MainModel : BaseNotify
     }
 
     private ModelViewModel? _currentModel;
+    private string _activeView;
 
     public ModelViewModel? CurrentModel
     {
@@ -506,4 +513,9 @@ public class MainModel : BaseNotify
         set => SetField(ref _imageModelNames, value);
     }
 
+    public string ActiveView
+    {
+        get => _activeView;
+        set => SetField(ref _activeView, value);
+    }
 }
