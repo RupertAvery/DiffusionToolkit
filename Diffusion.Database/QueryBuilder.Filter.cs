@@ -107,7 +107,7 @@ namespace Diffusion.Database
                 return;
             }
 
-            if (HideNFSW)
+            if (HideNSFW)
             {
                 conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
             }

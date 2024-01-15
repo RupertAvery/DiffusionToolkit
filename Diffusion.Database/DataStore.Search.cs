@@ -10,7 +10,7 @@ namespace Diffusion.Database
 
             string whereClause = "";
 
-            if (QueryBuilder.HideNFSW)
+            if (QueryBuilder.HideNSFW)
             {
                 whereClause = "WHERE (NSFW = 0 OR NSFW IS NULL)";
             }
@@ -30,7 +30,7 @@ namespace Diffusion.Database
 
             var query = "SELECT COUNT(*) FROM Image";
 
-            if (QueryBuilder.HideNFSW)
+            if (QueryBuilder.HideNSFW)
             {
                 query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
             }
@@ -52,7 +52,7 @@ namespace Diffusion.Database
             {
                 var query = $"SELECT SUM(FileSize) FROM Image";
 
-                if (QueryBuilder.HideNFSW)
+                if (QueryBuilder.HideNSFW)
                 {
                     query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                 }
@@ -107,7 +107,7 @@ namespace Diffusion.Database
             {
                 var query = "SELECT COUNT(*) FROM Image";
                 
-                if (QueryBuilder.HideNFSW)
+                if (QueryBuilder.HideNSFW)
                 {
                     query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                 }
@@ -160,7 +160,7 @@ namespace Diffusion.Database
             {
                 var query = $"SELECT SUM(FileSize) FROM Image";
 
-                if (QueryBuilder.HideNFSW)
+                if (QueryBuilder.HideNSFW)
                 {
                     query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                 }
@@ -188,7 +188,7 @@ namespace Diffusion.Database
             {
                 var query = "SELECT COUNT(*) FROM Image";
 
-                if (QueryBuilder.HideNFSW)
+                if (QueryBuilder.HideNSFW)
                 {
                     query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                 }
@@ -239,7 +239,7 @@ namespace Diffusion.Database
             
             var query = $"SELECT Image.* FROM Image";
 
-            if (QueryBuilder.HideNFSW)
+            if (QueryBuilder.HideNSFW)
             {
                 query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
             }
@@ -382,7 +382,7 @@ namespace Diffusion.Database
             {
                 var query = "SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image ";
 
-                if (QueryBuilder.HideNFSW)
+                if (QueryBuilder.HideNSFW)
                 {
                     query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                 }
@@ -442,7 +442,7 @@ namespace Diffusion.Database
             {
                 var query = "SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image ";
 
-                if (QueryBuilder.HideNFSW)
+                if (QueryBuilder.HideNSFW)
                 {
                     query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                 }
@@ -484,7 +484,7 @@ namespace Diffusion.Database
             {
                 var query = "SELECT Prompt, COUNT(*) AS Usage FROM Image";
 
-                if (QueryBuilder.HideNFSW)
+                if (QueryBuilder.HideNSFW)
                 {
                     query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                 }
@@ -508,7 +508,7 @@ namespace Diffusion.Database
                     {
                         var query = "SELECT Prompt, COUNT(*) AS Usage FROM Image";
 
-                        if (QueryBuilder.HideNFSW)
+                        if (QueryBuilder.HideNSFW)
                         {
                             query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                         }
@@ -535,7 +535,7 @@ namespace Diffusion.Database
                     {
                         var query = "SELECT Prompt, COUNT(*) AS Usage FROM Image WHERE TRIM(Prompt) = ?";
 
-                        if (QueryBuilder.HideNFSW)
+                        if (QueryBuilder.HideNSFW)
                         {
                             query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
                         }
@@ -557,7 +557,7 @@ namespace Diffusion.Database
 
                     var query = $"SELECT Prompt, COUNT(*) AS Usage FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}";
 
-                    if (QueryBuilder.HideNFSW)
+                    if (QueryBuilder.HideNSFW)
                     {
                         query += " AND (NSFW = 0 OR NSFW IS NULL)";
                     }

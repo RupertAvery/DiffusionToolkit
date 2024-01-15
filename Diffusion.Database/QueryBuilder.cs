@@ -52,7 +52,7 @@ public static partial class QueryBuilder
 
     public static List<string> Samplers { get; set; }
 
-    public static bool HideNFSW { get; set; }
+    public static bool HideNSFW { get; set; }
 
     public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) QueryPrompt(string prompt)
     {
@@ -61,7 +61,7 @@ public static partial class QueryBuilder
 
         ParseExactPrompt(ref prompt, conditions);
 
-        if (HideNFSW)
+        if (HideNSFW)
         {
             conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
         }
@@ -231,7 +231,7 @@ public static partial class QueryBuilder
             return;
         }
 
-        if (HideNFSW)
+        if (HideNSFW)
         {
             conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
         }
