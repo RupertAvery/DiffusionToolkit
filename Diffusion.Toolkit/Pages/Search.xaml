@@ -394,6 +394,7 @@
             <controls:PreviewPane x:Name="PreviewPane" 
                                   NSFWBlur="{Binding MainModel.NSFWBlurCommand}" 
                                   Image="{Binding CurrentImage}" 
+                                  IsLoading="{Binding CurrentImage.IsLoading}"
                                   AllowDrop="True" 
                                   PreviewKeyUp="PreviewPane_OnPreviewKeyUp"
                                   PreviewKeyDown="PreviewPane_OnPreviewKeyDown"

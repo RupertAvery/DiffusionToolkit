@@ -43,6 +43,7 @@ public class ImageViewModel : BaseNotify
     private int _width;
     private int _steps;
     private string? _sampler;
+    private bool _isLoading;
 
     public ImageViewModel()
     {
@@ -242,5 +243,11 @@ public class ImageViewModel : BaseNotify
     {
         get => _steps;
         set => SetField(ref _steps, value);
+    }
+
+    public bool IsLoading
+    {
+        get => _isLoading;
+        set => SetField(ref _isLoading, value);
     }
 }

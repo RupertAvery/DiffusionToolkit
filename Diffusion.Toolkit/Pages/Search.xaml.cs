@@ -22,6 +22,7 @@ using Task = System.Threading.Tasks.Task;
 using static System.String;
 using Diffusion.Toolkit.Controls;
 using System.Collections.Specialized;
+using System.Threading;
 using Diffusion.IO;
 using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Common;
@@ -800,6 +801,8 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
+        private CancellationTokenSource? _loadPreviewBitmapCts;
+
         public void LoadPreviewImage(string path, ImageEntry? image = null)
         {
             if (image != null && image.EntryType != EntryType.File) return;
@@ -807,6 +810,13 @@ namespace Diffusion.Toolkit.Pages
 
             try
             {
+                if (_loadPreviewBitmapCts != null)
+                {
+                    _loadPreviewBitmapCts.Cancel();
+                }
+
+                _loadPreviewBitmapCts = new CancellationTokenSource();
+
                 var parameters = Metadata.ReadFromFile(path);
 
                 PreviewPane.ResetZoom();
@@ -837,11 +847,17 @@ namespace Diffusion.Toolkit.Pages
 
                 Task.Run(() =>
                 {
+                    imageViewModel.IsLoading = true;
+
+                    var sourceImage = GetBitmapImage(path);
+
                     Dispatcher.Invoke(() =>
                     {
-                        _model.CurrentImage.Image = GetBitmapImage(path);
+                        _model.CurrentImage.Image = sourceImage;
+                        imageViewModel.IsLoading = false;
                     });
-                });
+
+                }, _loadPreviewBitmapCts.Token);
 
                 if (parameters != null)
                 {

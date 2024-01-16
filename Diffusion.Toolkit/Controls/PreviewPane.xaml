@@ -35,14 +35,16 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
-
+    <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
+        <Grid Visibility="{Binding IsLoading, Converter={StaticResource boolToVis}}">
+            <fa:ImageAwesome Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{StaticResource ForegroundBrush}" />
+        </Grid>
         <!--<Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="Auto" />
                 <RowDefinition/>
             </Grid.RowDefinitions>-->
-        <Grid  Style="{StaticResource Preview}" Background="Transparent">
+        <Grid  Style="{StaticResource Preview}" Background="{x:Null}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="42"/>
                 <RowDefinition Height="*" />
@@ -55,7 +57,7 @@
 
             <!--HorizontalScrollBarVisibility="Hidden" 
             VerticalScrollBarVisibility="Hidden"-->
-            
+
             <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
                           HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
                           VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
@@ -136,7 +138,7 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="56"/>
                     </Grid.RowDefinitions>
-           
+
                     <!--<Grid  Grid.Row="1" MaxWidth="600" 
                            Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
                     >

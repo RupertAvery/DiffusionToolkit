@@ -17,6 +17,16 @@ namespace Diffusion.Toolkit.Controls
     /// </summary>
     public partial class PreviewPane : UserControl
     {
+        public static readonly DependencyProperty IsLoadingProperty =
+            DependencyProperty.Register(
+                name: nameof(IsLoading),
+                propertyType: typeof(bool),
+                ownerType: typeof(PreviewPane),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: false,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
         public static readonly DependencyProperty ImageProperty =
             DependencyProperty.Register(
                 name: nameof(Image),
@@ -45,6 +55,11 @@ namespace Diffusion.Toolkit.Controls
             {
 
             }
+        }
+        public bool IsLoading
+        {
+            get => (bool)GetValue(IsLoadingProperty);
+            set => SetValue(IsLoadingProperty, value);
         }
 
         public bool NSFWBlur
