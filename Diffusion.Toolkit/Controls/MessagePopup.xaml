@@ -12,6 +12,7 @@
              d:DataContext="{d:DesignInstance models:MessagePopupModel}"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
+             Focusable="True"
              mc:Ignorable="d" Height="94" Width="171">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -40,9 +41,9 @@
                         <RowDefinition Height="36"/>
                     </Grid.RowDefinitions>
                     <Label FontWeight="Bold" Grid.Row="0" Content="{Binding Title}" HorizontalAlignment="Center" FontSize="16"></Label>
-                    <StackPanel Grid.Row="1" >
+                    <StackPanel Grid.Row="1" FocusManager.FocusedElement="{Binding ElementName=InputTextBox}">
                         <TextBlock Foreground="{DynamicResource ForegroundBrush}" TextWrapping="WrapWithOverflow" Text="{Binding Message}" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
-                        <TextBox Visibility="{Binding ShowInput, Converter={StaticResource boolToVisCol}}" Text="{Binding Input}"></TextBox>
+                        <TextBox x:Name="InputTextBox" Margin="20,15,20,40" Height="24" VerticalContentAlignment="Center" Visibility="{Binding ShowInput, Converter={StaticResource boolToVisCol}}" Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}" KeyDown="UIElement_OnKeyDown"></TextBox>
                     </StackPanel>
                     <Grid Grid.Row="2">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >

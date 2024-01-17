@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;
@@ -72,13 +73,15 @@ public class MessagePopupManager
         });
     }
 
-    public Task<(PopupResult, string)> ShowInput(string message, string title, int timeout = 0)
+    public Task<(PopupResult, string?)> ShowInput(string message, string title, string? defaultText = null)
     {
         _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget, timeout, true);
+        var popup = new MessagePopup(this, _placementTarget, 0, true);
+        popup.Text = defaultText;
+
         _popups.Add(popup);
         _host.Children.Add(popup);
-        return popup.Show(message, title, PopupButtons.OkCancel, PopupResult.OK)
+        return popup.Show(message, title, PopupButtons.OkCancel, PopupResult.Cancel)
             .ContinueWith(t =>
             {
                 _dispatcher.Invoke(() =>

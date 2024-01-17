@@ -158,15 +158,43 @@
                                     <controls:AccordionControl HeaderBackground="#80000000" 
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Folders}">
+                                        <controls:AccordionControl.ButtonAreaContent>
+                                            <Grid Background="{x:Null}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition Width="26"/>
+                                                    <ColumnDefinition Width="26"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Refresh.ToopTip}" Command="{Binding MainModel.ReloadFoldersCommand}">
+                                                    <fa:FontAwesome Icon="Refresh"></fa:FontAwesome>
+                                                </Button>
+                                                <!--<Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Manage.ToopTip}" Command="{Binding MainModel.ManageFoldersCommand}">
+                                                    <fa:FontAwesome Icon="Gear"></fa:FontAwesome>
+                                                </Button>-->
+                                            </Grid>
+                                        </controls:AccordionControl.ButtonAreaContent>
                                         <ScrollViewer MaxHeight="500">
+                                            <ScrollViewer.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="New Folder" Command="{Binding MainModel.CreateFolderCommand}"></MenuItem>
+                                                    <Separator></Separator>
+                                                    <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Add to Album"></MenuItem>-->
+                                                    <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Send to Recycle Bin"></MenuItem>-->
+                                                    <MenuItem Command="{Binding MainModel.RenameFolderCommand}" IsEnabled="{Binding NavigationSection.FoldersSection.CanRename}" Header="Rename"></MenuItem>
+                                                    <Separator></Separator>
+                                                    <MenuItem Command="{Binding MainModel.DeleteFolderCommand}" IsEnabled="{Binding NavigationSection.FoldersSection.CanDelete}" Header="Delete"></MenuItem>
+                                                </ContextMenu>
+                                            </ScrollViewer.ContextMenu>
                                             <ItemsControl ItemsSource="{Binding Path=MainModel.Folders}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Button Style="{StaticResource SmallButton}" 
                                                                 Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" 
                                                                 PreviewMouseDoubleClick="Folder_OnDoubleClick"
+                                                                PreviewMouseDown="Folder_OnClick"
                                                                 Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
-                                                                Click="Folder_OnClick">
+                                                                AllowDrop="True" 
+                                                                Drop="DropImagesOnFolder">
                                                             <Button.Template>
                                                                 <ControlTemplate TargetType="{x:Type Button}">
                                                                     <Grid >
@@ -238,10 +266,10 @@
                                                     <ColumnDefinition Width="26"/>
                                                     <ColumnDefinition Width="26"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.SortAlbums.ToopTip}" Command="{Binding MainModel.SortAlbumCommand}">
+                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.SortAlbums.ToolTip}" Command="{Binding MainModel.SortAlbumCommand}">
                                                     <fa:FontAwesome Icon="Gear"></fa:FontAwesome>
                                                 </Button>
-                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.CreateAlbum.ToopTip}" Command="{Binding MainModel.CreateAlbumCommand}">
+                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.CreateAlbum.ToolTip}" Command="{Binding MainModel.CreateAlbumCommand}">
                                                     <fa:FontAwesome Icon="Plus"></fa:FontAwesome>
                                                 </Button>
                                             </Grid>

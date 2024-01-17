@@ -4,7 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Diffusion.Toolkit.Classes;
+using System.Windows.Controls.Primitives;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -56,7 +58,7 @@ namespace Diffusion.Toolkit.Controls
             t = new Timer(Callback, null, 1000, Timeout.Infinite);
         }
 
-        public string Text
+        public string? Text
         {
             get => _model.Input;
             set => _model.Input = value;
@@ -206,6 +208,12 @@ namespace Diffusion.Toolkit.Controls
 
             _defaultResult = defaultResult;
 
+            if (_model.ShowInput)
+            {
+                InputTextBox.Focus();
+                Keyboard.Focus(InputTextBox);
+            }
+
             return _tcs.Task;
         }
 
@@ -255,6 +263,18 @@ namespace Diffusion.Toolkit.Controls
         public void Hide()
         {
             _model.IsVisible = false;
+        }
+
+        private void UIElement_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Enter:
+                    _model.IsVisible = false;
+                    _tcs.SetResult(PopupResult.OK);
+                    Close();
+                    break;
+            }
         }
     }
 }

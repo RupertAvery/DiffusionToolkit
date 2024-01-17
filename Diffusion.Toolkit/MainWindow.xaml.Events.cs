@@ -199,7 +199,7 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private async Task CancelProgress()
+        private async Task CancelProgress(object o)
         {
             var dialogResult = await _messagePopupManager.Show(GetLocalizedText("Common.MessageBox.ConfirmCancelOperation"), GetLocalizedText("Common.MessageBox.Cancel"), PopupButtons.YesNo);
 

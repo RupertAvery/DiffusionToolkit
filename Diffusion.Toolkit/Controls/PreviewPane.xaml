@@ -36,8 +36,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
-        <Grid Visibility="{Binding IsLoading, Converter={StaticResource boolToVis}}">
-            <fa:ImageAwesome Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{StaticResource ForegroundBrush}" />
+        <Grid  Background="{x:Null}" Visibility="{Binding IsLoading, Converter={StaticResource boolToVis}}">
+            <fa:ImageAwesome Opacity="0.5" Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{StaticResource ForegroundBrush}" />
         </Grid>
         <!--<Grid.RowDefinitions>
                 <RowDefinition/>

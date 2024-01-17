@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Navigation;
 
 namespace Diffusion.Toolkit.Models;
@@ -15,6 +16,7 @@ public class FolderViewModel : BaseNotify
     private bool _hasChildren;
     private bool _visible;
     private bool _isSelected;
+    private string _name;
 
     public FolderState State
     {
@@ -42,10 +44,16 @@ public class FolderViewModel : BaseNotify
         set => SetField(ref _visible, value);
     }
 
-    public List<FolderViewModel>? Children { get; set; }
+    public ObservableCollection<FolderViewModel>? Children { get; set; }
+
     public int Depth { get; set; }
     public string Path { get; set; }
-    public string Name { get; set; }
+
+    public string Name
+    {
+        get => _name;
+        set => SetField(ref _name, value);
+    }
 
     public override bool Equals(object? obj)
     {

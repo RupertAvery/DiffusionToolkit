@@ -440,6 +440,7 @@ public class MainModel : BaseNotify
     private ModelViewModel? _currentModel;
     private string _activeView;
     private Settings _settings;
+    private ICommand _reloadFoldersCommand;
 
     public ModelViewModel? CurrentModel
     {
@@ -517,4 +518,24 @@ public class MainModel : BaseNotify
         get => _settings;
         set => SetField(ref _settings, value);
     }
+
+    public Action<FolderViewModel> MoveSelectedImagesToFolder { get; set; }
+
+    private FolderViewModel? _currentFolder;
+
+    public FolderViewModel? CurrentFolder
+    {
+        get => _currentFolder;
+        set => SetField(ref _currentFolder, value);
+    }
+
+    public ICommand ReloadFoldersCommand
+    {
+        get => _reloadFoldersCommand;
+        set => SetField(ref _reloadFoldersCommand, value);
+    }
+
+    public ICommand CreateFolderCommand { get; set; }
+    public ICommand RenameFolderCommand { get; set; }
+    public ICommand DeleteFolderCommand { get; set; }
 }

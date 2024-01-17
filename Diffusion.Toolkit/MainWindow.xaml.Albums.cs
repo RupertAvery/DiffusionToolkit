@@ -6,6 +6,7 @@ using SQLite;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using ICSharpCode.AvalonEdit.Editing;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
@@ -19,12 +20,20 @@ namespace Diffusion.Toolkit
             _model.AddSelectedImagesToAlbum = AddSelectedImagesToAlbum;
 
 
-            _model.AddAlbumCommand = new RelayCommand<object>((o) =>
+            _model.AddAlbumCommand = new AsyncCommand<object>(async (o) =>
             {
-                NewAlbumName.Text = null;
-                AddAlbumPopup.Tag = "AddImages";
-                AddAlbumPopup.IsOpen = true;
-                NewAlbumName.Focus();
+                var (result, text) = await _messagePopupManager.ShowInput("Enter a name for the new album", "New Album");
+
+                if (result == PopupResult.OK)
+                {
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        await _messagePopupManager.Show("Album name cannot be empty.", "New Album", PopupButtons.OK);
+                        return;
+                    }
+
+                    await CreateAlbum(text, _model.SelectedImages);
+                }
             });
 
             _model.AddToAlbumCommand = new RelayCommand<object>((o) =>
@@ -48,38 +57,56 @@ namespace Diffusion.Toolkit
                 _search.ReloadMatches(null);
             });
 
-            _model.RemoveAlbumCommand = new RelayCommand<object>((o) =>
+            _model.RemoveAlbumCommand = new AsyncCommand<AlbumModel>(async (album) =>
             {
-                var album = o as AlbumModel;
+                var result = await _messagePopupManager.Show($"Are you sure you want to remove \"{album.Name}\"?", "Remove Album", PopupButtons.YesNo);
 
-                _model.SelectedAlbum = new AlbumListItem()
+                if (result == PopupResult.Yes)
                 {
-                    Id = album.Id,
-                    Name = album.Name,
-                };
+                    if (_model.SelectedAlbum != null)
+                    {
+                        _dataStore.RemoveAlbum(album.Id);
 
-                RemoveAlbumMessage.Text = $"Are you sure you want to remove \"{album.Name}\"?";
-                RemoveAlbumPopup.IsOpen = true;
+                        LoadAlbums();
+
+                        _search.ReloadMatches(null);
+                    }
+                }
             });
 
-            _model.RenameAlbumCommand = new RelayCommand<object>((o) =>
+            _model.RenameAlbumCommand = new AsyncCommand<AlbumModel>(async (album) =>
             {
-                var album = o as AlbumModel;
+                var (result, text) = await _messagePopupManager.ShowInput("Enter a new name for the album", "Rename Album", album.Name);
 
-                _model.SelectedAlbum = new AlbumListItem()
+                if (result == PopupResult.OK)
                 {
-                    Id = album.Id,
-                    Name = album.Name,
-                };
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        await _messagePopupManager.Show("Album name cannot be empty.", "Rename Album", PopupButtons.OK);
+                        return;
+                    }
 
-                RenewAlbumName.Text = album.Name;
-                RenameAlbumPopup.IsOpen = true;
-                RenewAlbumName.Focus();
+                    _dataStore.RenameAlbum(album.Id, text);
+                    //UpdateAlbums();
+                    //SearchImages(null);
+                    LoadAlbums();
+                }
             });
 
-            _model.CreateAlbumCommand = new RelayCommand<object>((o) =>
+            _model.CreateAlbumCommand = new AsyncCommand<object>(async (o) =>
             {
-                CreateAlbum();
+                var (result, text) = await _messagePopupManager.ShowInput("Enter a name for the new album", "New Album");
+
+                if (result == PopupResult.OK)
+                {
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        await _messagePopupManager.Show("Album name cannot be empty.", "New Album", PopupButtons.OK);
+                        return;
+                    }
+
+                    await CreateAlbum(text);
+                }
             });
 
         }
@@ -110,28 +137,15 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private void AddImagesToNewAlbum_Click(object sender, RoutedEventArgs e)
+        private async Task CreateAlbum(string name, IEnumerable<ImageEntry>? imageEntries = null)
         {
-            var name = NewAlbumName.Text.Trim();
-            AddImagesToNewAlbum(name, _model.SelectedImages);
-        }
-
-        private void AddImagesToNewAlbum(string name, IEnumerable<ImageEntry>? imageEntries)
-        {
-            var images = (imageEntries ?? Enumerable.Empty<ImageEntry>()).ToList();
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                NewAlbumPopup.IsOpen = true;
-                NewAlbumMessage.Text = "Album name cannot be empty.";
-                return;
-            }
-
             try
             {
                 var album = _dataStore.CreateAlbum(new Album() { Name = name });
 
-                if (AddAlbumPopup.Tag is string and "AddImages" && images.Any())
+                var images = (imageEntries ?? Enumerable.Empty<ImageEntry>()).ToList();
+
+                if (images.Any())
                 {
                     _dataStore.AddImagesToAlbum(album.Id, images.Select(i => i.Id));
 
@@ -148,122 +162,13 @@ namespace Diffusion.Toolkit
                 }
 
                 LoadAlbums();
-
-                //_search.ReloadMatches(null);
-                AddAlbumPopup.Tag = null;
-                //UpdateAlbums();
             }
             catch (SQLiteException ex)
             {
-                NewAlbumPopup.IsOpen = true;
-                NewAlbumMessage.Text = $"Album {name} already exists! \r\n Please use another name.";
-            }
-
-            AddAlbumPopup.IsOpen = false;
-        }
-
-        private void CancelNewAlbum_Click(object sender, RoutedEventArgs e)
-        {
-            AddAlbumPopup.IsOpen = false;
-        }
-
-        private void NewAlbumMessageOK_Click(object sender, RoutedEventArgs e)
-        {
-            NewAlbumPopup.IsOpen = false;
-        }
-
-        private void RemoveAlbumYes_Click(object sender, RoutedEventArgs e)
-        {
-            if (_model.SelectedAlbum != null)
-            {
-                var album = _dataStore.GetAlbum(_model.SelectedAlbum.Id);
-                _dataStore.RemoveAlbum(album.Id);
-                RemoveAlbumPopup.IsOpen = false;
-
-                LoadAlbums();
-                _search.ReloadMatches(null);
-                //SearchImages(null);
-                //UpdateAlbums();
+                await _messagePopupManager.Show($"Album {name} already exists!\r\n Please use another name.", "New Album", PopupButtons.OK);
             }
         }
-
-        private void RemoveAlbumNo_Click(object sender, RoutedEventArgs e)
-        {
-            RemoveAlbumPopup.IsOpen = false;
-        }
-
-        private void RenameAlbumOK_Click(object sender, RoutedEventArgs e)
-        {
-            RenameAlbum();
-        }
-
-        private void RenameAlbum()
-        {
-            var name = RenewAlbumName.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                NewAlbumPopup.IsOpen = true;
-                NewAlbumMessage.Text = "Album name cannot be empty.";
-                return;
-            }
-
-            try
-            {
-                if (_model.SelectedAlbum != null)
-                {
-                    _dataStore.RenameAlbum(_model.SelectedAlbum.Id, name);
-                    //UpdateAlbums();
-                    //SearchImages(null);
-                    LoadAlbums();
-                }
-            }
-            catch (SQLiteException ex)
-            {
-                NewAlbumPopup.IsOpen = true;
-                NewAlbumMessage.Text = $"Album {name} already exists! \r\n Please use another name.";
-            }
-
-            RenameAlbumPopup.IsOpen = false;
-        }
-        private void RenameAlbumCancel_Click(object sender, RoutedEventArgs e)
-        {
-            RenameAlbumPopup.IsOpen = false;
-        }
-
-        private void RenewAlbumName_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-                case Key.Enter:
-                    RenameAlbum();
-                    e.Handled = true;
-                    break;
-                case Key.Escape:
-                    RenameAlbumPopup.IsOpen = false;
-                    e.Handled = true;
-                    break;
-            }
-        }
-
-
-
-        private void NewAlbumName_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            switch (e.Key)
-            {
-                case Key.Enter:
-                    var name = NewAlbumName.Text.Trim();
-                    AddImagesToNewAlbum(name, _model.SelectedImages);
-                    e.Handled = true;
-                    break;
-                case Key.Escape:
-                    AddAlbumPopup.IsOpen = false;
-                    e.Handled = true;
-                    break;
-            }
-        }
-
+        
         private void AddSelectedImagesToAlbum(IAlbumInfo album)
         {
             if (_model.SelectedImages != null)
@@ -280,40 +185,16 @@ namespace Diffusion.Toolkit
             }
         }
 
-
-
-        private void RenameAlbum_OnClick(object sender, RoutedEventArgs e)
+        private void MoveSelectedImagesToFolder(FolderViewModel folder)
         {
-            //_selectedAlbum = (Album)((MenuItem)sender).DataContext;
-
-            if (_model.SelectedAlbum != null)
+            if (_model.SelectedImages != null)
             {
-                RenewAlbumName.Text = _model.SelectedAlbum.Name;
-                RenewAlbumName.SelectAll();
-                RenameAlbumPopup.IsOpen = true;
-                RenewAlbumName.Focus();
+                Task.Run(async () =>
+                {
+                    await MoveFiles(_model.SelectedImages, folder.Path, false);
+                    _search.SearchImages(null);
+                });
             }
-
-        }
-
-        private void RemoveAlbum_OnClick(object sender, RoutedEventArgs e)
-        {
-            //_selectedAlbum = (Album)((MenuItem)sender).DataContext;
-
-
-            if (_model.SelectedAlbum != null)
-            {
-                RemoveAlbumMessage.Text = $"Are you sure you want to remove the Album \"{_model.SelectedAlbum.Name}\"?";
-                RemoveAlbumPopup.IsOpen = true;
-            }
-        }
-
-        private void CreateAlbum()
-        {
-            NewAlbumName.Text = null;
-            AddAlbumPopup.Tag = "NoImages";
-            AddAlbumPopup.IsOpen = true;
-            NewAlbumName.Focus();
         }
 
     }

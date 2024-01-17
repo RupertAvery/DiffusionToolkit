@@ -15,7 +15,7 @@ namespace Diffusion.Toolkit
     public partial class MainWindow
     {
 
-        private async Task RescanTask()
+        private async Task RescanTask(object o)
         {
             if (_settings.ImagePaths.Any())
             {
@@ -35,7 +35,7 @@ namespace Diffusion.Toolkit
         }
 
 
-        private async Task RebuildTask()
+        private async Task RebuildTask(object o)
         {
             if (_settings.ImagePaths.Any())
             {
@@ -554,7 +554,7 @@ namespace Diffusion.Toolkit
             return total;
         }
 
-        private async Task CleanRemovedFolders()
+        private async Task CleanRemovedFolders(object o)
         {
             var message = "This will remove any remaining images in removed folders from the database. The images on disk will not be deleted.\r\n\r\n" +
                           "Are you sure you want to continue?";

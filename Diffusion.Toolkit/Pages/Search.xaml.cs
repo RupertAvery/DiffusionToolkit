@@ -1989,139 +1989,6 @@ namespace Diffusion.Toolkit.Pages
             SearchImages(null);
         }
 
-        private void Folder_OnClick(object sender, RoutedEventArgs e)
-        {
-            var model = ((Toolkit.Models.FolderViewModel)((Button)sender).DataContext);
-
-            if (_currentModeSettings.CurrentFolder == model.Path)
-                return;
-
-            List<FolderViewModel> subFolders = model.Children;
-
-            if (subFolders == null)
-            {
-                subFolders = GetSubFolders(model);
-                model.HasChildren = subFolders.Any();
-                model.Children = subFolders;
-            }
-
-            if (_model.CurrentFolder != null)
-            {
-                _model.CurrentFolder.IsSelected = false;
-            }
-
-            _model.CurrentFolder = model;
-
-            model.IsSelected = true;
-
-            _model.MainModel.ActiveView = "Folders";
-            SetMode("folders");
-            _model.FolderPath = model.Path;
-            _currentModeSettings.CurrentFolder = model.Path;
-
-            SearchImages(null);
-        }
-
-        private List<FolderViewModel> GetSubFolders(FolderViewModel folder)
-        {
-            return Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
-            {
-                IgnoreInaccessible = true
-            }).Select(path => new FolderViewModel()
-            {
-                HasChildren = true,
-                Visible = true,
-                Depth = folder.Depth + 1,
-                Name = path.EndsWith("\\") ? "Root" : Path.GetFileName(path),
-                Path = path
-            }).ToList();
-        }
-
-        private void Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var model = ((Toolkit.Models.FolderViewModel)((Button)sender).DataContext);
-
-            if (model.State == FolderState.Collapsed)
-            {
-                List<FolderViewModel> subFolders = model.Children;
-
-                if (subFolders == null)
-                {
-                    subFolders = GetSubFolders(model);
-                    model.HasChildren = subFolders.Any();
-                    model.Children = subFolders;
-
-                    if (subFolders.Any())
-                    {
-                        var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
-
-                        foreach (var subFolder in subFolders.AsEnumerable().Reverse())
-                        {
-                            _model.MainModel.Folders.Insert(insertPoint, subFolder);
-                        }
-                    }
-                }
-                else
-                {
-                    foreach (var child in model.Children.AsEnumerable().Reverse())
-                    {
-                        if (!_model.MainModel.Folders.Contains(child))
-                        {
-                            var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
-
-                            _model.MainModel.Folders.Insert(insertPoint, child);
-                        }
-                        else
-                        {
-                            child.Visible = true;
-                            Expand(child);
-                        }
-                    }
-                }
-
-
-
-                model.State = FolderState.Expanded;
-            }
-            else
-            {
-                if (model.Children != null)
-                {
-                    Collapse(model);
-
-                    //model.Children = null;
-                }
-
-                model.State = FolderState.Collapsed;
-            }
-            e.Handled = true;
-        }
-
-        private void Collapse(FolderViewModel folder)
-        {
-            foreach (var child in folder.Children)
-            {
-                child.Visible = false;
-                if (child.Children != null)
-                {
-                    Collapse(child);
-                }
-            }
-        }
-
-        private void Expand(FolderViewModel folder)
-        {
-            if (folder.State == FolderState.Expanded && folder.Children != null)
-            {
-                foreach (var child in folder.Children)
-                {
-                    child.Visible = true;
-                    Expand(child);
-                }
-            }
-
-        }
-
         private void FilterPopup_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -2169,5 +2036,11 @@ namespace Diffusion.Toolkit.Pages
             DateMetadata.State = state;
         }
 
+        private void DropImagesOnFolder(object sender, DragEventArgs e)
+        {
+            var folder = (FolderViewModel)((FrameworkElement)sender).DataContext;
+            _model.MainModel.MoveSelectedImagesToFolder(folder);
+
+        }
     }
 }

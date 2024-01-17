@@ -4,38 +4,38 @@ using System.Windows.Input;
 
 namespace Diffusion.Toolkit.Classes;
 
-public class AsyncCommand : IAsyncCommand
+public class AsyncCommand<T> : IAsyncCommand<T>
 {
-    public event EventHandler CanExecuteChanged;
+    public event EventHandler? CanExecuteChanged;
 
     private bool _isExecuting;
-    private readonly Func<Task> _execute;
-    private readonly Func<bool> _canExecute;
-    private readonly IErrorHandler _errorHandler;
+    private readonly Func<T?, Task> _execute;
+    private readonly Func<bool>? _canExecute;
+    private readonly IErrorHandler? _errorHandler;
 
     public AsyncCommand(
-        Func<Task> execute,
-        Func<bool> canExecute = null,
-        IErrorHandler errorHandler = null)
+        Func<T?, Task> execute,
+        Func<bool>? canExecute = null,
+        IErrorHandler? errorHandler = null)
     {
         _execute = execute;
         _canExecute = canExecute;
         _errorHandler = errorHandler;
     }
 
-    public bool CanExecute()
+    public bool CanExecute(T? parameter)
     {
         return !_isExecuting && (_canExecute?.Invoke() ?? true);
     }
 
-    public async Task ExecuteAsync()
+    public async Task ExecuteAsync(T? parameter)
     {
-        if (CanExecute())
+        if (CanExecute(parameter))
         {
             try
             {
                 _isExecuting = true;
-                await _execute();
+                await _execute(parameter);
             }
             finally
             {
@@ -52,14 +52,14 @@ public class AsyncCommand : IAsyncCommand
     }
 
     #region Explicit implementations
-    bool ICommand.CanExecute(object parameter)
+    bool ICommand.CanExecute(object? parameter)
     {
-        return CanExecute();
+        return CanExecute((T?)parameter);
     }
 
-    void ICommand.Execute(object parameter)
+    void ICommand.Execute(object? parameter)
     {
-        ExecuteAsync().FireAndForgetSafeAsync(_errorHandler);
+        ExecuteAsync((T?)parameter).FireAndForgetSafeAsync(_errorHandler);
     }
     #endregion
 }

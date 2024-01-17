@@ -3,8 +3,8 @@ using System.Windows.Input;
 
 namespace Diffusion.Toolkit.Classes;
 
-public interface IAsyncCommand : ICommand
+public interface IAsyncCommand<in T> : ICommand
 {
-    Task ExecuteAsync();
-    bool CanExecute();
+    Task ExecuteAsync(T? parameter);
+    bool CanExecute(T? parameter);
 }

@@ -75,7 +75,9 @@ public class SearchModel : BaseNotify
     private ICommand _pageChangedCommand;
     private IEnumerable<OptionValue> _sortOptions;
     private IEnumerable<OptionValue> _sortOrderOptions;
-    private FolderViewModel? _currentFolder;
+
+    private NavigationSection _navigationSection;
+    private MetadataSection _metadataSection;
 
     public SearchModel()
     {
@@ -360,11 +362,6 @@ public class SearchModel : BaseNotify
         set => SetField(ref _currentViewMode, value);
     }
 
-    public FolderViewModel? CurrentFolder
-    {
-        get => _currentFolder;
-        set => SetField(ref _currentFolder, value);
-    }
 
     // TODO: merge this into above
     public string FolderPath
@@ -385,9 +382,18 @@ public class SearchModel : BaseNotify
         set => SetField(ref _pageChangedCommand, value);
     }
 
-    public NavigationSection NavigationSection { get; set; }
+    public NavigationSection NavigationSection
+    {
+        get => _navigationSection;
+        set => SetField(ref _navigationSection, value);
+    }
 
-    public MetadataSection MetadataSection { get; set; }
+    public MetadataSection MetadataSection
+    {
+        get => _metadataSection;
+        set => SetField(ref _metadataSection, value);
+    }
+
     public string CurrentMode { get; set; }
 }
 
@@ -399,6 +405,12 @@ public class NavigationSection : BaseNotify
     private bool _showFolders;
     private bool _showModels;
     private bool _showAlbums;
+    private FoldersSection? _foldersSection;
+
+    public NavigationSection()
+    {
+        FoldersSection = new FoldersSection();
+    }
 
     public bool ShowFolders
     {
@@ -434,6 +446,30 @@ public class NavigationSection : BaseNotify
     {
         get => _albumState;
         set => SetField(ref _albumState, value);
+    }
+
+    public FoldersSection FoldersSection
+    {
+        get => _foldersSection;
+        set => SetField(ref _foldersSection, value);
+    }
+}
+
+public class FoldersSection : BaseNotify
+{
+    private bool _canDelete;
+    private bool _canRename;
+
+    public bool CanDelete
+    {
+        get => _canDelete;
+        set => SetField(ref _canDelete, value);
+    }
+
+    public bool CanRename
+    {
+        get => _canRename;
+        set => SetField(ref _canRename, value);
     }
 }
 

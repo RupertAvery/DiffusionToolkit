@@ -47,6 +47,7 @@
         <controls:PreviewPane 
             NSFWBlur="{Binding NSFWBlur}" 
             Image="{Binding CurrentImage}"
+            IsLoading="{Binding CurrentImage.IsLoading}"
             PreviewKeyUp="PreviewPane_OnPreviewKeyUp"
             PreviewKeyDown="PreviewPane_OnPreviewKeyDown"
             x:Name="PreviewPane" 

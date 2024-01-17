@@ -67,7 +67,7 @@ namespace Diffusion.Toolkit.Controls
                 typeof(AccordionControl),
                 new UIPropertyMetadata(null)
             );
-        
+
 
         public Brush HeaderBackground
         {
@@ -93,7 +93,7 @@ namespace Diffusion.Toolkit.Controls
             get => (string)GetValue(HeaderProperty);
             set => SetValue(HeaderProperty, value);
         }
-        
+
         public Visibility ContentVisibility
         {
             get => _contentVisibility;

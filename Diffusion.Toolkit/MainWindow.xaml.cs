@@ -102,16 +102,16 @@ namespace Diffusion.Toolkit
 
 
             _model = new MainModel();
-            _model.Rescan = new AsyncCommand(RescanTask);
-            _model.Rebuild = new AsyncCommand(RebuildTask);
-            _model.ReloadHashes = new AsyncCommand(async () =>
+            _model.Rescan = new AsyncCommand<object>(RescanTask);
+            _model.Rebuild = new AsyncCommand<object>(RebuildTask);
+            _model.ReloadHashes = new AsyncCommand<object>(async (o) =>
             {
                 LoadModels();
                 await _messagePopupManager.Show("Models have been reloaded", "Diffusion Toolkit", PopupButtons.OK);
             });
             _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
             _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
-            _model.CancelCommand = new AsyncCommand(CancelProgress);
+            _model.CancelCommand = new AsyncCommand<object>(CancelProgress);
             _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
             _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
             _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
@@ -134,7 +134,7 @@ namespace Diffusion.Toolkit
 
             _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
             _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
-            _model.CleanRemovedFoldersCommand = new AsyncCommand(CleanRemovedFolders);
+            _model.CleanRemovedFoldersCommand = new AsyncCommand<object>(CleanRemovedFolders);
 
             _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
             _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
@@ -652,7 +652,7 @@ namespace Diffusion.Toolkit
             LoadAlbums();
             LoadModels();
             LoadImageModels();
-            LoadFolders();
+            InitFolders();
 
 
             Logger.Log($"{_modelsCollection.Count} models loaded");

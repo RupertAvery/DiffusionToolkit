@@ -41,7 +41,7 @@ namespace Diffusion.Toolkit
         private void WatcherOnRenamed(object sender, RenamedEventArgs e)
         {
             var wasTmp = Path.GetExtension(e.OldFullPath).ToLowerInvariant() == ".tmp";
-            
+
             if (wasTmp && _settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
                 QueueFile(e.FullPath);
@@ -74,11 +74,16 @@ namespace Diffusion.Toolkit
             }
             _watchers.Clear();
         }
-        
+
         private void QueueFile(string path)
         {
             lock (_lock)
             {
+                var attr = File.GetAttributes(path);
+
+                if (attr.HasFlag(FileAttributes.Directory))
+                    return;
+
                 if (t == null)
                 {
                     _detectedFiles = new List<string>();
