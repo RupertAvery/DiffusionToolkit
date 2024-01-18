@@ -64,8 +64,10 @@
                     <ContentControl Grid.Column="2" Content="{Binding ButtonAreaContent, RelativeSource={RelativeSource TemplatedParent}}"/>
                 </Grid>
 
-                <Grid Background="Transparent" Margin="10" Visibility="{Binding ContentVisibility, RelativeSource={RelativeSource TemplatedParent}}">
-                    <ContentPresenter Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" />
+                <Grid Background="Transparent" Margin="0,10,0,10" Visibility="{Binding ContentVisibility, RelativeSource={RelativeSource TemplatedParent}}">
+                    <Border BorderThickness="0,0,0,0" BorderBrush="{StaticResource SecondaryBrush}">
+                        <ContentPresenter Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" />
+                    </Border>
                 </Grid>
             </StackPanel>
         </ControlTemplate>

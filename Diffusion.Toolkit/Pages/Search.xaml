@@ -154,8 +154,55 @@
 
                             <ScrollViewer x:Name="NavigationScrollViewer" Grid.Column="0" VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
+                                    <controls:AccordionControl HeaderBackground="#80000000" Margin="0,0,0,5"
+                                                               Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowDate, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
+                                                               State="{Binding DataContext.NavigationSection.DateState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Date}">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="24"/>
+                                                <RowDefinition Height="24"/>
+                                                <RowDefinition Height="24"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <RadioButton>Date</RadioButton>
+                                                    <RadioButton Margin="10,0,0,0">Days</RadioButton>
+                                                    <RadioButton Margin="10,0,0,0">Weeks</RadioButton>
+                                                </StackPanel>
+                                            </Grid>
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="30"></ColumnDefinition>
+                                                    <ColumnDefinition></ColumnDefinition>
+                                                    <ColumnDefinition Width="20"></ColumnDefinition>
+                                                    <ColumnDefinition></ColumnDefinition>
+                                                </Grid.ColumnDefinitions>
+                                                <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}">
+                                                </fa:FontAwesome>
+                                                <DatePicker Grid.Column="1"></DatePicker>
+                                                <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Column="2"></CheckBox>
+                                                <DatePicker Grid.Column="3"></DatePicker>
+                                            </Grid>
+                                            <Grid Grid.Row="2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition></ColumnDefinition>
+                                                    <ColumnDefinition></ColumnDefinition>
+                                                    <ColumnDefinition></ColumnDefinition>
+                                                </Grid.ColumnDefinitions>
+                                                <Button Grid.Column="0" Style="{StaticResource BorderlessButton}">
+                                                    <fa:FontAwesome Icon="Backward"></fa:FontAwesome>
+                                                </Button>
+                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}">
+                                                    <fa:FontAwesome Icon="Stop"></fa:FontAwesome>
+                                                </Button>
+                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}">
+                                                    <fa:FontAwesome Icon="Forward"></fa:FontAwesome>
+                                                </Button>
+                                            </Grid>
+                                        </Grid>
+                                    </controls:AccordionControl>
 
-                                    <controls:AccordionControl HeaderBackground="#80000000" 
+                                    <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Folders}">
                                         <controls:AccordionControl.ButtonAreaContent>
@@ -165,7 +212,7 @@
                                                     <ColumnDefinition Width="26"/>
                                                     <ColumnDefinition Width="26"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Refresh.ToopTip}" Command="{Binding MainModel.ReloadFoldersCommand}">
+                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Refresh.ToopTip}" Command="{Binding MainModel.ReloadFoldersCommand}">
                                                     <fa:FontAwesome Icon="Refresh"></fa:FontAwesome>
                                                 </Button>
                                                 <!--<Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Manage.ToopTip}" Command="{Binding MainModel.ManageFoldersCommand}">
@@ -197,7 +244,7 @@
                                                                 Drop="DropImagesOnFolder">
                                                             <Button.Template>
                                                                 <ControlTemplate TargetType="{x:Type Button}">
-                                                                    <Grid >
+                                                                    <Grid>
                                                                         <Grid.Style>
                                                                             <Style TargetType="Grid">
                                                                                 <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
@@ -209,12 +256,14 @@
                                                                             </Style>
                                                                         </Grid.Style>
                                                                         <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="30"></ColumnDefinition>
                                                                             <ColumnDefinition Width="{Binding Depth, Converter={StaticResource FolderDepthConverter}}"/>
                                                                             <ColumnDefinition Width="10"/>
                                                                             <ColumnDefinition Width="*"/>
                                                                         </Grid.ColumnDefinitions>
-                                                                        <fa:ImageAwesome Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="6" Grid.Column="1" Foreground="{DynamicResource ForegroundBrush}"/>
-                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="2"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                        <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
+                                                                        <fa:ImageAwesome Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="6" Grid.Column="2" Foreground="{DynamicResource ForegroundBrush}"/>
+                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="3"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
                                                                     </Grid>
                                                                 </ControlTemplate>
                                                             </Button.Template>
@@ -226,7 +275,7 @@
                                     </controls:AccordionControl>
 
 
-                                    <controls:AccordionControl HeaderBackground="#80000000" 
+                                    <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowModels, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Models}">
                                         <ScrollViewer MaxHeight="500">
@@ -240,11 +289,13 @@
                                                                 <ControlTemplate TargetType="{x:Type Button}">
                                                                     <Grid  Background="{TemplateBinding Panel.Background}">
                                                                         <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="30"></ColumnDefinition>
                                                                             <ColumnDefinition Width="*"/>
                                                                             <ColumnDefinition Width="50"/>
                                                                         </Grid.ColumnDefinitions>
-                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="0"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
-                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16"  Padding="4" Grid.Column="1" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
+                                                                        <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
+                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="1"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                        <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16"  Padding="4" Grid.Column="2" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
                                                                     </Grid>
                                                                 </ControlTemplate>
                                                             </Button.Template>
@@ -256,7 +307,7 @@
 
                                     </controls:AccordionControl>
 
-                                    <controls:AccordionControl HeaderBackground="#80000000" 
+                                    <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowAlbums, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.AlbumState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  Header="{lex:Loc Search.Navigation.Albums}">
                                         <controls:AccordionControl.ButtonAreaContent>
@@ -312,11 +363,13 @@
                                                                                 </Style>
                                                                             </Grid.Style>
                                                                             <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="30"></ColumnDefinition>
                                                                                 <ColumnDefinition Width="*"/>
                                                                                 <ColumnDefinition Width="50"/>
                                                                             </Grid.ColumnDefinitions>
-                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="0"  Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
-                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16"  Padding="4" Grid.Column="1" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
+                                                                            <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
+                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="1"  Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                            <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16"  Padding="4" Grid.Column="2" Text="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" TextWrapping="WrapWithOverflow" HorizontalAlignment="Right"></TextBlock>
                                                                         </Grid>
                                                                     </ControlTemplate>
                                                                 </Button.Template>
@@ -539,7 +592,9 @@
 
                     <StackPanel Background="Transparent">
 
-                        <controls:AccordionControl x:Name="PromptMetadata" State="{Binding DataContext.MetadataSection.PromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}" HeaderBackground="#80000000" Header="{lex:Loc Metadata.Prompt}">
+                        <controls:AccordionControl x:Name="PromptMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   State="{Binding DataContext.MetadataSection.PromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}" HeaderBackground="#80000000" Header="{lex:Loc Metadata.Prompt}">
                             <controls:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -556,7 +611,9 @@
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"/>
                         </controls:AccordionControl>
 
-                        <controls:AccordionControl x:Name="NegativePromptMetadata" State="{Binding DataContext.MetadataSection.NegativePromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.NegativePrompt}">
+                        <controls:AccordionControl x:Name="NegativePromptMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   State="{Binding DataContext.MetadataSection.NegativePromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.NegativePrompt}">
                             <controls:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -571,7 +628,9 @@
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"/>
                         </controls:AccordionControl>
 
-                        <controls:AccordionControl x:Name="SeedMetadata" State="{Binding DataContext.MetadataSection.SeedState, ElementName=PreviewPaneGrid, Mode=TwoWay}"   HeaderBackground="#80000000" Header="{lex:Loc Metadata.Seed}">
+                        <controls:AccordionControl x:Name="SeedMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   State="{Binding DataContext.MetadataSection.SeedState, ElementName=PreviewPaneGrid, Mode=TwoWay}"   HeaderBackground="#80000000" Header="{lex:Loc Metadata.Seed}">
                             <controls:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -608,13 +667,17 @@
                             </Grid>
                         </controls:AccordionControl>
 
-                        <controls:AccordionControl x:Name="SamplerMetadata"  State="{Binding DataContext.MetadataSection.SamplerState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Sampler}">
+                        <controls:AccordionControl x:Name="SamplerMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   State="{Binding DataContext.MetadataSection.SamplerState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Sampler}">
                             <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Sampler}"/>
                         </controls:AccordionControl>
 
-                        <controls:AccordionControl x:Name="OtherMetadata"  State="{Binding DataContext.MetadataSection.OthersState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Others}">
+                        <controls:AccordionControl x:Name="OtherMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   State="{Binding DataContext.MetadataSection.OthersState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Others}">
                             <controls:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -629,7 +692,9 @@
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"/>
                         </controls:AccordionControl>
 
-                        <controls:AccordionControl x:Name="ModelMetadata" State="{Binding DataContext.MetadataSection.ModelState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.ModelName}">
+                        <controls:AccordionControl x:Name="ModelMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   State="{Binding DataContext.MetadataSection.ModelState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.ModelName}">
                             <controls:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -653,7 +718,9 @@
                             </Grid>
                         </controls:AccordionControl>
 
-                        <controls:AccordionControl x:Name="PathMetadata" State="{Binding DataContext.MetadataSection.PathState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Path}">
+                        <controls:AccordionControl x:Name="PathMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   State="{Binding DataContext.MetadataSection.PathState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Path}">
                             <controls:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -670,13 +737,19 @@
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"/>
                         </controls:AccordionControl>
 
-                        <controls:AccordionControl x:Name="DateMetadata" HeaderBackground="#80000000" State="{Binding DataContext.MetadataSection.DateState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Date}">
+                        <controls:AccordionControl x:Name="DateMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   HeaderBackground="#80000000" 
+                                                   State="{Binding DataContext.MetadataSection.DateState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Date}">
                             <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Date}"/>
                         </controls:AccordionControl>
 
-                        <controls:AccordionControl x:Name="AlbumMetadata" HeaderBackground="#80000000" State="{Binding DataContext.MetadataSection.AlbumState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Albums}">
+                        <controls:AccordionControl x:Name="AlbumMetadata" 
+                                                   Margin="0,0,0,5"
+                                                   HeaderBackground="#80000000" 
+                                                   State="{Binding DataContext.MetadataSection.AlbumState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Albums}">
                             <ItemsControl ItemsSource="{Binding Albums}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>

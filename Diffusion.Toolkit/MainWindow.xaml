@@ -166,55 +166,55 @@
 
         <Grid Grid.Row="1">
             <DockPanel>
-                <Grid Margin="2,10,5,0">
+                <Grid Margin="0,5,10,0">
                     <StackPanel Orientation="Vertical">
-                        <Button Margin="0,5,0,5" Height="16" Width="24" 
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Folders}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFolders}">
                             <fa:ImageAwesome ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,5" Height="16" Width="24" 
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Albums}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowAlbums}">
                             <fa:ImageAwesome ToolTip="Albums (Ctrl+2)" Icon="FilePhotoOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,5" Height="16" Width="24" 
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Diffusions}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSearch}">
                             <fa:ImageAwesome ToolTip="Search (Ctrl+3)" Icon="Search" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,5" Height="16" Width="24" 
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Favorites}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFavorite}">
                             <fa:ImageAwesome ToolTip="Favorites (Ctrl+4)" Icon="HeartOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,5" Height="16" Width="24" 
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Recycle Bin}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowMarked}">
                             <fa:ImageAwesome ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,5" Height="16" Width="24" 
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Prompts}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowPromptsCommand}">
                             <fa:ImageAwesome ToolTip="Prompts (Ctrl+6)" Icon="FileTextOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,5" Height="16" Width="24" 
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Models}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowModels}">
                             <fa:ImageAwesome ToolTip="Models" Icon="PuzzlePiece" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,5" Height="16" Width="24" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding Rescan}">
+                        <Button Margin="0,5,0,10" Height="16" Width="24" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding Rescan}">
                             <fa:ImageAwesome ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,5" Height="16" Width="24" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding SettingsCommand}">
+                        <Button Margin="0,5,0,10" Height="16" Width="24" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding SettingsCommand}">
                             <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
