@@ -14,6 +14,9 @@ using System.Threading;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using static System.Net.Mime.MediaTypeNames;
+using System.Windows.Shapes;
+using SQLite;
+using Path = System.IO.Path;
 
 namespace Diffusion.Toolkit
 {
@@ -22,12 +25,12 @@ namespace Diffusion.Toolkit
         private void InitFolders()
         {
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
-            
+
             _model.CreateFolderCommand = new RelayCommand<object>((o) =>
             {
                 ShowCreateFolderDialog();
             });
-            
+
             _model.RenameFolderCommand = new RelayCommand<object>((o) =>
             {
                 ShowRenameFolderDialog();
@@ -164,7 +167,28 @@ namespace Diffusion.Toolkit
                 var parentPath = Path.GetDirectoryName(currentFolder.Path);
                 var newPath = Path.Combine(parentPath, text);
 
-                Directory.Move(currentFolder.Path, newPath);
+                using (var db = _dataStore.OpenConnection())
+                {
+                    db.BeginTransaction();
+
+                    try
+                    {
+                        await MoveRenamePath(db, currentFolder.Path, newPath);
+
+                        Directory.Move(currentFolder.Path, newPath);
+
+                        RenameFolder(currentFolder, currentFolder.Path, newPath);
+
+                        db.Commit();
+
+                        _search.OpenFolder(currentFolder);
+                    }
+                    catch (Exception ex)
+                    {
+                        db.Rollback();
+                        throw;
+                    }
+                }
 
                 Dispatcher.Invoke(() =>
                 {
@@ -173,6 +197,87 @@ namespace Diffusion.Toolkit
                 });
 
             }
+        }
+        
+        private void RenameFolder(FolderViewModel folder, string source, string dest)
+        {
+            if (folder.Children != null)
+            {
+                foreach (var child in folder.Children)
+                {
+                    RenameFolder(child, source, dest);
+                }
+            }
+
+            var subPath = folder.Path.Substring(source.Length);
+            var newPath = Path.Join(dest, subPath);
+
+            folder.Path = newPath;
+        }
+
+
+        private async Task MoveRenamePath(SQLiteConnection db, string source, string dest)
+        {
+            var images = _dataStore.GetAllPathImages(source).ToList();
+
+            foreach (var watcher in _watchers)
+            {
+                watcher.EnableRaisingEvents = false;
+            }
+
+            Dispatcher.Invoke(() =>
+            {
+                _model.TotalProgress = images.Count;
+                _model.CurrentProgress = 0;
+            });
+
+            var moved = 0;
+
+            var folderIdCache = new Dictionary<string, int>();
+
+            foreach (var image in images)
+            {
+                var subPath = image.Path.Substring(source.Length);
+                var newPath = Path.Join(dest, subPath);
+
+                if (image.Path != newPath)
+                {
+                    _dataStore.MoveImage(db, image.Id, newPath, folderIdCache);
+
+                    var moved1 = moved;
+                    if (moved % 113 == 0)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            image.Path = newPath;
+                            _model.CurrentProgress = moved1;
+                            _model.Status = $"Moving {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
+                        });
+                    }
+
+                    moved++;
+                }
+                else
+                {
+                    _model.TotalProgress--;
+                }
+            }
+            
+            await Dispatcher.Invoke(async () =>
+            {
+                _model.Status = $"Moving {_model.TotalProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
+                _model.TotalProgress = Int32.MaxValue;
+                _model.CurrentProgress = 0;
+                Toast($"{moved} files were moved.", "Move images");
+            });
+
+            //await _search.ReloadMatches();
+
+            foreach (var watcher in _watchers)
+            {
+                watcher.EnableRaisingEvents = true;
+            }
+
         }
 
         private void LoadFolders()

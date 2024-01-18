@@ -63,14 +63,11 @@ namespace Diffusion.Toolkit
 
                 if (result == PopupResult.Yes)
                 {
-                    if (_model.SelectedAlbum != null)
-                    {
-                        _dataStore.RemoveAlbum(album.Id);
+                    _dataStore.RemoveAlbum(album.Id);
 
-                        LoadAlbums();
+                    LoadAlbums();
 
-                        _search.ReloadMatches(null);
-                    }
+                    _search.ReloadMatches(null);
                 }
             });
 

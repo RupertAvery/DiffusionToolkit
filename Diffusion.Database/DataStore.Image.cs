@@ -85,6 +85,19 @@ namespace Diffusion.Database
             //return paths;
         }
 
+        public IEnumerable<ImagePath> GetAllPathImages(string path)
+        {
+            using var db = OpenConnection();
+
+            var images = db.Query<ImagePath>("SELECT Id, FolderId, Path FROM Image WHERE PATH LIKE ? || '%'", path);
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+
+            db.Close();
+        }
 
         public IEnumerable<ImagePath> GetFolderImages(int folderId)
         {
@@ -353,6 +366,24 @@ namespace Diffusion.Database
             db.Execute("UPDATE Image SET Path = ?, FolderId = ? WHERE Id = ?", newPath, folderId, id);
 
             db.Close();
+        }
+
+        public SQLiteConnection Open()
+        {
+            return OpenConnection();
+        }
+
+        public void MoveImage(SQLiteConnection db, int id, string newPath, Dictionary<string, int> folderIdCache)
+        {
+            var dirName = Path.GetDirectoryName(newPath);
+
+            if (!folderIdCache.TryGetValue(dirName, out var folderId))
+            {
+                folderId = AddOrUpdateFolder(db, dirName);
+                folderIdCache.Add(dirName, folderId);
+            }
+
+            db.Execute("UPDATE Image SET Path = ?, FolderId = ? WHERE Id = ?", newPath, folderId, id);
         }
 
         public void MoveImages(IEnumerable<ImagePath> images, string path)
