@@ -79,21 +79,24 @@ namespace Diffusion.Toolkit
         {
             lock (_lock)
             {
-                var attr = File.GetAttributes(path);
-
-                if (attr.HasFlag(FileAttributes.Directory))
-                    return;
-
-                if (t == null)
+                if (File.Exists(path))
                 {
-                    _detectedFiles = new List<string>();
-                    t = new Timer(ProcessQueueCallback, null, 2000, Timeout.Infinite);
+                    var attr = File.GetAttributes(path);
+
+                    if (attr.HasFlag(FileAttributes.Directory))
+                        return;
+
+                    if (t == null)
+                    {
+                        _detectedFiles = new List<string>();
+                        t = new Timer(ProcessQueueCallback, null, 2000, Timeout.Infinite);
+                    }
+                    else
+                    {
+                        t.Change(2000, Timeout.Infinite);
+                    }
+                    _detectedFiles.Add(path);
                 }
-                else
-                {
-                    t.Change(2000, Timeout.Infinite);
-                }
-                _detectedFiles.Add(path);
             }
         }
 

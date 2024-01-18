@@ -954,7 +954,29 @@ namespace Diffusion.Toolkit.Pages
             {
                 LoadMatches();
                 ThumbnailListView.ResetView(options?.Focus ?? true, options?.GotoEnd ?? false);
-                Dispatcher.Invoke(() => { options?.OnCompleted?.Invoke(); });
+                Dispatcher.Invoke(() =>
+                {
+                    options?.OnCompleted?.Invoke();
+
+                    if (_model.Images is { Count: > 0 })
+                    {
+                        if (options?.GotoEnd ?? false)
+                        {
+                            _model.SelectedImageEntry = _model.Images[^1];
+                        }
+                        else
+                        {
+                            _model.SelectedImageEntry = _model.Images[0];
+                        }
+                    }
+                    else
+                    {
+                        _model.SelectedImageEntry = null;
+                    }
+
+                });
+
+
             });
         }
 

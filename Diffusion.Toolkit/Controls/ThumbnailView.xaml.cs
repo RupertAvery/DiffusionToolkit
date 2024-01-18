@@ -667,7 +667,7 @@ namespace Diffusion.Toolkit.Controls
                 {
                     var index = gotoEnd ? Model.Images.Count - 1 : 0;
 
-                    ShowItem(index, focus && ThumbnailListView.IsFocused);
+                    ShowItem(index, focus);
                 }
             });
         }
