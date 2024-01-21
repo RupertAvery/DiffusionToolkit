@@ -49,6 +49,12 @@ namespace Diffusion.Toolkit
                 propertyType: typeof(GridLength),
                 ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(GridLength.Auto));
 
+        public static readonly DependencyProperty ExtraButtonWidthProperty =
+            DependencyProperty.Register(
+                name: nameof(ExtraButtonWidth),
+                propertyType: typeof(GridLength),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(GridLength.Auto));
+
         private Point previousScreenBounds;
         private bool isManualDrag;
 
@@ -56,6 +62,13 @@ namespace Diffusion.Toolkit
         {
             get => (GridLength)GetValue(TitleWidthProperty);
             set => SetValue(TitleWidthProperty, value);
+        }
+
+
+        public GridLength ExtraButtonWidth
+        {
+            get => (GridLength)GetValue(ExtraButtonWidthProperty);
+            set => SetValue(ExtraButtonWidthProperty, value);
         }
 
         public T GetRequiredTemplateChild<T>(string childName) where T : DependencyObject

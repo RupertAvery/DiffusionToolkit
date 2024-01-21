@@ -111,23 +111,6 @@
                 </fa:ImageAwesome>
             </Grid>
 
-            <Grid  Grid.Row="0" Background="{x:Null}"  IsHitTestVisible="true">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="16"/>
-                </Grid.ColumnDefinitions>
-                <Grid Visibility="{Binding IsPopout, Converter={StaticResource invBoolToVis}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" Grid.Column="1" Background="Transparent" >
-                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Click="Popout_OnClick">
-                        <fa:ImageAwesome ToolTip="Pop out" Icon="WindowRestore" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <fa:ImageAwesome.Effect>
-                                <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                            </fa:ImageAwesome.Effect>
-                        </fa:ImageAwesome>
-                    </Button>
-                </Grid>
-            </Grid>
-
             <Grid  Grid.Row="0" RowSpan="3"  Margin="10"  Background="{x:Null}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 >
                 <Grid  Background="{x:Null}"

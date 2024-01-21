@@ -124,9 +124,10 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="{TemplateBinding MenuWidth}"/>
                                     <ColumnDefinition Width="{TemplateBinding TitleWidth}"/>
+                                    <ColumnDefinition Width="{TemplateBinding ExtraButtonWidth}"/>
                                     <ColumnDefinition Width="132"/>
                                 </Grid.ColumnDefinitions>
-                                <Border Visibility="Hidden" BorderBrush="Red" BorderThickness="1" Grid.Column="0">
+                                <Border Visibility="Hidden" BorderBrush="{x:Null}" BorderThickness="1" Grid.Column="0">
                                 </Border>
                                 <Grid x:Name="PART_TitleBar" Background="Transparent" Grid.Column="1">
                                 </Grid>

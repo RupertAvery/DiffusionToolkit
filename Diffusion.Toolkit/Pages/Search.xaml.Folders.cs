@@ -1,4 +1,5 @@
-﻿using Diffusion.Toolkit.Models;
+﻿using Diffusion.Database;
+using Diffusion.Toolkit.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -14,6 +16,55 @@ namespace Diffusion.Toolkit.Pages
     public partial class Search
     {
 
+        private void ExpandToPath(string path)
+        {
+            var root = _model.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 &&  path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
+
+            var currentNode = root;
+
+            while(currentNode != null && !currentNode.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (currentNode.State == FolderState.Collapsed)
+                {
+                    ToggleFolder(currentNode);
+                }
+
+                if (currentNode.Children != null)
+                {
+                    var nextNode = currentNode.Children.FirstOrDefault(f => path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
+                    if (nextNode != null)
+                    {
+                        currentNode = nextNode;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+
+            if (_model.MainModel.CurrentFolder != null)
+            {
+                _model.MainModel.CurrentFolder.IsSelected = false;
+            }
+
+            _model.MainModel.CurrentFolder = currentNode;
+
+            currentNode.IsSelected = true;
+        }
+
+        private void Expander_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
+
+            ToggleFolder(folder);
+
+        }
 
         private void Folder_OnClick(object sender, MouseButtonEventArgs e)
         {
@@ -76,21 +127,28 @@ namespace Diffusion.Toolkit.Pages
 
         private void Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var model = ((FolderViewModel)((Button)sender).DataContext);
+            var folder = ((FolderViewModel)((Button)sender).DataContext);
 
-            if (model.State == FolderState.Collapsed)
+            ToggleFolder(folder);
+
+            e.Handled = true;
+        }
+
+        private void ToggleFolder(FolderViewModel folder)
+        {
+            if (folder.State == FolderState.Collapsed)
             {
-                var subFolders = model.Children;
+                var subFolders = folder.Children;
 
                 if (subFolders == null)
                 {
-                    subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(model));
-                    model.HasChildren = subFolders.Any();
-                    model.Children = subFolders;
+                    subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
+                    folder.HasChildren = subFolders.Any();
+                    folder.Children = subFolders;
 
                     if (subFolders.Any())
                     {
-                        var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+                        var insertPoint = _model.MainModel.Folders.IndexOf(folder) + 1;
 
                         foreach (var subFolder in subFolders.Reverse())
                         {
@@ -100,11 +158,11 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else
                 {
-                    foreach (var child in model.Children.Reverse())
+                    foreach (var child in folder.Children.Reverse())
                     {
                         if (!_model.MainModel.Folders.Contains(child))
                         {
-                            var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+                            var insertPoint = _model.MainModel.Folders.IndexOf(folder) + 1;
 
                             _model.MainModel.Folders.Insert(insertPoint, child);
                         }
@@ -118,20 +176,19 @@ namespace Diffusion.Toolkit.Pages
 
 
 
-                model.State = FolderState.Expanded;
+                folder.State = FolderState.Expanded;
             }
             else
             {
-                if (model.Children != null)
+                if (folder.Children != null)
                 {
-                    CollapseVisualTree(model);
+                    CollapseVisualTree(folder);
 
                     //model.Children = null;
                 }
 
-                model.State = FolderState.Collapsed;
+                folder.State = FolderState.Collapsed;
             }
-            e.Handled = true;
         }
 
         private void CollapseVisualTree(FolderViewModel folder)

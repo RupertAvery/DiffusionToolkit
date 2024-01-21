@@ -20,6 +20,7 @@
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         MenuWidth="300"
         TitleWidth="*"
+        ExtraButtonWidth="90"
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Window.InputBindings>
         <common:BareKeyBinding Key="I" Command="{Binding ToggleInfoCommand}"></common:BareKeyBinding>
@@ -43,6 +44,7 @@
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
             <converters:ThumbnailSizeCheckedConverter x:Key="thumbSizeChecked"></converters:ThumbnailSizeCheckedConverter>
             <converters:StringMatchConverter x:Key="StringMatchConverter"></converters:StringMatchConverter>
+            <converters:PopoutIconConverter x:Key="PopoutIconConverter"></converters:PopoutIconConverter>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -122,6 +124,23 @@
             </MenuItem>
         </Menu>
 
+        <Grid Background="{x:Null}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="150"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <Button Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
+                    <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    </fa:ImageAwesome>
+                </Button>
+                <Button Margin="15,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
+                    <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    </fa:ImageAwesome>
+                </Button>
+            </StackPanel>
+        </Grid>
         <!--<ToolBar Grid.Row="1" Height="32" OverflowMode="Never">
             <Button Command="{Binding ShowFolders}">
                 <fa:ImageAwesome MinWidth="32" ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -234,7 +253,7 @@
                 </Grid>
             </DockPanel>
         </Grid>
-        
+
         <Grid RowSpan="4" x:Name="PopupHost" Visibility="Hidden"  Background="#000000" Opacity="0.5">
         </Grid>
 

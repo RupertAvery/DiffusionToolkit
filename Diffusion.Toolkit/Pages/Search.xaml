@@ -262,7 +262,7 @@
                                                                             <ColumnDefinition Width="*"/>
                                                                         </Grid.ColumnDefinitions>
                                                                         <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
-                                                                        <fa:ImageAwesome Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="6" Grid.Column="2" Foreground="{DynamicResource ForegroundBrush}"/>
+                                                                        <fa:ImageAwesome MouseDown="Expander_OnMouseDown" Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Grid.Column="2" Foreground="{DynamicResource ForegroundBrush}"/>
                                                                         <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="3"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
                                                                     </Grid>
                                                                 </ControlTemplate>

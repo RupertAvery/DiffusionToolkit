@@ -234,6 +234,8 @@ namespace Diffusion.Toolkit.Pages
 
                     _model.FolderPath = _currentModeSettings.CurrentFolder;
 
+                    ExpandToPath(_model.FolderPath);
+
                     SearchImages(null);
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Album && _model.SelectedImageEntry.EntryType == EntryType.Album)
@@ -2064,5 +2066,6 @@ namespace Diffusion.Toolkit.Pages
             _model.MainModel.MoveSelectedImagesToFolder(folder);
 
         }
+
     }
 }
