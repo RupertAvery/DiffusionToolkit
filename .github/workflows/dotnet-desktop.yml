@@ -65,10 +65,10 @@ jobs:
         dotnet-version: 6.0.x
 
     - name: Publish
-      run: publish.cmd
+      run: .\publish.cmd
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: App
+        name: DiffusionToolkit
         path: build
