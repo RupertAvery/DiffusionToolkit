@@ -104,7 +104,7 @@
                                         </controls:AccordionControl.ButtonAreaContent>
                                         <Grid Background="{x:Null}">
                                             <TextBox Background="{x:Null}" FontSize="14" BorderThickness="0"
-                                                     IsReadOnly="True"
+                                                     Foreground="White" IsReadOnly="True"
                                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
                                         </Grid>
                                     </controls:AccordionControl>
@@ -121,7 +121,7 @@
                                         </controls:AccordionControl.ButtonAreaContent>
                                         <Grid Background="{x:Null}">
                                             <TextBox Background="{x:Null}" FontSize="14" BorderThickness="0"
-                                                     IsReadOnly="True"
+                                                     Foreground="White" IsReadOnly="True"
                                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
                                         </Grid>
                                     </controls:AccordionControl>
@@ -149,23 +149,23 @@
                                                 <ColumnDefinition Width="95"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBox Background="{x:Null}" FontSize="14" BorderThickness="0"
-                                                      IsReadOnly="True"
+                                                      Foreground="White" IsReadOnly="True"
                                                       Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Seed, Converter={StaticResource ZeroConverter}}"></TextBox>
                                             <TextBox Grid.Column="1" Background="{x:Null}" FontSize="14" BorderThickness="0"
-                                                      IsReadOnly="True"
+                                                      Foreground="White" IsReadOnly="True"
                                                       Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding CFGScale, Converter={StaticResource ZeroConverter}}"></TextBox>
                                             <TextBox Grid.Column="2" Background="{x:Null}" FontSize="14" BorderThickness="0"
-                                                      IsReadOnly="True"
+                                                      Foreground="White" IsReadOnly="True"
                                                       Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Steps, Converter={StaticResource ZeroConverter}}"></TextBox>
                                             <TextBox Grid.Column="3" Background="{x:Null}" FontSize="14" BorderThickness="0"
-                                                      IsReadOnly="True"
+                                                      Foreground="White" IsReadOnly="True"
                                                       Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding ., Converter={StaticResource SizeConverter}}"></TextBox>
                                         </Grid>
                                     </controls:AccordionControl>
 
                                     <controls:AccordionControl HeaderBackground="#7E004BBB" Header="{lex:Loc Metadata.Sampler}">
                                         <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                                 IsReadOnly="True"
+                                                 Foreground="White" IsReadOnly="True"
                                                  Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Sampler}"/>
                                     </controls:AccordionControl>
 
@@ -181,7 +181,7 @@
                                         </controls:AccordionControl.ButtonAreaContent>
                                         <Grid Background="{x:Null}">
                                             <TextBox FontSize="14" BorderThickness="0"
-                                                     Background="{x:Null}"
+                                                     Foreground="White" Background="{x:Null}"
                                                      IsReadOnly="True"
                                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
                                         </Grid>
@@ -205,9 +205,9 @@
                                                 <ColumnDefinition Width="100"/>
                                                 <ColumnDefinition Width="80"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBox Grid.Column="0" FontSize="14" BorderThickness="0"
-                                                IsReadOnly="True" Padding="5" Background="{x:Null}" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
-                                            <TextBox Grid.Column="1" FontSize="14" BorderThickness="0" IsReadOnly="True" Padding="5" Background="Transparent" Text="{Binding ModelHash}"></TextBox>
+                                            <TextBox Foreground="White" Grid.Column="0" FontSize="14" BorderThickness="0"
+                                                     IsReadOnly="True" Padding="5" Background="{x:Null}" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
+                                            <TextBox Foreground="White" Grid.Column="1" FontSize="14" BorderThickness="0" IsReadOnly="True" Padding="5" Background="Transparent" Text="{Binding ModelHash}"></TextBox>
                                         </Grid>
                                     </controls:AccordionControl>
 
@@ -225,7 +225,7 @@
                                         </controls:AccordionControl.ButtonAreaContent>
                                         <Grid Background="{x:Null}">
                                             <TextBox FontSize="14" BorderThickness="0" Background="{x:Null}"
-                                                     IsReadOnly="True"
+                                                     Foreground="White" IsReadOnly="True"
                                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"></TextBox>
                                         </Grid>
                                     </controls:AccordionControl>
@@ -233,7 +233,7 @@
                                     <controls:AccordionControl HeaderBackground="#7E004BBB" Header="{lex:Loc Metadata.Date}">
                                         <Grid Background="{x:Null}">
                                             <TextBox FontSize="14" BorderThickness="0" Background="{x:Null}"
-                                                     IsReadOnly="True"
+                                                     Foreground="White" IsReadOnly="True"
                                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
                                         </Grid>
                                     </controls:AccordionControl>
@@ -242,8 +242,10 @@
                                         <ItemsControl ItemsSource="{Binding Path=Albums}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Background="{StaticResource SecondaryBrush}" BorderThickness="1" BorderBrush="{StaticResource SecondaryBrush}" CornerRadius="5" Margin="5">
-                                                        <TextBox FontSize="14" BorderThickness="0" IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Name}"></TextBox>
+                                                    <Border BorderThickness="1" BorderBrush="{StaticResource SecondaryBrush}" CornerRadius="5" Margin="5">
+                                                        <TextBox FontSize="14" BorderThickness="0"
+                                                                 Foreground="White" IsReadOnly="True" Padding="5" Background="Transparent" 
+                                                                 TextWrapping="WrapWithOverflow" Text="{Binding Name}"/>
                                                     </Border>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
