@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Toolkit.Behaviors;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -47,6 +48,7 @@ namespace Diffusion.Toolkit.Pages
                 }
             }
 
+            if (currentNode == null) return;
 
             if (_model.MainModel.CurrentFolder != null)
             {
@@ -58,12 +60,23 @@ namespace Diffusion.Toolkit.Pages
             currentNode.IsSelected = true;
         }
 
+
+        private void Expander_Click(object sender, RoutedEventArgs e)
+        {
+            var folder = ((Button)sender).DataContext as FolderViewModel;
+
+            ToggleFolder(folder);
+
+            e.Handled = true;
+        }
+
         private void Expander_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
             ToggleFolder(folder);
 
+            e.Handled = true;
         }
 
         private void Folder_OnClick(object sender, MouseButtonEventArgs e)
@@ -219,6 +232,8 @@ namespace Diffusion.Toolkit.Pages
         {
             var subFolders = GetSubFolders(model).ToList();
 
+            // TODO: prevent updating of state and MainModel.Folders if no visual update is required
+
             if (model.HasChildren)
             {
                 var addedFolders = subFolders.Except(model.Children);
@@ -228,11 +243,13 @@ namespace Diffusion.Toolkit.Pages
 
                 foreach (var folder in addedFolders)
                 {
+                    model.Children.Add(folder);
                     _model.MainModel.Folders.Insert(insertPoint, folder);
                 }
 
                 foreach (var folder in removedFolders)
                 {
+                    model.Children.Remove(folder);
                     _model.MainModel.Folders.Remove(folder);
                 }
 
@@ -242,9 +259,22 @@ namespace Diffusion.Toolkit.Pages
             {
                 model.HasChildren = subFolders.Any();
                 model.Children = new ObservableCollection<FolderViewModel>(subFolders);
+
+                var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+
+                foreach (var folder in subFolders)
+                {
+                    _model.MainModel.Folders.Insert(insertPoint, folder);
+                }
+
             }
 
+            if (model.HasChildren)
+            {
+                model.State = FolderState.Expanded;
+            }
         }
+
 
     }
 }
