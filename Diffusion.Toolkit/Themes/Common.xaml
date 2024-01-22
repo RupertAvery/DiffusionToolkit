@@ -834,6 +834,9 @@
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
             </Trigger>
+            <Trigger Property="behaviors:DTBehaviors.IsDraggedOn" Value="True">
+                <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
+            </Trigger>
         </Style.Triggers>
     </Style>
 
