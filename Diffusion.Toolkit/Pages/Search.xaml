@@ -13,6 +13,7 @@
       xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
       xmlns:lex="http://wpflocalizeextension.codeplex.com"
       xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
+      xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
       lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
       lex:LocalizeDictionary.Separation="."
       lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
@@ -154,7 +155,7 @@
 
                             <ScrollViewer x:Name="NavigationScrollViewer" Grid.Column="0" VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
-                                    <controls:AccordionControl HeaderBackground="#80000000" Margin="0,0,0,5"
+                                    <!--<controls:AccordionControl HeaderBackground="#80000000" Margin="0,0,0,5"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowDate, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.DateState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Date}">
                                         <Grid>
@@ -200,7 +201,7 @@
                                                 </Button>
                                             </Grid>
                                         </Grid>
-                                    </controls:AccordionControl>
+                                    </controls:AccordionControl>-->
 
                                     <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
@@ -241,6 +242,8 @@
                                                                 PreviewMouseDown="Folder_OnClick"
                                                                 Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
                                                                 AllowDrop="True" 
+                                                                behaviors:DTBehaviors.UseIsDraggedHandlers="True"
+                                                                behaviors:DTBehaviors.IsFocused="{Binding IsSelected}"
                                                                 Drop="DropImagesOnFolder">
                                                             <Button.Template>
                                                                 <ControlTemplate TargetType="{x:Type Button}">
@@ -256,13 +259,15 @@
                                                                             </Style>
                                                                         </Grid.Style>
                                                                         <Grid.ColumnDefinitions>
-                                                                            <ColumnDefinition Width="30"></ColumnDefinition>
+                                                                            <ColumnDefinition Width="0"></ColumnDefinition>
                                                                             <ColumnDefinition Width="{Binding Depth, Converter={StaticResource FolderDepthConverter}}"/>
-                                                                            <ColumnDefinition Width="10"/>
+                                                                            <ColumnDefinition Width="15"/>
                                                                             <ColumnDefinition Width="*"/>
                                                                         </Grid.ColumnDefinitions>
                                                                         <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
-                                                                        <fa:ImageAwesome MouseDown="Expander_OnMouseDown" Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Grid.Column="2" Foreground="{DynamicResource ForegroundBrush}"/>
+                                                                        <Button Grid.Column="2" Background="{x:Null}" Style="{StaticResource SmallButton}" Width="15" PreviewMouseDown="Expander_OnMouseDown" >
+                                                                            <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"/>
+                                                                        </Button>
                                                                         <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="3"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
                                                                     </Grid>
                                                                 </ControlTemplate>
@@ -289,7 +294,7 @@
                                                                 <ControlTemplate TargetType="{x:Type Button}">
                                                                     <Grid  Background="{TemplateBinding Panel.Background}">
                                                                         <Grid.ColumnDefinitions>
-                                                                            <ColumnDefinition Width="30"></ColumnDefinition>
+                                                                            <ColumnDefinition Width="0"></ColumnDefinition>
                                                                             <ColumnDefinition Width="*"/>
                                                                             <ColumnDefinition Width="50"/>
                                                                         </Grid.ColumnDefinitions>
@@ -337,12 +342,8 @@
                                                                Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" 
                                                              AllowDrop="True" 
                                                              Drop="DropImagesOnAlbum" 
+                                                             behaviors:DTBehaviors.UseIsDraggedHandlers="True"
                                                              Click="Album_OnClick">
-                                                                <Button.Resources>
-                                                                    <Style TargetType="{x:Type Border}">
-                                                                        <Setter Property="BorderThickness" Value="50"/>
-                                                                    </Style>
-                                                                </Button.Resources>
                                                                 <Button.ContextMenu>
                                                                     <ContextMenu>
                                                                         <MenuItem Header="Rename Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameAlbumCommand}" CommandParameter="{Binding Path=.}"></MenuItem>
@@ -363,7 +364,7 @@
                                                                                 </Style>
                                                                             </Grid.Style>
                                                                             <Grid.ColumnDefinitions>
-                                                                                <ColumnDefinition Width="30"></ColumnDefinition>
+                                                                                <ColumnDefinition Width="0"></ColumnDefinition>
                                                                                 <ColumnDefinition Width="*"/>
                                                                                 <ColumnDefinition Width="50"/>
                                                                             </Grid.ColumnDefinitions>
