@@ -132,11 +132,11 @@
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" Grid.Column="1">
                 <Button Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
-                    <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
                 <Button Margin="15,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
-                    <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{StaticResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
             </StackPanel>
