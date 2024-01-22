@@ -161,7 +161,7 @@ namespace Diffusion.Toolkit.Controls
             _model.HasCancel = false;
             _model.HasYes = false;
             _model.HasNo = false;
-            
+
             _defaultResult = PopupResult.OK;
 
             //_tcs = new TaskCompletionSource<PopupResult>();
@@ -208,11 +208,6 @@ namespace Diffusion.Toolkit.Controls
 
             _defaultResult = defaultResult;
 
-            if (_model.ShowInput)
-            {
-                InputTextBox.Focus();
-                Keyboard.Focus(InputTextBox);
-            }
 
             return _tcs.Task;
         }
@@ -274,6 +269,15 @@ namespace Diffusion.Toolkit.Controls
                     _tcs.SetResult(PopupResult.OK);
                     Close();
                     break;
+            }
+        }
+
+        private void FrameworkElement_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (_model.ShowInput)
+            {
+                InputTextBox.Focus();
+                Keyboard.Focus(InputTextBox);
             }
         }
     }

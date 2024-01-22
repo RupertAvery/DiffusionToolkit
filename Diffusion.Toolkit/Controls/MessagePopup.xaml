@@ -21,6 +21,7 @@
     </UserControl.Resources>
     <Popup IsOpen="{Binding IsVisible}" PlacementTarget="{Binding PlacementTarget}" 
            Placement="Center" Width="{Binding Width}" Height="{Binding Height}"
+           Loaded="FrameworkElement_OnLoaded"
            AllowsTransparency="True" PopupAnimation="Fade"
            >
         <Border         
