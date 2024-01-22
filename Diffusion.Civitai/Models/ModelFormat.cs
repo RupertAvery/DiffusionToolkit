@@ -9,5 +9,6 @@ public enum ModelFormat
     Diffusers,
     [EnumMember(Value = "Core ML")]
     CoreML,
-    Other
+    ONNX,
+    Other,
 }
