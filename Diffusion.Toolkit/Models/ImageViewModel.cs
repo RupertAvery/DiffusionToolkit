@@ -44,12 +44,20 @@ public class ImageViewModel : BaseNotify
     private int _steps;
     private string? _sampler;
     private bool _isLoading;
+    private bool _isMessageVisible;
+    private string _message;
 
     public ImageViewModel()
     {
     }
 
     public int Id { get; set; }
+
+    public bool IsMessageVisible
+    {
+        get => _isMessageVisible;
+        set => SetField(ref _isMessageVisible, value);
+    }
 
     public BitmapSource? Image
     {
@@ -249,5 +257,11 @@ public class ImageViewModel : BaseNotify
     {
         get => _isLoading;
         set => SetField(ref _isLoading, value);
+    }
+
+    public string Message
+    {
+        get => _message;
+        set => SetField(ref _message, value);
     }
 }

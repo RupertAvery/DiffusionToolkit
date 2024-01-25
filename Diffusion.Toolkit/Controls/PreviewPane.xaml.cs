@@ -56,6 +56,7 @@ namespace Diffusion.Toolkit.Controls
 
             }
         }
+
         public bool IsLoading
         {
             get => (bool)GetValue(IsLoadingProperty);

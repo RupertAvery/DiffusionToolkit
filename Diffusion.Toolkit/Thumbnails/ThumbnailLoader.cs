@@ -11,20 +11,38 @@ using System.Windows.Threading;
 
 namespace Diffusion.Toolkit.Thumbnails;
 
+public class ThumbailResult
+{
+    public bool Success { get; }
+    public BitmapSource? Image { get; }
+
+    public ThumbailResult(BitmapSource image)
+    {
+        Image = image;
+        Success = true;
+    }
+
+    private ThumbailResult(bool success)
+    {
+        Success = success;
+    }
+
+    public static ThumbailResult Failed => new ThumbailResult(false);
+
+}
+
 public class ThumbnailLoader
 {
-    private readonly Dispatcher _dispatcher;
     private static ThumbnailLoader? _instance;
-    private readonly Channel<Job<ThumbnailJob, BitmapSource>> _channel = Channel.CreateUnbounded<Job<ThumbnailJob, BitmapSource>>();
+    private readonly Channel<Job<ThumbnailJob, ThumbailResult>> _channel = Channel.CreateUnbounded<Job<ThumbnailJob, ThumbailResult>>();
     private readonly int _degreeOfParallelism = 2;
 
     private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
     private Stream _defaultStream;
 
-    private ThumbnailLoader(Dispatcher dispatcher)
+    private ThumbnailLoader()
     {
-        _dispatcher = dispatcher;
 
         _defaultStream = new MemoryStream();
 
@@ -64,9 +82,9 @@ public class ThumbnailLoader
         }
     }
 
-    public static void CreateInstance(Dispatcher dispatcher)
+    public static void CreateInstance()
     {
-        _instance = new ThumbnailLoader(dispatcher);
+        _instance = new ThumbnailLoader();
     }
 
     public static ThumbnailLoader Instance => _instance;
@@ -136,6 +154,12 @@ public class ThumbnailLoader
                         // Debug.WriteLine($"Loading from disk");
                         if (job.Data.EntryType == EntryType.File)
                         {
+                            if (!File.Exists(job.Data.Path))
+                            {
+                                job.Completion(ThumbailResult.Failed);
+                                continue;
+                            }
+
                             thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
                         }
                         else
@@ -145,18 +169,12 @@ public class ThumbnailLoader
 
                         ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
 
-                        _dispatcher.Invoke(() =>
-                        {
-                            job.Completion(thumbnail);
-                        });
+                        job.Completion(new ThumbailResult(thumbnail));
 
                     }
                     else
                     {
-                        _dispatcher.Invoke(() =>
-                        {
-                            job.Completion(thumbnail);
-                        });
+                        job.Completion(new ThumbailResult(thumbnail));
                     }
                 }
                 else
@@ -166,6 +184,11 @@ public class ThumbnailLoader
                     // Debug.WriteLine($"Loading from disk");
                     if (job.Data.EntryType == EntryType.File)
                     {
+                        if (!File.Exists(job.Data.Path))
+                        {
+                            job.Completion(ThumbailResult.Failed);
+                            continue;
+                        }
                         thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
                     }
                     else
@@ -175,24 +198,21 @@ public class ThumbnailLoader
 
                     ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
 
-                    _dispatcher.Invoke(() =>
-                    {
-                        job.Completion(thumbnail);
-                    });
+                    job.Completion(new ThumbailResult(thumbnail));
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
             }
-           
-            
+
+
         }
     }
 
-    public async Task QueueAsync(ThumbnailJob job, Action<BitmapSource> completion)
+    public async Task QueueAsync(ThumbnailJob job, Action<ThumbailResult> completion)
     {
-        await _channel.Writer.WriteAsync(new Job<ThumbnailJob, BitmapSource>() { Data = job, Completion = completion });
+        await _channel.Writer.WriteAsync(new Job<ThumbnailJob, ThumbailResult>() { Data = job, Completion = completion });
     }
 
     private static Stream GenerateThumbnail(string path, int width, int height, int size)

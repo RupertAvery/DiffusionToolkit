@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using Diffusion.Toolkit.Localization;
+using System.Globalization;
+using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -16,22 +18,42 @@ public class Thumbnail : FrameworkElement
         DependencyProperty.Register(nameof(Data), typeof(ImageEntry), typeof(Thumbnail),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender, PropertyChangedCallback));
 
+
+    public static readonly DependencyProperty ForegroundProperty =
+        DependencyProperty.Register(nameof(Foreground), typeof(Brush), typeof(Thumbnail),
+            new FrameworkPropertyMetadata(default(Brush), FrameworkPropertyMetadataOptions.AffectsRender, PropertyChangedCallback));
+
     private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        var image = (ImageEntry)e.NewValue;
-        if (image != null)
+        switch (e.Property.Name)
         {
-            image.PropertyChanged += (sender, args) =>
-            {
-                switch (args.PropertyName)
+            case nameof(Data):
+                var image = (ImageEntry)e.NewValue;
+                if (image != null)
                 {
-                    case nameof(ImageEntry.ForDeletion):
+                    image.PropertyChanged += (sender, args) =>
+                    {
                         var thumb = d as Thumbnail;
-                        thumb.InvalidateVisual();
-                        break;
+                        switch (args.PropertyName)
+                        {
+                            case nameof(ImageEntry.ForDeletion):
+                                thumb.InvalidateVisual();
+                                break;
+                            case nameof(ImageEntry.Unavailable):
+                                thumb.InvalidateVisual();
+                                break;
+                        }
+                    };
                 }
-            };
+                break;
         }
+
+    }
+
+    public Brush Foreground
+    {
+        get => (Brush)GetValue(ForegroundProperty);
+        set => SetValue(ForegroundProperty, value);
     }
 
     public BitmapSource? Source
@@ -46,9 +68,32 @@ public class Thumbnail : FrameworkElement
         set => SetValue(DataProperty, value);
     }
 
+    private string GetLocalizedText(string key)
+    {
+        return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+    }
+
     protected override void OnRender(DrawingContext drawingContext)
     {
         base.OnRender(drawingContext);
+
+        if (Data.Unavailable)
+        {
+            var formattedText = new FormattedText(GetLocalizedText("Thumbnail.Unavailable"),
+                CultureInfo.DefaultThreadCurrentCulture ?? CultureInfo.InvariantCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(new FontFamily("Calibri"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal),
+                12,
+                Foreground,
+                1
+            );
+
+            double centerX = (ActualWidth - formattedText.Width) / 2;
+            double centerY = (ActualHeight - formattedText.Height) / 2;
+
+            drawingContext.DrawText(formattedText, new Point(centerX, centerY));
+
+        }
 
         if (Source == null)
             return;
@@ -76,7 +121,6 @@ public class Thumbnail : FrameworkElement
         {
             drawingContext.PushOpacity(0.2);
         }
-
 
         drawingContext.DrawImage(Source, rect);
 

@@ -91,7 +91,7 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Creating Thumbnail loader");
 
-            ThumbnailLoader.CreateInstance(Dispatcher);
+            ThumbnailLoader.CreateInstance();
 
             _navigatorService = new NavigatorService(this)
             {

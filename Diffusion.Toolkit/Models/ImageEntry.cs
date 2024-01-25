@@ -37,6 +37,7 @@ public class ImageEntry : BaseNotify
     private string? _score;
     private int _albumCount;
     private IEnumerable<string> _albums;
+    private bool _unavailable;
 
     public ImageEntry(long requestId)
     {
@@ -125,20 +126,39 @@ public class ImageEntry : BaseNotify
         _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
         {
             LoadState = LoadState.Loaded;
-            if (Dispatcher != null)
+
+            if (d.Success)
             {
-                Dispatcher.Invoke(() =>
+                if (Dispatcher != null)
                 {
-                    Thumbnail = d;
-                });
+                    Dispatcher.Invoke(() => { Thumbnail = d.Image; });
+                }
+                else
+                {
+                    Thumbnail = d.Image;
+                }
             }
             else
             {
-                Thumbnail = d;
+                if (Dispatcher != null)
+                {
+                    Dispatcher.Invoke(() => { Unavailable = true; });
+                }
+                else
+                {
+                    Unavailable = true;
+                }
             }
+
             //Debug.WriteLine($"Finished job {job.RequestId}");
             //OnPropertyChanged(nameof(Thumbnail));
         });
+    }
+
+    public bool Unavailable
+    {
+        get => _unavailable;
+        set => SetField(ref _unavailable, value);
     }
 
     public int Height { get; set; }

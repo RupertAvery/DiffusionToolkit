@@ -809,7 +809,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (image != null && image.EntryType != EntryType.File) return;
 
-
+         
             try
             {
                 if (_loadPreviewBitmapCts != null)
@@ -819,9 +819,22 @@ namespace Diffusion.Toolkit.Pages
 
                 _loadPreviewBitmapCts = new CancellationTokenSource();
 
-                var parameters = Metadata.ReadFromFile(path);
+                if (!File.Exists(path))
+                {
+                    var emptyModel = new ImageViewModel();
+                    emptyModel.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
+                    emptyModel.Path = path;
+                    emptyModel.IsMessageVisible = true;
+                    emptyModel.Message = GetLocalizedText("Search.LoadPreview.MediaUnavailable");
+                    
+                    _model.CurrentImage = emptyModel;
 
-                PreviewPane.ResetZoom();
+                    PreviewPane.ResetZoom();
+
+                    return;
+                }
+
+                var parameters = Metadata.ReadFromFile(path);
 
                 var old = _model.CurrentImage.IsParametersVisible;
 
@@ -938,6 +951,7 @@ namespace Diffusion.Toolkit.Pages
             bitmap.Freeze();
             return bitmap;
         }
+        
 
         public void SetOpacityView(bool value)
         {

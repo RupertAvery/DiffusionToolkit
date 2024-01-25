@@ -39,6 +39,13 @@
         <Grid  Background="{x:Null}" Visibility="{Binding IsLoading, Converter={StaticResource boolToVis}}">
             <fa:ImageAwesome Opacity="0.5" Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{StaticResource ForegroundBrush}" />
         </Grid>
+
+
+        <Grid  Background="{x:Null}" Visibility="{Binding Image.IsMessageVisible, Converter={StaticResource boolToVis}}">
+            <TextBlock TextAlignment="Center" FontSize="30" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Image.Message}">
+            </TextBlock>
+        </Grid>
+
         <!--<Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="Auto" />

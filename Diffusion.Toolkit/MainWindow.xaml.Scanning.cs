@@ -408,19 +408,6 @@ namespace Diffusion.Toolkit
                     _model.Status = GetLocalizedText("Actions.Scanning.CheckRemoved");
                 });
 
-                var removedList = existingImages.Where(img => !File.Exists(img.Path)).ToList();
-
-                if (removedList.Any())
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _model.Status = GetLocalizedText("Actions.Scanning.Cleanup");
-                    });
-
-                    removed = removedList.Count;
-                    _dataStore.RemoveImages(removedList.Select(i => i.Id));
-                }
-
                 var filesToScan = new List<string>();
 
                 var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");

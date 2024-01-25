@@ -69,6 +69,7 @@
                 <Grid Background="Transparent">
                     <local:Thumbnail 
                         Source="{Binding Thumbnail}" 
+                        Foreground="{DynamicResource ForegroundBrush}"
                         Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
                         Data="{Binding .}"
                         Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
