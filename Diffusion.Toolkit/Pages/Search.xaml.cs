@@ -571,13 +571,12 @@ namespace Diffusion.Toolkit.Pages
         public void SearchImages(object obj)
         {
 
-
-            //if (!_settings.ImagePaths.Any())
-            //{
-            //    MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
-            //        MessageBoxButton.OK, MessageBoxImage.Warning);
-            //    return;
-            //}
+            if (!_model.MainModel.Folders.Any())
+            {
+                MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
 
 
             try
@@ -1184,8 +1183,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (_currentModeSettings.CurrentFolder == "$")
                 {
-                    // TODO: FIX
-                    //folders = _settings.ImagePaths;
+                    folders = _model.MainModel.Folders.Select(f => f.Path);
                 }
                 else
                 {
@@ -2087,7 +2085,6 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-                }
-
     }
+
 }

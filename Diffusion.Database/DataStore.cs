@@ -197,9 +197,22 @@ public partial class DataStore
 
         var dbFolders = db.QueryScalars<string>("SELECT Path FROM ExcludeFolder");
 
-        var deleted = string.Join(",", dbFolders.Except(excludedFolders).Select(f => $"'{f.Replace("'", "''")}'"));
+        //var deleted = string.Join(",", dbFolders.Except(excludedFolders).Select(f => $"'{f.Replace("'", "''")}'"));
 
-        var result = db.Execute($"DELETE FROM ExcludeFolder WHERE Path IN ({deleted})");
+        //var result = db.Execute($"DELETE FROM ExcludeFolder WHERE Path IN ({deleted})");
+
+        var removed = dbFolders.Except(excludedFolders).Select(f => $"'{f.Replace("'", "''")}'");
+
+        var result = 0;
+
+        if (removed.Any())
+        {
+            var deleted = string.Join(",", removed);
+
+            result = db.Execute($"DELETE FROM ExcludeFolder WHERE Path IN ({deleted})");
+        }
+
+
 
         db.Close();
 
@@ -212,7 +225,7 @@ public partial class DataStore
 
         var values = string.Join(",", folders.Select(f => $"('{f.Replace("'", "''")}', 1)"));
 
-        var result = db.Execute($"INSERT INTO Folder (Path, IsRoot) VALUES {values} ON CONFLICT (Path) DO NOTHING;");
+        var result = db.Execute($"INSERT INTO Folder (Path, IsRoot) VALUES {values} ON CONFLICT (Path) DO UPDATE SET IsRoot = 1;");
 
         db.Close();
 
@@ -223,11 +236,18 @@ public partial class DataStore
     {
         using var db = OpenConnection();
 
-        var dbFolders = db.QueryScalars<string>("SELECT Path FROM Folder");
+        var dbFolders = db.QueryScalars<string>("SELECT Path FROM Folder WHERE IsRoot = 1");
 
-        var deleted = string.Join(",", dbFolders.Except(folders).Select(f => $"'{f.Replace("'", "''")}'"));
+        var removed = dbFolders.Except(folders).Select(f => $"'{f.Replace("'", "''")}'");
 
-        var result = db.Execute($"DELETE FROM Folder WHERE Path IN ({deleted})");
+        var result = 0;
+
+        if (removed.Any())
+        {
+            var deleted = string.Join(",", removed);
+
+            result = db.Execute($"DELETE FROM Folder WHERE IsRoot = 1 AND Path IN ({deleted})");
+        }
 
         db.Close();
 
