@@ -153,8 +153,18 @@
                                 <ColumnDefinition Width="3*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
 
-                            <ScrollViewer x:Name="NavigationScrollViewer" Grid.Column="0" VerticalScrollBarVisibility="Auto">
-                                <StackPanel>
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="30"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid>
+                                    <Button Style="{StaticResource BorderlessButton}" Click="Reorder_Click">Reorder</Button>
+                                </Grid>
+
+                                <ScrollViewer x:Name="NavigationScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                    <StackPanel x:Name="NavigationStackPanel">
                                         <!--<controls:AccordionControl HeaderBackground="#80000000" Margin="0,0,0,5"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowDate, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.DateState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Date}">
@@ -204,6 +214,10 @@
                                     </controls:AccordionControl>-->
 
                                         <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
+                                                                   PreviewMouseDown="UIElement_OnPreviewMouseDown"
+                                                                   PreviewMouseMove="UIElement_OnPreviewMouseMove"
+                                                                   AllowDrop="{Binding ReorderNavigation}"
+                                                                   Drop="UIElement_OnDrop"
                                                                    Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Folders}">
                                             <controls:AccordionControl.ButtonAreaContent>
@@ -284,6 +298,11 @@
 
 
                                         <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
+                                                                   PreviewMouseDown="UIElement_OnPreviewMouseDown"
+                                                                   PreviewMouseMove="UIElement_OnPreviewMouseMove"
+                                                                   AllowDrop="{Binding ReorderNavigation}"
+                                                                   Drop="UIElement_OnDrop"
+
                                                                    Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowModels, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                     State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Models}">
                                             <ScrollViewer MaxHeight="500">
@@ -316,6 +335,10 @@
                                         </controls:AccordionControl>
 
                                         <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
+                                                                   PreviewMouseDown="UIElement_OnPreviewMouseDown"
+                                                                   PreviewMouseMove="UIElement_OnPreviewMouseMove"
+                                                                   AllowDrop="{Binding ReorderNavigation}"
+                                                                   Drop="UIElement_OnDrop"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowAlbums, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.AlbumState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  Header="{lex:Loc Search.Navigation.Albums}">
                                             <controls:AccordionControl.ButtonAreaContent>
@@ -395,6 +418,7 @@
 
                                 </ScrollViewer>
 
+                            </Grid>
 
                             <GridSplitter x:Name="GridSplitter2"  
                                           Grid.Row="0" Grid.Column="1"

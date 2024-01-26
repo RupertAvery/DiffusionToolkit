@@ -82,6 +82,8 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(StateProperty, value);
         }
 
+        public bool DragMode { get; set; }
+
         public object ButtonAreaContent
         {
             get => (object)GetValue(ButtonAreaContentProperty);

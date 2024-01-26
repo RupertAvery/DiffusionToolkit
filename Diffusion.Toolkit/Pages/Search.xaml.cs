@@ -2087,7 +2087,73 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
+        private void Reorder_Click(object sender, RoutedEventArgs e)
+        {
+            _model.ReorderNavigation = !_model.ReorderNavigation;
+ 
+            foreach (UIElement uiElement in NavigationStackPanel.Children)
+            {
+                if (uiElement is AccordionControl accordion)
+                {
+                    accordion.State = _model.ReorderNavigation ? AccordionState.Collapsed : AccordionState.Expanded;
+                    accordion.DragMode = _model.ReorderNavigation;
                 }
+            }
+        }
 
+        private bool _dragStarted;
+        private Point _start;
+
+        private void UIElement_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (((AccordionControl)sender).DragMode)
+            {
+                this._start = e.GetPosition(null);
+                _dragStarted = true;
+                e.Handled = true;
+            }
+        }
+
+        private void UIElement_OnPreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            //if (((AccordionControl)sender).State == AccordionState.Collapsed)
+            //{
+            //}
+
+            var index = NavigationStackPanel.Children.IndexOf((UIElement)sender);
+
+
+            Point mpos = e.GetPosition(null);
+            Vector diff = this._start - mpos;
+
+            if (_dragStarted && e.LeftButton == MouseButtonState.Pressed  &&
+                (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                 Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+            {
+                //if (e.OriginalSource is AccordionControl)
+                //{
+
+                //}
+
+                var source = (AccordionControl)sender;
+                //var path = ((ImageEntry)source.DataContext).Path;
+
+                DataObject dataObject = new DataObject();
+                dataObject.SetData("DragAccordion", index);
+
+                DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Move);
+            }
+        }
+
+        private void UIElement_OnDrop(object sender, DragEventArgs e)
+        {
+            var dest = NavigationStackPanel.Children.IndexOf((UIElement)sender);
+
+            var source = (int)e.Data.GetData("DragAccordion");
+
+            var src = NavigationStackPanel.Children[source];
+            NavigationStackPanel.Children.Remove(src);
+            NavigationStackPanel.Children.Insert(dest, src);
+        }
     }
 }

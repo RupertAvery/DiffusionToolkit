@@ -78,6 +78,7 @@ public class SearchModel : BaseNotify
 
     private NavigationSection _navigationSection;
     private MetadataSection _metadataSection;
+    private bool _reorderNavigation;
 
     public SearchModel()
     {
@@ -395,6 +396,12 @@ public class SearchModel : BaseNotify
     }
 
     public string CurrentMode { get; set; }
+
+    public bool ReorderNavigation
+    {
+        get => _reorderNavigation;
+        set => SetField(ref _reorderNavigation, value);
+    }
 }
 
 public class NavigationSection : BaseNotify
