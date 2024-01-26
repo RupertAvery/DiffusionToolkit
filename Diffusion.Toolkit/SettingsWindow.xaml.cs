@@ -46,10 +46,14 @@ namespace Diffusion.Toolkit
             _dataStore = dataStore;
             _settings = settings;
 
+            var rootFolders = dataStore.GetRootFolders();
+            var excludeFolders = dataStore.GetExcludedFolders();
+
+
             _model = new SettingsModel();
             _model.PropertyChanged += ModelOnPropertyChanged;
-            _model.ImagePaths = new ObservableCollection<string>(settings.ImagePaths);
-            _model.ExcludePaths = new ObservableCollection<string>(settings.ExcludePaths);
+            _model.ImagePaths = new ObservableCollection<string>(rootFolders.Select(f => f.Path));
+            _model.ExcludePaths = new ObservableCollection<string>(excludeFolders.Select(f => f.Path));
             _model.ModelRootPath = settings.ModelRootPath;
             _model.FileExtensions = settings.FileExtensions;
             _model.PageSize = settings.PageSize;
@@ -303,8 +307,18 @@ namespace Diffusion.Toolkit
         private void ApplySettings()
         {
             _settings.SetPristine();
-            _settings.ImagePaths = _model.ImagePaths.ToList();
-            _settings.ExcludePaths = _model.ExcludePaths.ToList();
+
+            if (_dataStore.AddFolders(_model.ImagePaths) + _dataStore.RemoveFolders(_model.ImagePaths) > 0)
+            {
+                _settings.SetDirty("ImagePaths");
+            };
+
+            if (_dataStore.AddExcludedFolders(_model.ExcludePaths) + _dataStore.RemoveExcludedFolders(_model.ExcludePaths) > 0)
+            {
+                _settings.SetDirty("ExcludePaths");
+            }
+
+
             _settings.ModelRootPath = _model.ModelRootPath;
             _settings.FileExtensions = _model.FileExtensions;
             _settings.Theme = _model.Theme;

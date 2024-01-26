@@ -50,8 +50,9 @@ namespace Diffusion.Toolkit
 
         private void CreateWatchers()
         {
-            foreach (var path in _settings.ImagePaths)
+            foreach (var folder in _rootFolders.Folders.Where(f => f.Status == FolderStatus.Online))
             {
+                var path = folder.Path;
                 if (Directory.Exists(path))
                 {
                     var watcher = new FileSystemWatcher(path)
@@ -112,7 +113,7 @@ namespace Diffusion.Toolkit
                 t?.Dispose();
                 t = null;
 
-                var filteredFiles = _detectedFiles.Where(f => !_settings.ExcludePaths.Any(p => f.StartsWith(p))).ToList();
+                var filteredFiles = _detectedFiles.Where(f => !_rootFolders.ExcludeFolders.Any(p => f.StartsWith(p))).ToList();
 
                 (added, elapsed) = ScanFiles(filteredFiles, false, CancellationToken.None);
             }

@@ -464,7 +464,8 @@ namespace Diffusion.Toolkit
 
             MessagePopupHandle handle = null;
 
-            await dataStore.Create(() =>
+            await dataStore.Create(
+            () =>
             {
                 handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
             },
@@ -513,9 +514,9 @@ namespace Diffusion.Toolkit
 
                     if (_settings.RecurseFolders.GetValueOrDefault(true))
                     {
-                        foreach (var imagePath in _settings.ImagePaths)
+                        foreach (var imagePath in _rootFolders.Folders)
                         {
-                            if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
+                            if (path.StartsWith(imagePath.Path, true, CultureInfo.InvariantCulture))
                             {
                                 isInPath = true;
                                 break;
@@ -524,7 +525,7 @@ namespace Diffusion.Toolkit
 
                         // Now check if the path falls under one of the excluded paths.
 
-                        foreach (var imagePath in _settings.ExcludePaths)
+                        foreach (var imagePath in _rootFolders.ExcludeFolders)
                         {
                             if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
                             {
@@ -537,9 +538,9 @@ namespace Diffusion.Toolkit
                     {
                         // If recursion is turned off, the path must specifically equal one of the diffusion folders
 
-                        foreach (var imagePath in _settings.ImagePaths)
+                        foreach (var imagePath in _rootFolders.Folders)
                         {
-                            if (path.Equals(imagePath, StringComparison.InvariantCultureIgnoreCase))
+                            if (path.Equals(imagePath.Path, StringComparison.InvariantCultureIgnoreCase))
                             {
                                 isInPath = true;
                                 break;
@@ -624,13 +625,7 @@ namespace Diffusion.Toolkit
                 _model.ActiveView = "Prompts";
             });
 
-
-
-            if (_settings.WatchFolders)
-            {
-                CreateWatchers();
-            }
-
+            
 
             var pages = new Dictionary<string, Page>()
             {
@@ -654,6 +649,10 @@ namespace Diffusion.Toolkit
             LoadImageModels();
             InitFolders();
 
+            if (_settings.WatchFolders)
+            {
+                CreateWatchers();
+            }
 
             Logger.Log($"{_modelsCollection.Count} models loaded");
 
@@ -694,7 +693,7 @@ namespace Diffusion.Toolkit
                 });
             }
 
-            if (_settings.ImagePaths.Any())
+            if (_rootFolders.Folders.Any())
             {
                 _search.SearchImages(null);
             }
@@ -788,7 +787,7 @@ namespace Diffusion.Toolkit
         {
             try
             {
-                var oldImagePaths = _settings.ImagePaths.ToList();
+                var oldImagePaths = _rootFolders.Folders.ToList();
 
                 var settings = new SettingsWindow(_dataStore, _settings);
                 settings.Owner = this;
@@ -819,10 +818,11 @@ namespace Diffusion.Toolkit
                         UpdateTheme(_settings.Theme);
                     }
 
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.ImagePaths)))
+                    if (_settings.IsPropertyDirty("ImagePaths"))
                     {
-                        if (oldImagePaths.Except(_settings.ImagePaths).Any())
+                        LoadFolders();
+
+                        if (oldImagePaths.Except(_rootFolders.Folders).Any())
                         {
                             _dataStore.CreateBackup();
                             CleanRemovedFoldersInternal();
@@ -852,9 +852,10 @@ namespace Diffusion.Toolkit
                         }
                     }
 
-                    if (_settings.IsPropertyDirty(nameof(Settings.ExcludePaths)))
+
+                    if (_settings.IsPropertyDirty("ExcludePaths"))
                     {
-                        CleanExcludedPaths(_settings.ExcludePaths);
+                        CleanExcludedPaths(_rootFolders.ExcludeFolders);
                     }
 
 
@@ -1019,7 +1020,7 @@ namespace Diffusion.Toolkit
 
         private async Task TryScanFolders()
         {
-            if (_settings.ImagePaths.Any())
+            if (_rootFolders.Folders.Any())
             {
                 if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {

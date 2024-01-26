@@ -15,20 +15,88 @@ using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using static System.Net.Mime.MediaTypeNames;
 using System.Windows.Shapes;
+using Diffusion.Database;
 using SQLite;
 using Path = System.IO.Path;
 
 namespace Diffusion.Toolkit
 {
+    public enum FolderStatus
+    {
+        Online,
+        Offline
+    }
+
+    public class RootFolder : BaseNotify
+    {
+        private FolderStatus _status;
+        public int Id { get; set; }
+        public string Path { get; set; }
+
+        public FolderStatus Status
+        {
+            get => _status;
+            set => SetField(ref _status, value);
+        }
+    }
+
+    public class RootFolders
+    {
+        private readonly DataStore _dataStore;
+        public List<RootFolder> Folders { get; private set; }
+        public List<string> ExcludeFolders { get; set; }
+
+        public RootFolders(DataStore dataStore)
+        {
+            _dataStore = dataStore;
+        }
+
+        public void CheckAvailability()
+        {
+            foreach (var rootFolder in Folders)
+            {
+                try
+                {
+                    Directory.GetFiles(rootFolder.Path);
+                    rootFolder.Status = FolderStatus.Online;
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    rootFolder.Status = FolderStatus.Offline;
+                }
+            }
+        }
+
+        public void GetRootFolders()
+        {
+            var rootFoolders = _dataStore.GetRootFolders();
+
+            Folders = rootFoolders.Select(f => new RootFolder()
+            {
+                Path = f.Path,
+                Status = FolderStatus.Online
+            }).ToList();
+
+            var excludeFolders = _dataStore.GetExcludedFolders();
+
+            ExcludeFolders = excludeFolders.Select(f => f.Path).ToList();
+        }
+    }
+
     public partial class MainWindow
     {
         private void InitFolders()
         {
+            _rootFolders = new RootFolders(_dataStore);
+
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
 
             _model.CreateFolderCommand = new RelayCommand<object>((o) =>
             {
-                ShowCreateFolderDialog();
+                if (_model.CurrentFolder?.Status == FolderStatus.Online)
+                {
+                    ShowCreateFolderDialog();
+                }
             });
 
             _model.RenameFolderCommand = new RelayCommand<object>((o) =>
@@ -280,18 +348,25 @@ namespace Diffusion.Toolkit
 
         }
 
+        private RootFolders _rootFolders;
+
         private void LoadFolders()
         {
-            var folders = _settings.ImagePaths;
 
-            _model.Folders = new ObservableCollection<FolderViewModel>(folders.Select(path => new FolderViewModel()
+            _rootFolders.GetRootFolders();
+
+            _rootFolders.CheckAvailability();
+
+            _model.Folders = new ObservableCollection<FolderViewModel>(_rootFolders.Folders.Select(folder => new FolderViewModel()
             {
                 HasChildren = true,
                 Visible = true,
                 Depth = 0,
-                Name = path,
-                Path = path
+                Name = folder.Path + (folder.Status == FolderStatus.Offline ? " (Offline)" : ""),
+                Path = folder.Path,
+                Status = folder.Status,
             }));
+
         }
     }
 }

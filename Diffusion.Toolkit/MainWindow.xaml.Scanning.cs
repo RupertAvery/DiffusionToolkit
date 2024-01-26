@@ -12,12 +12,14 @@ using Diffusion.Database;
 
 namespace Diffusion.Toolkit
 {
+
+
     public partial class MainWindow
     {
 
         private async Task RescanTask(object o)
         {
-            if (_settings.ImagePaths.Any())
+            if (_rootFolders.Folders.Any())
             {
                 _ = Scan().ContinueWith((t) =>
                 {
@@ -37,7 +39,7 @@ namespace Diffusion.Toolkit
 
         private async Task RebuildTask(object o)
         {
-            if (_settings.ImagePaths.Any())
+            if (_rootFolders.Folders.Any())
             {
                 var message = "This will update the metadata of ALL existing files in the database with current metadata in actual files.\r\n\r\n" +
                               "You only need to do this if you've updated the metadata in the files since they were added or if they contain metadata that an older version of this program didn't store.\r\n\r\n" +
@@ -412,8 +414,10 @@ namespace Diffusion.Toolkit
 
                 var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
 
-                foreach (var path in settings.ImagePaths)
+                foreach (var folder in _rootFolders.Folders.Where(f => f.Status == FolderStatus.Online))
                 {
+                    var path = folder.Path;
+
                     if (_progressCancellationTokenSource.IsCancellationRequested)
                     {
                         break;
@@ -428,7 +432,7 @@ namespace Diffusion.Toolkit
 
                         var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
-                        filesToScan.AddRange(MetadataScanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), settings.ExcludePaths).ToList());
+                        filesToScan.AddRange(MetadataScanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), _rootFolders.ExcludeFolders).ToList());
                     }
                 }
 
@@ -517,7 +521,7 @@ namespace Diffusion.Toolkit
             var result = await _messagePopupManager.ShowCustom(message, "Remove Excluded Images", PopupButtons.YesNo, 500, 250);
             if (result == PopupResult.Yes)
             {
-                var total = CleanExcludedPaths(_settings.ExcludePaths);
+                var total = CleanExcludedPaths(_rootFolders.ExcludeFolders);
 
                 Toast($"{total} images removed from database", "");
             }
@@ -555,7 +559,7 @@ namespace Diffusion.Toolkit
 
         private void CleanRemovedFoldersInternal()
         {
-            var total = _dataStore.CleanRemovedFolders(_settings.ImagePaths);
+            var total = _dataStore.CleanRemovedFolders();
 
             if (total > 0)
             {

@@ -306,6 +306,36 @@ namespace Diffusion.Database
             db.Close();
         }
 
+
+        public IEnumerable<Folder> GetRootFolders()
+        {
+            using var db = OpenConnection();
+
+            var folders = db.Query<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate FROM Folder WHERE IsRoot = 1");
+
+            foreach (var folder in folders)
+            {
+                yield return folder;
+            }
+
+            db.Close();
+        }
+
+        public IEnumerable<ExcludeFolder> GetExcludedFolders()
+        {
+            using var db = OpenConnection();
+
+            var folders = db.Query<ExcludeFolder>("SELECT Path FROM ExcludeFolder");
+
+            foreach (var folder in folders)
+            {
+                yield return folder;
+            }
+
+            db.Close();
+        }
+
+
         public Folder? GetFolder(string path)
         {
             using var db = OpenConnection();
@@ -420,9 +450,11 @@ namespace Diffusion.Database
             }
         }
 
-        public int CleanRemovedFolders(IEnumerable<string> watchedFolders)
+        public int CleanRemovedFolders()
         {
             using var db = OpenConnection();
+
+            var watchedFolders = db.QueryScalars<string>("SELECT Path FROM Folder WHERE IsRoot = 1");
 
             var whereClause = string.Join(" AND ", watchedFolders.Select(f => "PATH NOT LIKE ? || '\\%'"));
 

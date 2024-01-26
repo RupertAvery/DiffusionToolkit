@@ -5,8 +5,6 @@ using System.Text.Json;
 
 namespace Diffusion.Common
 {
-
-
     public class Configuration<T>
     {
         private readonly string _settingsPath;

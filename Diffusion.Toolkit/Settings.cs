@@ -12,9 +12,9 @@ namespace Diffusion.Toolkit;
 public interface IScanOptions
 {
 
-    List<string> ImagePaths {  get; set; }
+    //List<string> ImagePaths {  get; set; }
 
-    List<string> ExcludePaths { get; set; }
+    //List<string> ExcludePaths { get; set; }
 
     bool? RecurseFolders { get; set; }
 
@@ -82,8 +82,8 @@ public class Settings : SettingsContainer, IScanOptions
    public Settings(bool initialize)
     {
         DontShowWelcomeOnStartup = false;
-        ImagePaths = new List<string>();
-        ExcludePaths = new List<string>();
+        //ImagePaths = new List<string>();
+        //ExcludePaths = new List<string>();
         NSFWTags = new List<string>() { "nsfw", "nude", "naked" };
         FileExtensions = ".png, .jpg, .jpeg, .webp";
         Theme = "System";
@@ -108,17 +108,17 @@ public class Settings : SettingsContainer, IScanOptions
         }
     }
     
-    public List<string> ImagePaths
-    {
-        get => _imagePaths;
-        set => UpdateList(ref _imagePaths, value);
-    }
+    //public List<string> ImagePaths
+    //{
+    //    get => _imagePaths;
+    //    set => UpdateList(ref _imagePaths, value);
+    //}
 
-    public List<string> ExcludePaths
-    {
-        get => _excludePaths;
-        set => UpdateList(ref _excludePaths, value);
-    }
+    //public List<string> ExcludePaths
+    //{
+    //    get => _excludePaths;
+    //    set => UpdateList(ref _excludePaths, value);
+    //}
 
     public string FileExtensions
     {
@@ -420,6 +420,12 @@ public abstract class SettingsContainer : INotifyPropertyChanged
         return _isDirty;
     }
 
+
+    public void SetDirty(string propertyName)
+    {
+        _isDirty = true;
+        _isPropertyDirty[propertyName] = true;
+    }
 
     public event SettingChangedEventHander SettingChanged;
 

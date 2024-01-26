@@ -1,4 +1,6 @@
-﻿using SQLite;
+﻿using System.Collections.ObjectModel;
+using SQLite;
+using static SQLite.SQLite3;
 
 namespace Diffusion.Database;
 
@@ -72,6 +74,8 @@ public partial class DataStore
 
         db.CreateTable<Folder>();
         db.CreateIndex<Folder>(folder => folder.ParentId);
+
+        db.CreateTable<ExcludeFolder>();
 
         if (migrations.RequiresMigration())
         {
@@ -173,6 +177,63 @@ public partial class DataStore
             return false;
         }
     }
+
+    public int AddExcludedFolders(ObservableCollection<string> excludedFolders)
+    {
+        using var db = OpenConnection();
+
+        var values = string.Join(",", excludedFolders.Select(f => $"('{f.Replace("'","''")}')"));
+
+        var result = db.Execute($"INSERT INTO ExcludeFolder (Path) VALUES {values} ON CONFLICT (Path) DO NOTHING;");
+
+        db.Close();
+
+        return result;
+    }
+
+    public int RemoveExcludedFolders(ObservableCollection<string> excludedFolders)
+    {
+        using var db = OpenConnection();
+
+        var dbFolders = db.QueryScalars<string>("SELECT Path FROM ExcludeFolder");
+
+        var deleted = string.Join(",", dbFolders.Except(excludedFolders).Select(f => $"'{f.Replace("'", "''")}'"));
+
+        var result = db.Execute($"DELETE FROM ExcludeFolder WHERE Path IN ({deleted})");
+
+        db.Close();
+
+        return result;
+    }
+
+    public int AddFolders(ObservableCollection<string> folders)
+    {
+        using var db = OpenConnection();
+
+        var values = string.Join(",", folders.Select(f => $"('{f.Replace("'", "''")}', 1)"));
+
+        var result = db.Execute($"INSERT INTO Folder (Path, IsRoot) VALUES {values} ON CONFLICT (Path) DO NOTHING;");
+
+        db.Close();
+
+        return result;
+    }
+
+    public int RemoveFolders(ObservableCollection<string> folders)
+    {
+        using var db = OpenConnection();
+
+        var dbFolders = db.QueryScalars<string>("SELECT Path FROM Folder");
+
+        var deleted = string.Join(",", dbFolders.Except(folders).Select(f => $"'{f.Replace("'", "''")}'"));
+
+        var result = db.Execute($"DELETE FROM Folder WHERE Path IN ({deleted})");
+
+        db.Close();
+
+        return result;
+    }
+
 }
 
 public class ImagePath

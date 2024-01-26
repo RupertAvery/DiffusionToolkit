@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
+using System.Text;
 using System.Xml.Linq;
 using Diffusion.Common;
 using SQLite;
+using static Dapper.SqlMapper;
 
 namespace Diffusion.Database;
 
@@ -89,6 +91,81 @@ public class Migrations
             Logger.Log($"{e.StackTrace}");
         }
     }
+
+    [Migrate]
+    private string RupertAvery20240125_0001_MigrateFoldersToDB()
+    {
+        var settingsPath = Path.Combine(AppInfo.AppDir, "config.json");
+        
+        var isPortable = true;
+
+        if (!File.Exists(settingsPath))
+        {
+            isPortable = false;
+            settingsPath = Path.Combine(AppInfo.AppDataPath, "config.json");
+        }
+
+        var configuration = new Configuration<FolderSettings>(settingsPath, isPortable);
+
+        configuration.Load(out var folderSettings);
+
+        var sb = new StringBuilder();
+
+        if (folderSettings.ImagePaths != null)
+        {
+            if (folderSettings.ImagePaths.Any())
+            {
+                sb.Append("INSERT INTO Folder (Path, IsRoot) VALUES ");
+                foreach (var path in folderSettings.ImagePaths)
+                {
+                    sb.Append($"('{path.Replace("'", "''")}', 1),");
+                }
+
+                sb.Remove(sb.Length -1, 1);
+
+                sb.AppendLine(" ON CONFLICT (Path) DO UPDATE SET IsRoot=1;");
+            }
+        }
+
+        if (folderSettings.ExcludePaths != null)
+        {
+            if (folderSettings.ExcludePaths.Any())
+            {
+                sb.Append("INSERT INTO ExcludeFolder (Path) VALUES ");
+                foreach (var path in folderSettings.ExcludePaths)
+                {
+                    sb.Append($"('{path.Replace("'", "''")}'),");
+                }
+
+                sb.Remove(sb.Length - 1, 1);
+                sb.AppendLine(";");
+            }
+        }
+
+        if (sb.Length == 0)
+        {
+            sb.Append("SELECT 1");
+        }
+
+
+        return sb.ToString();
+    }
+
+    private class FolderSettings
+    {
+        public List<string> ImagePaths
+        {
+            get;
+            set;
+        }
+
+        public List<string> ExcludePaths
+        {
+            get;
+            set;
+        }
+    }
+
 
     [Migrate]
     private string RupertAvery20240102_0001_LoadFileNamesFromPaths()

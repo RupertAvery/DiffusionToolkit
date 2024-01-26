@@ -1,8 +1,7 @@
 ﻿using System;
 using System.IO;
-using Diffusion.Common;
 
-namespace Diffusion.Toolkit;
+namespace Diffusion.Common;
 
 public static class AppInfo
 {

@@ -61,20 +61,23 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        private void Expander_Click(object sender, RoutedEventArgs e)
-        {
-            var folder = ((Button)sender).DataContext as FolderViewModel;
+        //private void Expander_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var folder = ((Button)sender).DataContext as FolderViewModel;
 
-            ToggleFolder(folder);
+        //    ToggleFolder(folder);
 
-            e.Handled = true;
-        }
+        //    e.Handled = true;
+        //}
 
         private void Expander_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
-            ToggleFolder(folder);
+            if (folder.Status == FolderStatus.Online)
+            {
+                ToggleFolder(folder);
+            }
 
             e.Handled = true;
         }
@@ -83,7 +86,10 @@ namespace Diffusion.Toolkit.Pages
         {
             var model = ((FolderViewModel)((Button)sender).DataContext);
 
-            OpenFolder(model);
+            if (model.Status == FolderStatus.Online)
+            {
+                OpenFolder(model);
+            }
         }
 
         public void OpenFolder(FolderViewModel folder)
@@ -142,7 +148,11 @@ namespace Diffusion.Toolkit.Pages
         {
             var folder = ((FolderViewModel)((Button)sender).DataContext);
 
-            ToggleFolder(folder);
+            if (folder.Status == FolderStatus.Online)
+            {
+                ToggleFolder(folder);
+            }
+
 
             e.Handled = true;
         }

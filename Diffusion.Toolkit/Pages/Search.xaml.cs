@@ -404,15 +404,15 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSection.FolderState):
                         _settings.NavigationSection.FolderState = _model.NavigationSection.FolderState;
                         break;
-                    //case nameof(NavigationSection.ShowFolders):
-                    //    _settings.NavigationSection.ShowFolders = _model.NavigationSection.ShowFolders;
-                    //    break;
-                    //case nameof(NavigationSection.ShowModels):
-                    //    _settings.NavigationSection.ShowModels = _model.NavigationSection.ShowModels;
-                    //    break;
-                    //case nameof(NavigationSection.ShowAlbums):
-                    //    _settings.NavigationSection.ShowAlbums = _model.NavigationSection.ShowAlbums;
-                    //    break;
+                        //case nameof(NavigationSection.ShowFolders):
+                        //    _settings.NavigationSection.ShowFolders = _model.NavigationSection.ShowFolders;
+                        //    break;
+                        //case nameof(NavigationSection.ShowModels):
+                        //    _settings.NavigationSection.ShowModels = _model.NavigationSection.ShowModels;
+                        //    break;
+                        //case nameof(NavigationSection.ShowAlbums):
+                        //    _settings.NavigationSection.ShowAlbums = _model.NavigationSection.ShowAlbums;
+                        //    break;
                 }
             };
 
@@ -570,12 +570,14 @@ namespace Diffusion.Toolkit.Pages
 
         public void SearchImages(object obj)
         {
-            if (!_settings.ImagePaths.Any())
-            {
-                MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+
+
+            //if (!_settings.ImagePaths.Any())
+            //{
+            //    MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
+            //        MessageBoxButton.OK, MessageBoxImage.Warning);
+            //    return;
+            //}
 
 
             try
@@ -809,7 +811,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (image != null && image.EntryType != EntryType.File) return;
 
-         
+
             try
             {
                 if (_loadPreviewBitmapCts != null)
@@ -826,7 +828,7 @@ namespace Diffusion.Toolkit.Pages
                     emptyModel.Path = path;
                     emptyModel.IsMessageVisible = true;
                     emptyModel.Message = GetLocalizedText("Search.LoadPreview.MediaUnavailable");
-                    
+
                     _model.CurrentImage = emptyModel;
 
                     PreviewPane.ResetZoom();
@@ -951,7 +953,7 @@ namespace Diffusion.Toolkit.Pages
             bitmap.Freeze();
             return bitmap;
         }
-        
+
 
         public void SetOpacityView(bool value)
         {
@@ -1182,7 +1184,8 @@ namespace Diffusion.Toolkit.Pages
 
                 if (_currentModeSettings.CurrentFolder == "$")
                 {
-                    folders = _settings.ImagePaths;
+                    // TODO: FIX
+                    //folders = _settings.ImagePaths;
                 }
                 else
                 {
@@ -1451,7 +1454,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (_currentModeSettings.CurrentFolder == "$")
                 {
-                    folders = _settings.ImagePaths;
+                    //folders = _settings.ImagePaths;
                 }
                 else
                 {
@@ -2077,9 +2080,14 @@ namespace Diffusion.Toolkit.Pages
         private void DropImagesOnFolder(object sender, DragEventArgs e)
         {
             var folder = (FolderViewModel)((FrameworkElement)sender).DataContext;
-            _model.MainModel.MoveSelectedImagesToFolder(folder);
-
+            if (folder.Status == FolderStatus.Online)
+            {
+                _model.MainModel.MoveSelectedImagesToFolder(folder);
+            }
         }
+
+
+                }
 
     }
 }

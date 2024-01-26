@@ -17,6 +17,7 @@ public class FolderViewModel : BaseNotify
     private bool _visible;
     private bool _isSelected;
     private string _name;
+    private FolderStatus _status;
 
     public FolderState State
     {
@@ -48,6 +49,12 @@ public class FolderViewModel : BaseNotify
 
     public int Depth { get; set; }
     public string Path { get; set; }
+
+    public FolderStatus Status
+    {
+        get => _status;
+        set => SetField(ref _status, value);
+    }
 
     public string Name
     {
