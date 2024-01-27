@@ -49,6 +49,7 @@ namespace Diffusion.Toolkit
         public RootFolders(DataStore dataStore)
         {
             _dataStore = dataStore;
+            Folders = new List<RootFolder>();
         }
 
         public void CheckAvailability()
@@ -87,8 +88,6 @@ namespace Diffusion.Toolkit
     {
         private void InitFolders()
         {
-            _rootFolders = new RootFolders(_dataStore);
-
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
 
             _model.CreateFolderCommand = new RelayCommand<object>((o) =>

@@ -182,9 +182,14 @@ public partial class DataStore
     {
         using var db = OpenConnection();
 
-        var values = string.Join(",", excludedFolders.Select(f => $"('{f.Replace("'","''")}')"));
+        var result = 0;
 
-        var result = db.Execute($"INSERT INTO ExcludeFolder (Path) VALUES {values} ON CONFLICT (Path) DO NOTHING;");
+        if (excludedFolders.Any())
+        {
+            var values = string.Join(",", excludedFolders.Select(f => $"('{f.Replace("'", "''")}')"));
+
+            result = db.Execute($"INSERT INTO ExcludeFolder (Path) VALUES {values} ON CONFLICT (Path) DO NOTHING;");
+        }
 
         db.Close();
 
@@ -197,10 +202,6 @@ public partial class DataStore
 
         var dbFolders = db.QueryScalars<string>("SELECT Path FROM ExcludeFolder");
 
-        //var deleted = string.Join(",", dbFolders.Except(excludedFolders).Select(f => $"'{f.Replace("'", "''")}'"));
-
-        //var result = db.Execute($"DELETE FROM ExcludeFolder WHERE Path IN ({deleted})");
-
         var removed = dbFolders.Except(excludedFolders).Select(f => $"'{f.Replace("'", "''")}'");
 
         var result = 0;
@@ -212,8 +213,6 @@ public partial class DataStore
             result = db.Execute($"DELETE FROM ExcludeFolder WHERE Path IN ({deleted})");
         }
 
-
-
         db.Close();
 
         return result;
@@ -223,9 +222,14 @@ public partial class DataStore
     {
         using var db = OpenConnection();
 
-        var values = string.Join(",", folders.Select(f => $"('{f.Replace("'", "''")}', 1)"));
+        var result = 0;
 
-        var result = db.Execute($"INSERT INTO Folder (Path, IsRoot) VALUES {values} ON CONFLICT (Path) DO UPDATE SET IsRoot = 1;");
+        if (folders.Any())
+        {
+            var values = string.Join(",", folders.Select(f => $"('{f.Replace("'", "''")}', 1)"));
+
+            result = db.Execute($"INSERT INTO Folder (Path, IsRoot) VALUES {values} ON CONFLICT (Path) DO UPDATE SET IsRoot = 1;");
+        }
 
         db.Close();
 

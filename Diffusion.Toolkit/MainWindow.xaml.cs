@@ -35,6 +35,7 @@ using Diffusion.Toolkit.Localization;
 using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
 using System.Configuration;
+using Microsoft.VisualBasic.Logging;
 
 namespace Diffusion.Toolkit
 {
@@ -337,13 +338,29 @@ namespace Diffusion.Toolkit
         {
             var dataStore = new DataStore(_dbPath);
 
+            MessagePopupHandle handle = null;
+
             if (!_configuration.Exists())
             {
                 Logger.Log($"Opening Settings for first time");
 
                 _settings = new Settings(true);
 
-                UpdateTheme(_settings.Theme);
+                UpdateTheme("System");
+                
+                Logger.Log("Creating database...");
+
+                await dataStore.Create(
+                    () =>
+                    {
+                        handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
+                    },
+                    () =>
+                    {
+                        handle?.Close();
+                    });
+
+                _rootFolders = new RootFolders(dataStore);
 
                 var welcome = new WelcomeWindow(_settings);
                 welcome.Owner = this;
@@ -360,6 +377,9 @@ namespace Diffusion.Toolkit
                 }
 
                 ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
+
+                _rootFolders.GetRootFolders();
+                _rootFolders.CheckAvailability();
 
                 await TryScanFolders();
 
@@ -396,6 +416,22 @@ namespace Diffusion.Toolkit
                     _settings.SetPristine();
 
                     ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
+
+                    Logger.Log("Creating database...");
+
+                    await dataStore.Create(
+                        () =>
+                        {
+                            handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
+                        },
+                        () =>
+                        {
+                            handle?.Close();
+                        });
+
+                    _rootFolders = new RootFolders(dataStore);
+                    _rootFolders.GetRootFolders();
+                    _rootFolders.CheckAvailability();
                 }
                 catch (Exception exception)
                 {
@@ -462,17 +498,7 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Initializing pages");
 
-            MessagePopupHandle handle = null;
 
-            await dataStore.Create(
-            () =>
-            {
-                handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
-            },
-            () =>
-            {
-                handle?.Close();
-            });
 
             _dataStoreOptions = new DataStoreOptions(dataStore);
 
