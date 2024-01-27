@@ -334,6 +334,25 @@ namespace Diffusion.Database
             //return paths;
         }
 
+        public IEnumerable<ImagePrompt> GetImagePrompts()
+        {
+            //List<ImagePath> paths = new List<ImagePath>();
+
+            using var db = OpenConnection();
+
+            var images = db.Query<ImagePrompt>("SELECT Id, Prompt, NegativePrompt FROM Image");
+
+            foreach (var image in images)
+            {
+                //paths.Add(image);
+                yield return image;
+            }
+
+            db.Close();
+
+            //return paths;
+        }
+
         public void UpdateImageFolderId(int id, string path, Dictionary<string, int> folderIdCache)
         {
             using var db = OpenConnection();
@@ -435,4 +454,12 @@ namespace Diffusion.Database
             return result;
         }
     }
+
+    public class ImagePrompt
+    {
+        public int Id { get; set; }
+        public string Prompt { get; set; }
+        public string NegativePrompt { get; set; }
+    }
 }
+

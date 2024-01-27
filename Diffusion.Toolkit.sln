@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Github", "Diffusi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Civitai", "Diffusion.Civitai\Diffusion.Civitai.csproj", "{172F6027-8248-4315-953D-2B4930C2338A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Scripting", "Diffusion.Scripting\Diffusion.Scripting.csproj", "{51529D09-5ACB-439C-90FE-3EF4B9D3B440}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Scripting", "Diffusion.Scripting\Diffusion.Scripting.csproj", "{51529D09-5ACB-439C-90FE-3EF4B9D3B440}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Analysis", "DiffusionToolkit.Analysis\Diffusion.Analysis.csproj", "{58B74FF5-1961-46A4-B5BE-3D5193F47B85}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +65,10 @@ Global
 		{51529D09-5ACB-439C-90FE-3EF4B9D3B440}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51529D09-5ACB-439C-90FE-3EF4B9D3B440}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51529D09-5ACB-439C-90FE-3EF4B9D3B440}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58B74FF5-1961-46A4-B5BE-3D5193F47B85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58B74FF5-1961-46A4-B5BE-3D5193F47B85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58B74FF5-1961-46A4-B5BE-3D5193F47B85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58B74FF5-1961-46A4-B5BE-3D5193F47B85}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
