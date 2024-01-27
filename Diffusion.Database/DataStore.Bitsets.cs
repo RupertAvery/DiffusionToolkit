@@ -6,17 +6,49 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using SQLite;
 
 namespace Diffusion.Database
 {
     public partial class DataStore
     {
+        public void SetBitsetBatched(IEnumerable<Bitset> bitsets)
+        {
+            var db = OpenConnection();
+
+            var query = "INSERT INTO Bitset (Id, Data) VALUES (@id, @data) ON CONFLICT (Id) DO UPDATE SET Data = @data";
+
+            int  i= 0;
+
+            foreach (var chunk in bitsets.Chunk(500))
+            {
+                db.BeginTransaction();
+
+                var command = db.CreateCommand(query);
+                
+                foreach (var bitset in chunk)
+                {
+                    command.Bind("@id", bitset.Id);
+                    command.Bind("@data", bitset.Data);
+                    command.ExecuteNonQuery();
+                }
+
+                i += chunk.Length;
+
+                Console.WriteLine($"{i}");
+
+                db.Commit();
+            }
+
+
+            db.Close();
+        }
+
+
         public void SetBitset(int id, byte[] data)
         {
             var db = OpenConnection();
 
-            var query = "INSERT INTO Bitset (Id, Data) VALUES (@id, @data)";
+            var query = "INSERT INTO Bitset (Id, Data) VALUES (@id, @data) ON CONFLICT (Id) DO UPDATE SET Data = @data";
             
             var command = db.CreateCommand(query);
             command.Bind("@id", id);
@@ -41,24 +73,5 @@ namespace Diffusion.Database
 
             return value;
         }
-
-        //static byte[] GetBytes(SQLiteDataReader reader)
-        //{
-        //    const int CHUNK_SIZE = 2 * 1024;
-        //    byte[] buffer = new byte[CHUNK_SIZE];
-        //    long bytesRead;
-        //    long fieldOffset = 0;
-        //    using (MemoryStream stream = new MemoryStream())
-        //    {
-        //        while ((bytesRead = reader.GetBytes(0, fieldOffset, buffer, 0, buffer.Length)) > 0)
-        //        {
-        //            stream.Write(buffer, 0, (int)bytesRead);
-        //            fieldOffset += bytesRead;
-        //        }
-
-        //        return stream.ToArray();
-        //    }
-        //}
-
     }
 }

@@ -2,34 +2,27 @@
 
 using Diffusion.Database;
 using System.Collections;
+using Diffusion.Analysis;
 using SparseBitsets;
+using System.Collections.Generic;
+using System;
 
 
 var dataStore = new DataStore(@"C:\Users\ruper\AppData\Roaming\DiffusionToolkit\diffusion-toolkit.db");
 
-var prompts = dataStore.GetImagePrompts().ToList();
+await dataStore.Create(null, null);
 
-var vocabulary = new OrderedSet<string>();
+Console.WriteLine("Building vocabulary...");
 
-var i = 0;
-var c = 0;
+var prompts = dataStore.GetImagePrompts().Where(s => !string.IsNullOrEmpty(s.Prompt)).ToList();
 
-foreach (var imagePrompt in prompts)
-{
-    i++;
-    if (imagePrompt.Prompt != null)
-    {
-        var tokens = imagePrompt.Prompt.Split(new char[] { ' ', ',' });
+var vocabulary = new Vocabulary();
 
-        foreach (var token in tokens)
-        {
-            c++;
-            vocabulary.Add(token);
-        }
-    }
-}
+vocabulary.TokenizeAndAdd(prompts.Select(p => p.Prompt));
 
-Console.WriteLine($"{i} prompts, {c} tokens");
+vocabulary.GetDictionary();
+
+//Console.WriteLine($"{i} prompts, {c} tokens");
 
 Console.WriteLine($"{vocabulary.Count} unique tokens");
 
@@ -39,16 +32,14 @@ foreach (var imagePrompt in prompts)
 {
     if (imagePrompt.Prompt != null)
     {
-        var tokens = imagePrompt.Prompt.Split(new char[] { ' ', ',' });
+
+        var encodings = vocabulary.Encode(imagePrompt.Prompt);
 
         var bitset = new SparseBitset();
 
-        foreach (var token in tokens)
+        foreach (var encoding in encodings)
         {
-            if (vocabulary.GetIndex(token, out int index))
-            {
-                bitset.Add((ulong)index);
-            }
+            bitset.Add((uint)encoding);
         }
 
         bitset.Pack();
@@ -62,6 +53,49 @@ foreach (var imagePrompt in prompts)
 
     }
 }
+
+//var max = promptEncodings.SelectMany(p => p.Bitset.Runs.Select(r => r.Values.Length + 2)).Max();
+
+//Console.WriteLine(max * 32 / 8);
+
+// Test writing to the database
+
+//var bitsets = new List<Bitset>();
+
+//foreach (var promptEncoding in promptEncodings)
+//{
+//    var runs = promptEncoding.Bitset.Runs;
+
+
+//    var offset = 0;
+
+//    var buffer = new byte[1024];
+
+
+//    foreach (var run in runs)
+//    {
+//        Buffer.BlockCopy(BitConverter.GetBytes(run.Start), 0, buffer, offset, 4);
+//        offset += 4;
+//        Buffer.BlockCopy(BitConverter.GetBytes(run.End), 0, buffer, offset, 4);
+//        offset += 4;
+//        foreach (var runValue in run.Values)
+//        {
+//            Buffer.BlockCopy(BitConverter.GetBytes(runValue), 0, buffer, offset, 4);
+//            offset += 4;
+//        }
+//    }
+
+
+//    bitsets.Add(new Bitset() { Id = promptEncoding.Id, Data = buffer });
+//}
+
+//Console.WriteLine("Writing to DB...");
+
+//dataStore.SetBitsetBatched(bitsets);
+
+Console.WriteLine("Ready");
+
+Console.ReadLine();
 
 while (true)
 {
@@ -128,100 +162,4 @@ public class PromptBitset
     public int Id { get; set; }
     public string Prompt { get; set; }
     public SparseBitset Bitset { get; set; }
-}
-
-public class IndexedItem<T>
-{
-    public int Index { get; set; }
-    public T Value { get; set; }
-
-    public IndexedItem(T value, int index)
-    {
-        this.Index = index;
-        this.Value = value;
-    }
-}
-
-public class OrderedSet<T> : ICollection<T>
-{
-    private readonly IDictionary<T, LinkedListNode<IndexedItem<T>>> m_Dictionary;
-    private readonly LinkedList<IndexedItem<T>> m_LinkedList;
-
-    public OrderedSet()
-        : this(EqualityComparer<T>.Default)
-    {
-    }
-
-    public OrderedSet(IEqualityComparer<T> comparer)
-    {
-        m_Dictionary = new Dictionary<T, LinkedListNode<IndexedItem<T>>>(comparer);
-        m_LinkedList = new LinkedList<IndexedItem<T>>();
-    }
-
-    public int Count => m_Dictionary.Count;
-
-    public virtual bool IsReadOnly => m_Dictionary.IsReadOnly;
-
-    void ICollection<T>.Add(T item)
-    {
-        Add(item);
-    }
-
-    public bool Add(T item)
-    {
-        if (m_Dictionary.ContainsKey(item)) return false;
-        var index = m_LinkedList.Count;
-        var node = m_LinkedList.AddLast(new IndexedItem<T>(item, index));
-        m_Dictionary.Add(item, node);
-        return true;
-    }
-
-    public void Clear()
-    {
-        m_LinkedList.Clear();
-        m_Dictionary.Clear();
-    }
-
-    public bool GetIndex(T item, out int index)
-    {
-        index = -1;
-
-        var found = m_Dictionary.TryGetValue(item, out var node);
-        if (!found) return false;
-
-        index = node.Value.Index;
-
-        return true;
-
-    }
-
-    public bool Remove(T item)
-    {
-        if (item == null) return false;
-        var found = m_Dictionary.TryGetValue(item, out var node);
-        if (!found) return false;
-        m_Dictionary.Remove(item);
-        m_LinkedList.Remove(node);
-        return true;
-    }
-
-    public IEnumerator<T> GetEnumerator()
-    {
-        return m_LinkedList.Select(t => t.Value).GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
-
-    public bool Contains(T item)
-    {
-        return item != null && m_Dictionary.ContainsKey(item);
-    }
-
-    public void CopyTo(T[] array, int arrayIndex)
-    {
-        //m_LinkedList.CopyTo(array, arrayIndex);
-    }
 }

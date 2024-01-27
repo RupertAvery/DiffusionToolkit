@@ -22,7 +22,7 @@ public partial class DataStore
         DatabasePath = databasePath;
     }
 
-    public async Task Create(Action notify, Action complete)
+    public async Task Create(Action? notify, Action? complete)
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
 
@@ -72,6 +72,9 @@ public partial class DataStore
 
         db.CreateTable<Folder>();
         db.CreateIndex<Folder>(folder => folder.ParentId);
+
+        db.CreateTable<Bitset>();
+        db.CreateIndex<Bitset>(bitset => bitset.Id);
 
         if (migrations.RequiresMigration())
         {
