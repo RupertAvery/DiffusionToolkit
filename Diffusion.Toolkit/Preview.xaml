@@ -74,17 +74,45 @@
                 </Grid>
 
                 <Grid Background="{x:Null}">
-
+                    <Grid.RenderTransform>
+                        <TranslateTransform X="0"></TranslateTransform>
+                    </Grid.RenderTransform>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding CurrentImage.IsParametersVisible}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
+                                                                 From="-10" To="500" 
+                                                                 Duration="0:0:0.1" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                                  From="500" To="-10" 
+                                                                  Duration="0:0:0.1" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
                     <Grid  Background="{x:Null}" DataContext="{Binding CurrentImage}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="48"/>
+                            <RowDefinition Height="30"/>
                             <RowDefinition Height="*"/>
-                            <RowDefinition Height="56"/>
+                            <RowDefinition Height="50"/>
                         </Grid.RowDefinitions>
 
+                        <!--Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}"-->
 
-                        <Grid  Grid.Row="1" Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Margin="10" Background="Transparent">
-                            <Grid Margin="-20" Background="Transparent"></Grid>
+                        <Grid Grid.Row="1"  Margin="10" Background="Transparent">
 
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
 
@@ -261,25 +289,6 @@
                             </ScrollViewer>
                         </Grid>
 
-                        <Grid Grid.Row="2" Background="{x:Null}" IsHitTestVisible="true">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition Width="40"/>
-                                <ColumnDefinition Width="40"/>
-                                <ColumnDefinition Width="40"/>
-                                <ColumnDefinition Width="16"/>
-                            </Grid.ColumnDefinitions>
-
-
-                            <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleParameters}">
-                                <fa:ImageAwesome ToolTip="{lex:Loc Metadata.ShowInfo}" Icon="InfoCircle" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <fa:ImageAwesome.Effect>
-                                        <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                                    </fa:ImageAwesome.Effect>
-                                </fa:ImageAwesome>
-                            </Button>
-
-                        </Grid>
 
                         <StackPanel Orientation="Horizontal" Grid.Row="2" >
                             <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=ForDeletion, Converter={StaticResource boolToVisCol}}">
@@ -362,6 +371,29 @@
                         </StackPanel>
                     </Grid>
                 </Grid>
+
+                <Grid Background="{x:Null}" IsHitTestVisible="true">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="60"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="60"/>
+                    </Grid.RowDefinitions>
+
+
+                    <Button Style="{DynamicResource BorderlessButton}" Grid.Row="1" Grid.Column="1" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding CurrentImage.ToggleParameters}">
+                        <fa:ImageAwesome ToolTip="{lex:Loc Metadata.ShowInfo}" Icon="InfoCircle" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <fa:ImageAwesome.Effect>
+                                <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                            </fa:ImageAwesome.Effect>
+                        </fa:ImageAwesome>
+                    </Button>
+
+                </Grid>
+
+
             </Grid>
         </Grid>
     </Grid>
