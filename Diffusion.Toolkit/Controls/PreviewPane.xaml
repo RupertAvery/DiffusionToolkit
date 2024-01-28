@@ -65,10 +65,10 @@
             <!--HorizontalScrollBarVisibility="Hidden" 
             VerticalScrollBarVisibility="Hidden"-->
 
+
             <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
                           HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
                           VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
-
                           MouseMove="ScrollViewer_OnMouseMove"
                           PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
                           PreviewMouseWheel="UIElement_OnMouseWheel"  
@@ -79,12 +79,14 @@
                     <ContextMenu>
                         <MenuItem Header="Fit to Preview" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
                     </ContextMenu>
+                    
+                    <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
 
                 </ScrollViewer.ContextMenu>
                 <Image x:Name="Preview"
                        DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                       Stretch="None"
                        RenderOptions.BitmapScalingMode="Fant"
-                       Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
                        Source="{Binding Image}" >
                     <Image.Visibility>
                         <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
