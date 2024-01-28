@@ -1,5 +1,4 @@
-﻿using Diffusion.Database;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Diffusion.Analysis;
 
@@ -23,6 +22,44 @@ public class Vocabulary
     {
         return _vocabularySet.GetItems();
     }
+    
+    public void TokenizeAndAdd(IEnumerable<string> texts)
+    {
+        foreach (var text in texts)
+        {
+            var tokens = Tokenize(text);
+
+            foreach (var token in tokens)
+            {
+                AddToken(token);
+            }
+        }
+
+    }
+
+    public IEnumerable<string> Tokenize(string text)
+    {
+
+        return text.Split(new char[] { ' ', ',' });
+    }
+
+    /// <summary>
+    /// Returns a 1-hot encoding of each token in this vocabulary
+    /// </summary>
+    /// <param name="prompt"></param>
+    /// <returns></returns>
+    public IEnumerable<int> Encode(string prompt)
+    {
+        var tokens = Tokenize(prompt);
+
+        foreach (var token in tokens)
+        {
+            if (_vocabularySet.GetIndex(token, out int index))
+            {
+                yield return index;
+            }
+        }
+    }
 
     /// <summary>
     /// Use the hashcode to uniquely identify the Vocabulary.
@@ -44,42 +81,5 @@ public class Vocabulary
             return hash;
         }
 
-    }
-
-    public void TokenizeAndAdd(IEnumerable<string> texts)
-    {
-        foreach (var text in texts)
-        {
-            var tokens = Tokenize(text);
-
-            foreach (var token in tokens)
-            {
-                AddToken(token);
-            }
-        }
-
-    }
-
-    public IEnumerable<string> Tokenize(string text)
-    {
-        return text.Split(new char[] { ' ', ',' });
-    }
-
-    /// <summary>
-    /// Returns a 1-hot encoding of each token in this vocabulary
-    /// </summary>
-    /// <param name="prompt"></param>
-    /// <returns></returns>
-    public IEnumerable<int> Encode(string prompt)
-    {
-        var tokens = Tokenize(prompt);
-
-        foreach (var token in tokens)
-        {
-            if (_vocabularySet.GetIndex(token, out int index))
-            {
-                yield return index;
-            }
-        }
     }
 }

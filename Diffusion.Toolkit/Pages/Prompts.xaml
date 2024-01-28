@@ -41,11 +41,15 @@
                     </Grid.ColumnDefinitions>
                     <Grid Grid.Column="0">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="100"/>
                             <RowDefinition Height="30"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBox Text="{Binding PromptQuery, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" Padding="3,0,0,0" KeyDown="PromptQuery_OnKeyDown"></TextBox>
+                        <TextBox Text="{Binding PromptQuery, UpdateSourceTrigger=PropertyChanged}" 
+                                 TextWrapping="Wrap" 
+                                 AcceptsReturn="True"  
+                                 VerticalScrollBarVisibility="Auto"
+                                 Padding="5,5,5,5" KeyDown="PromptQuery_OnKeyDown"></TextBox>
                         <StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
                             <CheckBox VerticalAlignment="Center" IsChecked="{Binding FullTextPrompt}">Full Text</CheckBox>
                             <Label VerticalAlignment="Center"  Margin="20,0,0,0">Similar</Label>
@@ -73,6 +77,8 @@
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
                                 <DataGridTextColumn Header="Usage" Binding="{Binding Usage}" IsReadOnly="True">
+                                </DataGridTextColumn>
+                                <DataGridTextColumn Header="Relevance" Binding="{Binding Score}" IsReadOnly="True">
                                 </DataGridTextColumn>
                             </DataGrid.Columns>
                         </DataGrid>

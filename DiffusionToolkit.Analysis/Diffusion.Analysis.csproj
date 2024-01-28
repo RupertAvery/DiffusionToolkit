@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
+    <ProjectReference Include="..\SparseBitsets\SparseBitsets.csproj" />
   </ItemGroup>
 
 </Project>

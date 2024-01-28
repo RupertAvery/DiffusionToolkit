@@ -189,4 +189,5 @@ public class UsedPrompt
 {
     public string? Prompt { get; set; }
     public int Usage { get; set; }
+    public float Score { get; set; }
 }

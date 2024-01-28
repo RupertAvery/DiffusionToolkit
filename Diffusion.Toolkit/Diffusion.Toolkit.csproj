@@ -91,6 +91,7 @@
     <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
     <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
+    <ProjectReference Include="..\DiffusionToolkit.Analysis\Diffusion.Analysis.csproj" />
   </ItemGroup>
 
   <ItemGroup>

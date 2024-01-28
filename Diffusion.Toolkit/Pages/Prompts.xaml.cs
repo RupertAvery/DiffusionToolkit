@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Analysis;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
@@ -27,6 +28,8 @@ namespace Diffusion.Toolkit.Pages
         private readonly DataStore _dataStore;
         private readonly Settings _settings;
         private PromptsModel _model;
+        private BitsetDatabase _bitsetDatabase;
+        private List<ImagePrompt> _imagePrompts;
 
         public Prompts(IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, MainModel mainModel, Settings settings)
         {
@@ -46,6 +49,16 @@ namespace Diffusion.Toolkit.Pages
             ThumbnailListView.DataStoreOptions = dataStoreOptions;
 
             ThumbnailListView.MessagePopupManager = messagePopupManager;
+
+            _bitsetDatabase = new BitsetDatabase(_dataStore);
+
+            _imagePrompts = _dataStore.GetImagePrompts().ToList();
+
+            Task.Run(() =>
+            {
+                _bitsetDatabase.Rebuild();
+                _bitsetDatabase.ProcessPrompts();
+            });
 
             ReloadPrompts();
 
@@ -84,7 +97,33 @@ namespace Diffusion.Toolkit.Pages
 
         private void LoadPrompts()
         {
-            _model.Prompts = new ObservableCollection<UsedPrompt>(_dataStore.SearchPrompts(_model.PromptQuery, _model.FullTextPrompt, _model.PromptDistance));
+            IEnumerable<UsedPrompt> usedPrompts;
+
+            if (string.IsNullOrEmpty(_model.PromptQuery))
+            {
+                usedPrompts = _imagePrompts.GroupBy(p => p.Prompt).Select(u => new UsedPrompt()
+                {
+                    Prompt = u.Key,
+                    Usage = u.Count()
+                }).OrderByDescending(u => u.Usage);
+            }
+            else
+            {
+                var scores = _bitsetDatabase.GetSimilarPrompts(_model.PromptQuery, 1f, 0.0f);
+
+                var similarPrompts = _imagePrompts.Join(scores, prompt => prompt.Id, score => score.Id, (prompt, score) => new { prompt, score });
+
+                usedPrompts = similarPrompts.GroupBy(p => p.prompt.Prompt).Select(u => new UsedPrompt()
+                {
+                    Prompt = u.Key,
+                    Usage = u.Count(),
+                    Score = u.Select(a => a.score).Average(a => a.Score)
+                }).OrderByDescending(u => u.Score).ThenByDescending(u => u.Usage);
+            }
+
+            //_dataStore.SearchPrompts(_model.PromptQuery, _model.FullTextPrompt, _model.PromptDistance);
+
+            _model.Prompts = new ObservableCollection<UsedPrompt>(usedPrompts);
         }
 
         private void LoadNegativePrompts()

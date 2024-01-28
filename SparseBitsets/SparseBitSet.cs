@@ -387,6 +387,16 @@ namespace SparseBitsets
 
         public static SparseBitset operator &(SparseBitset a, SparseBitset b) => a.And(b);
 
+        public float GetJaccardIndex(SparseBitset b)
+        {
+            var intersection = And(b);
+            var union = Or(b);
+
+            var index = intersection.GetPopCount() / (float)union.GetPopCount();
+
+            return index;
+        }
+
     }
 
 }

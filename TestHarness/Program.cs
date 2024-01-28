@@ -1,11 +1,10 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Diagnostics;
 using Diffusion.Database;
-using System.Collections;
 using Diffusion.Analysis;
 using SparseBitsets;
-using System.Collections.Generic;
-using System;
+using System.Text;
 
 
 var dataStore = new DataStore(@"C:\Users\ruper\AppData\Roaming\DiffusionToolkit\diffusion-toolkit.db");
@@ -54,44 +53,97 @@ foreach (var imagePrompt in prompts)
     }
 }
 
-//var max = promptEncodings.SelectMany(p => p.Bitset.Runs.Select(r => r.Values.Length + 2)).Max();
-
-//Console.WriteLine(max * 32 / 8);
 
 // Test writing to the database
 
-//var bitsets = new List<Bitset>();
+var bitsets = new List<Bitset>();
 
-//foreach (var promptEncoding in promptEncodings)
-//{
-//    var runs = promptEncoding.Bitset.Runs;
-
-
-//    var offset = 0;
-
-//    var buffer = new byte[1024];
+foreach (var promptEncoding in promptEncodings)
+{
+    var runs = promptEncoding.Bitset.Runs;
 
 
-//    foreach (var run in runs)
-//    {
-//        Buffer.BlockCopy(BitConverter.GetBytes(run.Start), 0, buffer, offset, 4);
-//        offset += 4;
-//        Buffer.BlockCopy(BitConverter.GetBytes(run.End), 0, buffer, offset, 4);
-//        offset += 4;
-//        foreach (var runValue in run.Values)
-//        {
-//            Buffer.BlockCopy(BitConverter.GetBytes(runValue), 0, buffer, offset, 4);
-//            offset += 4;
-//        }
-//    }
+    var offset = 0;
+
+    var bufferSize = runs.Sum(r => 8 + r.Values.Length * 4);
+
+    var buffer = new byte[bufferSize];
 
 
-//    bitsets.Add(new Bitset() { Id = promptEncoding.Id, Data = buffer });
-//}
+    foreach (var run in runs)
+    {
+        Buffer.BlockCopy(BitConverter.GetBytes(run.Start), 0, buffer, offset, 4);
+        offset += 4;
+        Buffer.BlockCopy(BitConverter.GetBytes(run.End), 0, buffer, offset, 4);
+        offset += 4;
+        foreach (var runValue in run.Values)
+        {
+            Buffer.BlockCopy(BitConverter.GetBytes(runValue), 0, buffer, offset, 4);
+            offset += 4;
+        }
+    }
 
-//Console.WriteLine("Writing to DB...");
 
-//dataStore.SetBitsetBatched(bitsets);
+    bitsets.Add(new Bitset() { Id = promptEncoding.Id, Data = buffer });
+}
+
+Console.WriteLine("Writing to DB...");
+
+
+var saveTime = Time(() =>
+{
+    dataStore.SetBitsets(bitsets);
+});
+
+Console.WriteLine($"Saved {bitsets.Count} bitsets in {saveTime}ms");
+
+var loadTime = Time(() =>
+{
+    bitsets = dataStore.GetBitsets();
+});
+
+Console.WriteLine($"Loaded {bitsets.Count} bitsets in {loadTime}ms");
+
+var lookup = prompts.ToDictionary(p => p.Id);
+
+
+promptEncodings = new List<PromptBitset>();
+
+foreach (var bitset in bitsets)
+{
+    var runs = new List<Run>();
+    var offset = 0;
+
+
+    while (offset < bitset.Data.Length)
+    {
+        var run = new Run();
+
+        run.Start = BitConverter.ToUInt32(bitset.Data, offset);
+        offset += 4;
+        run.End = BitConverter.ToUInt32(bitset.Data, offset);
+        offset += 4;
+
+        var size = run.End - run.Start + 1;
+
+        run.Values = new uint[size];
+
+        for (var i = 0; i < size; i++)
+        {
+            run.Values[i] = BitConverter.ToUInt32(bitset.Data, offset);
+            offset += 4;
+        }
+
+        runs.Add(run);
+    }
+
+    promptEncodings.Add(new PromptBitset()
+    {
+        Id = bitset.Id,
+        Prompt = lookup[bitset.Id].Prompt,
+        Bitset = new SparseBitset(runs)
+    });
+}
 
 Console.WriteLine("Ready");
 
@@ -109,7 +161,7 @@ while (true)
 
     foreach (var pe in promptEncodings)
     {
-        var index = CalculateJaccardIndex(baseline.Bitset, pe.Bitset);
+        var index = baseline.Bitset.GetJaccardIndex(pe.Bitset);
 
         results.Add(new(index, pe.Prompt));
 
@@ -147,14 +199,14 @@ while (true)
 
 Console.WriteLine("Done");
 
-float CalculateJaccardIndex(SparseBitset a, SparseBitset b)
+
+long Time(Action action)
 {
-    var intersection = a.And(b);
-    var union = a.Or(b);
-
-    var index = intersection.GetPopCount() / (float)union.GetPopCount();
-
-    return index;
+    var sw = new Stopwatch();
+    sw.Start();
+    action();
+    sw.Stop();
+    return sw.ElapsedMilliseconds;
 }
 
 public class PromptBitset

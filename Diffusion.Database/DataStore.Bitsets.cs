@@ -9,22 +9,50 @@ using System.Threading.Tasks;
 
 namespace Diffusion.Database
 {
+    public class Session
+    {
+        public string Name { get; set; }
+        public string Path { get; set; }
+        public DataStore DataStore { get; set; }
+    }
+
+    public class SessionManager
+    {
+        private Dictionary<string, Session> _sessions = new Dictionary<string, Session>();
+
+        public SessionManager()
+        {
+
+        }
+
+        public void LoadSessions()
+        {
+
+        }
+
+        public void SelectSession(string name)
+        {
+        }
+
+        public Session CurrentSession { get; private set; }
+    }
+
     public partial class DataStore
     {
-        public void SetBitsetBatched(IEnumerable<Bitset> bitsets)
+        public void SetBitsets(IEnumerable<Bitset> bitsets, Action<int>? progress = null)
         {
             var db = OpenConnection();
 
             var query = "INSERT INTO Bitset (Id, Data) VALUES (@id, @data) ON CONFLICT (Id) DO UPDATE SET Data = @data";
 
-            int  i= 0;
+            int i = 0;
 
             foreach (var chunk in bitsets.Chunk(500))
             {
                 db.BeginTransaction();
 
                 var command = db.CreateCommand(query);
-                
+
                 foreach (var bitset in chunk)
                 {
                     command.Bind("@id", bitset.Id);
@@ -34,7 +62,7 @@ namespace Diffusion.Database
 
                 i += chunk.Length;
 
-                Console.WriteLine($"{i}");
+                progress?.Invoke(i);
 
                 db.Commit();
             }
@@ -43,13 +71,27 @@ namespace Diffusion.Database
             db.Close();
         }
 
+        public List<Bitset> GetBitsets()
+        {
+            var db = OpenConnection();
+
+            var query = "SELECT Id, Data FROM Bitset";
+
+            var command = db.CreateCommand(query);
+
+            var value = command.ExecuteQuery<Bitset>();
+
+            db.Close();
+
+            return value;
+        }
 
         public void SetBitset(int id, byte[] data)
         {
             var db = OpenConnection();
 
             var query = "INSERT INTO Bitset (Id, Data) VALUES (@id, @data) ON CONFLICT (Id) DO UPDATE SET Data = @data";
-            
+
             var command = db.CreateCommand(query);
             command.Bind("@id", id);
             command.Bind("@data", data);
@@ -66,9 +108,9 @@ namespace Diffusion.Database
 
             var command = db.CreateCommand(query);
             command.Bind("@id", id);
-            
+
             var value = command.ExecuteScalar<byte[]>();
-            
+
             db.Close();
 
             return value;
