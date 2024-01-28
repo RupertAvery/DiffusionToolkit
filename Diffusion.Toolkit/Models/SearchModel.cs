@@ -78,6 +78,9 @@ public class SearchModel : BaseNotify
 
     private NavigationSection _navigationSection;
     private MetadataSection _metadataSection;
+    private string? _promptQuery;
+    private IEnumerable<UsedPrompt> _prompts;
+    private UsedPrompt _selectedPrompt;
 
     public SearchModel()
     {
@@ -395,6 +398,24 @@ public class SearchModel : BaseNotify
     }
 
     public string CurrentMode { get; set; }
+
+    public string? PromptQuery
+    {
+        get => _promptQuery;
+        set => SetField(ref _promptQuery, value);
+    }
+
+    public IEnumerable<UsedPrompt> Prompts
+    {
+        get => _prompts;
+        set => SetField(ref _prompts, value);
+    }
+
+    public UsedPrompt SelectedPrompt
+    {
+        get => _selectedPrompt;
+        set => SetField(ref _selectedPrompt, value);
+    }
 }
 
 public class NavigationSection : BaseNotify

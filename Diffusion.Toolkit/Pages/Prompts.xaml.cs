@@ -50,17 +50,17 @@ namespace Diffusion.Toolkit.Pages
 
             ThumbnailListView.MessagePopupManager = messagePopupManager;
 
-            _bitsetDatabase = new BitsetDatabase(_dataStore);
+            //_bitsetDatabase = new BitsetDatabase(_dataStore);
 
-            _imagePrompts = _dataStore.GetImagePrompts().ToList();
+            //_imagePrompts = _dataStore.GetImagePrompts().ToList();
 
-            Task.Run(() =>
-            {
-                _bitsetDatabase.Rebuild();
-                _bitsetDatabase.ProcessPrompts();
-            });
+            //Task.Run(() =>
+            //{
+            //    _bitsetDatabase.Rebuild();
+            //    _bitsetDatabase.ProcessPrompts();
+            //});
 
-            ReloadPrompts();
+            //ReloadPrompts();
 
             _model.PropertyChanged += ModelOnPropertyChanged;
         }

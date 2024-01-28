@@ -32,6 +32,9 @@ using Diffusion.Toolkit.Themes;
 using static System.Net.WebRequestMethods;
 using WPFLocalizeExtension.Engine;
 using System.Windows.Documents;
+using Diffusion.Analysis;
+using ICSharpCode.AvalonEdit.Search;
+using System.Threading.Tasks;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -467,6 +470,62 @@ namespace Diffusion.Toolkit.Pages
             //PreviewPane.OnNext = Next;
             //PreviewPane.OnPrev = Prev;
             GetRandomHint();
+
+            _bitsetDatabase = new BitsetDatabase(_dataStoreOptions.Value);
+
+            _imagePrompts = _dataStoreOptions.Value.GetImagePrompts().ToList();
+
+            Task.Run(() =>
+            {
+                _bitsetDatabase.Rebuild();
+                _bitsetDatabase.ProcessPrompts();
+            });
+
+            ReloadPrompts();
+        }
+
+        private BitsetDatabase _bitsetDatabase;
+        private List<ImagePrompt> _imagePrompts;
+
+        public void ReloadPrompts()
+        {
+            Task.Run(() => LoadPrompts());
+
+            //LoadNegativePrompts();
+        }
+
+
+        private void LoadPrompts()
+        {
+            IEnumerable<UsedPrompt> usedPrompts = new List<UsedPrompt>();
+
+            if (string.IsNullOrEmpty(_model.PromptQuery))
+            {
+                usedPrompts = _imagePrompts.GroupBy(p => p.Prompt).Select(u => new UsedPrompt()
+                {
+                    Prompt = u.Key,
+                    Usage = u.Count()
+                }).OrderByDescending(u => u.Usage);
+            }
+            else
+            {
+                var scores = _bitsetDatabase.GetSimilarPrompts(_model.PromptQuery, 1f, 0.0f);
+
+                var similarPrompts = _imagePrompts.Join(scores, prompt => prompt.Id, score => score.Id, (prompt, score) => new { prompt, score });
+
+                usedPrompts = similarPrompts.GroupBy(p => p.prompt.Prompt).Select(u => new UsedPrompt()
+                {
+                    Prompt = u.Key,
+                    Usage = u.Count(),
+                    Score = u.Select(a => a.score).Average(a => a.Score)
+                }).OrderByDescending(u => u.Score).ThenByDescending(u => u.Usage);
+            }
+
+            //_dataStore.SearchPrompts(_model.PromptQuery, _model.FullTextPrompt, _model.PromptDistance);
+            Dispatcher.Invoke(() =>
+            {
+                _model.Prompts = usedPrompts.Take(100);
+            });
         }
 
         public void ShowFilter()
@@ -801,6 +860,44 @@ namespace Diffusion.Toolkit.Pages
                 }
 
             }
+            else if (e.PropertyName == nameof(SearchModel.PromptQuery))
+            {
+                if (promptQueryTimer == null)
+                {
+                    promptQueryTimer = new Timer(Callback, null, 500, Timeout.Infinite);
+                }
+                else
+                {
+                    promptQueryTimer.Change(500, Timeout.Infinite);
+                }
+            }
+        }
+
+        private Timer? promptQueryTimer;
+
+        public static Action<T> Debounce<T>(Action<T> func, int milliseconds = 300)
+        {
+            CancellationTokenSource? cancelTokenSource = null;
+
+            return arg =>
+            {
+                cancelTokenSource?.Cancel();
+                cancelTokenSource = new CancellationTokenSource();
+
+                Task.Delay(milliseconds, cancelTokenSource.Token)
+                    .ContinueWith(t =>
+                    {
+                        if (t.IsCompletedSuccessfully)
+                        {
+                            func(arg);
+                        }
+                    }, TaskScheduler.Default);
+            };
+        }
+
+        private void Callback(object? state)
+        {
+            Task.Run(() => LoadPrompts());
         }
 
         private CancellationTokenSource? _loadPreviewBitmapCts;
@@ -2081,5 +2178,13 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
+        private void Prompt_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var prompt = ((UsedPrompt)((Border)sender).DataContext).Prompt;
+
+            _model.SearchText = prompt;
+
+            SearchImages(null);
+        }
     }
 }

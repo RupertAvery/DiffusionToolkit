@@ -153,6 +153,8 @@
                                 <ColumnDefinition Width="3*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
 
+
+
                             <ScrollViewer x:Name="NavigationScrollViewer" Grid.Column="0" VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
                                     <!--<controls:AccordionControl HeaderBackground="#80000000" Margin="0,0,0,5"
@@ -392,6 +394,68 @@
 
                             </ScrollViewer>
 
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="90"/>
+                                    <RowDefinition Height="30"/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <TextBox Grid.Row="0" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                                             Text="{Binding PromptQuery, UpdateSourceTrigger=PropertyChanged}" 
+                                    ></TextBox>
+                                <!--
+                                              SelectedItem="{Binding SelectedPrompt}"-->
+                                <ScrollViewer Grid.Row="2">
+                                    <ItemsControl  ItemsSource="{Binding Prompts}" >
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Padding="5,5,5,5" Margin="0,0,0,10" BorderThickness="1" BorderBrush="{DynamicResource SecondaryBrush}"
+                                                        MouseDown="Prompt_OnMouseDown"
+                                                        >
+                                                    <Grid Background="Transparent">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition/>
+                                                            <ColumnDefinition Width="70"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Padding="5,5,5,5" Text="{Binding Prompt}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Top"></TextBlock>
+                                                        <TextBlock Padding="5,5,5,5" Grid.Column="1"  Text="{Binding Usage}" Foreground="{DynamicResource ForegroundBrush}" HorizontalAlignment="Right"></TextBlock>
+                                                    </Grid>
+                                                    <Border.Style>
+                                                        <Style TargetType="{x:Type Border}">
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="{DynamicResource HighlightBrush}"></Setter>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+
+                                <!--<DataGrid Grid.Row="2" 
+                                              ItemsSource="{Binding Prompts}" 
+                                              SelectionUnit="FullRow"
+                                              AutoGenerateColumns="False" SelectionMode="Single"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Prompt" Binding="{Binding Prompt}" MaxWidth="900" IsReadOnly="True">
+                                                <DataGridTextColumn.ElementStyle>
+                                                    <Style>
+                                                        <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                                        <Setter Property="TextBlock.TextAlignment" Value="Left"/>
+                                                    </Style>
+                                                </DataGridTextColumn.ElementStyle>
+                                            </DataGridTextColumn>
+                                            <DataGridTextColumn Header="Usage" Binding="{Binding Usage}" IsReadOnly="True">
+                                            </DataGridTextColumn>
+                                            <DataGridTextColumn Header="Relevance" Binding="{Binding Score}" IsReadOnly="True">
+                                            </DataGridTextColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>-->
+
+                            </Grid>
 
                             <GridSplitter x:Name="GridSplitter2"  
                                           Grid.Row="0" Grid.Column="1"
