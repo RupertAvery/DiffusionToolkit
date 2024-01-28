@@ -920,7 +920,7 @@ namespace Diffusion.Toolkit.Pages
 
                 _model.CurrentImage = imageViewModel;
 
-                PreviewPane.ResetZoom();
+                //PreviewPane.ResetZoom();
 
                 OnCurrentImageChange?.Invoke(_model.CurrentImage);
             }

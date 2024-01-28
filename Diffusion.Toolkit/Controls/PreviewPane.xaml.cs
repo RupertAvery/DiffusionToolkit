@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -53,7 +55,30 @@ namespace Diffusion.Toolkit.Controls
         {
             if (e.Property.Name == nameof(Image))
             {
+                var preview = ((PreviewPane)d);
+                preview.SetHandler((ImageViewModel)e.NewValue);
 
+            }
+        }
+
+        private void ImageViewModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ImageViewModel.Image))
+            {
+                ResetView();
+            }
+        }
+
+        private void SetHandler(ImageViewModel model)
+        {
+            model.PropertyChanged += ImageViewModelOnPropertyChanged;
+        }
+
+        private void ResetView()
+        {
+            if (MainModel.FitToPreview)
+            {
+                FitToPreview();
             }
         }
 
@@ -69,7 +94,7 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(NSFWBlurProperty, value);
         }
 
-        public ImageViewModel Image
+        public ImageViewModel? Image
         {
             get => (ImageViewModel)GetValue(ImageProperty);
             set => SetValue(ImageProperty, value);
@@ -83,10 +108,42 @@ namespace Diffusion.Toolkit.Controls
             InitializeComponent();
             InitIcons();
             _scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
+            SizeChanged += OnSizeChanged;
+        }
+
+        private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (MainModel.FitToPreview)
+            {
+                FitToPreview();
+            }
+        }
+
+        private void FitToPreview()
+        {
+            if (Image is { Image: { } })
+            {
+
+                var ratio = ActualWidth / ActualHeight;
+
+                double factor;
+
+                var hfactor = ActualHeight / Image.Image.Height;
+                var vfactor = ActualWidth / Image.Image.Width;
+
+                factor = Math.Min(hfactor, vfactor);
+
+                Preview.LayoutTransform = new ScaleTransform(factor, factor);
+                ScrollViewer.ScrollToHorizontalOffset(0);
+                ScrollViewer.ScrollToVerticalOffset(0);
+
+                UpdateLayout();
+            }
         }
 
         private Cursor handCursor;
         private Cursor grabCursor;
+        private MainModel _mainModel;
 
         private void InitIcons()
         {
@@ -122,6 +179,8 @@ namespace Diffusion.Toolkit.Controls
 
         private void UIElement_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
+            MainModel.FitToPreview = false;
+
             var ctrlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 
             var active = true;
@@ -265,12 +324,12 @@ namespace Diffusion.Toolkit.Controls
                 ResetZoom();
                 e.Handled = true;
             }
-            else if (e.Key == Key.OemPlus && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+            else if (e.Key == Key.OemPlus)
             {
                 ZoomPreview(0.1);
                 e.Handled = true;
             }
-            if (e.Key == Key.OemMinus && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
+            if (e.Key == Key.OemMinus)
             {
                 ZoomPreview(-0.1);
                 e.Handled = true;
@@ -282,16 +341,30 @@ namespace Diffusion.Toolkit.Controls
             Image.IsParametersVisible = !Image.IsParametersVisible;
         }
 
-        private void Popout_OnClick(object sender, RoutedEventArgs e)
-        {
-            OnPopout?.Invoke();
-        }
-
         public bool IsPopout { get; set; }
 
         public Action OnPopout { get; set; }
 
-        public MainModel MainModel { get; set; }
+        public MainModel MainModel
+        {
+            get => _mainModel;
+            set
+            {
+                _mainModel = value;
+                _mainModel.PropertyChanged += MainModelOnPropertyChanged;
+            }
+        }
+
+        private void MainModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(MainModel.FitToPreview))
+            {
+                if (MainModel.FitToPreview)
+                {
+                    FitToPreview();
+                }
+            }
+        }
 
         private void ScrollViewer_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -322,11 +395,11 @@ namespace Diffusion.Toolkit.Controls
                 if (ScrollViewer.ScrollableHeight == 0 && ScrollViewer.ScrollableWidth == 0)
                 {
                     DataObject dataObject = new DataObject();
-                    dataObject.SetData(DataFormats.FileDrop, new [] { Image.Path });
+                    dataObject.SetData(DataFormats.FileDrop, new[] { Image.Path });
                     dataObject.SetData("DTCustomDragSource", true);
 
                     DragDrop.DoDragDrop(this, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
-                    
+
                     window.Cursor = null;
 
                     e.Handled = true;
