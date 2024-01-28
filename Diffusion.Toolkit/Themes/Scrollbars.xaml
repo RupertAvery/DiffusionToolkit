@@ -101,11 +101,36 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
                     <Border CornerRadius="4"
+                            Name="Dragger"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="0"
                         Width="8"
-                        Margin="8,0,-2,0" />
+                        Opacity="0.3"
+                        Margin="0,0,0,0">
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <!--<Setter Property="Width" TargetName="Dragger" Value="10"/>
+                            <Setter Property="Opacity" TargetName="Dragger" Value="0.6"/>-->
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation From="8" To="10" Duration="0:0:0.1" Storyboard.TargetProperty="Width" Storyboard.TargetName="Dragger"></DoubleAnimation>
+                                        <DoubleAnimation From="0.3" To="0.6" Duration="0:0:0.1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="Dragger"></DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard >
+                                        <DoubleAnimation From="10" To="8" Duration="0:0:0.1" Storyboard.TargetProperty="Width" Storyboard.TargetName="Dragger"></DoubleAnimation>
+                                        <DoubleAnimation From="0.6" To="0.3" Duration="0:0:0.1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="Dragger"></DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -125,12 +150,35 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
                     <Border CornerRadius="4"
+                            Name="Dragger"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="0"
+                        Opacity="0.3"
                         Height="8"
-                        Margin="0,0,-2,0" />
-                </ControlTemplate>
+                        Margin="0,0,0,0" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <!--<Setter Property="Width" TargetName="Dragger" Value="10"/>
+                            <Setter Property="Opacity" TargetName="Dragger" Value="0.6"/>-->
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation From="8" To="10" Duration="0:0:0.1" Storyboard.TargetProperty="Height" Storyboard.TargetName="Dragger"></DoubleAnimation>
+                                        <DoubleAnimation From="0.3" To="0.6" Duration="0:0:0.1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="Dragger"></DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard >
+                                        <DoubleAnimation From="10" To="8" Duration="0:0:0.1" Storyboard.TargetProperty="Height" Storyboard.TargetName="Dragger"></DoubleAnimation>
+                                        <DoubleAnimation From="0.6" To="0.3" Duration="0:0:0.1" Storyboard.TargetProperty="Opacity" Storyboard.TargetName="Dragger"></DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                    </ControlTemplate.Triggers>                </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
@@ -144,8 +192,8 @@
                 <RowDefinition MaxHeight="0" />
             </Grid.RowDefinitions>
             <Border Grid.RowSpan="3"
-                CornerRadius="2"
-                Background="Transparent" />
+                CornerRadius="0"
+                Background="{x:Null}" />
             <RepeatButton Grid.Row="0"
                       Style="{StaticResource ScrollBarLineButton}"
                       Height="18"
@@ -169,7 +217,7 @@
                               Command="ScrollBar.PageDownCommand" />
                 </Track.IncreaseRepeatButton>
             </Track>
-            <RepeatButton Grid.Row="3"
+            <RepeatButton Grid.Row="2"
                       Style="{StaticResource ScrollBarLineButton}"
                       Height="18"
                       Command="ScrollBar.LineDownCommand"
@@ -211,7 +259,7 @@
                               Command="ScrollBar.PageRightCommand" />
                 </Track.IncreaseRepeatButton>
             </Track>
-            <RepeatButton Grid.Column="3"
+            <RepeatButton Grid.Column="2"
                       Style="{StaticResource ScrollBarLineButton}"
                       Width="18"
                       Command="ScrollBar.LineRightCommand"
@@ -231,14 +279,14 @@
                 <Setter Property="Width"
                     Value="Auto" />
                 <Setter Property="Height"
-                    Value="12" />
+                    Value="10" />
                 <Setter Property="Template"
                     Value="{StaticResource HorizontalScrollBar}" />
             </Trigger>
             <Trigger Property="Orientation"
                  Value="Vertical">
                 <Setter Property="Width"
-                    Value="18" />
+                    Value="10" />
                 <Setter Property="Height"
                     Value="Auto" />
                 <Setter Property="Template"
