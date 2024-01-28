@@ -412,13 +412,22 @@
                                                 <Border Padding="5,5,5,5" Margin="0,0,0,10" BorderThickness="1" BorderBrush="{DynamicResource SecondaryBrush}"
                                                         MouseDown="Prompt_OnMouseDown"
                                                         >
-                                                    <Grid Background="Transparent">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition/>
-                                                            <ColumnDefinition Width="70"/>
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBlock Padding="5,5,5,5" Text="{Binding Prompt}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Top"></TextBlock>
-                                                        <TextBlock Padding="5,5,5,5" Grid.Column="1"  Text="{Binding Usage}" Foreground="{DynamicResource ForegroundBrush}" HorizontalAlignment="Right"></TextBlock>
+                                                    <Grid Background="{x:Null}">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition/>
+                                                            <RowDefinition Height="10"/>
+                                                        </Grid.RowDefinitions>
+                                                        <Grid Background="{x:Null}">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition/>
+                                                                <ColumnDefinition Width="70"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Padding="5,5,5,5" Text="{Binding Prompt}" TextWrapping="Wrap" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Top"></TextBlock>
+                                                            <TextBlock Padding="5,5,5,5" Grid.Column="1"  Text="{Binding Usage}" Foreground="{DynamicResource ForegroundBrush}" HorizontalAlignment="Right"></TextBlock>
+                                                        </Grid>
+                                                        <Grid  Background="{x:Null}" Grid.Row="1">
+                                                            <TextBlock Padding="5,5,5,5" Text="{Binding Score}" Foreground="{DynamicResource ForegroundBrush}" HorizontalAlignment="Center"></TextBlock>
+                                                        </Grid>
                                                     </Grid>
                                                     <Border.Style>
                                                         <Style TargetType="{x:Type Border}">

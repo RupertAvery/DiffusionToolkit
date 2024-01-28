@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Diffusion.Analysis;
 
@@ -22,7 +23,7 @@ public class Vocabulary
     {
         return _vocabularySet.GetItems();
     }
-    
+
     public void TokenizeAndAdd(IEnumerable<string> texts)
     {
         foreach (var text in texts)
@@ -39,12 +40,11 @@ public class Vocabulary
 
     public IEnumerable<string> Tokenize(string text)
     {
-
-        return text.Split(new char[] { ' ', ',' });
+        return Regex.Replace(text.ToLowerInvariant(), @"(?:\s{2,})|(?:(?::\d*\.?\d*)?[\)\]\}])|(?:[\(\[\{])|\||\<|(?::-?\d*\.?\d*)\>|[.?!]", "", RegexOptions.Multiline).Split(new char[] { ' ', ',', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
     }
 
     /// <summary>
-    /// Returns a 1-hot encoding of each token in this vocabulary
+    /// Returns a 1-hot encoding of each token in the prompt for this vocabulary
     /// </summary>
     /// <param name="prompt"></param>
     /// <returns></returns>

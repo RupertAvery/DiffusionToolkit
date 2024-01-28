@@ -543,12 +543,17 @@ namespace Diffusion.Toolkit.Pages
 
         private void CopyFiles()
         {
+            // TODO: Only call this in the context of the thumbnail or preview
             StringCollection paths = new StringCollection();
             foreach (var path in ThumbnailListView.SelectedImages.Select(i => i.Path))
             {
                 paths.Add(path);
             }
-            Clipboard.SetFileDropList(paths);
+
+            if (paths.Count > 0)
+            {
+                Clipboard.SetFileDropList(paths);
+            }
         }
 
         private string GetLocalizedText(string key)
