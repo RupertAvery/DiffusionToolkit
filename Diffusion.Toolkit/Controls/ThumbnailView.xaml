@@ -9,6 +9,7 @@
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
              xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
+             xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
              lex:LocalizeDictionary.Separation="."
              lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
@@ -146,7 +147,7 @@
                   MouseMove="ThumbnailListView_OnMouseMove"
                   MouseDoubleClick="Control_OnMouseDoubleClick"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                  local:ScrollSpeed.ScrollSpeed="11.5"
+                  behaviors:ScrollSpeed.ScrollSpeed="11.5"
                   Tag="{Binding Path=.}"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <ListView.Resources>
