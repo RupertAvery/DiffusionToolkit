@@ -363,6 +363,7 @@ namespace Diffusion.Database
             var sortField = sortBy switch
             {
                 "Date Created" => nameof(Image.CreatedDate),
+                "Date Modified" => nameof(Image.ModifiedDate),
                 "Rating" => nameof(Image.Rating),
                 "Aesthetic Score" => nameof(Image.AestheticScore),
                 "Prompt" => nameof(Image.Prompt),
@@ -423,6 +424,7 @@ namespace Diffusion.Database
             var sortField = sortBy switch
             {
                 "Date Created" => nameof(Image.CreatedDate),
+                "Date Modified" => nameof(Image.ModifiedDate),
                 "Rating" => nameof(Image.Rating),
                 "Aesthetic Score" => nameof(Image.AestheticScore),
                 "Name" => nameof(Image.FileName),

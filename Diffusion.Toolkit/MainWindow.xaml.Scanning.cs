@@ -277,12 +277,14 @@ namespace Diffusion.Toolkit
 
                 if (file != null)
                 {
+                    var fileInfo = new FileInfo(file.Path);
+
                     var image = new Image()
                     {
                         Prompt = file.Prompt,
                         NegativePrompt = file.NegativePrompt,
                         Path = file.Path,
-                        FileName = Path.GetFileName(file.Path),
+                        FileName = fileInfo.Name,
                         Width = file.Width,
                         Height = file.Height,
                         ModelHash = file.ModelHash,
@@ -293,7 +295,8 @@ namespace Diffusion.Toolkit
                         Seed = file.Seed,
                         BatchPos = file.BatchPos,
                         BatchSize = file.BatchSize,
-                        CreatedDate = File.GetCreationTime(file.Path),
+                        CreatedDate = fileInfo.CreationTime,
+                        ModifiedDate = fileInfo.LastWriteTime,
                         AestheticScore = file.AestheticScore,
                         HyperNetwork = file.HyperNetwork,
                         HyperNetworkStrength = file.HyperNetworkStrength,

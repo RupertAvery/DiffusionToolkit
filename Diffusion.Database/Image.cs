@@ -25,8 +25,8 @@ public class Image
     //public string OtherParameters { get; set; }
     //public string Parameters { get; set; }
     public DateTime CreatedDate { get; set; }
+    public DateTime ModifiedDate { get; set; }
 
-    
     // These columns shouldn't be overwritten when batch updating 
     // Consider moving these out?
     public string? CustomTags { get; set; }

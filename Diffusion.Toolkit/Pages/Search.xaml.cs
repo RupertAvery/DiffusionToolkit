@@ -303,6 +303,7 @@ namespace Diffusion.Toolkit.Pages
                 _model.SortOptions = new List<OptionValue>()
                 {
                     new(GetLocalizedText("Search.SortBy.DateCreated"), "Date Created"),
+                    new(GetLocalizedText("Search.SortBy.DateModified"), "Date Modified"),
                     new(GetLocalizedText("Search.SortBy.Rating"), "Rating"),
                     new(GetLocalizedText("Search.SortBy.AestheticScore"), "Aesthetic Score"),
                     new(GetLocalizedText("Search.SortBy.Name"), "Name"),

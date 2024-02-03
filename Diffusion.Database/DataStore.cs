@@ -76,6 +76,7 @@ public partial class DataStore
         db.CreateIndex<Image>(image => image.HyperNetwork);
         db.CreateIndex<Image>(image => image.HyperNetworkStrength);
         db.CreateIndex<Image>(image => image.FileSize);
+        db.CreateIndex<Image>(image => image.ModifiedDate);
 
         db.CreateTable<Album>();
         db.CreateIndex<Album>(album => album.Name, true);
