@@ -39,9 +39,25 @@ public partial class DataStore
 
         var migrations = new Migrations(db);
 
+        if (migrations.RequiresMigration(MigrationType.Pre))
+        {
+            notify?.Invoke();
+            try
+            {
+                await Task.Run(() =>
+                {
+                    migrations.Update(MigrationType.Pre);
+                });
+            }
+            finally
+            {
+                complete?.Invoke();
+            }
+        }
+
         db.CreateTable<Image>();
         db.CreateIndex<Image>(image => image.FolderId);
-        db.CreateIndex<Image>(image => image.Path);
+        db.CreateIndex<Image>(image => image.Path, true);
         db.CreateIndex<Image>(image => image.FileName);
         db.CreateIndex<Image>(image => image.ModelHash);
         db.CreateIndex<Image>(image => image.Model);
@@ -73,14 +89,14 @@ public partial class DataStore
         db.CreateTable<Folder>();
         db.CreateIndex<Folder>(folder => folder.ParentId);
 
-        if (migrations.RequiresMigration())
+        if (migrations.RequiresMigration(MigrationType.Post))
         {
             notify?.Invoke();
             try
             {
                 await Task.Run(() =>
                 {
-                    migrations.Update();
+                    migrations.Update(MigrationType.Post);
                 });
             }
             finally
