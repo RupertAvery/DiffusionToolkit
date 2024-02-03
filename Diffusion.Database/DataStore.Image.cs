@@ -260,7 +260,8 @@ namespace Diffusion.Database
 
             var query =
                 $"INSERT INTO Image ({string.Join(", ", fieldList)}) VALUES " +
-                $"                  ({string.Join(", ", paramList)})";
+                $"({string.Join(", ", paramList)}) " +
+                $"ON CONFLICT (Path) DO NOTHING ";
 
             var command = db.CreateCommand(query);
 
