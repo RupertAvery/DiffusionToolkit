@@ -1,6 +1,50 @@
+
+# Diffusion Toolkit
+
+Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image metadata-indexer and viewer for AI-generated images. It aims to help you organize, search and sort your ever-growing collection.
+
+# Installation
+
+* [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/latest
+) (Windows)
+* Requires [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) 
+
+Look for **> Assets** under the latest release, expand it, then grab the zip file **Diffusion.Toolkit.v1.x.zip**.
+
+# Features
+
+* Support for many image generators (A1111, InvokeAI, NovelAI, RuinedFooocus, partial ComfyUI support)
+* Scans and indexes your images in a database for lightning-fast search
+* Search images by metadata (Prompt, seed, model, etc...)
+* Custom metadata (stored in database, not in image) 
+    * Favorite
+    * Rating (1-10)
+    * NSFW
+* Organize your images 
+    * Albums
+    * Folder View
+* Drag and Drop from Diffusion Toolkit to another app
+
 # What's New in v1.6
 
-The Albums pane has been replaced with a general-purpose navigation / filter pane.  If you find your albums missing, show it with View > Albums.
+## Important Changes
+
+**Duplicate entries will be removed when you upgrade!**  This only applies to entries that have the exact same path, which can be caused by manually scanning while Diffusion Toolkit is still working on newly detected files (watched folders).  
+
+**Images entries will no longer be automatically removed when the image is unreachable.** This change is primarily for users who work with removable storage. Previously, scanning would look for any missing images and remove them. With an offline drive, images would suddenly be removed upon starting Diffusion Toolkit.
+
+**Images that cannot be loaded will display as "unavailable"**. This will also affect images that were moved or deleted outside the app. To avoid this, it's recommended to move or delete previously indexed images using Diffusion Toolkit.  To remove an image marked unavailable, select the image and right-click > Remove, or press CTRL-X or CTRL-Delete.
+
+**Diffusion Toolkit is localized!** Translations are currently mostly ChatGPT-provided, so expect grammatical errors.  Some areas are not yet translated. Want to contribute to localization? See `Localization\README.md` 
+
+**The Albums pane has been replaced with a general-purpose navigation / filter pane.**  If you find your albums missing, show it with View > Albums.
+
+**A folder treeview has been added.** While this supports basic adding/removing a folder, some expected functions like being able to move folders is not currently implemented. 
+You can drag images to folders to move them.
+
+**Fit-to-preview no longer locks the zoom in the preview.**  Instead, it will remain on fit to preview until you middle-scroll to zoom or press CTRL - or +.
+
+**The popout preview button has been moved to the title bar** next to the minimize button.  If you close the popout, you can show the preview in the app with the Toggle preview button next to the popout button.
 
 ## Enhancements
 
@@ -30,6 +74,7 @@ The Albums pane has been replaced with a general-purpose navigation / filter pan
       * Japanese
    * Some text is still untranslated 
 * Sort by Filename / Random (#182) 
+* Improved zoom behavior
 * Dragging onto albums / folders will highlight the folder now
 * Added Sampler as a separate metadata section
 * Input dialog now sets focus on textbox
@@ -44,8 +89,5 @@ The Albums pane has been replaced with a general-purpose navigation / filter pan
 
  Thanks to all contributors!
 
-Want to contribute to localization? See `Localization\default.json` (this is provided for reference, updating it will not update the default text).
-
-Or, fork the repo and create a PR for translation additions or updates.
 
 
