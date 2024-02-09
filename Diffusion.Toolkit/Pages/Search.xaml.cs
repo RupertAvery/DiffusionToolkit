@@ -434,6 +434,11 @@ namespace Diffusion.Toolkit.Pages
 
             ThumbnailListView.MessagePopupManager = messagePopupManager;
 
+            ThumbnailListView.OnExpandToFolder = entry =>
+            {
+                ExpandToPath(Path.GetDirectoryName(entry.Path));
+            };
+
             PreviewPane.MainModel = mainModel;
 
             PreviewPane.NSFW = (id, b) =>

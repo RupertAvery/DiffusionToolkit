@@ -62,6 +62,7 @@ public class ThumbnailViewModel : BaseNotify
     private ObservableCollection<Control> _albumMenuItems;
     private ViewMode _viewMode;
     private int _pageSize;
+    private ICommand _expandToFolderCommand;
 
     public ThumbnailViewModel()
     {
@@ -277,6 +278,12 @@ public class ThumbnailViewModel : BaseNotify
     {
         get => _showInExplorerCommand;
         set => SetField(ref _showInExplorerCommand, value);
+    }
+
+    public ICommand ExpandToFolderCommand
+    {
+        get => _expandToFolderCommand;
+        set => SetField(ref _expandToFolderCommand, value);
     }
 
     public ICommand DeleteCommand

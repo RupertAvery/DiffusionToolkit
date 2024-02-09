@@ -151,6 +151,7 @@
   "Thumbnail.ContextMenu.Copy": "_Copy",
   "Thumbnail.ContextMenu.Move": "_Move",
   "Thumbnail.ContextMenu.ShowInExplorer": "Show in _Explorer",
+  "Thumbnail.ContextMenu.ExpandToFolder": "Expand to folder",
   "Thumbnail.ContextMenu.SendToTrash": "Send to _Trash",
   "Thumbnail.ContextMenu.Restore": "_Restore",
   "Thumbnail.ContextMenu.Remove": "Remove",

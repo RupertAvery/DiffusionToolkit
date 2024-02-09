@@ -229,9 +229,7 @@
                     <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Move}" Command="{Binding MoveCommand}"/>
                     <Separator />
                     <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.ShowInExplorer}"  Command="{Binding ShowInExplorerCommand}"/>
-                    <!--<Separator />
-                                            <MenuItem Header="Add to Album" />
-                                            <MenuItem Header="Remove from Album" />-->
+                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.ExpandToFolder}"  Command="{Binding ExpandToFolderCommand}"/>
                     <Separator />
                     <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.SendToTrash}" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
                     <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.Restore}" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>

@@ -14,6 +14,7 @@ using System.Windows.Media;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 using Microsoft.Extensions.Options;
+using Image = Diffusion.Database.Image;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -111,6 +112,7 @@ namespace Diffusion.Toolkit.Controls
             Model.CopyHashCommand = new RelayCommand<object>(CopyHash);
             Model.CopyParametersCommand = new RelayCommand<object>(CopyParameters);
             Model.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
+            Model.ExpandToFolderCommand = new RelayCommand<object>(ExpandToFolder);
             Model.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
             Model.FavoriteCommand = new RelayCommand<object>(o => FavoriteSelected());
             Model.NSFWCommand = new RelayCommand<object>(o => NSFWSelected());
@@ -670,6 +672,17 @@ namespace Diffusion.Toolkit.Controls
                     ShowItem(index, focus);
                 }
             });
+        }
+
+        public Action<ImageEntry> OnExpandToFolder { get; set; }
+
+        private void ExpandToFolder(object obj)
+        {
+            if (ThumbnailListView.SelectedItems.Count == 0) return;
+
+            var imageEntry = (ImageEntry)ThumbnailListView.SelectedItems[0];
+
+            OnExpandToFolder?.Invoke(imageEntry);
         }
 
         private void ShowInExplorer(object obj)
