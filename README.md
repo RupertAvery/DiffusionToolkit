@@ -69,10 +69,9 @@ You can even use it on images without metadata and still use the other features 
 
 # Screenshots
 
-![Screenshot 2023-09-30 125304](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/4f385236-cf01-462b-b0c8-cb2708110cb3)
+![Screenshot 2024-02-09 183808](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/437781da-e905-412a-bbe6-e179f51ac020)
 
-![Screenshot 2023-09-30 125523](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/378b9153-86aa-42ce-af27-95e8709a1bd3)
-
+![Screenshot 2024-02-09 183625](https://github.com/RupertAvery/DiffusionToolkit/assets/1910659/20e57f5a-be4e-468f-9bfb-fe309ecfe5f1)
 
 # Keyboard Shortcuts
 
