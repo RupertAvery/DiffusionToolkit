@@ -12,7 +12,7 @@ namespace Diffusion.Toolkit;
 public interface IScanOptions
 {
 
-    List<string> ImagePaths {  get; set; }
+    List<string> ImagePaths { get; set; }
 
     List<string> ExcludePaths { get; set; }
 
@@ -77,8 +77,8 @@ public class Settings : SettingsContainer, IScanOptions
     {
         Instance = this;
     }
-    
-   public Settings(bool initialize)
+
+    public Settings(bool initialize)
     {
         DontShowWelcomeOnStartup = false;
         ImagePaths = new List<string>();
@@ -98,6 +98,14 @@ public class Settings : SettingsContainer, IScanOptions
         MetadataSection = new MetadataSectionSettings();
         MetadataSection.Attach(this);
 
+        MainGridWidth = "5*";
+        MainGridWidth2 = "*";
+        NavigationThumbnailGridWidth = "*";
+        NavigationThumbnailGridWidth2 = "3*";
+        PreviewGridHeight = "*";
+        PreviewGridHeight2 = "3*";
+
+
         NavigationSection = new NavigationSectionSettings(initialize);
         NavigationSection.Attach(this);
 
@@ -106,7 +114,7 @@ public class Settings : SettingsContainer, IScanOptions
             RecurseFolders = true;
         }
     }
-    
+
     public List<string> ImagePaths
     {
         get => _imagePaths;
@@ -190,7 +198,7 @@ public class Settings : SettingsContainer, IScanOptions
 
     private double? _top;
     private double? _left;
-    
+
     public double? Top
     {
         get => _top;
@@ -202,7 +210,7 @@ public class Settings : SettingsContainer, IScanOptions
         get => _left;
         set => UpdateValue(ref _left, value);
     }
-    
+
     public WindowState? WindowState
     {
         get => _windowState;
@@ -428,7 +436,7 @@ public abstract class SettingsContainer : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-    
+
     protected bool UpdateValue<T>(ref T field, T value, [CallerMemberName] string propertyName = "")
     {
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
@@ -493,7 +501,7 @@ public class NavigationSectionSettings : SettingsContainer
     private bool _showFolders;
     private bool _showModels;
     private bool _showAlbums;
-    
+
     public NavigationSectionSettings()
     {
 
@@ -609,7 +617,7 @@ public class MetadataSectionSettings : SettingsContainer
         get => _seedState;
         set => UpdateValue(ref _seedState, value);
     }
-    
+
     public AccordionState SamplerState
     {
         get => _samplerState;

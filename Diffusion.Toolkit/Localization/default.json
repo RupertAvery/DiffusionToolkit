@@ -20,6 +20,7 @@
   "Menu.View.FitToPreview": "_Fit to Preview",
   "Menu.View.TogglePreview": "Show/Hide Preview",
   "Menu.View.PopoutPreview": "Popout Preview",
+  "Menu.View.ResetLayout": "Reset Layout",
   "Menu.Albums": "_Albums",
   "Menu.Albums.AlbumPane": "Album Pane",
   "Menu.Albums.Sort": "_Sort",

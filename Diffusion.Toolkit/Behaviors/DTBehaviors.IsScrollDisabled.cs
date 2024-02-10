@@ -62,11 +62,13 @@ namespace Diffusion.Toolkit.Behaviors
         
         private static T GetVisualParent<T>(DependencyObject child) where T : Visual
         {
+            var parent = default(T);
+
             var v = (Visual?)VisualTreeHelper.GetParent(child);
 
-            var parent = v as T;
+            parent = v as T;
 
-            if (parent == null)
+            if (parent == null && v != null)
             {
                 parent = GetVisualParent<T>(v);
             }
