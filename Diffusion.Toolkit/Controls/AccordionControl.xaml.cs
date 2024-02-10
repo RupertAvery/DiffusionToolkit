@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Diffusion.Toolkit.Behaviors;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -147,6 +148,91 @@ namespace Diffusion.Toolkit.Controls
                 e.Handled = true;
             }
 
+        }
+
+        bool _isResizing = false;
+        FrameworkElement? _scrollViewer = null;
+        FrameworkElement? _child = null;
+        private Point _mouseCoords;
+
+        private void UIElement_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _isResizing = true;
+            _scrollViewer = GetVisualChild<ScrollViewer>(this);
+            var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
+            _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+
+            if (_child == null)
+            {
+                _child = GetVisualChild<Grid>(_scrollViewer);
+            }
+
+            _mouseCoords = e.GetPosition(this);
+            Mouse.Capture((UIElement)sender);
+        }
+
+        private void UIElement_OnMouseMove(object sender, MouseEventArgs e)
+        {
+            if (_isResizing)
+            {
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    var mouseCoords = e.GetPosition(this);
+
+                    if (_scrollViewer.MaxHeight == Double.PositiveInfinity)
+                    {
+                        _scrollViewer.MaxHeight = _scrollViewer.ActualHeight;
+                    }
+
+                    var currentHeight = _scrollViewer.MaxHeight;
+
+                    currentHeight += mouseCoords.Y - _mouseCoords.Y;
+
+                    if (currentHeight > _child.ActualHeight)
+                    {
+                        _scrollViewer.MaxHeight = Double.PositiveInfinity;
+                        DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
+                    }
+                    else if (currentHeight > 0)
+                    {
+                        _scrollViewer.MaxHeight = currentHeight;
+                        DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
+                    }
+                    else
+                    {
+                        _scrollViewer.MaxHeight = 0;
+                    }
+
+                    _mouseCoords = e.GetPosition(this);
+                }
+            }
+        }
+
+        private void UIElement_OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            _isResizing = false;
+            Mouse.Capture(null);
+        }
+
+        private static T GetVisualChild<T>(DependencyObject parent) where T : Visual
+        {
+            T child = default(T);
+
+            int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < numVisuals; i++)
+            {
+                Visual v = (Visual)VisualTreeHelper.GetChild(parent, i);
+                child = v as T;
+                if (child == null)
+                {
+                    child = GetVisualChild<T>(v);
+                }
+                if (child != null)
+                {
+                    break;
+                }
+            }
+            return child;
         }
     }
 }

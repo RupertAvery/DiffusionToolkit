@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="400">
     <UserControl.Template>
@@ -64,11 +65,34 @@
                     <ContentControl Grid.Column="2" Content="{Binding ButtonAreaContent, RelativeSource={RelativeSource TemplatedParent}}"/>
                 </Grid>
 
-                <Grid Background="Transparent" Margin="0,10,0,10" Visibility="{Binding ContentVisibility, RelativeSource={RelativeSource TemplatedParent}}">
+                <Grid Background="Transparent" Margin="0,0,0,0" Visibility="{Binding ContentVisibility, RelativeSource={RelativeSource TemplatedParent}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="10"/>
+                    </Grid.RowDefinitions>
                     <Border BorderThickness="0,0,0,0" BorderBrush="{StaticResource SecondaryBrush}">
-                        <ContentPresenter Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" />
-                    </Border>
+                        <ScrollViewer Margin="0,5,0,5" behaviors:DTBehaviors.IsScrollDisabledAttached="True">
+                            <ContentPresenter Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" />
+                        </ScrollViewer>
+                         </Border>
+
+                    <Grid Grid.Row="1" Background="Transparent" Height="10" 
+                          Opacity="50"
+                          MouseDown="UIElement_OnMouseDown" 
+                          MouseMove="UIElement_OnMouseMove"
+                          MouseUp="UIElement_OnMouseUp"
+                          Cursor="SizeNS">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Line Grid.Column="1" Stroke="{StaticResource ForegroundBrush}" X1="0" X2="15" Y1="2" Y2="2"></Line>
+                        <Line Grid.Column="1" Stroke="{StaticResource ForegroundBrush}" X1="0" X2="15" Y1="5" Y2="5"></Line>
+                        <Line Grid.Column="1" Stroke="{StaticResource ForegroundBrush}" X1="0" X2="15" Y1="8" Y2="8"></Line>
+                    </Grid>
                 </Grid>
+
             </StackPanel>
         </ControlTemplate>
     </UserControl.Template>

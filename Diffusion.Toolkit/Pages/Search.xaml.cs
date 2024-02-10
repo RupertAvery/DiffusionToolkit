@@ -2101,7 +2101,13 @@ namespace Diffusion.Toolkit.Pages
 
             PreviewGrid.RowDefinitions[0].Height = new GridLength(1, GridUnitType.Star);
             PreviewGrid.RowDefinitions[2].Height = new GridLength(3, GridUnitType.Star);
-
+            
+            _settings.MainGridWidth = "5*";
+            _settings.MainGridWidth2 = "*";
+            _settings.NavigationThumbnailGridWidth = "*";
+            _settings.NavigationThumbnailGridWidth2 = "3*";
+            _settings.PreviewGridHeight = "*";
+            _settings.PreviewGridHeight2 = "3*";
         }
     }
 }
