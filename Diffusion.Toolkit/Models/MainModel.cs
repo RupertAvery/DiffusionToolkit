@@ -297,6 +297,12 @@ public class MainModel : BaseNotify
         set => SetField(ref _poputPreview, value);
     }
 
+    public ICommand ResetLayout
+    {
+        get => _resetLayout;
+        set => SetField(ref _resetLayout, value);
+    }
+
     public ICommand TogglePreview
     {
         get => _togglePreview;
@@ -522,6 +528,7 @@ public class MainModel : BaseNotify
     public Action<FolderViewModel> MoveSelectedImagesToFolder { get; set; }
 
     private FolderViewModel? _currentFolder;
+    private ICommand _resetLayout;
 
     public FolderViewModel? CurrentFolder
     {

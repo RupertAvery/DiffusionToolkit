@@ -8,16 +8,6 @@ namespace Diffusion.Toolkit.Behaviors;
 
 public static class ScrollSpeed
 {
-    public static double GetScrollSpeed(DependencyObject obj)
-    {
-        return (double)obj.GetValue(ScrollSpeedProperty);
-    }
-
-    public static void SetScrollSpeed(DependencyObject obj, double value)
-    {
-        obj.SetValue(ScrollSpeedProperty, value);
-    }
-
     public static readonly DependencyProperty ScrollSpeedProperty =
         DependencyProperty.RegisterAttached(
             "ScrollSpeed",
@@ -28,11 +18,24 @@ public static class ScrollSpeed
                 FrameworkPropertyMetadataOptions.Inherits & FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                 new PropertyChangedCallback(OnScrollSpeedChanged)));
 
-    public static DependencyObject GetScrollViewer(DependencyObject o)
+    public static double GetScrollSpeed(DependencyObject obj)
+    {
+        return (double)obj.GetValue(ScrollSpeedProperty);
+    }
+
+    public static void SetScrollSpeed(DependencyObject obj, double value)
+    {
+        obj.SetValue(ScrollSpeedProperty, value);
+    }
+
+
+    public static DependencyObject? GetScrollViewer(DependencyObject o)
     {
         // Return the DependencyObject if it is a ScrollViewer
         if (o is ScrollViewer)
-        { return o; }
+        {
+            return o;
+        }
 
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(o); i++)
         {
@@ -54,8 +57,10 @@ public static class ScrollSpeed
 
     private static void OnScrollSpeedChanged(DependencyObject o, DependencyPropertyChangedEventArgs e)
     {
-        var host = o as UIElement;
-        host.PreviewMouseWheel += new MouseWheelEventHandler(OnPreviewMouseWheelScrolled);
+        if (o is UIElement host)
+        {
+            host.PreviewMouseWheel += OnPreviewMouseWheelScrolled;
+        }
     }
 
     private static void OnPreviewMouseWheelScrolled(object sender, MouseWheelEventArgs e)

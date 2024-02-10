@@ -92,6 +92,8 @@
                 <MenuItem Header="{lex:Loc Menu.View.FitToPreview}" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
                 <MenuItem Header="{lex:Loc Menu.View.TogglePreview}" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
                 <MenuItem Header="{lex:Loc Menu.View.PopoutPreview}" Command="{Binding PoputPreview}"/>
+                <Separator/>
+                <MenuItem Header="{lex:Loc Menu.View.ResetLayout}" Command="{Binding ResetLayout}"/>
             </MenuItem>
             <!--<MenuItem Header="{lex:Loc Menu.Albums}">
                 <MenuItem Header="{lex:Loc Menu.Albums.AlbumPane}" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>

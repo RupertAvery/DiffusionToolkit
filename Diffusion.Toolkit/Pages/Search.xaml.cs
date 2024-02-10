@@ -115,9 +115,9 @@ namespace Diffusion.Toolkit.Pages
 
         public GridLength GetGridLength(string? value)
         {
-            if (IsNullOrEmpty(value)) return new GridLength(0, GridUnitType.Auto);
+            if (IsNullOrEmpty(value)) return new GridLength(1, GridUnitType.Star);
 
-            if (value == "*") return new GridLength(0, GridUnitType.Star);
+            if (value == "*") return new GridLength(1, GridUnitType.Star);
 
             var match = _gridLengthRegex.Match(value);
 
@@ -1843,6 +1843,9 @@ namespace Diffusion.Toolkit.Pages
 
             if (visible)
             {
+                //NavigationThumbnailGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.NavigationThumbnailGridWidth);
+                //NavigationThumbnailGrid.ColumnDefinitions[2].Width = new GridLength(0, GridUnitType.Auto);
+                
                 NavigationThumbnailGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.NavigationThumbnailGridWidth);
                 NavigationThumbnailGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.NavigationThumbnailGridWidth2);
 
@@ -1870,7 +1873,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 MainGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.MainGridWidth);
                 MainGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.MainGridWidth2);
-
+                
                 var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
                 widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[0], WidthChanged);
                 widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[2], WidthChanged2);
@@ -2087,5 +2090,18 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
+        public void ResetLayout()
+        {
+
+            MainGrid.ColumnDefinitions[0].Width = new GridLength(5, GridUnitType.Star);
+            MainGrid.ColumnDefinitions[2].Width = new GridLength(1, GridUnitType.Star);
+
+            NavigationThumbnailGrid.ColumnDefinitions[0].Width = new GridLength(1, GridUnitType.Star);
+            NavigationThumbnailGrid.ColumnDefinitions[2].Width = new GridLength(3, GridUnitType.Star);
+
+            PreviewGrid.RowDefinitions[0].Height = new GridLength(1, GridUnitType.Star);
+            PreviewGrid.RowDefinitions[2].Height = new GridLength(3, GridUnitType.Star);
+
+        }
     }
 }

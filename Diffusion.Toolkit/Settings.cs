@@ -41,12 +41,12 @@ public class Settings : SettingsContainer, IScanOptions
     private string _modelRootPath;
     private string _fileExtensions;
     private int _pageSize;
-    private string _mainGridWidth;
-    private string _mainGridWidth2;
-    private string _navigationThumbnailGridWidth;
-    private string _navigationThumbnailGridWidth2;
-    private string _previewGridHeight;
-    private string _previewGridHeight2;
+    private string? _mainGridWidth;
+    private string? _mainGridWidth2;
+    private string? _navigationThumbnailGridWidth;
+    private string? _navigationThumbnailGridWidth2;
+    private string? _previewGridHeight;
+    private string? _previewGridHeight2;
     private WindowState? _windowState;
     private Size? _windowSize;
     private bool _dontShowWelcomeOnStartup;
@@ -62,7 +62,6 @@ public class Settings : SettingsContainer, IScanOptions
     private List<string> _nsfwTags;
     private string _hashCache;
     private bool _portableMode;
-    private bool? _showAlbumPanel;
     private bool? _recurseFolders;
     private bool? _useBuiltInViewer;
     private bool? _openInFullScreen;
@@ -152,38 +151,38 @@ public class Settings : SettingsContainer, IScanOptions
 
 
     #region Window State
-    public string MainGridWidth
+    public string? MainGridWidth
     {
         get => _mainGridWidth;
         set => UpdateValue(ref _mainGridWidth, value);
     }
 
-    public string MainGridWidth2
+    public string? MainGridWidth2
     {
         get => _mainGridWidth2;
         set => UpdateValue(ref _mainGridWidth2, value);
     }
 
-    public string NavigationThumbnailGridWidth
+    public string? NavigationThumbnailGridWidth
     {
         get => _navigationThumbnailGridWidth;
         set => UpdateValue(ref _navigationThumbnailGridWidth, value);
     }
 
-    public string NavigationThumbnailGridWidth2
+    public string? NavigationThumbnailGridWidth2
     {
         get => _navigationThumbnailGridWidth2;
         set => UpdateValue(ref _navigationThumbnailGridWidth2, value);
     }
 
 
-    public string PreviewGridHeight
+    public string? PreviewGridHeight
     {
         get => _previewGridHeight;
         set => UpdateValue(ref _previewGridHeight, value);
     }
 
-    public string PreviewGridHeight2
+    public string? PreviewGridHeight2
     {
         get => _previewGridHeight2;
         set => UpdateValue(ref _previewGridHeight2, value);
@@ -560,7 +559,7 @@ public class NavigationSectionSettings : SettingsContainer
 
     public bool ShowSection
     {
-        get => _showAlbums || _showFolders || ShowAlbums;
+        get => _showFolders || _showModels || ShowAlbums;
     }
 
     public void Attach(Settings settings)

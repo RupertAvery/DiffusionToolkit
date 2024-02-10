@@ -123,7 +123,7 @@ namespace Diffusion.Toolkit
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
             _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
             _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
-
+            _model.ResetLayout = new RelayCommand<object>((o) => ResetLayout());
             _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
             _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
             _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
@@ -186,6 +186,11 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void ResetLayout()
+        {
+            _search.ResetLayout();
         }
 
         private void ToggleVisibility(string s)

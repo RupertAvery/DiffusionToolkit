@@ -148,9 +148,9 @@
                     <Grid DockPanel.Dock="Bottom">
                         <Grid x:Name="NavigationThumbnailGrid"  Background="{x:Null}">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
                                 <ColumnDefinition Width="5"></ColumnDefinition>
-                                <ColumnDefinition Width="3*"></ColumnDefinition>
+                                <ColumnDefinition Width="*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
 
                             <ScrollViewer x:Name="NavigationScrollViewer" Grid.Column="0" VerticalScrollBarVisibility="Auto">
@@ -221,7 +221,7 @@
                                                 </Button>-->
                                             </Grid>
                                         </controls:AccordionControl.ButtonAreaContent>
-                                        <ScrollViewer MaxHeight="500">
+                                        <ScrollViewer behaviors:DTBehaviors.IsScrollDisabled="True">
                                             <ScrollViewer.ContextMenu>
                                                 <ContextMenu>
                                                     <MenuItem Header="New Folder" Command="{Binding MainModel.CreateFolderCommand}"></MenuItem>
@@ -280,10 +280,11 @@
                                     </controls:AccordionControl>
 
 
-                                    <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
+                                    <controls:AccordionControl 
+                                        HeaderBackground="#80000000"  Margin="0,0,0,5"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowModels, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Models}">
-                                        <ScrollViewer MaxHeight="500">
+                                        <ScrollViewer behaviors:DTBehaviors.IsScrollDisabled="True">
                                             <ItemsControl ItemsSource="{Binding Path=MainModel.ImageModels}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
@@ -330,7 +331,7 @@
                                                 </Button>
                                             </Grid>
                                         </controls:AccordionControl.ButtonAreaContent>
-                                        <ScrollViewer MaxHeight="500">
+                                        <ScrollViewer behaviors:DTBehaviors.IsScrollDisabled="True">
                                             <ItemsControl ItemsSource="{Binding Path=MainModel.Albums}">
                                                 <ItemsControl.Resources>
                                                     <common:BindingProxy x:Key="Proxy" Data="{Binding MainModel}" />

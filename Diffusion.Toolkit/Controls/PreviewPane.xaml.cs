@@ -113,7 +113,7 @@ namespace Diffusion.Toolkit.Controls
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (MainModel.FitToPreview)
+            if (MainModel is { FitToPreview: true })
             {
                 FitToPreview();
             }
@@ -143,7 +143,7 @@ namespace Diffusion.Toolkit.Controls
 
         private Cursor handCursor;
         private Cursor grabCursor;
-        private MainModel _mainModel;
+        private MainModel? _mainModel;
 
         private void InitIcons()
         {
@@ -345,7 +345,7 @@ namespace Diffusion.Toolkit.Controls
 
         public Action OnPopout { get; set; }
 
-        public MainModel MainModel
+        public MainModel? MainModel
         {
             get => _mainModel;
             set
