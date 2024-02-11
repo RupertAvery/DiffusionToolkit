@@ -41,16 +41,57 @@ public class Metadata
         Unknown,
     }
 
+    public enum FileType
+    {
+        PNG,
+        JPEG,
+        WebP,
+        Other,
+    }
+
+    private static byte[] PNGMagic = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
+    private static byte[] JPEGMagic = new byte[] { 0xFF, 0xD8, 0xFF, 0xE1 };
+    private static byte[] RIFFMagic = new byte[] { 0x52, 0x49, 0x46, 0x46 };
+    private static byte[] WebPMagic = new byte[] { 0x57, 0x45, 0x42, 0x50 };
+
+    private static FileType GetFileType(string path)
+    {
+        var buffer = new byte[12];
+
+        using var file = File.OpenRead(path);
+
+        file.Read(buffer, 0, 12);
+
+        var span = buffer.AsSpan();
+
+        if (span.Slice(0,4).SequenceEqual(PNGMagic))
+        {
+            return FileType.PNG;
+        }
+        if (span.Slice(0, 4).SequenceEqual(JPEGMagic))
+        {
+            return FileType.JPEG;
+        }
+        if (span.Slice(0, 4).SequenceEqual(RIFFMagic) && span.Slice(8, 4).SequenceEqual(WebPMagic))
+        {
+            return FileType.WebP;
+        }
+
+        return FileType.Other;
+    }
+
     public static FileParameters? ReadFromFile(string file)
     {
         FileParameters? fileParameters = null;
 
 
-        var ext = Path.GetExtension(file).ToLower();
+        var ext = Path.GetExtension(file).ToLowerInvariant();
 
-        switch (ext)
+        var fileType = GetFileType(file);
+
+        switch (fileType)
         {
-            case ".png":
+            case FileType.PNG:
                 {
                     IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
 
@@ -206,7 +247,7 @@ public class Metadata
 
                     break;
                 }
-            case ".jpg" or ".jpeg":
+            case FileType.JPEG:
                 {
                     IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(file);
 
@@ -221,7 +262,7 @@ public class Metadata
 
                     break;
                 }
-            case ".webp":
+            case FileType.WebP:
                 {
                     IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(file);
 
