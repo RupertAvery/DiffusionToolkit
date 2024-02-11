@@ -34,6 +34,12 @@ public partial class DataStore
         using var db = OpenConnection();
 
         db.EnableLoadExtension(true);
+
+        if (!File.Exists("extensions\\path0.dll"))
+        {
+            throw new FileNotFoundException("Failed to load SQLite extensions", "path0.dll");
+        }
+
         db.LoadExtension("extensions\\path0.dll");
 
 
