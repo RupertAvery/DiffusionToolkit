@@ -178,17 +178,21 @@ namespace Diffusion.Toolkit.Controls
             void SetHeightInternal(double height)
             {
                 _scrollViewer = GetVisualChild<ScrollViewer>(this);
-                var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
-                _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
-                _scrollViewer.MaxHeight = height;
-                if (double.IsPositiveInfinity(height))
+                if (_scrollViewer != null)
                 {
-                    DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
+                    var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
+                    _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                    _scrollViewer.MaxHeight = height;
+                    if (double.IsPositiveInfinity(height))
+                    {
+                        DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
+                    }
+                    else
+                    {
+                        DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
+                    }
                 }
-                else
-                {
-                    DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
-                }
+       
             }
 
             if (this.IsLoaded)
@@ -211,13 +215,16 @@ namespace Diffusion.Toolkit.Controls
                 if (!canResize)
                 {
                     _scrollViewer = GetVisualChild<ScrollViewer>(this);
-                    var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
-                    if (presenter != null)
+                    if (_scrollViewer != null)
                     {
-                        _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
-                        _scrollViewer.MaxHeight = Double.PositiveInfinity;
-                        //_scrollViewer.Height = _child.ActualHeight;
-                        DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
+                        var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
+                        if (presenter != null)
+                        {
+                            _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                            _scrollViewer.MaxHeight = Double.PositiveInfinity;
+                            //_scrollViewer.Height = _child.ActualHeight;
+                            DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
+                        }
                     }
                 }
                 else
@@ -328,24 +335,28 @@ namespace Diffusion.Toolkit.Controls
             ContainerHeight = _scrollViewer.MaxHeight;
         }
 
-        private static T GetVisualChild<T>(DependencyObject parent) where T : Visual
+        private static T? GetVisualChild<T>(DependencyObject parent) where T : Visual
         {
-            T child = default(T);
+            T? child = default(T);
 
-            int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < numVisuals; i++)
+            if (parent != null)
             {
-                Visual v = (Visual)VisualTreeHelper.GetChild(parent, i);
-                child = v as T;
-                if (child == null)
+                int numVisuals = VisualTreeHelper.GetChildrenCount(parent);
+                for (int i = 0; i < numVisuals; i++)
                 {
-                    child = GetVisualChild<T>(v);
-                }
-                if (child != null)
-                {
-                    break;
+                    Visual v = (Visual)VisualTreeHelper.GetChild(parent, i);
+                    child = v as T;
+                    if (child == null)
+                    {
+                        child = GetVisualChild<T>(v);
+                    }
+                    if (child != null)
+                    {
+                        break;
+                    }
                 }
             }
+
             return child;
         }
     }
