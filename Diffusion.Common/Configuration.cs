@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Diffusion.Common
 {
@@ -50,7 +51,13 @@ namespace Diffusion.Common
         public void Load(out T? obj)
         {
             var json = File.ReadAllText(_settingsPath);
-            obj = JsonSerializer.Deserialize<T>(json);
+
+            var options = new JsonSerializerOptions
+            {
+                NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
+            };
+
+            obj = JsonSerializer.Deserialize<T>(json, options);
         }
 
         public void Save(T obj)
@@ -58,7 +65,14 @@ namespace Diffusion.Common
             var path = Path.GetDirectoryName(_settingsPath);
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-            var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions() { WriteIndented = true });
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals
+            };
+
+
+            var json = JsonSerializer.Serialize(obj, options);
 
             File.WriteAllText(_settingsPath, json);
         }
