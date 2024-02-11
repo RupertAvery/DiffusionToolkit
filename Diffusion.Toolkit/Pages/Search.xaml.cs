@@ -32,6 +32,7 @@ using Diffusion.Toolkit.Themes;
 using static System.Net.WebRequestMethods;
 using WPFLocalizeExtension.Engine;
 using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -388,6 +389,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     case nameof(NavigationSectionSettings.ShowSection):
                         SetNavigationVisible(_model.MainModel.Settings.NavigationSection.ShowSection);
+                        SetAccordionResizeableState();
                         break;
                 }
             };
@@ -438,6 +440,10 @@ namespace Diffusion.Toolkit.Pages
             //_model.NavigationSection.ShowFolders = _settings.NavigationSection.ShowFolders;
             //_model.NavigationSection.ShowModels = _settings.NavigationSection.ShowModels;
             //_model.NavigationSection.ShowAlbums = _settings.NavigationSection.ShowAlbums;
+            this.Loaded += (sender, args) =>
+            {
+                SetAccordionResizeableState();
+            };
 
             SetNavigationVisible(_model.MainModel.Settings.NavigationSection.ShowSection);
 
@@ -830,7 +836,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (image != null && image.EntryType != EntryType.File) return;
 
-         
+
             try
             {
                 if (_loadPreviewBitmapCts != null)
@@ -847,7 +853,7 @@ namespace Diffusion.Toolkit.Pages
                     emptyModel.Path = path;
                     emptyModel.IsMessageVisible = true;
                     emptyModel.Message = GetLocalizedText("Search.LoadPreview.MediaUnavailable");
-                    
+
                     _model.CurrentImage = emptyModel;
 
                     PreviewPane.ResetZoom();
@@ -972,7 +978,7 @@ namespace Diffusion.Toolkit.Pages
             bitmap.Freeze();
             return bitmap;
         }
-        
+
 
         public void SetOpacityView(bool value)
         {
@@ -1847,6 +1853,43 @@ namespace Diffusion.Toolkit.Pages
             RefreshThumbnails();
         }
 
+        private void SetAccordionResizeableState()
+        {
+            var stackPanel = GetChildOfType<StackPanel>(NavigationScrollViewer);
+            if (stackPanel != null)
+            {
+                var children = GetChildrenOfType<AccordionControl>(stackPanel);
+                var items = children.Where(c => c.Visibility == Visibility.Visible).ToList();
+                for (var i = 0; i < items.Count; i++)
+                {
+                    items[i].CanResize = i < items.Count - 1;
+                }
+            }
+        }
+
+        private static T? GetChildOfType<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) return null;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+
+                var result = (child as T) ?? GetChildOfType<T>(child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        private static IEnumerable<T> GetChildrenOfType<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+                if (child is T result) yield return result;
+            }
+        }
+
         public void SetNavigationVisible(bool visible)
         {
             var old = NavigationScrollViewer.Visibility;
@@ -1860,7 +1903,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 //NavigationThumbnailGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.NavigationThumbnailGridWidth);
                 //NavigationThumbnailGrid.ColumnDefinitions[2].Width = new GridLength(0, GridUnitType.Auto);
-                
+
                 NavigationThumbnailGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.NavigationThumbnailGridWidth);
                 NavigationThumbnailGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.NavigationThumbnailGridWidth2);
 
@@ -1888,7 +1931,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 MainGrid.ColumnDefinitions[0].Width = GetGridLength(_settings.MainGridWidth);
                 MainGrid.ColumnDefinitions[2].Width = GetGridLength(_settings.MainGridWidth2);
-                
+
                 var widthDescriptor = DependencyPropertyDescriptor.FromProperty(ColumnDefinition.WidthProperty, typeof(ItemsControl));
                 widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[0], WidthChanged);
                 widthDescriptor.AddValueChanged(MainGrid.ColumnDefinitions[2], WidthChanged2);
@@ -2116,7 +2159,7 @@ namespace Diffusion.Toolkit.Pages
 
             PreviewGrid.RowDefinitions[0].Height = new GridLength(1, GridUnitType.Star);
             PreviewGrid.RowDefinitions[2].Height = new GridLength(3, GridUnitType.Star);
-            
+
             _settings.MainGridWidth = "5*";
             _settings.MainGridWidth2 = "*";
             _settings.NavigationThumbnailGridWidth = "*";

@@ -220,23 +220,25 @@ namespace Diffusion.Toolkit.Controls
                         var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
                         if (presenter != null)
                         {
-                            _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
                             _scrollViewer.MaxHeight = Double.PositiveInfinity;
-                            //_scrollViewer.Height = _child.ActualHeight;
                             DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
                         }
                     }
                 }
                 else
                 {
-                    //_scrollViewer = GetVisualChild<ScrollViewer>(this);
-                    //var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
-                    //if (presenter != null)
-                    //{
-                    //    _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
-                    //    _scrollViewer.MaxHeight = Double.PositiveInfinity;
-                    //    DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
-                    //}
+                    _scrollViewer = GetVisualChild<ScrollViewer>(this);
+                    if (_scrollViewer != null)
+                    {
+                        var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
+                        if (presenter != null)
+                        {
+                            _scrollViewer.MaxHeight = ContainerHeight;
+                            //_scrollViewer.Height = _child.ActualHeight;
+                            DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
+                        }
+                    }
+
                 }
             }
 

@@ -507,7 +507,9 @@ public class NavigationSectionSettings : SettingsContainer
 
     public NavigationSectionSettings()
     {
-
+        FolderHeight = Double.PositiveInfinity;
+        ModelHeight = Double.PositiveInfinity;
+        AlbumHeight = Double.PositiveInfinity;
     }
 
     public NavigationSectionSettings(bool initialize)
