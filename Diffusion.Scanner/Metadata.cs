@@ -50,7 +50,7 @@ public class Metadata
     }
 
     private static byte[] PNGMagic = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
-    private static byte[] JPEGMagic = new byte[] { 0xFF, 0xD8, 0xFF, 0xE1 };
+    private static byte[] JPEGMagic = new byte[] { 0xFF, 0xD8, 0xFF };
     private static byte[] RIFFMagic = new byte[] { 0x52, 0x49, 0x46, 0x46 };
     private static byte[] WebPMagic = new byte[] { 0x57, 0x45, 0x42, 0x50 };
 
@@ -68,7 +68,7 @@ public class Metadata
         {
             return FileType.PNG;
         }
-        if (span.Slice(0, 4).SequenceEqual(JPEGMagic))
+        if (span.Slice(0, 3).SequenceEqual(JPEGMagic) && ((span[3] & 0xE0) == 0xE0))
         {
             return FileType.JPEG;
         }
