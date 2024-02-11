@@ -141,7 +141,7 @@ namespace Diffusion.Toolkit
 
             _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
 
-
+            _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
             _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
 
 
@@ -186,6 +186,11 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void ToggleNavigationPane()
+        {
+            _model.Settings.NavigationSection.ToggleSection();
         }
 
         private void ResetLayout()

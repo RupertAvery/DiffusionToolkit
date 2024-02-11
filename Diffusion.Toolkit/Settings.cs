@@ -504,6 +504,7 @@ public class NavigationSectionSettings : SettingsContainer
     private double _folderHeight;
     private double _modelHeight;
     private double _albumHeight;
+    private bool _showSection;
 
     public NavigationSectionSettings()
     {
@@ -564,7 +565,7 @@ public class NavigationSectionSettings : SettingsContainer
         set
         {
             UpdateValue(ref _showFolders, value);
-            OnPropertyChanged(nameof(ShowSection));
+            UpdateShowSection();
         }
     }
 
@@ -574,7 +575,7 @@ public class NavigationSectionSettings : SettingsContainer
         set
         {
             UpdateValue(ref _showModels, value);
-            OnPropertyChanged(nameof(ShowSection));
+            UpdateShowSection();
         }
     }
 
@@ -584,13 +585,34 @@ public class NavigationSectionSettings : SettingsContainer
         set
         {
             UpdateValue(ref _showAlbums, value);
-            OnPropertyChanged(nameof(ShowSection));
+            UpdateShowSection();
         }
+    }
+
+    private bool HasVisibilePanels => _showFolders || _showModels || ShowAlbums;
+
+    private void UpdateShowSection()
+    {
+        ShowSection = HasVisibilePanels;
+    }
+
+    public void ToggleSection()
+    {
+        ShowSection = HasVisibilePanels && !ShowSection;
+        //if (HasVisibilePanels)
+        //{
+        //    ShowSection = !ShowSection;
+        //}
+        //else
+        //{
+        //    ShowSection = false;
+        //}
     }
 
     public bool ShowSection
     {
-        get => _showFolders || _showModels || ShowAlbums;
+        get => _showSection;
+        set => UpdateValue(ref _showSection, value);
     }
 
     public void Attach(Settings settings)

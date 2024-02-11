@@ -27,6 +27,8 @@
         <common:BareKeyBinding Key="B" Command="{Binding ToggleNSFWBlurCommand}"></common:BareKeyBinding>
         <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
         <KeyBinding Key="F1" Command="{Binding HelpCommand}"></KeyBinding>
+        <KeyBinding Key="F3" Command="{Binding ToggleNavigationPane}"></KeyBinding>
+        <KeyBinding Key="F4" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Key="F5" Command="{Binding Refresh}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D2" Command="{Binding ShowAlbums}"></KeyBinding>
