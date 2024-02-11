@@ -100,7 +100,7 @@ public class Migrations
     private string RupertAvery20240203_0001_UniquePaths()
     {
         var dupePaths = _db.QueryScalars<string>("SELECT Path FROM Image GROUP BY Path HAVING COUNT(*) > 1");
-        
+
         void RemoveImages(IEnumerable<int> ids)
         {
             _db.BeginTransaction();
@@ -125,18 +125,19 @@ public class Migrations
 
         if (dupePaths.Any())
         {
-            var dupeImages = _db.Query<Image>($"SELECT * FROM Image WHERE Path IN ({string.Join(",",dupePaths.Select(p => $"'{p.Replace("'", "''")}'"))})");
+            var dupeImages = _db.Query<Image>($"SELECT * FROM Image WHERE Path IN ({string.Join(",", dupePaths.Select(p => $"'{p.Replace("'", "''")}'"))})");
             var groups = dupeImages.GroupBy(image => image.Path);
             var ids = new List<int>();
             foreach (var group in groups)
             {
                 var lowest = group.MinBy(image => image.Id);
-                ids.Add(lowest.Id);
+                var dupes = group.Where(i => i.Id != lowest.Id);
+                ids.AddRange(dupes.Select(i => i.Id));
             }
             RemoveImages(ids);
         }
 
-        return "DROP INDEX 'Image_Path';";
+        return "DROP INDEX IF EXISTS 'Image_Path';";
     }
 
     [Migrate]
