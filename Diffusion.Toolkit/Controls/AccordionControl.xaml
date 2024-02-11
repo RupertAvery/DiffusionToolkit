@@ -6,8 +6,12 @@
              xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
+             xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="400">
+    <UserControl.Resources>
+        <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
+    </UserControl.Resources>
     <UserControl.Template>
         <ControlTemplate>
             <StackPanel>
@@ -76,7 +80,7 @@
                         </ScrollViewer>
                          </Border>
 
-                    <Grid Grid.Row="1" Background="Transparent" Height="10" 
+                    <Grid Visibility="{Binding CanResize, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource boolToVisCol}}" Grid.Row="1" Background="Transparent" Height="10" 
                           Opacity="50"
                           MouseDown="UIElement_OnMouseDown" 
                           MouseMove="UIElement_OnMouseMove"

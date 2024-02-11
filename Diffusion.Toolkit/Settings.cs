@@ -495,12 +495,15 @@ public abstract class SettingsContainer : INotifyPropertyChanged
 
 public class NavigationSectionSettings : SettingsContainer
 {
+    private AccordionState _folderState;
     private AccordionState _modelState;
     private AccordionState _albumState;
-    private AccordionState _folderState;
     private bool _showFolders;
     private bool _showModels;
     private bool _showAlbums;
+    private double _folderHeight;
+    private double _modelHeight;
+    private double _albumHeight;
 
     public NavigationSectionSettings()
     {
@@ -517,6 +520,12 @@ public class NavigationSectionSettings : SettingsContainer
         }
     }
 
+    public AccordionState FolderState
+    {
+        get => _folderState;
+        set => UpdateValue(ref _folderState, value);
+    }
+
     public AccordionState ModelState
     {
         get => _modelState;
@@ -529,10 +538,22 @@ public class NavigationSectionSettings : SettingsContainer
         set => UpdateValue(ref _albumState, value);
     }
 
-    public AccordionState FolderState
+    public double FolderHeight
     {
-        get => _folderState;
-        set => UpdateValue(ref _folderState, value);
+        get => _folderHeight;
+        set => UpdateValue(ref _folderHeight, value);
+    }
+
+    public double ModelHeight
+    {
+        get => _modelHeight;
+        set => UpdateValue(ref _modelHeight, value);
+    }
+
+    public double AlbumHeight
+    {
+        get => _albumHeight;
+        set => UpdateValue(ref _albumHeight, value);
     }
 
     public bool ShowFolders
@@ -580,6 +601,31 @@ public class NavigationSectionSettings : SettingsContainer
 }
 
 
+public class AccordionSetting : SettingsContainer
+{
+    private AccordionState _accordionState;
+    private double _containerHeight;
+
+    public void Attach(SettingsContainer settings)
+    {
+        SettingChanged += (sender, args) =>
+        {
+            settings.SetDirty();
+        };
+    }
+    public AccordionState AccordionState
+    {
+        get => _accordionState;
+        set => UpdateValue(ref _accordionState, value);
+    }
+
+    public double ContainerHeight
+    {
+        get => _containerHeight;
+        set => UpdateValue(ref _containerHeight, value);
+    }
+}
+
 public class MetadataSectionSettings : SettingsContainer
 {
     private AccordionState _promptState;
@@ -592,7 +638,7 @@ public class MetadataSectionSettings : SettingsContainer
     private AccordionState _modelState;
     private AccordionState _dateState;
 
-    public void Attach(Settings settings)
+    public void Attach(SettingsContainer settings)
     {
         SettingChanged += (sender, args) =>
         {

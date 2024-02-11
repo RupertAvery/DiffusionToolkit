@@ -396,30 +396,45 @@ namespace Diffusion.Toolkit.Pages
             {
                 switch (args.PropertyName)
                 {
+                    case nameof(NavigationSection.FolderState):
+                        _settings.NavigationSection.FolderState = _model.NavigationSection.FolderState;
+                        break;
                     case nameof(NavigationSection.ModelState):
                         _settings.NavigationSection.ModelState = _model.NavigationSection.ModelState;
                         break;
                     case nameof(NavigationSection.AlbumState):
                         _settings.NavigationSection.AlbumState = _model.NavigationSection.AlbumState;
                         break;
-                    case nameof(NavigationSection.FolderState):
-                        _settings.NavigationSection.FolderState = _model.NavigationSection.FolderState;
+
+                    case nameof(NavigationSection.FolderHeight):
+                        _settings.NavigationSection.FolderHeight = _model.NavigationSection.FolderHeight;
                         break;
-                    //case nameof(NavigationSection.ShowFolders):
-                    //    _settings.NavigationSection.ShowFolders = _model.NavigationSection.ShowFolders;
-                    //    break;
-                    //case nameof(NavigationSection.ShowModels):
-                    //    _settings.NavigationSection.ShowModels = _model.NavigationSection.ShowModels;
-                    //    break;
-                    //case nameof(NavigationSection.ShowAlbums):
-                    //    _settings.NavigationSection.ShowAlbums = _model.NavigationSection.ShowAlbums;
-                    //    break;
+                    case nameof(NavigationSection.ModelHeight):
+                        _settings.NavigationSection.ModelHeight = _model.NavigationSection.ModelHeight;
+                        break;
+                    case nameof(NavigationSection.AlbumHeight):
+                        _settings.NavigationSection.AlbumHeight = _model.NavigationSection.AlbumHeight;
+                        break;
+                        //case nameof(NavigationSection.ShowFolders):
+                        //    _settings.NavigationSection.ShowFolders = _model.NavigationSection.ShowFolders;
+                        //    break;
+                        //case nameof(NavigationSection.ShowModels):
+                        //    _settings.NavigationSection.ShowModels = _model.NavigationSection.ShowModels;
+                        //    break;
+                        //case nameof(NavigationSection.ShowAlbums):
+                        //    _settings.NavigationSection.ShowAlbums = _model.NavigationSection.ShowAlbums;
+                        //    break;
                 }
             };
 
+            _model.NavigationSection.FolderState = _settings.NavigationSection.FolderState;
             _model.NavigationSection.ModelState = _settings.NavigationSection.ModelState;
             _model.NavigationSection.AlbumState = _settings.NavigationSection.AlbumState;
-            _model.NavigationSection.FolderState = _settings.NavigationSection.FolderState;
+
+            _model.NavigationSection.FolderHeight = _settings.NavigationSection.FolderHeight;
+            _model.NavigationSection.ModelHeight = _settings.NavigationSection.ModelHeight;
+            _model.NavigationSection.AlbumHeight = _settings.NavigationSection.AlbumHeight;
+
             //_model.NavigationSection.ShowFolders = _settings.NavigationSection.ShowFolders;
             //_model.NavigationSection.ShowModels = _settings.NavigationSection.ShowModels;
             //_model.NavigationSection.ShowAlbums = _settings.NavigationSection.ShowAlbums;

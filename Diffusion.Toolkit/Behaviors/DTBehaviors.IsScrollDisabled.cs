@@ -55,7 +55,7 @@ namespace Diffusion.Toolkit.Behaviors
                     element.Loaded += delegate
                     {
                         parent = GetVisualParent<ScrollViewer>(element);
-                        SetIsScrollDisabled(element, true);
+                        //SetIsScrollDisabled(element, true);
                         element.PreviewMouseWheel += ElementOnPreviewMouseWheel;
                     };
                 };

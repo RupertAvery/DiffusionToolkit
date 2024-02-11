@@ -406,6 +406,9 @@ public class NavigationSection : BaseNotify
     private bool _showModels;
     private bool _showAlbums;
     private FoldersSection? _foldersSection;
+    private double _folderHeight;
+    private double _albumHeight;
+    private double _modelHeight;
 
     public NavigationSection()
     {
@@ -436,16 +439,35 @@ public class NavigationSection : BaseNotify
         set => SetField(ref _folderState, value);
     }
 
+    public double FolderHeight
+    {
+        get => _folderHeight;
+        set => SetField(ref _folderHeight, value);
+    }
+
+
     public AccordionState ModelState
     {
         get => _modelState;
         set => SetField(ref _modelState, value);
     }
 
+    public double ModelHeight
+    {
+        get => _modelHeight;
+        set => SetField(ref _modelHeight, value);
+    }
+
     public AccordionState AlbumState
     {
         get => _albumState;
         set => SetField(ref _albumState, value);
+    }
+
+    public double AlbumHeight
+    {
+        get => _albumHeight;
+        set => SetField(ref _albumHeight, value);
     }
 
     public FoldersSection FoldersSection

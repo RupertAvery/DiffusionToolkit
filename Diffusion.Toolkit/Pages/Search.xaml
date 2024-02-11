@@ -204,8 +204,12 @@
                                     </controls:AccordionControl>-->
 
                                     <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
+                                                               Header="{lex:Loc Search.Navigation.Folders}"
+                                                               ContainerHeight="{Binding DataContext.NavigationSection.FolderHeight, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
+                                                               State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
-                                                               State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Folders}">
+                                                               CanResize="True"
+                                                               >
                                         <controls:AccordionControl.ButtonAreaContent>
                                             <Grid Background="{x:Null}">
                                                 <Grid.ColumnDefinitions>
@@ -281,8 +285,12 @@
 
                                     <controls:AccordionControl 
                                         HeaderBackground="#80000000"  Margin="0,0,0,5"
-                                                               Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowModels, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
-                                                               State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" Header="{lex:Loc Search.Navigation.Models}">
+                                        Header="{lex:Loc Search.Navigation.Models}"
+                                        Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowModels, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
+                                        ContainerHeight="{Binding DataContext.NavigationSection.ModelHeight, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
+                                        State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
+                                        CanResize="True"
+                                        >
 
                                         <ItemsControl ItemsSource="{Binding Path=MainModel.ImageModels}">
                                             <ItemsControl.ItemTemplate>
@@ -311,9 +319,14 @@
 
                                     </controls:AccordionControl>
 
-                                    <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
-                                                               Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowAlbums, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
-                                                               State="{Binding DataContext.NavigationSection.AlbumState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  Header="{lex:Loc Search.Navigation.Albums}">
+                                    <controls:AccordionControl 
+                                        HeaderBackground="#80000000"  Margin="0,0,0,5"
+                                        Header="{lex:Loc Search.Navigation.Albums}"
+                                        Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowAlbums, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
+                                        ContainerHeight="{Binding DataContext.NavigationSection.AlbumHeight, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
+                                        State="{Binding DataContext.NavigationSection.AlbumState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  
+                                        CanResize="True"
+                                        >
                                         <controls:AccordionControl.ButtonAreaContent>
                                             <Grid Background="{x:Null}">
                                                 <Grid.ColumnDefinitions>
@@ -589,8 +602,11 @@
                     <StackPanel Background="Transparent">
 
                         <controls:AccordionControl x:Name="PromptMetadata" 
+                                                   HeaderBackground="#80000000" 
+                                                   Header="{lex:Loc Metadata.Prompt}"
                                                    Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.PromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}" HeaderBackground="#80000000" Header="{lex:Loc Metadata.Prompt}">
+                                                   State="{Binding DataContext.MetadataSection.PromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}" 
+                                                   >
                             <controls:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>

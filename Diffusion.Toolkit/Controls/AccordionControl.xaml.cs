@@ -13,6 +13,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
@@ -45,6 +46,15 @@ namespace Diffusion.Toolkit.Controls
                 new UIPropertyMetadata(null)
             );
 
+
+        public static readonly DependencyProperty ContainerHeightProperty =
+            DependencyProperty.Register(
+                nameof(ContainerHeight),
+                typeof(double),
+                typeof(AccordionControl),
+                new UIPropertyMetadata(PropertyChangedCallback)
+            );
+
         public static readonly DependencyProperty StateProperty =
             DependencyProperty.Register(
                 nameof(State),
@@ -53,13 +63,13 @@ namespace Diffusion.Toolkit.Controls
                 new UIPropertyMetadata(PropertyChangedCallback)
             );
 
-        private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (e.Property.Name == nameof(State))
-            {
-                ((AccordionControl)d).SetState();
-            }
-        }
+        public static readonly DependencyProperty CanResizeProperty =
+            DependencyProperty.Register(
+                nameof(CanResize),
+                typeof(bool),
+                typeof(AccordionControl),
+                new UIPropertyMetadata(PropertyChangedCallback)
+            );
 
         public static readonly DependencyProperty HeaderBackgroundProperty =
             DependencyProperty.Register(
@@ -69,6 +79,22 @@ namespace Diffusion.Toolkit.Controls
                 new UIPropertyMetadata(null)
             );
 
+
+        private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            switch (e.Property.Name)
+            {
+                case nameof(State):
+                    ((AccordionControl)d).SetState();
+                    break;
+                case nameof(ContainerHeight):
+                    ((AccordionControl)d).SetHeight((double)e.NewValue);
+                    break;
+                case nameof(CanResize):
+                    ((AccordionControl)d).SetCanResize((bool)e.NewValue);
+                    break;
+            }
+        }
 
         public Brush HeaderBackground
         {
@@ -101,10 +127,24 @@ namespace Diffusion.Toolkit.Controls
             set => SetField(ref _contentVisibility, value);
         }
 
+        public double ContainerHeight
+        {
+            get => (double)GetValue(ContainerHeightProperty);
+            set => SetValue(ContainerHeightProperty, value);
+        }
+
+        public bool CanResize
+        {
+            get => (bool)GetValue(CanResizeProperty);
+            set => SetValue(CanResizeProperty, value);
+        }
+
         public AccordionControl()
         {
             InitializeComponent();
             SetState();
+            SetCanResize(false);
+            ContainerHeight = Double.PositiveInfinity;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -131,7 +171,80 @@ namespace Diffusion.Toolkit.Controls
                 AccordionState.Collapsed => Visibility.Collapsed,
                 AccordionState.Expanded => Visibility.Visible
             };
+        }
 
+        void SetHeight(double height)
+        {
+            void SetHeightInternal(double height)
+            {
+                _scrollViewer = GetVisualChild<ScrollViewer>(this);
+                var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
+                _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                _scrollViewer.MaxHeight = height;
+                if (double.IsPositiveInfinity(height))
+                {
+                    DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
+                }
+                else
+                {
+                    DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
+                }
+            }
+
+            if (this.IsLoaded)
+            {
+                SetHeightInternal(height);
+            }
+            else
+            {
+                this.Loaded += (sender, args) =>
+                {
+                    SetHeightInternal(height);
+                };
+            }
+        }
+
+        void SetCanResize(bool canResize)
+        {
+            void SetCanResizeInternal(bool canResize)
+            {
+                if (!canResize)
+                {
+                    _scrollViewer = GetVisualChild<ScrollViewer>(this);
+                    var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
+                    if (presenter != null)
+                    {
+                        _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                        _scrollViewer.MaxHeight = Double.PositiveInfinity;
+                        //_scrollViewer.Height = _child.ActualHeight;
+                        DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
+                    }
+                }
+                else
+                {
+                    //_scrollViewer = GetVisualChild<ScrollViewer>(this);
+                    //var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
+                    //if (presenter != null)
+                    //{
+                    //    _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                    //    _scrollViewer.MaxHeight = Double.PositiveInfinity;
+                    //    DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
+                    //}
+                }
+            }
+
+
+            if (this.IsLoaded)
+            {
+                SetCanResizeInternal(canResize);
+            }
+            else
+            {
+                this.Loaded += (sender, args) =>
+                {
+                    SetCanResizeInternal(canResize);
+                };
+            }
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
@@ -188,7 +301,7 @@ namespace Diffusion.Toolkit.Controls
 
                     currentHeight += mouseCoords.Y - _mouseCoords.Y;
 
-                    if (currentHeight > _child.ActualHeight)
+                    if (currentHeight >= _child.ActualHeight)
                     {
                         _scrollViewer.MaxHeight = Double.PositiveInfinity;
                         DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
@@ -212,6 +325,7 @@ namespace Diffusion.Toolkit.Controls
         {
             _isResizing = false;
             Mouse.Capture(null);
+            ContainerHeight = _scrollViewer.MaxHeight;
         }
 
         private static T GetVisualChild<T>(DependencyObject parent) where T : Visual
