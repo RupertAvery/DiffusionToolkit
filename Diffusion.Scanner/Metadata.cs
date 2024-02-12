@@ -54,13 +54,11 @@ public class Metadata
     private static byte[] RIFFMagic = new byte[] { 0x52, 0x49, 0x46, 0x46 };
     private static byte[] WebPMagic = new byte[] { 0x57, 0x45, 0x42, 0x50 };
 
-    private static FileType GetFileType(string path)
+    private static FileType GetFileType(Stream stream)
     {
         var buffer = new byte[12];
 
-        using var file = File.OpenRead(path);
-
-        file.Read(buffer, 0, 12);
+        stream.Read(buffer, 0, 12);
 
         var span = buffer.AsSpan();
 
@@ -83,17 +81,20 @@ public class Metadata
     public static FileParameters? ReadFromFile(string file)
     {
         FileParameters? fileParameters = null;
-
-
+        
         var ext = Path.GetExtension(file).ToLowerInvariant();
 
-        var fileType = GetFileType(file);
+        using var stream = File.OpenRead(file);
+
+        var fileType = GetFileType(stream);
+
+        stream.Seek(0, SeekOrigin.Begin);
 
         switch (fileType)
         {
             case FileType.PNG:
                 {
-                    IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(file);
+                    IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(stream);
 
                     var format = MetaFormat.Unknown;
 
@@ -249,7 +250,7 @@ public class Metadata
                 }
             case FileType.JPEG:
                 {
-                    IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(file);
+                    IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(stream);
 
                     try
                     {
@@ -264,7 +265,7 @@ public class Metadata
                 }
             case FileType.WebP:
                 {
-                    IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(file);
+                    IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(stream);
 
                     try
                     {
