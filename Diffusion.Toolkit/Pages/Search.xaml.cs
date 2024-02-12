@@ -387,6 +387,12 @@ namespace Diffusion.Toolkit.Pages
             {
                 switch (args.PropertyName)
                 {
+                    case nameof(NavigationSectionSettings.ShowFolders):
+                    case nameof(NavigationSectionSettings.ShowModels):
+                    case nameof(NavigationSectionSettings.ShowAlbums):
+                        SetAccordionResizeableState();
+                        break;
+
                     case nameof(NavigationSectionSettings.ShowSection):
                         SetNavigationVisible(_model.MainModel.Settings.NavigationSection.ShowSection);
                         SetAccordionResizeableState();

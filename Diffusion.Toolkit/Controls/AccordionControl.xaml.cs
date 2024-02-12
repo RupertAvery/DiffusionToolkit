@@ -181,15 +181,18 @@ namespace Diffusion.Toolkit.Controls
                 if (_scrollViewer != null)
                 {
                     var presenter = GetVisualChild<ContentPresenter>(_scrollViewer);
-                    _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
-                    _scrollViewer.MaxHeight = height;
-                    if (double.IsPositiveInfinity(height))
+                    if (presenter != null)
                     {
-                        DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
-                    }
-                    else
-                    {
-                        DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
+                        _child = (FrameworkElement)VisualTreeHelper.GetChild(presenter, 0);
+                        _scrollViewer.MaxHeight = height;
+                        if (double.IsPositiveInfinity(height))
+                        {
+                            DTBehaviors.SetIsScrollDisabled(_scrollViewer, true);
+                        }
+                        else
+                        {
+                            DTBehaviors.SetIsScrollDisabled(_scrollViewer, false);
+                        }
                     }
                 }
        
