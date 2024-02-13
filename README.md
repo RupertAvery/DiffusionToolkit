@@ -6,7 +6,7 @@ Diffusion Toolkit is an image metadata-indexer and viewer for AI-generated image
 
 Usage should be pretty straightforward, but there are a lot of tips and tricks and shortcuts you can learn. See the documentation for [Getting Started](https://github.com/RupertAvery/DiffusionToolkit/tree/master/Diffusion.Toolkit/Tips.md)
 
-Thanks to Bill Meeks for putting together a demonstration video:
+Thanks to Bill Meeks for putting together a demonstration video.
 
 [![Organize your AI Images](https://img.youtube.com/vi/r7J3n1LjojE/hqdefault.jpg)](https://www.youtube.com/watch?v=r7J3n1LjojE&ab_channel=BillMeeks)
 
@@ -19,6 +19,19 @@ Thanks to Bill Meeks for putting together a demonstration video:
 * Unzip all the files to a folder
 * You may need to install the [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) if you haven't already
 
+# Build from source
+
+## Prerequisites
+
+* Requires Visual Studio 2022
+* [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (includes the desktop runtime)
+
+## Building
+
+* Clone this repository
+* Run `publish.cmd`
+
+A folder named `build` will be created, containing all the necessary files.
 
 # Features
 
@@ -91,8 +104,8 @@ Make sure the thumbnail view or the preview pane has the focus if the shortcuts 
 | `X/Del` | Tag for Deletion | In thumbnail or preview
 | `Ctrl+X/Del` | Remove Entry | Remove image from database, but do not delete
 | `Ctrl+C` | Copy File to Clipboard |
-| `Ctrl+Shift+A` | Show/Hide Album Pane |
-| `Ctrl+Shift+P` | Show/Hide Preview |
+| `F3` | Show/Hide Navigation Pane |
+| `F4` | Show/Hide Preview |
 | `Ctrl+Shift+F` | Toggle Fit to Preview |
 | `Ctrl+1` | Folders View |
 | `Ctrl+2` | Album View |
