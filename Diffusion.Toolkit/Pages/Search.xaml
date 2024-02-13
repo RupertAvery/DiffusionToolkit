@@ -481,6 +481,7 @@
                 <RowDefinition Height="5"/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
+
             <controls:PreviewPane x:Name="PreviewPane" 
                                   NSFWBlur="{Binding MainModel.NSFWBlurCommand}" 
                                   Image="{Binding CurrentImage}" 
@@ -492,10 +493,15 @@
 
             <Grid x:Name="PreviewPaneGrid" Background="{x:Null}">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="48"/>
+                    <RowDefinition Height="2"/>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="56"/>
+                    <RowDefinition Height="50"/>
                 </Grid.RowDefinitions>
+
+                <Grid Grid.Row="1" Background="#A0000000" Margin="10" Visibility="{Binding CurrentImage.IsParametersVisible, Converter={StaticResource boolToVis}}">
+                    <controls:MetadataPanel CurrentImage="{Binding CurrentImage}">
+                    </controls:MetadataPanel>
+                </Grid>
 
                 <StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding CurrentImage}">
                     <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=ForDeletion, Converter={StaticResource boolToVisCol}}">
@@ -590,200 +596,9 @@
                           Height="5"
             />
 
-            <Grid Grid.Row="2"  DataContext="{Binding CurrentImage}">
-                <Grid.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Collapse All" Click="CollapseAll_Click"></MenuItem>
-                        <MenuItem Header="Expand All" Click="ExpandAll_Click"></MenuItem>
-                    </ContextMenu>
-                </Grid.ContextMenu>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <controls:MetadataPanel Grid.Row="2"   CurrentImage="{Binding CurrentImage}">
+            </controls:MetadataPanel>
 
-                    <StackPanel Background="Transparent">
-
-                        <controls:AccordionControl x:Name="PromptMetadata" 
-                                                   HeaderBackground="#80000000" 
-                                                   Header="{lex:Loc Metadata.Prompt}"
-                                                   Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.PromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}" 
-                                                   >
-                            <controls:AccordionControl.ButtonAreaContent>
-                                <Grid Background="{x:Null}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="80"/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyPromptCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"/>
-                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding CopyParametersCommand}" Content="{lex:Loc Metadata.Buttons.CopyAll}"/>
-                                </Grid>
-                            </controls:AccordionControl.ButtonAreaContent>
-                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"/>
-                        </controls:AccordionControl>
-
-                        <controls:AccordionControl x:Name="NegativePromptMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.NegativePromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.NegativePrompt}">
-                            <controls:AccordionControl.ButtonAreaContent>
-                                <Grid Background="{x:Null}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyNegativePromptCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"/>
-                                </Grid>
-                            </controls:AccordionControl.ButtonAreaContent>
-                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"/>
-                        </controls:AccordionControl>
-
-                        <controls:AccordionControl x:Name="SeedMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.SeedState, ElementName=PreviewPaneGrid, Mode=TwoWay}"   HeaderBackground="#80000000" Header="{lex:Loc Metadata.Seed}">
-                            <controls:AccordionControl.ButtonAreaContent>
-                                <Grid Background="{x:Null}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="50"/>
-                                        <ColumnDefinition Width="50"/>
-                                        <ColumnDefinition Width="95"/>
-                                        <ColumnDefinition Width="10"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0" Content="{lex:Loc Metadata.CFGScale}"/>
-                                    <Label Grid.Column="2" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0" Content="{lex:Loc Metadata.Steps}"/>
-                                    <Label Grid.Column="3" Style="{DynamicResource SmallCaps}" Margin="0,0,0,0" Content="{lex:Loc Metadata.Size}"/>
-                                </Grid>
-                            </controls:AccordionControl.ButtonAreaContent>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition Width="50"/>
-                                    <ColumnDefinition Width="50"/>
-                                    <ColumnDefinition Width="95"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                 IsReadOnly="True"
-                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Seed, Converter={StaticResource ZeroConverter}}"/>
-                                <TextBox Grid.Column="1" Background="#00000000" FontSize="14" BorderThickness="0"
-                                 IsReadOnly="True"
-                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding CFGScale, Converter={StaticResource ZeroConverter}}"/>
-                                <TextBox Grid.Column="2" Background="#00000000" FontSize="14" BorderThickness="0"
-                                 IsReadOnly="True"
-                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Steps, Converter={StaticResource ZeroConverter}}"/>
-                                <TextBox Grid.Column="3" Background="#00000000" FontSize="14" BorderThickness="0"
-                                 IsReadOnly="True"
-                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding ., Converter={StaticResource SizeConverter}}"/>
-                            </Grid>
-                        </controls:AccordionControl>
-
-                        <controls:AccordionControl x:Name="SamplerMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.SamplerState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Sampler}">
-                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Sampler}"/>
-                        </controls:AccordionControl>
-
-                        <controls:AccordionControl x:Name="OtherMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.OthersState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Others}">
-                            <controls:AccordionControl.ButtonAreaContent>
-                                <Grid Background="{x:Null}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyOthersCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"/>
-                                </Grid>
-                            </controls:AccordionControl.ButtonAreaContent>
-                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"/>
-                        </controls:AccordionControl>
-
-                        <controls:AccordionControl x:Name="ModelMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.ModelState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.ModelName}">
-                            <controls:AccordionControl.ButtonAreaContent>
-                                <Grid Background="{x:Null}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Content="{lex:Loc Metadata.ModelHash}"/>
-                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding SearchModelCommand}" Content="{lex:Loc Metadata.Buttons.SearchHash}"/>
-                                </Grid>
-                            </controls:AccordionControl.ButtonAreaContent>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="80"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" FontSize="14" BorderThickness="0"
-                                         IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"/>
-                                <TextBox Grid.Column="1" FontSize="14" BorderThickness="0" IsReadOnly="True" Padding="5" Background="Transparent" Text="{Binding ModelHash}"/>
-                            </Grid>
-                        </controls:AccordionControl>
-
-                        <controls:AccordionControl x:Name="PathMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.PathState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Path}">
-                            <controls:AccordionControl.ButtonAreaContent>
-                                <Grid Background="{x:Null}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="80"/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding ShowInExplorerCommand}" Content="{lex:Loc Metadata.Buttons.ShowInExplorer}"/>
-                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding CopyPathCommand}" Content="{lex:Loc Metadata.Buttons.Copy}"/>
-                                </Grid>
-                            </controls:AccordionControl.ButtonAreaContent>
-                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"/>
-                        </controls:AccordionControl>
-
-                        <controls:AccordionControl x:Name="DateMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   HeaderBackground="#80000000" 
-                                                   State="{Binding DataContext.MetadataSection.DateState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Date}">
-                            <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
-                                     IsReadOnly="True"
-                                     Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Date}"/>
-                        </controls:AccordionControl>
-
-                        <controls:AccordionControl x:Name="AlbumMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   HeaderBackground="#80000000" 
-                                                   State="{Binding DataContext.MetadataSection.AlbumState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Albums}">
-                            <ItemsControl ItemsSource="{Binding Albums}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border BorderThickness="1" BorderBrush="{StaticResource SecondaryBrush}" CornerRadius="5" Margin="5">
-                                            <TextBox FontSize="14" BorderThickness="0"
-                                                     IsReadOnly="True" Padding="5" Background="Transparent" 
-                                                     TextWrapping="WrapWithOverflow" Text="{Binding Name}"
-                                                     PreviewMouseDown="UIElement_OnMouseDown" Cursor="Hand"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Orientation="Horizontal"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                            </ItemsControl>
-                        </controls:AccordionControl>
-
-                    </StackPanel>
-                </ScrollViewer>
-            </Grid>
         </Grid>
 
 

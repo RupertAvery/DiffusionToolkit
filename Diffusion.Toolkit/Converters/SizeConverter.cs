@@ -9,7 +9,9 @@ public class SizeConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var image = (ImageViewModel)value;
+        var image = value as ImageViewModel;
+
+        if (image == null) return "";
 
         return image.Width ==0 || image.Height ==0 ? "" : $"{image.Width} x {image.Height}";
     }

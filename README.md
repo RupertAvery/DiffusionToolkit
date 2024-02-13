@@ -12,12 +12,13 @@ Thanks to Bill Meeks for putting together a demonstration video:
 
 # Installation
 
+* Currently runs on Windows only 
 * [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/latest
-) (Windows)
-* Requires [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) 
+) the latest release 
+    * Look for **> Assets** under the latest release, expand it, then grab the zip file **Diffusion.Toolkit.v1.x.zip**.
+* Unzip all the files to a folder
+* You may need to install the [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) if you haven't already
 
-
-Look for **> Assets** under the latest release, expand it, then grab the zip file **Diffusion.Toolkit.v1.x.zip**.
 
 # Features
 
@@ -62,8 +63,11 @@ Look for **> Assets** under the latest release, expand it, then grab the zip fil
 * InvokeAI (Dream/sd-metadata/invokeai_metadata)
 * NovelAI
 * Stable Diffusion
-* ComfyUI + SDXL (Work in progress) 
+* SDNext
 * EasyDiffusion
+* RuinedFooocus
+* FooocusMRE
+* ComfyUI + SDXL (Work in progress) 
 
 You can even use it on images without metadata and still use the other features such as rating and albums!
 

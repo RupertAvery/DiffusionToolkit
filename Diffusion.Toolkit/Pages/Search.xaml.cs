@@ -874,6 +874,7 @@ namespace Diffusion.Toolkit.Pages
                 var imageViewModel = new ImageViewModel();
                 imageViewModel.IsParametersVisible = old;
                 imageViewModel.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
+                imageViewModel.OpenAlbumCommand = new RelayCommand<AlbumModel>(OpenAlbum);
 
                 if (image != null)
                 {
@@ -969,6 +970,7 @@ namespace Diffusion.Toolkit.Pages
                 MessageBox.Show(_navigatorService.Host, $"{ex.Message}", "An error occured", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
         }
+
 
         public static BitmapImage GetBitmapImage(string path)
         {
@@ -2108,43 +2110,12 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void UIElement_OnMouseDown(object sender, MouseButtonEventArgs e)
+        private void OpenAlbum(AlbumModel albumModel)
         {
-            var album = ((Album)((TextBox)sender).DataContext);
-
-            var albumModel = new AlbumModel()
-            {
-                Id = album.Id,
-                Name = album.Name,
-            };
-
             _model.MainModel.CurrentAlbum = albumModel;
 
             SetMode("albums", _model.MainModel.CurrentAlbum.Name);
             SearchImages(null);
-        }
-
-        private void CollapseAll_Click(object sender, RoutedEventArgs e)
-        {
-            SetMetadataState(AccordionState.Collapsed);
-        }
-
-        private void ExpandAll_Click(object sender, RoutedEventArgs e)
-        {
-            SetMetadataState(AccordionState.Expanded);
-        }
-
-        private void SetMetadataState(AccordionState state)
-        {
-            PromptMetadata.State = state;
-            NegativePromptMetadata.State = state;
-            SeedMetadata.State = state;
-            SamplerMetadata.State = state;
-            OtherMetadata.State = state;
-            ModelMetadata.State = state;
-            PathMetadata.State = state;
-            AlbumMetadata.State = state;
-            DateMetadata.State = state;
         }
 
         private void DropImagesOnFolder(object sender, DragEventArgs e)

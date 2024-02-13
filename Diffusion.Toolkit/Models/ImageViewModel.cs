@@ -46,6 +46,7 @@ public class ImageViewModel : BaseNotify
     private bool _isLoading;
     private bool _isMessageVisible;
     private string _message;
+    private ICommand _openAlbumCommand;
 
     public ImageViewModel()
     {
@@ -263,5 +264,11 @@ public class ImageViewModel : BaseNotify
     {
         get => _message;
         set => SetField(ref _message, value);
+    }
+
+    public ICommand OpenAlbumCommand
+    {
+        get => _openAlbumCommand;
+        set => SetField(ref _openAlbumCommand, value);
     }
 }
