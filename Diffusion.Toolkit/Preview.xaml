@@ -75,7 +75,7 @@
 
                 <Grid Background="{x:Null}">
                     <Grid.RenderTransform>
-                        <TranslateTransform X="0"></TranslateTransform>
+                        <TranslateTransform X="500"></TranslateTransform>
                     </Grid.RenderTransform>
                     <Grid.Style>
                         <Style TargetType="Grid">
@@ -85,7 +85,7 @@
                                         <BeginStoryboard>
                                             <Storyboard>
                                                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" 
-                                                                 From="-10" To="500" 
+                                                                 From="500" To="-10" 
                                                                  Duration="0:0:0.1" />
                                             </Storyboard>
                                         </BeginStoryboard>
@@ -94,7 +94,7 @@
                                         <BeginStoryboard>
                                             <Storyboard>
                                                 <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
-                                                                  From="500" To="-10" 
+                                                                  From="-10" To="500" 
                                                                   Duration="0:0:0.1" />
                                             </Storyboard>
                                         </BeginStoryboard>
