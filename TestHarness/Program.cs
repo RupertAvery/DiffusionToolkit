@@ -9,50 +9,61 @@ using System.Text.Json.Serialization;
 using Diffusion.Civitai;
 using Diffusion.Civitai.Models;
 using Diffusion.Database;
+using Metadata = Diffusion.IO.Metadata;
 
+var img1 = @"D:\conda\AUTOMATIC1111\stable-diffusion-webui\outputs\ComfyUI\301345652-97515fdc-0969-4da5-ab12-42dc47aa0ac5.png";
+var img2 = @"D:\conda\AUTOMATIC1111\stable-diffusion-webui\outputs\ComfyUI\301363632-edcb718c-eb82-4bc5-aabc-56e501b26809.png";
 
-using var civitai = new CivitaiClient();
+var files = Directory.GetFiles("D:\\conda\\AUTOMATIC1111\\stable-diffusion-webui\\outputs\\ComfyUI", "*.png");
 
-var collection = new LiteModelCollection();
-
-var results = await GetPage(1);
-
-collection.Models.AddRange(results.Items);
-
-while (results.Metadata.CurrentPage < results.Metadata.TotalPages)
+foreach (var file in files)
 {
-    results = await GetPage(results.Metadata.CurrentPage + 1, results.Metadata.TotalPages);
-    collection.Models.AddRange(results.Items);
+    var fp = Metadata.ReadFromFile(file);
 }
 
-var options = new JsonSerializerOptions()
-{
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    Converters = { new JsonStringEnumConverter() }
-};
 
-var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
+//using var civitai = new CivitaiClient();
 
-var mTime = DateTime.Now - baseTime;
+//var collection = new LiteModelCollection();
 
-collection.Date = mTime.TotalSeconds;
+//var results = await GetPage(1);
 
-var json = JsonSerializer.Serialize(collection, options);
+//collection.Models.AddRange(results.Items);
 
-File.WriteAllText("models.json", json);
+//while (results.Metadata.CurrentPage < results.Metadata.TotalPages)
+//{
+//    results = await GetPage(results.Metadata.CurrentPage + 1, results.Metadata.TotalPages);
+//    collection.Models.AddRange(results.Items);
+//}
+
+//var options = new JsonSerializerOptions()
+//{
+//    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+//    Converters = { new JsonStringEnumConverter() }
+//};
+
+//var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
+
+//var mTime = DateTime.Now - baseTime;
+
+//collection.Date = mTime.TotalSeconds;
+
+//var json = JsonSerializer.Serialize(collection, options);
+
+//File.WriteAllText("models.json", json);
 
 
-async Task<Results<LiteModel>> GetPage(int page, int? total = 0)
-{
-    Console.WriteLine(total == 0 ? $"Fetching page {page}" : $"Fetching page {page} of {total}");
+//async Task<Results<LiteModel>> GetPage(int page, int? total = 0)
+//{
+//    Console.WriteLine(total == 0 ? $"Fetching page {page}" : $"Fetching page {page} of {total}");
 
-    return await civitai.GetLiteModelsAsync(new ModelSearchParameters()
-    {
-        Page = page,
-        Limit = 100,
-        Types = new List<ModelType>() { ModelType.Checkpoint }
-    }, CancellationToken.None);
-}
+//    return await civitai.GetLiteModelsAsync(new ModelSearchParameters()
+//    {
+//        Page = page,
+//        Limit = 100,
+//        Types = new List<ModelType>() { ModelType.Checkpoint }
+//    }, CancellationToken.None);
+//}
 
 
 //string path = "D:\\conda\\AUTOMATIC1111\\stable-diffusion-webui\\outputs";
