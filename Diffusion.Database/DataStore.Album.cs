@@ -44,6 +44,17 @@ namespace Diffusion.Database
             return lists;
         }
 
+        public IEnumerable<Album> GetAlbumsByName()
+        {
+            using var db = OpenConnection();
+
+            var lists = db.Query<Album>($"SELECT Id, Name, [Order], LastUpdated FROM {nameof(Album)} ORDER BY Name");
+
+            db.Close();
+
+            return lists;
+        }
+
         public void RenameAlbum(int id, string name)
         {
             using var db = OpenConnection();

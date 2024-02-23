@@ -57,8 +57,7 @@ namespace Diffusion.Toolkit.Controls
             });
 
 
-            var albums = DataStore.GetAlbumsByLastUpdated(10);
-
+            var albums = DataStore.GetAlbumsByName();
 
             foreach (var album in albums)
             {
