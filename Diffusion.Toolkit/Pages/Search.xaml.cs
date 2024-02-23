@@ -775,6 +775,8 @@ namespace Diffusion.Toolkit.Pages
                         }
                     }
                     _model.Page = 1;
+                    ThumbnailListView.Model.Pages = _model.Pages;
+                    ThumbnailListView.Model.Page = _model.Page;
 
                     ThumbnailListView.SetPagingEnabled();
                 });
@@ -1221,6 +1223,11 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else
                 {
+                    if (!Directory.Exists(_currentModeSettings.CurrentFolder))
+                    {
+                        MessageBox.Show("This folder appears to have been removed.  Please remove the entry from the Folder list in Settings", "Folder Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                     folders = new[] { Path.Combine(_currentModeSettings.CurrentFolder, "..") }.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolder));
                 }
 

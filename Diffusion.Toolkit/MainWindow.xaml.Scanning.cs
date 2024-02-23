@@ -183,8 +183,17 @@ namespace Diffusion.Toolkit
 
             foreach (var image in images)
             {
-                var fileName = Path.GetFileName(image.Path);
-                var newPath = Path.Join(path, fileName);
+                string newPath = "";
+                int increment = 0;
+                do
+                {
+                    var fileName = Path.GetFileName(image.Path);
+                    if (increment > 0)
+                        fileName = increment.ToString() + "_" + fileName;
+                    newPath = Path.Join(path, fileName);
+                    increment++;
+                } while (File.Exists(newPath));
+
                 if (image.Path != newPath)
                 {
                     File.Move(image.Path, newPath);
