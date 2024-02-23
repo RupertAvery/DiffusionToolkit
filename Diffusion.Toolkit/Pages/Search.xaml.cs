@@ -1213,7 +1213,7 @@ namespace Diffusion.Toolkit.Pages
             var rId = r.NextInt64();
             ThumbnailLoader.Instance.SetCurrentRequestId(rId);
 
-            if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
+            if (_currentModeSettings != null && _currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
             {
                 IEnumerable<string> folders = Enumerable.Empty<string>();
 
@@ -1251,7 +1251,7 @@ namespace Diffusion.Toolkit.Pages
                 }
             }
 
-            if (_currentModeSettings.ViewMode == ViewMode.Album)
+            if (_currentModeSettings != null && _currentModeSettings.ViewMode == ViewMode.Album)
             {
 
                 if (_model.MainModel.CurrentAlbum == null)
