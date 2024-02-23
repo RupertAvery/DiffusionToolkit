@@ -42,6 +42,7 @@ public class FilterControlModel : BaseNotify
     private int _batchSize;
     private bool _useBatchPos;
     private int _batchPos;
+    private bool _noAestheticScore;
     private bool _useAestheticScore;
     private string _aestheticScoreOp;
     private double? _aestheticScore;
@@ -283,6 +284,12 @@ public class FilterControlModel : BaseNotify
         set => SetField(ref _useAestheticScore, value);
     }
 
+    public bool NoAestheticScore
+    {
+        get => _noAestheticScore;
+        set => SetField(ref _noAestheticScore, value);
+    }
+
     public string AestheticScoreOp
     {
         get => _aestheticScoreOp;
@@ -383,6 +390,7 @@ public class FilterControlModel : BaseNotify
                              UseForDeletion ||
                              UseBatchSize ||
                              UseBatchPos ||
+                             NoAestheticScore ||
                              UseAestheticScore ||
                              UsePath ||
                              UseCreationDate ||
@@ -411,6 +419,7 @@ public class FilterControlModel : BaseNotify
         ForDeletion = false;
         BatchSize = 0;
         BatchPos = 0;
+        NoAestheticScore = false;
         AestheticScoreOp = String.Empty;
         AestheticScore = null;
         Path = String.Empty;

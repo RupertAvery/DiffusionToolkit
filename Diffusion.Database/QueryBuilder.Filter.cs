@@ -171,15 +171,15 @@ namespace Diffusion.Database
             }
         }
 
-
-
         private static void FilterAestheticScore(Filter filter, List<KeyValuePair<string, object>> conditions)
         {
             if (filter.UseAestheticScore)
             {
                 var oper = filter.AestheticScoreOp;
-
                 conditions.Add(new KeyValuePair<string, object>($"(AestheticScore {oper} ?)", filter.AestheticScore));
+            } else if (filter.NoAestheticScore)
+            {
+                conditions.Add(new KeyValuePair<string, object>($"(AestheticScore IS NULL)", null));
             }
         }
 
@@ -188,17 +188,11 @@ namespace Diffusion.Database
         {
             if (filter.UseRating)
             {
-
-                if (filter.Unrated)
-                {
-                    conditions.Add(new KeyValuePair<string, object>($"(Rating IS NULL)", null));
-                }
-                else
-                {
-                    var oper = filter.RatingOp;
-                    conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)", filter.Rating));
-                }
-
+                var oper = filter.RatingOp;
+                conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)", filter.Rating));
+            } else if (filter.Unrated)
+            {
+                conditions.Add(new KeyValuePair<string, object>($"(Rating IS NULL)", null));
             }
         }
 

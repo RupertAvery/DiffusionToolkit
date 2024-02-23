@@ -194,7 +194,7 @@
             </ListView.InputBindings>
             <ListView.ContextMenu>
                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                    <MenuItem ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}">
+                    <MenuItem ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
                         <!--<MenuItem Header="_New Album" Click="CreateAlbum_OnClick"></MenuItem>
                                                 <Separator></Separator>-->
                     </MenuItem>

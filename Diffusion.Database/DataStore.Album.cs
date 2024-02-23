@@ -44,6 +44,17 @@ namespace Diffusion.Database
             return lists;
         }
 
+        public IEnumerable<Album> GetAlbumsByName()
+        {
+            using var db = OpenConnection();
+
+            var lists = db.Query<Album>($"SELECT Id, Name, [Order], LastUpdated FROM {nameof(Album)} ORDER BY Name");
+
+            db.Close();
+
+            return lists;
+        }
+
         public void RenameAlbum(int id, string name)
         {
             using var db = OpenConnection();
@@ -60,7 +71,7 @@ namespace Diffusion.Database
             db.Close();
         }
 
-        public Album GetAlbum(int id)
+        public Album? GetAlbum(int id)
         {
             using var db = OpenConnection();
 
@@ -74,6 +85,8 @@ namespace Diffusion.Database
 
             db.Close();
 
+            if (album.Count < 1)
+                return null;
             return album[0];
         }
 
@@ -157,8 +170,12 @@ namespace Diffusion.Database
             command.ExecuteNonQuery();
         }
 
-        public void AddImagesToAlbum(int albumId, IEnumerable<int> imageId)
+        public bool AddImagesToAlbum(int albumId, IEnumerable<int> imageId)
         {
+            //add a check to make sure that album exists
+            if (GetAlbum(albumId) == null)
+                return false;
+
             using var db = OpenConnection();
 
             db.BeginTransaction();
@@ -184,6 +201,8 @@ namespace Diffusion.Database
             command.ExecuteNonQuery();
 
             db.Commit();
+
+            return true;
         }
 
         public void RemoveImagesFromAlbum(int albumId, IEnumerable<int> imageId)

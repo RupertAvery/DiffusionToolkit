@@ -40,10 +40,14 @@ namespace Diffusion.Toolkit
             {
                 var album = (Album)((MenuItem)o).Tag;
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
-                _dataStore.AddImagesToAlbum(album.Id, images);
-                Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
-                LoadAlbums();
-                _search.ReloadMatches(null);
+                if (_dataStore.AddImagesToAlbum(album.Id, images))
+                {
+                    Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
+                    LoadAlbums();
+                    _search.ReloadMatches(null);
+                }
+                else
+                    MessageBox.Show("Album not found, please refresh and try again", "No Album");
             });
 
             _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
@@ -171,14 +175,18 @@ namespace Diffusion.Toolkit
             if (_model.SelectedImages != null)
             {
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
-                _dataStore.AddImagesToAlbum(album.Id, images);
-                Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
-                LoadAlbums();
-                foreach (var image in _model.SelectedImages)
+                if(_dataStore.AddImagesToAlbum(album.Id, images))
                 {
-                    image.AlbumCount++;
+                    Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
+                    LoadAlbums();
+                    foreach (var image in _model.SelectedImages)
+                    {
+                        image.AlbumCount++;
+                    }
+                    //_search.ReloadMatches(null);
                 }
-                //_search.ReloadMatches(null);
+                else
+                    MessageBox.Show("Album not found, please refresh and try again", "No Album");
             }
         }
 

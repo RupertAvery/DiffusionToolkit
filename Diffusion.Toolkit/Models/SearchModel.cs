@@ -606,6 +606,7 @@ public static class SearchControlModelExtensions
         filter.UseBatchPos = model.UseBatchPos;
         filter.BatchPos = model.BatchPos;
 
+        filter.NoAestheticScore = model.NoAestheticScore;
         filter.UseAestheticScore = model.UseAestheticScore;
         filter.AestheticScoreOp = model.AestheticScoreOp;
         filter.AestheticScore = model.AestheticScore;
