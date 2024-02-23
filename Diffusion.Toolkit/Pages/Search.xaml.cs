@@ -1347,45 +1347,48 @@ namespace Diffusion.Toolkit.Pages
                 var query = _model.SearchText;
                 bool showImages = true;
 
-                if (_currentModeSettings.IsFavorite)
+                if (_currentModeSettings != null)
                 {
-                    query = $"{query} favorite: true";
-                }
-                else if (_currentModeSettings.IsMarkedForDeletion)
-                {
-                    query = $"{query} delete: true";
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                {
-                    if (_currentModeSettings.CurrentFolder != "$")
+                    if (_currentModeSettings.IsFavorite)
                     {
-                        query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                        query = $"{query} favorite: true";
                     }
-                    else
+                    else if (_currentModeSettings.IsMarkedForDeletion)
                     {
-                        showImages = false;
+                        query = $"{query} delete: true";
                     }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                {
-                    if (_model.MainModel.CurrentAlbum != null)
+                    else if (_currentModeSettings.ViewMode == ViewMode.Folder)
                     {
-                        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                        if (_currentModeSettings.CurrentFolder != "$")
+                        {
+                            query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                        }
+                        else
+                        {
+                            showImages = false;
+                        }
                     }
-                    else
+                    else if (_currentModeSettings.ViewMode == ViewMode.Album)
                     {
-                        showImages = false;
+                        if (_model.MainModel.CurrentAlbum != null)
+                        {
+                            query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                        }
+                        else
+                        {
+                            showImages = false;
+                        }
                     }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                {
-                    if (_model.MainModel.CurrentModel != null)
+                    else if (_currentModeSettings.ViewMode == ViewMode.Model)
                     {
-                        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
-                    }
-                    else
-                    {
-                        showImages = false;
+                        if (_model.MainModel.CurrentModel != null)
+                        {
+                            query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
+                        }
+                        else
+                        {
+                            showImages = false;
+                        }
                     }
                 }
 

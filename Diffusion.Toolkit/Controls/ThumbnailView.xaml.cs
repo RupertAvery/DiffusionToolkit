@@ -47,12 +47,18 @@ namespace Diffusion.Toolkit.Controls
             {
                 Header = GetLocalizedText("Thumbnail.ContextMenu.AddToAlbum.NewAlbum"),
             };
-
             albumMenuItem.Click += CreateAlbum_OnClick;
+
+            var refreshAlbumMenuItem = new MenuItem()
+            {
+                Header = GetLocalizedText("Menu.View.Refresh"),
+            };
+            refreshAlbumMenuItem.Click += RefreshAlbum_OnClick;
 
             Model.AlbumMenuItems = new ObservableCollection<Control>(new List<Control>()
             {
                 albumMenuItem,
+                refreshAlbumMenuItem,
                 new Separator()
             });
 
@@ -744,6 +750,11 @@ namespace Diffusion.Toolkit.Controls
         private void CreateAlbum_OnClick(object sender, RoutedEventArgs e)
         {
             AddAlbumCommand?.Execute(null);
+        }
+
+        private void RefreshAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+            ReloadAlbums(); 
         }
 
         private void AddToAlbum_OnClick(object sender, RoutedEventArgs e)
