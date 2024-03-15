@@ -383,6 +383,17 @@ namespace Diffusion.Toolkit.Pages
             _model.MetadataSection.DateState = _settings.MetadataSection.DateState;
             _model.MetadataSection.AlbumState = _settings.MetadataSection.AlbumState;
 
+
+            _model.MainModel.PropertyChanged += (sender, args) =>
+            {
+                switch (args.PropertyName)
+                {
+                    case nameof(MainModel.Albums):
+                        ThumbnailListView.ReloadAlbums();
+                        break;
+                }
+            };
+
             _model.MainModel.Settings.NavigationSection.PropertyChanged += (sender, args) =>
             {
                 switch (args.PropertyName)
