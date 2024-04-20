@@ -119,6 +119,7 @@
                     <MenuItem Header="{lex:Loc Menu.Tools.Folders.RemoveExcludedImages}" Command="{Binding RemoveExcludedImagesCommand}"/>
                     <MenuItem Header="{lex:Loc Menu.Tools.Folders.CleanRemovedFolders}" Command="{Binding CleanRemovedFoldersCommand}"/>
                 </MenuItem>
+                <MenuItem Header="{lex:Loc Menu.Tools.UnavailableFiles}" Command="{Binding UnavailableFilesCommand}"></MenuItem>
             </MenuItem>
             <MenuItem Header="{lex:Loc Menu.Help}">
                 <MenuItem Header="{lex:Loc Menu.Help.About}" Command="{Binding AboutCommand}"/>

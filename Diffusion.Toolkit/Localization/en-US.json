@@ -31,7 +31,6 @@
   "Menu.Tools.SearchResults.RemoveMatching": "_Remove all query results from the database",
   "Menu.Tools.AutoTagNSFW": "_Auto tag NSFW",
   "Menu.Tools.Folders": "_Folders",
-  "Menu.Tools.Folders.": "_Folders",
   "Menu.Tools.Folders.FixMissingImages": "_Fix missing images",
   "Menu.Tools.Folders.RemoveExcludedImages": "_Remove excluded images",
   "Menu.Tools.Folders.CleanRemovedFolders": "_Clean removed folders",

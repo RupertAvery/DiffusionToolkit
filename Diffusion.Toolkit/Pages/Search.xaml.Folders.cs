@@ -19,11 +19,11 @@ namespace Diffusion.Toolkit.Pages
 
         private void ExpandToPath(string path)
         {
-            var root = _model.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 &&  path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
+            var root = _model.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
 
             var currentNode = root;
 
-            while(currentNode != null && !currentNode.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase))
+            while (currentNode != null && !currentNode.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (currentNode.State == FolderState.Collapsed)
                 {
@@ -74,7 +74,10 @@ namespace Diffusion.Toolkit.Pages
         {
             var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
-            ToggleFolder(folder);
+            if (!folder.IsUnavailable)
+            {
+                ToggleFolder(folder);
+            }
 
             e.Handled = true;
         }
@@ -95,6 +98,7 @@ namespace Diffusion.Toolkit.Pages
 
             if (subFolders == null)
             {
+                if (folder.IsUnavailable) return;
                 subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
                 folder.HasChildren = subFolders.Any();
                 folder.Children = subFolders;
@@ -134,7 +138,7 @@ namespace Diffusion.Toolkit.Pages
                 Visible = true,
                 Depth = folder.Depth + 1,
                 Name = path.EndsWith("\\") ? "Root" : Path.GetFileName(path),
-                Path = path
+                Path = path,
             });
         }
 
@@ -142,7 +146,10 @@ namespace Diffusion.Toolkit.Pages
         {
             var folder = ((FolderViewModel)((Button)sender).DataContext);
 
-            ToggleFolder(folder);
+            if (!folder.IsUnavailable)
+            {
+                ToggleFolder(folder);
+            }
 
             e.Handled = true;
         }

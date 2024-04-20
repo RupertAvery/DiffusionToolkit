@@ -31,7 +31,6 @@
   "Menu.Tools.SearchResults.RemoveMatching": "データベースからすべてのクエリ結果を削除",
   "Menu.Tools.AutoTagNSFW": "NSFWを自動タグ付け",
   "Menu.Tools.Folders": "フォルダ",
-  "Menu.Tools.Folders.": "フォルダ",
   "Menu.Tools.Folders.FixMissingImages": "不足している画像を修正",
   "Menu.Tools.Folders.RemoveExcludedImages": "除外された画像を削除",
   "Menu.Tools.Folders.CleanRemovedFolders": "削除されたフォルダをクリーンアップ",
