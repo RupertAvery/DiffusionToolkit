@@ -344,9 +344,23 @@ namespace Diffusion.Toolkit
             {
                 var fileName = Path.GetFileName(image.Path);
                 var newPath = Path.Join(path, fileName);
+
+                var directoryName = Path.GetDirectoryName(image.Path);
+                var fileNameOnly = Path.GetFileNameWithoutExtension(fileName);
+
+                var txtFileName = $"{fileNameOnly}.txt";
+
+                var txtPath = Path.Join(directoryName, txtFileName);
+                var newTxtPath = Path.Join(path, txtFileName);
+
                 if (image.Path != newPath)
                 {
                     File.Move(image.Path, newPath);
+
+                    if (File.Exists(txtPath))
+                    {
+                        File.Move(txtPath, newTxtPath);
+                    }
 
                     if (remove)
                     {
