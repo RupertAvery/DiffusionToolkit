@@ -31,7 +31,6 @@
   "Menu.Tools.SearchResults.RemoveMatching": "Eliminar todos los resultados de la consulta de la base de datos",
   "Menu.Tools.AutoTagNSFW": "Etiquetar automáticamente _NSFW",
   "Menu.Tools.Folders": "_Carpetas",
-  "Menu.Tools.Folders.": "_Carpetas",
   "Menu.Tools.Folders.FixMissingImages": "_Corregir imágenes faltantes",
   "Menu.Tools.Folders.RemoveExcludedImages": "_Eliminar imágenes excluidas",
   "Menu.Tools.Folders.CleanRemovedFolders": "_Limpiar carpetas eliminadas",

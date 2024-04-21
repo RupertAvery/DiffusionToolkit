@@ -3,18 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Diffusion.Civitai;
-using Diffusion.Civitai.Models;
-using System.Diagnostics;
-using System.Threading;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
-using static System.Net.Mime.MediaTypeNames;
-using System.Windows.Shapes;
 using SQLite;
 using Path = System.IO.Path;
 
@@ -290,7 +281,8 @@ namespace Diffusion.Toolkit
                 Visible = true,
                 Depth = 0,
                 Name = path,
-                Path = path
+                Path = path,
+                IsUnavailable = !Directory.Exists(path)
             }));
         }
     }

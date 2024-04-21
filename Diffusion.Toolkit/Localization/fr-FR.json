@@ -31,7 +31,6 @@
   "Menu.Tools.SearchResults.RemoveMatching": "_Supprimer tous les résultats de la requête de la base de données",
   "Menu.Tools.AutoTagNSFW": "_Baliser automatiquement comme NSFW",
   "Menu.Tools.Folders": "_Dossiers",
-  "Menu.Tools.Folders.": "_Dossiers",
   "Menu.Tools.Folders.FixMissingImages": "_Réparer les images manquantes",
   "Menu.Tools.Folders.RemoveExcludedImages": "_Supprimer les images exclues",
   "Menu.Tools.Folders.CleanRemovedFolders": "_Nettoyer les dossiers supprimés",

@@ -39,6 +39,7 @@
             <converters:FolderDepthConverter x:Key="FolderDepthConverter"></converters:FolderDepthConverter>
             <converters:FolderStateConverter x:Key="FolderStateConverter"></converters:FolderStateConverter>
             <converters:FolderStateVisibilityConverter x:Key="FolderStateVisibilityConverter"></converters:FolderStateVisibilityConverter>
+            <converters:UnavailableConverter x:Key="UnavailableConverter"></converters:UnavailableConverter>
         </ResourceDictionary>
     </Page.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -271,7 +272,7 @@
                                                                     <Button Grid.Column="2" Background="{x:Null}" Style="{StaticResource SmallButton}" Width="15" PreviewMouseDown="Expander_OnMouseDown" >
                                                                         <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"/>
                                                                     </Button>
-                                                                    <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="3"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                    <TextBlock FontFamily="Calibri" TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="3"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
                                                                 </Grid>
                                                             </ControlTemplate>
                                                         </Button.Template>

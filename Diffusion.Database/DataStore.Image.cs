@@ -99,6 +99,17 @@ namespace Diffusion.Database
             db.Close();
         }
 
+        public int CountAllPathImages(string path)
+        {
+            using var db = OpenConnection();
+
+            var count = db.ExecuteScalar<int>("SELECT COUNT(*) FROM Image WHERE PATH LIKE ? || '%'", path);
+            
+            db.Close();
+
+            return count;
+        }
+
         public IEnumerable<ImagePath> GetFolderImages(int folderId)
         {
             using var db = OpenConnection();

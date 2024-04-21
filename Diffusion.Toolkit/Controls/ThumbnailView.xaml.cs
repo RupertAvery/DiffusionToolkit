@@ -406,17 +406,17 @@ namespace Diffusion.Toolkit.Controls
             {
                 var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
+                int? effectiveRating = rating;
+
+                if (imageEntries.Count(i => i.Rating == rating) > imageEntries.Count / 2)
+                {
+                    effectiveRating = null;
+                }
+
                 foreach (var entry in imageEntries)
                 {
+                    entry.Rating = effectiveRating;
 
-                    if (entry.Rating == rating)
-                    {
-                        entry.Rating = null;
-                    }
-                    else
-                    {
-                        entry.Rating = rating;
-                    }
                     if (Model.CurrentImage != null && Model.CurrentImage.Path == entry.Path)
                     {
                         Model.CurrentImage.Rating = entry.Rating;
@@ -424,7 +424,8 @@ namespace Diffusion.Toolkit.Controls
                 }
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
-                DataStore.SetRating(ids, rating);
+
+                DataStore.SetRating(ids, effectiveRating);
             }
         }
 

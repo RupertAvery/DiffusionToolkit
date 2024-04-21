@@ -38,6 +38,7 @@ public class Metadata
         ComfyUI,
         RuinedFooocus,
         FooocusMRE,
+        Fooocus,
         Unknown,
     }
 
@@ -62,7 +63,7 @@ public class Metadata
 
         var span = buffer.AsSpan();
 
-        if (span.Slice(0,4).SequenceEqual(PNGMagic))
+        if (span.Slice(0, 4).SequenceEqual(PNGMagic))
         {
             return FileType.PNG;
         }
@@ -81,7 +82,7 @@ public class Metadata
     public static FileParameters? ReadFromFile(string file)
     {
         FileParameters? fileParameters = null;
-        
+
         var ext = Path.GetExtension(file).ToLowerInvariant();
 
         using var stream = File.OpenRead(file);
@@ -250,11 +251,61 @@ public class Metadata
                 }
             case FileType.JPEG:
                 {
+                    var format = MetaFormat.Unknown;
+
                     IEnumerable<Directory> directories = JpegMetadataReader.ReadMetadata(stream);
 
                     try
                     {
-                        fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        var isFoocus = false;
+                        foreach (var directory in directories)
+                        {
+                            if (directory.Name == "Exif IFD0")
+                            {
+                                foreach (var tag in directory.Tags)
+                                {
+                                    switch (tag.Name)
+                                    {
+                                        case "Software" when tag.Description.StartsWith("Fooocus"):
+                                            isFoocus = true;
+                                            break;
+
+                                        case "Makernote":
+                                            if (isFoocus)
+                                            {
+                                                format = tag.Description switch
+                                                {
+                                                    "fooocus" => MetaFormat.Fooocus,
+                                                    "a1111" => MetaFormat.A1111,
+                                                    _ => format
+                                                };
+                                            }
+                                            break;
+
+                                        case "User Comment":
+                                            if (isFoocus)
+                                            {
+                                                fileParameters = format switch
+                                                {
+                                                    MetaFormat.Fooocus => ReadFooocusParameters(tag.Description),
+                                                    MetaFormat.A1111 => ReadA111Parameters(tag.Description),
+                                                    _ => fileParameters
+                                                };
+                                            }
+                                            break;
+                                    }
+                                }
+
+
+                            }
+                        }
+
+                        if (fileParameters == null)
+                        {
+                            format = MetaFormat.A1111;
+
+                            fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -947,6 +998,37 @@ public class Metadata
         return fp;
     }
 
+    private static FileParameters ReadFooocusParameters(string data)
+    {
+        var json = JsonDocument.Parse(data);
+
+        var root = json.RootElement;
+
+        var fp = new FileParameters();
+
+        var fullPrompt = root.GetProperty("full_prompt").EnumerateArray().Select(x => x.GetString());
+        var fullNegativePrompt = root.GetProperty("full_negative_prompt").EnumerateArray().Select(x => x.GetString());
+
+        fp.Prompt = string.Join("\r\n", fullPrompt);
+        fp.NegativePrompt = string.Join("\r\n", fullNegativePrompt);
+        fp.Steps = root.GetProperty("steps").GetInt32();
+        fp.CFGScale = root.GetProperty("guidance_scale").GetDecimal();
+
+        var resolution = root.GetProperty("resolution").GetString();
+        resolution = resolution.Substring(1, resolution.Length - 2);
+        var parts = resolution.Split(new[] { ',' }, StringSplitOptions.TrimEntries);
+
+        fp.Width = int.Parse(parts[0]);
+        fp.Height = int.Parse(parts[1]);
+        fp.Seed = root.GetProperty("seed").GetInt64();
+        fp.Sampler = root.GetProperty("sampler").GetString();
+        fp.Model = root.GetProperty("base_model").GetString();
+        fp.ModelHash = root.GetProperty("base_model_hash").GetString();
+        fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
+
+        return fp;
+    }
+
     private static FileParameters ReadRuinedFooocusParameters(string data)
     {
         var json = JsonDocument.Parse(data.Substring("parameters: ".Length));
@@ -955,22 +1037,31 @@ public class Metadata
 
         var fp = new FileParameters();
 
-        var software = root.GetProperty("software").GetString();
-
-        if (software == "RuinedFooocus")
+        if (root.TryGetProperty("software", out var softwareProperty))
         {
-            fp.Prompt = root.GetProperty("Prompt").GetString();
-            fp.NegativePrompt = root.GetProperty("Negative").GetString();
-            fp.Steps = root.GetProperty("steps").GetInt32();
-            fp.CFGScale = root.GetProperty("cfg").GetDecimal();
-            fp.Width = root.GetProperty("width").GetInt32();
-            fp.Height = root.GetProperty("height").GetInt32();
-            fp.Seed = root.GetProperty("seed").GetInt64();
-            fp.Sampler = root.GetProperty("sampler_name").GetString();
-            fp.Model = root.GetProperty("base_model_name").GetString();
-            fp.ModelHash = root.GetProperty("base_model_hash").GetString();
-            fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
+            var software = softwareProperty.GetString();
+
+            if (software == "RuinedFooocus")
+            {
+                fp.Prompt = root.GetProperty("Prompt").GetString();
+                fp.NegativePrompt = root.GetProperty("Negative").GetString();
+                fp.Steps = root.GetProperty("steps").GetInt32();
+                fp.CFGScale = root.GetProperty("cfg").GetDecimal();
+                fp.Width = root.GetProperty("width").GetInt32();
+                fp.Height = root.GetProperty("height").GetInt32();
+                fp.Seed = root.GetProperty("seed").GetInt64();
+                fp.Sampler = root.GetProperty("sampler_name").GetString();
+                fp.Model = root.GetProperty("base_model_name").GetString();
+                fp.ModelHash = root.GetProperty("base_model_hash").GetString();
+                fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
+            }
         }
+        else
+        {
+            fp = ReadFooocusParameters(data.Substring("parameters: ".Length));
+        }
+
+
 
         return fp;
     }
