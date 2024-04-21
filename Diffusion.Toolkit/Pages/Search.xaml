@@ -39,6 +39,7 @@
             <converters:FolderDepthConverter x:Key="FolderDepthConverter"></converters:FolderDepthConverter>
             <converters:FolderStateConverter x:Key="FolderStateConverter"></converters:FolderStateConverter>
             <converters:FolderStateVisibilityConverter x:Key="FolderStateVisibilityConverter"></converters:FolderStateVisibilityConverter>
+            <converters:UnavailableConverter x:Key="UnavailableConverter"></converters:UnavailableConverter>
         </ResourceDictionary>
     </Page.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -205,7 +206,6 @@
 
                                     <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
                                                                Header="{lex:Loc Search.Navigation.Folders}"
-                                                               ContainerHeight="{Binding DataContext.NavigationSection.FolderHeight, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
                                                                State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                                                CanResize="True"
@@ -272,7 +272,7 @@
                                                                     <Button Grid.Column="2" Background="{x:Null}" Style="{StaticResource SmallButton}" Width="15" PreviewMouseDown="Expander_OnMouseDown" >
                                                                         <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"/>
                                                                     </Button>
-                                                                    <TextBlock FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="3"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
+                                                                    <TextBlock FontFamily="Calibri" TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="3"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
                                                                 </Grid>
                                                             </ControlTemplate>
                                                         </Button.Template>
@@ -287,7 +287,6 @@
                                         HeaderBackground="#80000000"  Margin="0,0,0,5"
                                         Header="{lex:Loc Search.Navigation.Models}"
                                         Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowModels, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
-                                        ContainerHeight="{Binding DataContext.NavigationSection.ModelHeight, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
                                         State="{Binding DataContext.NavigationSection.ModelState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
                                         CanResize="True"
                                         >
@@ -323,7 +322,6 @@
                                         HeaderBackground="#80000000"  Margin="0,0,0,5"
                                         Header="{lex:Loc Search.Navigation.Albums}"
                                         Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowAlbums, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
-                                        ContainerHeight="{Binding DataContext.NavigationSection.AlbumHeight, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
                                         State="{Binding DataContext.NavigationSection.AlbumState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  
                                         CanResize="True"
                                         >

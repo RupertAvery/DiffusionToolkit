@@ -136,6 +136,8 @@ namespace Diffusion.Toolkit
             _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
             _model.CleanRemovedFoldersCommand = new AsyncCommand<object>(CleanRemovedFolders);
 
+            _model.UnavailableFilesCommand = new RelayCommand<object>((o) => UnavailableFiles());
+
             _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
             _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
 
@@ -186,6 +188,17 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void UnavailableFiles()
+        {
+            var window = new UnavailableFilesWindow(_dataStore, _settings);
+            window.Owner = this;
+            window.ShowDialog();
+            if (window.DialogResult is true)
+            {
+                ScanUnavailable(window.Model);
+            }
         }
 
         private void ToggleNavigationPane()
@@ -837,6 +850,8 @@ namespace Diffusion.Toolkit
                             _dataStore.CreateBackup();
                             CleanRemovedFoldersInternal();
                         }
+
+                        LoadFolders();
 
                         await TryScanFolders();
 

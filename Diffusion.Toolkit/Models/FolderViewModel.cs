@@ -17,6 +17,7 @@ public class FolderViewModel : BaseNotify
     private bool _visible;
     private bool _isSelected;
     private string _name;
+    private bool _isUnavailable;
 
     public FolderState State
     {
@@ -53,6 +54,12 @@ public class FolderViewModel : BaseNotify
     {
         get => _name;
         set => SetField(ref _name, value);
+    }
+
+    public bool IsUnavailable
+    {
+        get => _isUnavailable;
+        set => SetField(ref _isUnavailable, value);
     }
 
     public override bool Equals(object? obj)

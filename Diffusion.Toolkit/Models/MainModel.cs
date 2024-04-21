@@ -476,6 +476,12 @@ public class MainModel : BaseNotify
         set => SetField(ref _cleanRemovedFoldersCommand, value);
     }
 
+    public ICommand UnavailableFilesCommand
+    {
+        get => _unavailableFilesCommand;
+        set => SetField(ref _unavailableFilesCommand, value);
+    }
+
 
     public ICommand ShowFilterCommand
     {
@@ -529,6 +535,7 @@ public class MainModel : BaseNotify
 
     private FolderViewModel? _currentFolder;
     private ICommand _resetLayout;
+    private ICommand _unavailableFilesCommand;
 
     public FolderViewModel? CurrentFolder
     {

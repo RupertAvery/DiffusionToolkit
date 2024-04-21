@@ -12,7 +12,7 @@
              lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
              d:DataContext="{d:DesignInstance local:FilterControlModel, IsDesignTimeCreatable=True}"
              mc:Ignorable="d" 
-             d:DesignHeight="660" d:DesignWidth="600">
+             d:DesignHeight="720" d:DesignWidth="600">
     <UserControl.Resources>
         <ResourceDictionary>
             <converters:IsValueBoolConverter x:Key="isValueBool"></converters:IsValueBoolConverter>
@@ -150,13 +150,16 @@
                         <ColumnDefinition Width="130"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <CheckBox IsChecked="{Binding UseAestheticScore}" VerticalContentAlignment="Center">Aesthetic Score</CheckBox>
+                    <CheckBox Name="chkAesthetic" IsChecked="{Binding UseAestheticScore}" VerticalContentAlignment="Center">Aesthetic Score</CheckBox>
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <RadioButton Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='='}" Margin="0,0,10,0" VerticalContentAlignment="Center">=</RadioButton>
                         <RadioButton Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&lt;='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">&lt;=</RadioButton>
                         <RadioButton Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&gt;='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">&gt;=</RadioButton>
                         <RadioButton Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='!='}"   Margin="0,0,10,0" VerticalContentAlignment="Center">!=</RadioButton>
-                        <TextBox Text="{Binding AestheticScore}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
+                        <TextBox Text="{Binding AestheticScore}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50" Margin="0,0,10,0" ></TextBox>
+                        <CheckBox Name="chkNoAestheticScore"
+                                  IsChecked="{Binding NoAestheticScore}"
+                                  VerticalContentAlignment="Center">No Score</CheckBox>
                     </StackPanel>
                 </Grid>
                 <Grid Margin="0,0,0,5">
@@ -164,14 +167,16 @@
                         <ColumnDefinition Width="130"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <CheckBox IsChecked="{Binding UseRating}" VerticalContentAlignment="Center">Rating</CheckBox>
+                    <CheckBox Name="chkRating" IsChecked="{Binding UseRating}" VerticalContentAlignment="Center">Rating</CheckBox>
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='='}" Margin="0,0,10,0" VerticalContentAlignment="Center">=</RadioButton>
                         <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&lt;='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">&lt;=</RadioButton>
                         <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&gt;='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">&gt;=</RadioButton>
                         <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='!='}"   Margin="0,0,10,0" VerticalContentAlignment="Center">!=</RadioButton>
                         <TextBox IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Text="{Binding Rating}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50" Margin="0,0,10,0" ></TextBox>
-                        <CheckBox IsChecked="{Binding Unrated}" VerticalContentAlignment="Center">Unrated</CheckBox>
+                        <CheckBox IsChecked="{Binding Unrated}"
+                                  VerticalContentAlignment="Center"
+                                  Name="chkUnratedCheckbox">Unrated</CheckBox>
                     </StackPanel>
                 </Grid>
                 <Grid Margin="0,0,0,5">
