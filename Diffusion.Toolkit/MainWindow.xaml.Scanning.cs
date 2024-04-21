@@ -90,7 +90,7 @@ namespace Diffusion.Toolkit
                                         var status = scanning
                                             .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
                                             .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-                                        
+
                                         _model.Status = status;
                                     });
                                 }
@@ -140,7 +140,7 @@ namespace Diffusion.Toolkit
                         if (options.DeleteImmediately)
                         {
                             _dataStore.RemoveImages(candidateImages);
-                            
+
                             var removed = GetLocalizedText("UnavailableFiles.Results.Removed");
 
                             removed = removed.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
@@ -322,7 +322,7 @@ namespace Diffusion.Toolkit
             return updated;
         }
 
-        private async Task MoveFiles(ICollection<ImageEntry> images, string path, bool remove)
+        private async Task MoveFiles(ICollection<ImageEntry> images, string targetPath, bool remove)
         {
 
             foreach (var watcher in _watchers)
@@ -344,26 +344,39 @@ namespace Diffusion.Toolkit
             {
 
                 string newPath = "";
+                string newTxtPath = "";
+                string fileName = "";
+                string fileNameOnly = "";
+                string extension = "";
                 int increment = 0;
-                
-                // append number if file exists at target 
-                do
-                {
-                    var fileName = Path.GetFileName(image.Path);
-                    if (increment > 0)
-                        fileName = increment.ToString() + "_" + fileName;
-                    newPath = Path.Join(path, fileName);
-                    increment++;
-                } while (File.Exists(newPath));
 
                 var directoryName = Path.GetDirectoryName(image.Path);
-                var fileNameOnly = Path.GetFileNameWithoutExtension(fileName);
 
-                var txtFileName = $"{fileNameOnly}.txt";
 
+                string originalFileNameOnly = Path.GetFileNameWithoutExtension(image.Path);
+
+                fileName = Path.GetFileName(image.Path);
+                extension = Path.GetExtension(image.Path);
+
+                var txtFileName = $"{originalFileNameOnly}.txt";
                 var txtPath = Path.Join(directoryName, txtFileName);
-                var newTxtPath = Path.Join(path, txtFileName);
-              
+
+                newPath = Path.Join(targetPath, fileName);
+                newTxtPath = Path.Join(targetPath, txtFileName);
+
+                // append number if file exists at target 
+                while (File.Exists(newPath))
+                {
+                    increment++;
+                    fileNameOnly = $"{originalFileNameOnly} ({increment})";
+                    fileName = $"{fileNameOnly}{extension}";
+                    txtFileName = $"{fileNameOnly}.txt";
+
+                    newPath = Path.Join(targetPath, fileName);
+                    newTxtPath = Path.Join(targetPath, txtFileName);
+                };
+
+
                 if (image.Path != newPath)
                 {
                     File.Move(image.Path, newPath);

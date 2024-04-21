@@ -93,10 +93,7 @@ namespace Diffusion.Toolkit.Controls
 
             var item = wrapPanel.Children[0] as ListViewItem;
 
-            if (item.ActualWidth == 0) return;
-
-            var columnWidth = (int)(wrapPanel.ActualWidth / item.ActualWidth);
-
+        
             double top = 0;
             double left = 0;
             var maxHeight = item.ActualHeight;
