@@ -98,6 +98,7 @@
   "Search.RecycleBin": "Recycle Bin",
   "Search.SortBy": "Sort by:",
   "Search.SortBy.DateCreated": "Date Created",
+  "Search.SortBy.DateModified": "Date Modified",
   "Search.SortBy.Name": "Name",
   "Search.SortBy.Rating": "Rating",
   "Search.SortBy.AestheticScore": "Aesthetic Score",
