@@ -342,8 +342,19 @@ namespace Diffusion.Toolkit
 
             foreach (var image in images)
             {
-                var fileName = Path.GetFileName(image.Path);
-                var newPath = Path.Join(path, fileName);
+
+                string newPath = "";
+                int increment = 0;
+                
+                // append number if file exists at target 
+                do
+                {
+                    var fileName = Path.GetFileName(image.Path);
+                    if (increment > 0)
+                        fileName = increment.ToString() + "_" + fileName;
+                    newPath = Path.Join(path, fileName);
+                    increment++;
+                } while (File.Exists(newPath));
 
                 var directoryName = Path.GetDirectoryName(image.Path);
                 var fileNameOnly = Path.GetFileNameWithoutExtension(fileName);
@@ -352,7 +363,7 @@ namespace Diffusion.Toolkit
 
                 var txtPath = Path.Join(directoryName, txtFileName);
                 var newTxtPath = Path.Join(path, txtFileName);
-
+              
                 if (image.Path != newPath)
                 {
                     File.Move(image.Path, newPath);

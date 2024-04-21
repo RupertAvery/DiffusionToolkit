@@ -111,6 +111,8 @@ namespace Diffusion.Toolkit
                                         _model.CurrentProgress = count;
                                     });
 
+                                    _dataStore.DeleteImage(imagePath.Id);
+
                                     File.Delete(imagePath.Path);
                                     var dir = Path.GetDirectoryName(imagePath.Path);
                                     var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
@@ -121,8 +123,6 @@ namespace Diffusion.Toolkit
                                     {
                                         File.Delete(textFilePath);
                                     }
-
-                                    _dataStore.DeleteImage(imagePath.Id);
 
                                 }
                                 catch (Exception e)

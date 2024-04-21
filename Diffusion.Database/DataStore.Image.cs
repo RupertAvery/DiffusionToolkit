@@ -436,11 +436,14 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var whereClause = string.Join(" AND ", watchedFolders.Select(f => "PATH NOT LIKE ? || '\\%'"));
+            var whereClause = string.Join(" AND ", watchedFolders.Select(f => $"PATH NOT LIKE '{f}\\%'"));
+
+            //first remove matching entries from AlbumImage
+            var albumImageQuery = $"DELETE FROM AlbumImage WHERE ImageId IN (SELECT Id FROM Image WHERE {whereClause})";
+            var albumImageQueryResult = db.Execute(albumImageQuery);
 
             var query = $"DELETE FROM Image WHERE {whereClause}";
-
-            var result = db.Execute(query, watchedFolders.ToArray());
+            var result = db.Execute(query);
 
             db.Close();
 

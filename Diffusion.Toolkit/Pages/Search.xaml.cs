@@ -786,6 +786,8 @@ namespace Diffusion.Toolkit.Pages
                         }
                     }
                     _model.Page = 1;
+                    ThumbnailListView.Model.Pages = _model.Pages;
+                    ThumbnailListView.Model.Page = _model.Page;
 
                     ThumbnailListView.SetPagingEnabled();
                 });
@@ -1222,7 +1224,7 @@ namespace Diffusion.Toolkit.Pages
             var rId = r.NextInt64();
             ThumbnailLoader.Instance.SetCurrentRequestId(rId);
 
-            if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
+            if (_currentModeSettings != null && _currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
             {
                 IEnumerable<string> folders = Enumerable.Empty<string>();
 
@@ -1232,6 +1234,11 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else
                 {
+                    if (!Directory.Exists(_currentModeSettings.CurrentFolder))
+                    {
+                        MessageBox.Show("This folder appears to have been removed.  Please remove the entry from the Folder list in Settings", "Folder Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                     folders = new[] { Path.Combine(_currentModeSettings.CurrentFolder, "..") }.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolder));
                 }
 
@@ -1255,7 +1262,7 @@ namespace Diffusion.Toolkit.Pages
                 }
             }
 
-            if (_currentModeSettings.ViewMode == ViewMode.Album)
+            if (_currentModeSettings != null && _currentModeSettings.ViewMode == ViewMode.Album)
             {
 
                 if (_model.MainModel.CurrentAlbum == null)
@@ -1351,45 +1358,48 @@ namespace Diffusion.Toolkit.Pages
                 var query = _model.SearchText;
                 bool showImages = true;
 
-                if (_currentModeSettings.IsFavorite)
+                if (_currentModeSettings != null)
                 {
-                    query = $"{query} favorite: true";
-                }
-                else if (_currentModeSettings.IsMarkedForDeletion)
-                {
-                    query = $"{query} delete: true";
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                {
-                    if (_currentModeSettings.CurrentFolder != "$")
+                    if (_currentModeSettings.IsFavorite)
                     {
-                        query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                        query = $"{query} favorite: true";
                     }
-                    else
+                    else if (_currentModeSettings.IsMarkedForDeletion)
                     {
-                        showImages = false;
+                        query = $"{query} delete: true";
                     }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                {
-                    if (_model.MainModel.CurrentAlbum != null)
+                    else if (_currentModeSettings.ViewMode == ViewMode.Folder)
                     {
-                        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                        if (_currentModeSettings.CurrentFolder != "$")
+                        {
+                            query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                        }
+                        else
+                        {
+                            showImages = false;
+                        }
                     }
-                    else
+                    else if (_currentModeSettings.ViewMode == ViewMode.Album)
                     {
-                        showImages = false;
+                        if (_model.MainModel.CurrentAlbum != null)
+                        {
+                            query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                        }
+                        else
+                        {
+                            showImages = false;
+                        }
                     }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                {
-                    if (_model.MainModel.CurrentModel != null)
+                    else if (_currentModeSettings.ViewMode == ViewMode.Model)
                     {
-                        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
-                    }
-                    else
-                    {
-                        showImages = false;
+                        if (_model.MainModel.CurrentModel != null)
+                        {
+                            query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
+                        }
+                        else
+                        {
+                            showImages = false;
+                        }
                     }
                 }
 

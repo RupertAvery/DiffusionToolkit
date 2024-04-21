@@ -42,6 +42,7 @@ public class Filter
     public int BatchPos { get; set; }
         
     public bool UseAestheticScore { get; set; }
+    public bool NoAestheticScore { get; set; }
     public string AestheticScoreOp { get; set; }
     public double? AestheticScore { get; set; }
         
@@ -78,6 +79,7 @@ public class Filter
                             UseForDeletion ||
                             UseBatchSize ||
                             UseBatchPos ||
+                            NoAestheticScore ||
                             UseAestheticScore ||
                             UsePath ||
                             UseCreationDate ||

@@ -47,18 +47,23 @@ namespace Diffusion.Toolkit.Controls
             {
                 Header = GetLocalizedText("Thumbnail.ContextMenu.AddToAlbum.NewAlbum"),
             };
-
             albumMenuItem.Click += CreateAlbum_OnClick;
+
+            var refreshAlbumMenuItem = new MenuItem()
+            {
+                Header = GetLocalizedText("Menu.View.Refresh"),
+            };
+            refreshAlbumMenuItem.Click += RefreshAlbum_OnClick;
 
             Model.AlbumMenuItems = new ObservableCollection<Control>(new List<Control>()
             {
                 albumMenuItem,
+                refreshAlbumMenuItem,
                 new Separator()
             });
 
 
-            var albums = DataStore.GetAlbumsByLastUpdated(10);
-
+            var albums = DataStore.GetAlbumsByName();
 
             foreach (var album in albums)
             {
@@ -255,13 +260,15 @@ namespace Diffusion.Toolkit.Controls
         public void ShowItem(int index, bool focus = false)
         {
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;
-            var item = wrapPanel.Children[index] as ListViewItem;
+            if (wrapPanel == null) return;
+
+            ListViewItem? item = wrapPanel.Children[index] as ListViewItem;
+            if (item == null) return;
+
             ThumbnailListView.ScrollIntoView(item);
             item.BringIntoView();
             if (focus)
-            {
                 item.Focus();
-            }
         }
 
 
@@ -522,26 +529,23 @@ namespace Diffusion.Toolkit.Controls
 
         private void DeleteSelected()
         {
-            if (ThumbnailListView.SelectedItems != null)
+            if (ThumbnailListView.SelectedItems != null && ThumbnailListView.SelectedItems.Count > 0)
             {
-                if (ThumbnailListView.SelectedItems != null)
+                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+                var delete = !imageEntries.GroupBy(e => e.ForDeletion).OrderByDescending(g => g.Count()).First().Key;
+
+                foreach (var entry in imageEntries)
                 {
-                    var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
-
-                    var delete = !imageEntries.GroupBy(e => e.ForDeletion).OrderByDescending(g => g.Count()).First().Key;
-
-                    foreach (var entry in imageEntries)
+                    entry.ForDeletion = delete;
+                    if (Model.CurrentImage != null && Model.CurrentImage.Path == entry.Path)
                     {
-                        entry.ForDeletion = delete;
-                        if (Model.CurrentImage != null && Model.CurrentImage.Path == entry.Path)
-                        {
-                            Model.CurrentImage.ForDeletion = delete;
-                        }
+                        Model.CurrentImage.ForDeletion = delete;
                     }
-
-                    var ids = imageEntries.Select(x => x.Id).ToList();
-                    DataStore.SetDeleted(ids, delete);
                 }
+
+                var ids = imageEntries.Select(x => x.Id).ToList();
+                DataStore.SetDeleted(ids, delete);
             }
         }
 
@@ -747,6 +751,11 @@ namespace Diffusion.Toolkit.Controls
         private void CreateAlbum_OnClick(object sender, RoutedEventArgs e)
         {
             AddAlbumCommand?.Execute(null);
+        }
+
+        private void RefreshAlbum_OnClick(object sender, RoutedEventArgs e)
+        {
+            ReloadAlbums(); 
         }
 
         private void AddToAlbum_OnClick(object sender, RoutedEventArgs e)

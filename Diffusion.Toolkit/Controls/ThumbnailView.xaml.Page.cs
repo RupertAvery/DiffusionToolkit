@@ -84,10 +84,8 @@ namespace Diffusion.Toolkit.Controls
         {
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;
 
-            if (wrapPanel.Children.Count == 0)
-            {
+            if (wrapPanel == null || wrapPanel.Children.Count == 0)
                 return;
-            }
 
             var scrollViewer = GetChildOfType<ScrollViewer>(this)!;
 
