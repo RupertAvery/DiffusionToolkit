@@ -27,6 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Pages\Search\SearchPage.axaml.cs">
+      <DependentUpon>SearchPage.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\Settings\SettingsPage.axaml.cs">
+      <DependentUpon>SettingsPage.axaml</DependentUpon>
+    </Compile>
     <Compile Update="PreviewWindow.axaml.cs">
       <DependentUpon>PreviewWindow.axaml</DependentUpon>
     </Compile>

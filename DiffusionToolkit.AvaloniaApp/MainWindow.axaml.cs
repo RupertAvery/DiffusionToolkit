@@ -12,23 +12,10 @@ namespace DiffusionToolkit.AvaloniaApp
 
         public MainWindow()
         {
-            InitializeComponent();
-        }
-
-
-        public MainWindow(DataStore dataStore)
-        {
-            _viewModel = new MainWindowViewModel(dataStore);
+            _viewModel = new MainWindowViewModel();
             InitializeComponent();
             DataContext = _viewModel;
         }
-
-        private void InputElement_OnKeyDown(object? sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                _viewModel.Search();
-            }
-        }
+        
     }
 }

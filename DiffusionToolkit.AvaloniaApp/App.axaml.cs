@@ -15,15 +15,10 @@ namespace DiffusionToolkit.AvaloniaApp
 
         public override void OnFrameworkInitializationCompleted()
         {
-            var path = @"C:\Users\ruper\AppData\Roaming\DiffusionToolkit\diffusion-toolkit.db";
-
-            var dataStore = new DataStore(path);
-
-
-
+            
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow(dataStore);
+                desktop.MainWindow = new MainWindow();
             }
 
             base.OnFrameworkInitializationCompleted();
