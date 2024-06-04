@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:thumbnail="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Thumbnail"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Name="root"
+             Focusable="True"
+             KeyDown="InputElement_OnKeyDown"
+             x:Class="DiffusionToolkit.AvaloniaApp.Controls.Thumbnail.ThumbnailControl">
+  <UserControl.Resources>
+    <thumbnail:CurrentConverter x:Key="currentConverter"/>
+  </UserControl.Resources>
+  <ScrollViewer>
+    <ItemsControl
+        x:Name="ThumbnailItemsControl"
+        ItemsSource="{Binding #root.Thumbnails}"
+        
+        PointerPressed="ItemsControl_OnPointerPressed"
+        >
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel/>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Panel
+              Background="{Binding IsCurrent, Converter={StaticResource currentConverter}}"
+              Height="{Binding #root.ThumbnailSize}" 
+              Width="{Binding #root.ThumbnailSize}" 
+              PointerPressed="Thumbnail_OnPointerPressed">
+            <Image
+            Width="{Binding #root.ThumbnailSize}"
+            Height="{Binding #root.ThumbnailSize}"
+            Stretch="Uniform"
+            Source="{Binding ThumbnailImage}"
+            />
+          </Panel>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+  </ScrollViewer>
+</UserControl>

@@ -415,7 +415,7 @@ namespace Diffusion.Toolkit
             }
 
 
-            await Dispatcher.Invoke(async () =>
+            Dispatcher.Invoke(() =>
             {
                 _model.Status = $"Moving {_model.TotalProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
                 _model.TotalProgress = Int32.MaxValue;
