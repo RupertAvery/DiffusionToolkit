@@ -17,6 +17,9 @@ namespace DiffusionToolkit.AvaloniaApp.Pages.Search;
 
 public class SearchPageViewModel : ViewModelBase
 {
+    private int pageSize = 250;
+    private int lastPage = 0;
+
     private readonly DataStore _dataStore;
     private IList<ThumbnailViewModel> _searchResults;
     private ThumbnailViewModel _selectedEntry;
@@ -25,6 +28,9 @@ public class SearchPageViewModel : ViewModelBase
     private string _searchText;
     private int _page;
     private int _pages;
+    private CancellationToken _thumbnailCancellationToken;
+    private ImageView _metadata;
+    private bool _isMetadataVisible;
 
     private ThumbnailViewModel SelectedEntry
     {
@@ -90,7 +96,7 @@ public class SearchPageViewModel : ViewModelBase
         GotoNext = ReactiveCommand.Create(GotoNextPage);
         GotoEnd = ReactiveCommand.Create(GotoEndPage);
 
-        InputElement.KeyDownEvent.AddClassHandler<TopLevel>(OnKeyDown, handledEventsToo: true);
+        //InputElement.KeyDownEvent.AddClassHandler<TopLevel>(OnKeyDown, handledEventsToo: true);
 
         Search();
     }
@@ -140,9 +146,7 @@ public class SearchPageViewModel : ViewModelBase
             if (SelectedEntry != null)
             {
                 Metadata = (ImageView)SelectedEntry.Source;
-                //PreviewImageSource = "D:/asuka/205443800-3203535900-(german_1.2) girl Asuka Langley Sohryu from neon genesis evangelion, wearing a red full-body plug suit, blue eyes, pigtails, lit.png";
                 PreviewImage = new Bitmap(SelectedEntry.Path);
-                //PreviewImageSource = SelectedEntry.Path;
             }
         }
     }
@@ -153,11 +157,13 @@ public class SearchPageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _metadata, value);
     }
 
-    private int pageSize = 250;
-    private int lastPage = 0;
-    private CancellationToken _thumbnailCancellationToken;
-    private ImageView _metadata;
-    private bool _isMetadataVisible;
+
+
+    public void ToggleNSFW()
+    {
+        QueryBuilder.HideNSFW = !QueryBuilder.HideNSFW;
+        Search();
+    }
 
     public void Search()
     {
@@ -178,7 +184,10 @@ public class SearchPageViewModel : ViewModelBase
             images.Add(new ThumbnailViewModel()
             {
                 Source = image,
+                ForDeletion = image.ForDeletion,
                 Path = image.Path,
+                Rating = image.Rating,
+                NSFW = image.NSFW,
             });
         }
 

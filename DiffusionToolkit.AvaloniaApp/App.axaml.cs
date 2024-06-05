@@ -15,7 +15,8 @@ namespace DiffusionToolkit.AvaloniaApp
 
         public override void OnFrameworkInitializationCompleted()
         {
-            
+            QueryBuilder.HideNSFW = true;
+
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MainWindow();

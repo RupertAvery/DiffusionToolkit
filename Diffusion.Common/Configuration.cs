@@ -11,7 +11,13 @@ namespace Diffusion.Common
     public class Configuration<T>
     {
         private readonly string _settingsPath;
+        
         public bool Portable { get; }
+
+        public Configuration(string settingsPath)
+        {
+            _settingsPath = settingsPath;
+        }
 
         public Configuration(string settingsPath, bool portable)
         {

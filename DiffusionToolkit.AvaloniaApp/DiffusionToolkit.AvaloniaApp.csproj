@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
+    <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
   </ItemGroup>
 
   <ItemGroup>

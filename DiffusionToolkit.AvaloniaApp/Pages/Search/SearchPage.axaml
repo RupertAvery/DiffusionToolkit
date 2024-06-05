@@ -6,11 +6,12 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="DiffusionToolkit.AvaloniaApp.Pages.Search.SearchPage">
     <Grid ColumnDefinitions="*,5,*">
-        <Grid Grid.Column="0">
+        <Grid Background="Black" Grid.Column="0">
             <Grid RowDefinitions="30,*,30">
                 <TextBox Grid.Row="0" Text="{Binding SearchText}" KeyDown="InputElement_OnKeyDown">
                 </TextBox>
                 <thumbnail:ThumbnailControl
+                    KeyDown="Thumbnail_OnKeyDown"
                     Grid.Row="1"
                     Thumbnails="{Binding SearchResults}"
                     CurrentItem="{Binding SelectedEntry}"
@@ -28,7 +29,7 @@
             </Grid>
         </Grid>
         <GridSplitter Background="Black" Grid.Column="1" ResizeDirection="Columns"></GridSplitter>
-        <Grid Grid.Column="2">
+        <Grid Background="Black" Grid.Column="2">
             <Image
                 Stretch="Uniform"
                 Source="{Binding PreviewImage}"/>

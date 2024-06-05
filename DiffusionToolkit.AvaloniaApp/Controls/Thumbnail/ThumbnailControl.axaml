@@ -10,8 +10,9 @@
              x:Class="DiffusionToolkit.AvaloniaApp.Controls.Thumbnail.ThumbnailControl">
   <UserControl.Resources>
     <thumbnail:CurrentConverter x:Key="currentConverter"/>
+    <thumbnail:ForDeletionConverter x:Key="forDeletionConverter"/>
   </UserControl.Resources>
-  <ScrollViewer>
+  <ScrollViewer Margin="2,5,0,0">
     <ItemsControl
         x:Name="ThumbnailItemsControl"
         ItemsSource="{Binding #root.Thumbnails}"
@@ -26,15 +27,24 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate>
           <Panel
-              Background="{Binding IsCurrent, Converter={StaticResource currentConverter}}"
-              Height="{Binding #root.ThumbnailSize}" 
-              Width="{Binding #root.ThumbnailSize}" 
+              Height="{Binding #root.ThumbnailSize}"
+              Width="{Binding #root.ThumbnailSize}"
+              Classes.selected="{Binding IsSelected}"
+              Classes.current="{Binding IsCurrent}"
               PointerPressed="Thumbnail_OnPointerPressed">
+            <Panel.Styles>
+              <Style Selector="Panel.selected">
+                <Setter Property="Background" Value="#80306fdb" />
+              </Style>
+              <Style Selector="Panel.current">
+                <Setter Property="Background" Value="#FF306fdb" />
+              </Style>
+            </Panel.Styles>
             <Image
-            Width="{Binding #root.ThumbnailSize}"
-            Height="{Binding #root.ThumbnailSize}"
-            Stretch="Uniform"
-            Source="{Binding ThumbnailImage}"
+                Margin="5,5,5,5"
+                Opacity="{Binding ForDeletion, Converter={StaticResource forDeletionConverter}}"
+                Stretch="Uniform"
+                Source="{Binding ThumbnailImage}"
             />
           </Panel>
         </DataTemplate>

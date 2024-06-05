@@ -2,8 +2,80 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:settings="clr-namespace:DiffusionToolkit.AvaloniaApp.Pages.Settings"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="DiffusionToolkit.AvaloniaApp.Pages.Settings.SettingsPage">
-    <Grid>
-    </Grid>
+  <Design.DataContext>
+    <settings:SettingsPageViewModel></settings:SettingsPageViewModel>
+  </Design.DataContext>
+  <UserControl.Resources>
+    <settings:MenuVisibleConverter x:Key="menuVisibleConverter"/>
+  </UserControl.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="100"/>
+      <ColumnDefinition/>
+    </Grid.ColumnDefinitions>
+    <ListBox ItemsSource="{Binding MenuItems}" SelectedItem="{Binding SelectedMenuItem}">
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <Label Content="{Binding .}"></Label>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <ScrollViewer Grid.Column="1">
+      <Grid >
+        <Grid IsVisible="{Binding SelectedMenuItem, Converter={StaticResource menuVisibleConverter}, ConverterParameter=General}">
+          <StackPanel Margin="5,0,5,0">
+            <Label>Included Folders</Label>
+            <Grid Margin="0,5,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="110"/>
+              </Grid.ColumnDefinitions>
+              <ListBox ItemsSource="{Binding IncludedFolders}" SelectedItem="{Binding SelectedIncludedFolder}" Height="180">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Label Content="{Binding .}"></Label>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+              <StackPanel Margin="10,0,0,0" Grid.Column="1" Orientation="Vertical">
+                <Button Width="100" HorizontalContentAlignment="Center" Command="{Binding AddIncludedFolderCommand}">Add</Button>
+                <Button Margin="0,5,0,0" Width="100" HorizontalContentAlignment="Center" Command="{Binding RemoveIncludedFolderCommand}">Remove</Button>
+              </StackPanel>
+            </Grid>
+            <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+              <!--<CheckBox>Watch Folders</CheckBox>
+              <CheckBox Margin="15,0,0,0">Auto Refresh</CheckBox>-->
+              <CheckBox IsChecked="{Binding RecurseFolders}" Margin="0,0,0,0">Recursive</CheckBox>
+            </StackPanel>
+            <Label Margin="0,5,0,0">Excluded Folders</Label>
+            <Grid Margin="0,5,0,0">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition  Width="110"/>
+              </Grid.ColumnDefinitions>
+              <ListBox ItemsSource="{Binding ExcludedFolders}" Height="180">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Label Content="{Binding .}"></Label>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+              <StackPanel Margin="10,0,0,0" Grid.Column="1" Orientation="Vertical">
+                <Button Width="100" HorizontalContentAlignment="Center">Add</Button>
+                <Button Margin="0,5,0,0" Width="100" HorizontalContentAlignment="Center">Remove</Button>
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+
+        </Grid>
+
+        <Grid IsVisible="{Binding SelectedMenuItem, Converter={StaticResource menuVisibleConverter}, ConverterParameter=Image}">
+
+        </Grid>
+      </Grid>
+    </ScrollViewer>
+  </Grid>
 </UserControl>

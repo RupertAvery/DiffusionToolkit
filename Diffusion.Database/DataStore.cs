@@ -2,6 +2,11 @@
 
 namespace Diffusion.Database;
 
+public class MigrationEventArgs
+{
+    public MigrationType MigrationType { get; set; }
+}
+
 public partial class DataStore
 {
     public string DatabasePath { get; }
@@ -10,10 +15,6 @@ public partial class DataStore
     public SQLiteConnection OpenConnection()
     {
         var db = new SQLiteConnection(DatabasePath);
-
-        //db.EnableLoadExtension(true);
-        //db.Execute("SELECT load_extension(?)", "dlls/path0");
-
         return db;
     }
 
@@ -22,7 +23,10 @@ public partial class DataStore
         DatabasePath = databasePath;
     }
 
-    public async Task Create(Action notify, Action complete)
+    public event EventHandler<MigrationEventArgs> BeforeMigrate;
+    public event EventHandler<MigrationEventArgs> AfterMigrate;
+
+    public async Task Create()
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
 
@@ -47,7 +51,7 @@ public partial class DataStore
 
         if (migrations.RequiresMigration(MigrationType.Pre))
         {
-            notify?.Invoke();
+            BeforeMigrate?.Invoke(this, new MigrationEventArgs { MigrationType = MigrationType.Pre });
             try
             {
                 await Task.Run(() =>
@@ -57,7 +61,7 @@ public partial class DataStore
             }
             finally
             {
-                complete?.Invoke();
+                AfterMigrate?.Invoke(this, new MigrationEventArgs { MigrationType = MigrationType.Pre });
             }
         }
 
@@ -98,7 +102,7 @@ public partial class DataStore
 
         if (migrations.RequiresMigration(MigrationType.Post))
         {
-            notify?.Invoke();
+            BeforeMigrate?.Invoke(this, new MigrationEventArgs { MigrationType = MigrationType.Post });
             try
             {
                 await Task.Run(() =>
@@ -108,7 +112,7 @@ public partial class DataStore
             }
             finally
             {
-                complete?.Invoke();
+                AfterMigrate?.Invoke(this, new MigrationEventArgs { MigrationType = MigrationType.Post });
             }
         }
 

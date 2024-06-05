@@ -13,6 +13,5 @@ public class ImageEntry : ViewModelBase
     public int Height { get; set; }
     public string Filename { get; set; }
     public string Path { get; set; }
-
-
+    public bool ForDeletion { get; set; }
 }

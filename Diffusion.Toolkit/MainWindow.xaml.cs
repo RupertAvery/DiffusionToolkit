@@ -487,14 +487,18 @@ namespace Diffusion.Toolkit
 
             MessagePopupHandle handle = null;
 
-            await dataStore.Create(() =>
+            dataStore.BeforeMigrate += (o, args) =>
             {
                 handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
-            },
-            () =>
+            };
+
+            dataStore.AfterMigrate += (o, args) =>
             {
                 handle?.Close();
-            });
+            };
+
+
+            await dataStore.Create();
 
             _dataStoreOptions = new DataStoreOptions(dataStore);
 

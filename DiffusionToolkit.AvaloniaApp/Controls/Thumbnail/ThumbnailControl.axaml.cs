@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -13,46 +11,31 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
-using DiffusionToolkit.AvaloniaApp.ViewModels;
-using ReactiveUI;
+using Avalonia.Threading;
+using Diffusion.Database;
+using DiffusionToolkit.AvaloniaApp.Common;
 
 namespace DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
 
-public class ThumbnailViewModel : ViewModelBase
-{
-    public object Source { get; set; }
-    public string Path { get; set; }
-
-    private Bitmap _thumbnailImage;
-    private bool _isCurrent;
-    private bool _isSelected;
-
-    public Bitmap ThumbnailImage
-    {
-        get => _thumbnailImage;
-        set => this.RaiseAndSetIfChanged(ref _thumbnailImage, value);
-    }
-
-    public bool IsCurrent
-    {
-        get => _isCurrent;
-        set => this.RaiseAndSetIfChanged(ref _isCurrent, value);
-    }
-
-    public bool IsSelected
-    {
-        get => _isSelected;
-        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
-    }
-}
-
 public partial class ThumbnailControl : UserControl
 {
+    private int _thumbnailSize = 256;
+    private int _columns = 0;
+    private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+    private DataStore _dataStore;
+
+    private IList<ThumbnailViewModel>? _thumbnails;
+    private ObservableCollection<ThumbnailViewModel>? _selectedItems;
+
     public static readonly DirectProperty<ThumbnailControl, IList<ThumbnailViewModel>?> ThumbnailsProperty =
         AvaloniaProperty.RegisterDirect<ThumbnailControl, IList<ThumbnailViewModel>?>(
             nameof(Thumbnails),
             (o) => o.Thumbnails,
-            (o, v) => o.Thumbnails = v);
+            (o, v) =>
+            {
+                o.UnloadThumbnails();
+                o.Thumbnails = v;
+            });
 
     public static readonly DirectProperty<ThumbnailControl, int> ThumbnailSizeProperty =
         AvaloniaProperty.RegisterDirect<ThumbnailControl, int>(
@@ -67,10 +50,8 @@ public partial class ThumbnailControl : UserControl
             null,
             BindingMode.TwoWay);
 
-
-    private IList<ThumbnailViewModel>? _thumbnails;
-    private ObservableCollection<ThumbnailViewModel>? _selectedItems;
-    private int _thumbnailSize = 256;
+    public static readonly RoutedEvent<RoutedEventArgs> CurrentItemChangedEvent =
+        RoutedEvent.Register<ThumbnailControl, RoutedEventArgs>(nameof(CurrentItemChanged), RoutingStrategies.Direct);
 
     public int ThumbnailSize
     {
@@ -84,9 +65,6 @@ public partial class ThumbnailControl : UserControl
         set => this.SetAndRaise(ThumbnailsProperty, ref _thumbnails, value);
     }
 
-    public static readonly RoutedEvent<RoutedEventArgs> CurrentItemChangedEvent =
-        RoutedEvent.Register<ThumbnailControl, RoutedEventArgs>(nameof(CurrentItemChanged), RoutingStrategies.Direct);
-
     public event EventHandler<RoutedEventArgs> CurrentItemChanged
     {
         add => AddHandler(CurrentItemChangedEvent, value);
@@ -98,7 +76,6 @@ public partial class ThumbnailControl : UserControl
         RoutedEventArgs args = new RoutedEventArgs(CurrentItemChangedEvent);
         RaiseEvent(args);
     }
-
 
     public ObservableCollection<ThumbnailViewModel>? SelectedItems
     {
@@ -118,7 +95,7 @@ public partial class ThumbnailControl : UserControl
     //    set => SetAndRaise(CancellationTokenProperty, ref _cancellationToken, value);
     //}
 
-    private ThumbnailViewModel _anchorItem;
+    private ThumbnailViewModel? _anchorItem;
     private ThumbnailViewModel? _currentItem;
 
 
@@ -128,12 +105,9 @@ public partial class ThumbnailControl : UserControl
         InitializeComponent();
         PropertyChanged += OnPropertyChanged;
         SizeChanged += ThumbnailControl_SizeChanged;
+        _dataStore = ServiceLocator.DataStore;
     }
 
-    private int _columns = 0;
-    //private CancellationToken _cancellationToken;
-    private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-    //public static readonly DirectProperty<ThumbnailControl, CancellationToken> CancellationTokenProperty = AvaloniaProperty.RegisterDirect<ThumbnailControl, CancellationToken>("CancellationToken", o => o.CancellationToken, (o, v) => o.CancellationToken = v);
 
     private void ThumbnailControl_SizeChanged(object? sender, SizeChangedEventArgs e)
     {
@@ -147,29 +121,43 @@ public partial class ThumbnailControl : UserControl
         {
             if (Thumbnails != null)
             {
-                SetCurrent(Thumbnails[0], true);
                 LoadThumbnails();
+                Dispatcher.UIThread.Post(() =>
+                {
+                    SetCurrent(Thumbnails[0], true);
+                });
             }
         }
         if (e.Property.Name == nameof(ThumbnailSize))
         {
             if (Thumbnails != null)
             {
+                UnloadThumbnails();
                 LoadThumbnails();
             }
         }
+    }
 
-        //if (e.Property.Name == nameof(CancellationToken))
-        //{
-        //    CancellationToken.
-        //}
+    public void UnloadThumbnails()
+    {
+        _cancellationTokenSource.Cancel();
+
+        Task.Run(() =>
+        {
+            if (Thumbnails != null)
+            {
+                foreach (var thumbnail in Thumbnails.ToList())
+                {
+                    thumbnail.Dispose();
+                }
+            }
+        });
+
+        _cancellationTokenSource = new CancellationTokenSource();
     }
 
     public void LoadThumbnails()
     {
-        _cancellationTokenSource.Cancel();
-        _cancellationTokenSource = new CancellationTokenSource();
-
         Task.Run(() =>
         {
             if (Thumbnails != null)
@@ -193,10 +181,61 @@ public partial class ThumbnailControl : UserControl
         thumbnail.ThumbnailImage = Bitmap.DecodeToWidth(stream, ThumbnailSize);
     }
 
+    private void Deselect()
+    {
+        foreach (var item in Thumbnails)
+        {
+            item.IsSelected = false;
+        }
+    }
+
+    private void SelectAll()
+    {
+        foreach (var item in Thumbnails)
+        {
+            item.IsSelected = true;
+        }
+    }
+
     private void InputElement_OnKeyDown(object? sender, KeyEventArgs e)
     {
+        var validKeys = new Key[] { Key.Up, Key.Down, Key.Left, Key.Right };
+
+        if ((e.KeyModifiers & KeyModifiers.Shift) == 0 && (e.KeyModifiers & KeyModifiers.Control) == 0 && validKeys.Contains(e.Key))
+        {
+            _anchorItem = null;
+            Deselect();
+        }
+
         switch (e.Key)
         {
+            case Key.LeftCtrl:
+            case Key.RightCtrl:
+                CurrentItem.IsSelected = true;
+                break;
+
+
+            case Key.LeftShift:
+            case Key.RightShift:
+                if (_anchorItem == null)
+                {
+                    _anchorItem = CurrentItem;
+                }
+                break;
+
+            case Key.A:
+                if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+                {
+                    SelectAll();
+                }
+                e.Handled = true;
+                break;
+
+            case Key.Space:
+                CurrentItem.IsSelected = !CurrentItem.IsSelected;
+                e.Handled = true;
+                break;
+
             case Key.Up:
                 if (Thumbnails != null && CurrentItem != null)
                 {
@@ -209,8 +248,16 @@ public partial class ThumbnailControl : UserControl
                     {
                         index -= _columns;
                     }
+
+                    if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
+                    {
+                        SelectRange(Thumbnails[index]);
+                    }
+
                     SetCurrent(Thumbnails[index], true);
+
                 }
+                e.Handled = true;
 
                 break;
             case Key.Down:
@@ -225,8 +272,15 @@ public partial class ThumbnailControl : UserControl
                     {
                         index += _columns;
                     }
+
+                    if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
+                    {
+                        SelectRange(Thumbnails[index]);
+                    }
+
                     SetCurrent(Thumbnails[index], true);
                 }
+                e.Handled = true;
 
                 break;
             case Key.Left:
@@ -241,8 +295,15 @@ public partial class ThumbnailControl : UserControl
                     {
                         index--;
                     }
+
+                    if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
+                    {
+                        SelectRange(Thumbnails[index]);
+                    }
+
                     SetCurrent(Thumbnails[index], true);
                 }
+                e.Handled = true;
 
                 break;
             case Key.Right:
@@ -257,10 +318,34 @@ public partial class ThumbnailControl : UserControl
                     {
                         index++;
                     }
+
+                    if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
+                    {
+                        SelectRange(Thumbnails[index]);
+                    }
+
                     SetCurrent(Thumbnails[index], true);
                 }
+                e.Handled = true;
 
                 break;
+        }
+    }
+
+
+    private void SelectRange(ThumbnailViewModel thumbnail)
+    {
+        Deselect();
+
+        if (_anchorItem != null)
+        {
+            var start = Thumbnails.IndexOf(_anchorItem);
+            var end = Thumbnails.IndexOf(thumbnail);
+
+            for (var i = start; i != end; i += Math.Sign(end - start))
+            {
+                Thumbnails[i].IsSelected = true;
+            }
         }
     }
 
@@ -273,8 +358,37 @@ public partial class ThumbnailControl : UserControl
     {
         if (sender is Panel { DataContext: ThumbnailViewModel thumbnail })
         {
-            SetCurrent(thumbnail);
+            if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+            {
+                if (_anchorItem == null)
+                {
+                    _anchorItem = thumbnail;
+                }
+
+                thumbnail.IsSelected = !thumbnail.IsSelected;
+            }
+            else if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
+            {
+                SelectRange(thumbnail);
+            }
+            else
+            {
+                foreach (var item in Thumbnails)
+                {
+                    item.IsSelected = false;
+                }
+
+                _anchorItem = thumbnail;
+            }
+
+            SetCurrent(thumbnail, true);
+
         }
+    }
+
+    private void AddToSelection(ThumbnailViewModel thumbnail)
+    {
+        thumbnail.IsSelected = true;
     }
 
     private void SetCurrent(ThumbnailViewModel thumbnail, bool scrollIntoView = false)
