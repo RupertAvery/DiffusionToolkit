@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
@@ -199,7 +200,7 @@ public partial class ThumbnailControl : UserControl
 
     private void InputElement_OnKeyDown(object? sender, KeyEventArgs e)
     {
-        var validKeys = new Key[] { Key.Up, Key.Down, Key.Left, Key.Right };
+        var validKeys = new Key[] { Key.Up, Key.Down, Key.Left, Key.Right, Key.PageUp, Key.PageDown };
 
         if ((e.KeyModifiers & KeyModifiers.Shift) == 0 && (e.KeyModifiers & KeyModifiers.Control) == 0 && validKeys.Contains(e.Key))
         {
@@ -221,6 +222,7 @@ public partial class ThumbnailControl : UserControl
                 {
                     _anchorItem = CurrentItem;
                 }
+
                 break;
 
             case Key.A:
@@ -228,6 +230,7 @@ public partial class ThumbnailControl : UserControl
                 {
                     SelectAll();
                 }
+
                 e.Handled = true;
                 break;
 
@@ -236,88 +239,48 @@ public partial class ThumbnailControl : UserControl
                 e.Handled = true;
                 break;
 
-            case Key.Up:
-                if (Thumbnails != null && CurrentItem != null)
-                {
-                    var index = Thumbnails.IndexOf(CurrentItem);
-                    if (index - _columns < 0)
-                    {
-                        index = 0;
-                    }
-                    else
-                    {
-                        index -= _columns;
-                    }
-
-                    if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
-                    {
-                        SelectRange(Thumbnails[index]);
-                    }
-
-                    SetCurrent(Thumbnails[index], true);
-
-                }
-                e.Handled = true;
-
-                break;
-            case Key.Down:
-                if (Thumbnails != null && CurrentItem != null)
-                {
-                    var index = Thumbnails.IndexOf(CurrentItem);
-                    if (index + _columns >= Thumbnails.Count)
-                    {
-                        index = Thumbnails.Count - 1;
-                    }
-                    else
-                    {
-                        index += _columns;
-                    }
-
-                    if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
-                    {
-                        SelectRange(Thumbnails[index]);
-                    }
-
-                    SetCurrent(Thumbnails[index], true);
-                }
-                e.Handled = true;
-
-                break;
             case Key.Left:
-                if (Thumbnails != null && CurrentItem != null)
-                {
-                    var index = Thumbnails.IndexOf(CurrentItem);
-                    if (index - 1 < 0)
-                    {
-                        index = 0;
-                    }
-                    else
-                    {
-                        index--;
-                    }
-
-                    if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
-                    {
-                        SelectRange(Thumbnails[index]);
-                    }
-
-                    SetCurrent(Thumbnails[index], true);
-                }
-                e.Handled = true;
-
-                break;
             case Key.Right:
+            case Key.Up:
+            case Key.Down:
+            case Key.PageUp:
+            case Key.PageDown:
+            case Key.Home:
+            case Key.End:
                 if (Thumbnails != null && CurrentItem != null)
                 {
                     var index = Thumbnails.IndexOf(CurrentItem);
-                    if (index + 1 >= Thumbnails.Count)
+
+                    switch (e.Key)
                     {
-                        index = Thumbnails.Count - 1;
+                        case Key.Left:
+                            index--;
+                            break;
+                        case Key.Right:
+                            index++;
+                            break;
+                        case Key.Up:
+                            index -= _columns;
+                            break;
+                        case Key.Down:
+                            index += _columns;
+                            break;
+                        case Key.PageUp:
+                            index -= _columns * 5;
+                            break;
+                        case Key.PageDown:
+                            index += _columns * 5;
+                            break;
+                        case Key.Home:
+                            index = 0;
+                            break;
+                        case Key.End:
+                            index = Thumbnails.Count - 1;
+                            break;
+
                     }
-                    else
-                    {
-                        index++;
-                    }
+
+                    index = Math.Clamp(index, 0, Thumbnails.Count - 1);
 
                     if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
                     {
@@ -325,8 +288,9 @@ public partial class ThumbnailControl : UserControl
                     }
 
                     SetCurrent(Thumbnails[index], true);
+
+                    e.Handled = true;
                 }
-                e.Handled = true;
 
                 break;
         }

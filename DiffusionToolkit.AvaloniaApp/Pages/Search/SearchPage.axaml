@@ -5,45 +5,63 @@
              xmlns:thumbnail="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Thumbnail"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="DiffusionToolkit.AvaloniaApp.Pages.Search.SearchPage">
-    <Grid ColumnDefinitions="*,5,*">
-        <Grid Background="Black" Grid.Column="0">
-            <Grid RowDefinitions="30,*,30">
-                <TextBox Grid.Row="0" Text="{Binding SearchText}" KeyDown="InputElement_OnKeyDown">
-                </TextBox>
-                <thumbnail:ThumbnailControl
-                    KeyDown="Thumbnail_OnKeyDown"
-                    Grid.Row="1"
-                    Thumbnails="{Binding SearchResults}"
-                    CurrentItem="{Binding SelectedEntry}"
+  <Grid ColumnDefinitions="300,5,*,5,*">
+    <StackPanel Orientation="Vertical">
+      <Expander VerticalAlignment="Top" HorizontalAlignment="Stretch">
+        <Expander.Header>
+          Folders
+        </Expander.Header>
+        <Grid>
+        </Grid>
+      </Expander>
+      <Expander VerticalAlignment="Top" HorizontalAlignment="Stretch">
+        <Expander.Header>
+          Albums
+        </Expander.Header>
+        <Grid>
+        </Grid>
+      </Expander>
+    </StackPanel>
+    <GridSplitter Background="Black" Grid.Column="1" ResizeDirection="Columns"></GridSplitter>
+    <Grid Background="Black" Grid.Column="2">
+      <Grid RowDefinitions="30,*,30">
+        <TextBox Grid.Row="0" Text="{Binding SearchText}" KeyDown="InputElement_OnKeyDown">
+        </TextBox>
+        <thumbnail:ThumbnailControl
+            KeyDown="Thumbnail_OnKeyDown"
+            Grid.Row="1"
+            Thumbnails="{Binding SearchResults}"
+            CurrentItem="{Binding SelectedEntry}"
                 ></thumbnail:ThumbnailControl>
-                <Grid Grid.Row="2">
-                    <StackPanel Orientation="Horizontal">
-                        <Button Command="{Binding GotoStart}">Start</Button>
-                        <Button Command="{Binding GotoPrev}">Prev</Button>
-                        <TextBox Text="{Binding Page}"></TextBox>
-                        <Label Content="{Binding Pages}"></Label>
-                        <Button Command="{Binding GotoNext}">Next</Button>
-                        <Button Command="{Binding GotoEnd}">End</Button>
-                    </StackPanel>
-                </Grid>
-            </Grid>
+        <Grid Grid.Row="2">
+          <StackPanel Orientation="Horizontal">
+            <Button Command="{Binding GotoStart}">Start</Button>
+            <Button Command="{Binding GotoPrev}">Prev</Button>
+            <TextBox Text="{Binding Page}"></TextBox>
+            <Label Content="{Binding Pages}"></Label>
+            <Button Command="{Binding GotoNext}">Next</Button>
+            <Button Command="{Binding GotoEnd}">End</Button>
+          </StackPanel>
         </Grid>
-        <GridSplitter Background="Black" Grid.Column="1" ResizeDirection="Columns"></GridSplitter>
-        <Grid Background="Black" Grid.Column="2">
-            <Image
-                Stretch="Uniform"
-                Source="{Binding PreviewImage}"/>
-            <Grid Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
-                <ScrollViewer>
-                    <StackPanel Margin="5">
-                        <Label Background="#000030" Padding="4" FontSize="12">PROMPT</Label>
-                        <SelectableTextBlock Margin="15" Text="{Binding Metadata.Prompt}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
-                        <Label Background="#000030" Padding="4" FontSize="12">NEGATIVE PROMPT</Label>
-                        <SelectableTextBlock Margin="15" Text="{Binding Metadata.NegativePrompt}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
-                        <Label Background="#000030" Padding="4" FontSize="12">PATH</Label>
-                        <SelectableTextBlock Margin="15" Text="{Binding Metadata.Path}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
-                    </StackPanel>
-                </ScrollViewer>
-            </Grid>
-        </Grid>
-    </Grid></UserControl>
+      </Grid>
+    </Grid>
+    <GridSplitter Background="Black" Grid.Column="3" ResizeDirection="Columns"></GridSplitter>
+    <Grid Background="Black" Grid.Column="4">
+      <Image
+          Stretch="Uniform"
+          Source="{Binding PreviewImage}"/>
+      <Grid Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
+        <ScrollViewer>
+          <StackPanel Margin="5">
+            <Label Background="#000030" Padding="4" FontSize="12">PROMPT</Label>
+            <SelectableTextBlock Margin="15" Text="{Binding Metadata.Prompt}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
+            <Label Background="#000030" Padding="4" FontSize="12">NEGATIVE PROMPT</Label>
+            <SelectableTextBlock Margin="15" Text="{Binding Metadata.NegativePrompt}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
+            <Label Background="#000030" Padding="4" FontSize="12">PATH</Label>
+            <SelectableTextBlock Margin="15" Text="{Binding Metadata.Path}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </Grid>
+  </Grid>
+</UserControl>

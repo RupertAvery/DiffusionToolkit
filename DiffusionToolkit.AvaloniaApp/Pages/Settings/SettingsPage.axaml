@@ -13,7 +13,7 @@
   </UserControl.Resources>
   <Grid>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="100"/>
+      <ColumnDefinition Width="150"/>
       <ColumnDefinition/>
     </Grid.ColumnDefinitions>
     <ListBox ItemsSource="{Binding MenuItems}" SelectedItem="{Binding SelectedMenuItem}">
@@ -26,7 +26,7 @@
     <ScrollViewer Grid.Column="1">
       <Grid >
         <Grid IsVisible="{Binding SelectedMenuItem, Converter={StaticResource menuVisibleConverter}, ConverterParameter=General}">
-          <StackPanel Margin="5,0,5,0">
+          <StackPanel Margin="10,10,10,0">
             <Label>Included Folders</Label>
             <Grid Margin="0,5,0,0">
               <Grid.ColumnDefinitions>
