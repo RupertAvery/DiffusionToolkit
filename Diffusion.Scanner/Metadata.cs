@@ -85,6 +85,7 @@ public class Metadata
 
         var ext = Path.GetExtension(file).ToLowerInvariant();
 
+
         using var stream = File.OpenRead(file);
 
         var fileType = GetFileType(stream);
@@ -371,6 +372,7 @@ public class Metadata
         FileInfo fileInfo = new FileInfo(file);
         fileParameters.Path = file;
         fileParameters.FileSize = fileInfo.Length;
+        fileParameters.CreatedDate = fileInfo.CreationTime;
 
         return fileParameters;
     }
@@ -828,7 +830,8 @@ public class Metadata
         const string modelKey = "Stable Diffusion model: ";
         const string widthKey = "Width: ";
 
-        fileParameters.Parameters = data;
+        //fileParameters.Parameters = data;
+        fileParameters.RawData = data;
 
         var state = 0;
 
@@ -1076,7 +1079,8 @@ public class Metadata
         const string negativePromptKey = "Negative prompt:";
         const string stepsKey = "Steps:";
 
-        fileParameters.Parameters = data;
+        //fileParameters.Parameters = data;
+        fileParameters.RawData = data;
 
         var state = 0;
 

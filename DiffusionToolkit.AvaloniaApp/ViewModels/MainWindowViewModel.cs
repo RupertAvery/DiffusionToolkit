@@ -1,15 +1,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Avalonia.Controls;
+using System.Reactive;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
-using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
 using DiffusionToolkit.AvaloniaApp.Pages.Search;
 using DiffusionToolkit.AvaloniaApp.Pages.Settings;
 using ReactiveUI;
@@ -21,6 +14,27 @@ public class MainWindowViewModel : ViewModelBase
     private INavigationTarget? _currentPage;
     private readonly NavigationManager _navigationManager;
     private NavigationMenuItem _currentMenuItem;
+    private bool _isBusy;
+    private int _currentProgress;
+    private int _totalProgress;
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => this.RaiseAndSetIfChanged(ref _isBusy, value);
+    }
+
+    public int CurrentProgress
+    {
+        get => _currentProgress;
+        set => this.RaiseAndSetIfChanged(ref _currentProgress, value);
+    }
+
+    public int TotalProgress
+    {
+        get => _totalProgress;
+        set => this.RaiseAndSetIfChanged(ref _totalProgress, value);
+    }
 
     public INavigationTarget? CurrentPage
     {
@@ -35,6 +49,9 @@ public class MainWindowViewModel : ViewModelBase
         get => _currentMenuItem;
         set => this.RaiseAndSetIfChanged(ref _currentMenuItem, value);
     }
+
+    public ReactiveCommand<string, Unit> SortOrderCommand { get; set;  }
+    public ReactiveCommand<string, Unit> SortByCommand { get; set; }
 
     public MainWindowViewModel()
     {
@@ -64,6 +81,20 @@ public class MainWindowViewModel : ViewModelBase
 
         PropertyChanged += OnPropertyChanged;
 
+        SortByCommand = ReactiveCommand.Create<string, Unit>(SortBy);
+        SortOrderCommand = ReactiveCommand.Create<string, Unit>(SortOrder);
+    }
+
+    private Unit SortBy(string parameter)
+    {
+        ServiceLocator.SearchManager.SetSortBy(parameter);
+        return Unit.Default;
+    }
+
+    private Unit SortOrder(string parameter)
+    {
+        ServiceLocator.SearchManager.SetSortOrder(parameter);
+        return Unit.Default;
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)

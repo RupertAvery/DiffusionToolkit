@@ -49,4 +49,5 @@ public class Image
 public class ImageView : Image
 {
     public int AlbumCount { get; set; }
+    public string Size => $"{Width}x{Height}";
 }

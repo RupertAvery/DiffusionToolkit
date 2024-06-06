@@ -45,6 +45,8 @@ public class ThumbnailViewModel : ViewModelBase, IDisposable
         set => this.RaiseAndSetIfChanged(ref _forDeletion , value);
     }
 
+    public bool IsLoaded { get; set; }
+
     public void Dispose()
     {
         _thumbnailImage?.Dispose();

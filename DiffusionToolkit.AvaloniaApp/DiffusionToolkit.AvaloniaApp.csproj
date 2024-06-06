@@ -3,12 +3,33 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
+	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
 
+  
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
+    <CFBundleName>DiffusionToolkit</CFBundleName>
+    <!-- Also defines .app file name -->
+    <CFBundleDisplayName>Diffusion Toolkit</CFBundleDisplayName>
+    <CFBundleIdentifier>com.endersoft.DiffusionToolkit</CFBundleIdentifier>
+    <CFBundleVersion>1.0.0</CFBundleVersion>
+    <CFBundlePackageType>APPL</CFBundlePackageType>
+    <CFBundleExecutable>DiffusionToolkit.AvaloniaApp</CFBundleExecutable>
+	<CFBundleShortVersionString>1.0.0
+	</CFBundleShortVersionString>
+    <!--<CFBundleIconFile>AppName.icns</CFBundleIconFile>-->
+    <!-- Will be copied from output directory -->
+    <NSPrincipalClass>NSApplication</NSPrincipalClass>
+    <NSHighResolutionCapable>true</NSHighResolutionCapable>
+  </PropertyGroup>
+
+
+
   <ItemGroup>
+    <PackageReference Condition="'$(RuntimeIdentifier)' == 'osx-x64'" Include="Dotnet.Bundle" Version="*" />
     <PackageReference Include="Avalonia" Version="11.0.10" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.10" />
@@ -16,6 +37,7 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.10" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
+    <PackageReference Include="XmpCore" Version="6.1.10.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,11 +45,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
     <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Controls\Metadata\MetaDataControl.axaml.cs">
+      <DependentUpon>MetadataControl.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Pages\Search\SearchPage.axaml.cs">
       <DependentUpon>SearchPage.axaml</DependentUpon>
     </Compile>
@@ -37,5 +63,11 @@
     <Compile Update="PreviewWindow.axaml.cs">
       <DependentUpon>PreviewWindow.axaml</DependentUpon>
     </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="runme-osx.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

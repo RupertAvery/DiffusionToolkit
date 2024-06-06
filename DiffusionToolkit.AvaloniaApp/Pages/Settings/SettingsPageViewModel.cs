@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Avalonia.Controls;
-using Avalonia.Platform.Storage;
 using DiffusionToolkit.AvaloniaApp.ViewModels;
 using ReactiveUI;
 
@@ -58,8 +56,10 @@ public class SettingsPageViewModel : ViewModelBase
 
     public ICommand AddIncludedFolderCommand { get; set; }
     public ICommand RemoveIncludedFolderCommand { get; set; }
+    public ICommand AddExcludedFolderCommand { get; set; }
+    public ICommand RemoveExcludedFolderCommand { get; set; }
 
-    public Func<Task<string>> SelectFolder { get; set; }
+    public Func<Task<string>> SelectFolderDelegate { get; set; }
 
     public bool IsRescanRequired { get; private set; }
 
@@ -82,6 +82,8 @@ public class SettingsPageViewModel : ViewModelBase
 
         AddIncludedFolderCommand = ReactiveCommand.Create(AddIncludedFolder);
         RemoveIncludedFolderCommand = ReactiveCommand.Create(RemoveIncludedFolder);
+        AddExcludedFolderCommand = ReactiveCommand.Create(AddExcludedFolder);
+        RemoveExcludedFolderCommand = ReactiveCommand.Create(RemoveExcludedFolder);
 
         IncludedFolders = new ObservableCollection<string>();
         ExcludedFolders = new ObservableCollection<string>();
@@ -90,7 +92,7 @@ public class SettingsPageViewModel : ViewModelBase
 
     private async void AddIncludedFolder()
     {
-        var folder = await SelectFolder();
+        var folder = await SelectFolderDelegate();
         if (folder != null)
         {
             IncludedFolders.Add(folder);
@@ -106,7 +108,7 @@ public class SettingsPageViewModel : ViewModelBase
 
     private async void AddExcludedFolder()
     {
-        var folder = await SelectFolder();
+        var folder = await SelectFolderDelegate();
         if (folder != null)
         {
             ExcludedFolders.Add(folder);
@@ -119,4 +121,13 @@ public class SettingsPageViewModel : ViewModelBase
         ExcludedFolders.Remove(SelectedExcludedFolder);
         IsRescanRequired = true;
     }
+
+    public void LoadSettings(AvaloniaApp.Settings settings)
+    {
+        this.ExcludedFolders = new ObservableCollection<string>(settings.ExcludedFolders ?? new List<string>());
+        this.IncludedFolders = new ObservableCollection<string>(settings.IncludedFolders ?? new List<string>());
+        this.RecurseFolders = settings.RecurseFolders;
+        //this.HideNSFW = settings.HideNSFW;
+    }
+
 }

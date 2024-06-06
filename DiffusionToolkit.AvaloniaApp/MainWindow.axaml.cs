@@ -4,41 +4,13 @@ using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.ViewModels;
 using System;
-using System.Collections.Generic;
 using System.IO;
+using Avalonia;
+using Avalonia.Threading;
 using Diffusion.Common;
 
 namespace DiffusionToolkit.AvaloniaApp
 {
-    public static class AppInfo
-    {
-        private const string AppName = "DiffusionToolkit";
-        public static string AppDir { get; }
-        public static SemanticVersion Version => SemanticVersionHelper.GetLocalVersion();
-        public static string AppDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DiffusionToolkit");
-
-
-        static AppInfo()
-        {
-            AppDir = AppDomain.CurrentDomain.BaseDirectory;
-
-            if (AppDir.EndsWith("\\"))
-            {
-                AppDir = AppDir.Substring(0, AppDir.Length - 1);
-            }
-        }
-
-
-    }
-
-    public class Settings
-    {
-        public IEnumerable<string> IncludedFolders { get; set; }
-        public IEnumerable<string> ExcludedFolders { get; set; }
-        public int IconSize { get; set; } = 256;
-        public bool HideNSFW { get; set; } = true;
-    }
-
     public partial class MainWindow : Window
     {
         private MainWindowViewModel _viewModel;
@@ -63,7 +35,7 @@ namespace DiffusionToolkit.AvaloniaApp
         {
             base.OnLoaded(e);
 
-            var configFile = Path.Combine(AppInfo.AppDir, "settings.json");
+            var configFile = Path.Combine(AppInfo.AppDataPath, "settings-xp.json");
 
             _configuration = new Configuration<Settings>(configFile);
 
@@ -83,10 +55,16 @@ namespace DiffusionToolkit.AvaloniaApp
             // DataStore needs to be created and set before any of the controls/pages are created because of the
             // ServiceLocator pattern
 
-            var path = Path.Combine(AppInfo.AppDataPath, "diffusion-toolkit.db");
+            var appPath = AppInfo.AppDir;
 
+            var databasePath = Path.Combine(AppInfo.AppDataPath, "diffusion-toolkit.db");
+            var extensionsPath = Path.Combine(AppInfo.AppDir, "extensions");
+            var altExtensionsPath = Path.Combine(AppInfo.AppDataPath, "extensions");
 
-            var dataStore = new DataStore(path);
+            Logger.Log($"App path: {appPath}");
+            Logger.Log($"Database path: {databasePath}");
+
+            var dataStore = new DataStore(databasePath, extensionsPath, altExtensionsPath);
             dataStore.BeforeMigrate += DataStoreOnBeforeMigrate;
             dataStore.AfterMigrate += DataStoreOnAfterMigrate;
 
@@ -97,10 +75,33 @@ namespace DiffusionToolkit.AvaloniaApp
             _navigationManager = ServiceLocator.NavigationManager;
             _scanManager = ServiceLocator.ScanManager;
 
+            _scanManager.ScanStart += OnScanStart;
             _scanManager.ScanProgress += OnScanProgress;
+            _scanManager.ScanEnd += OnScanEnd;
+
+            ServiceLocator.PreviewManager.SetOwner(this);
 
             _viewModel = new MainWindowViewModel();
             DataContext = _viewModel;
+        }
+
+        private void OnScanEnd(object? sender, EventArgs e)
+        {
+            Dispatcher.UIThread.Post(() => { _viewModel.IsBusy = false; });
+        }
+
+        private void OnScanStart(object? sender, EventArgs e)
+        {
+            Dispatcher.UIThread.Post(() => { _viewModel.IsBusy = true; });
+        }
+
+        private void OnScanProgress(object? sender, ScanProgressEventArgs e)
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _viewModel.CurrentProgress = e.Progress;
+                _viewModel.TotalProgress = e.Total;
+            });
         }
 
         private void DataStoreOnAfterMigrate(object? sender, MigrationEventArgs e)
@@ -112,9 +113,27 @@ namespace DiffusionToolkit.AvaloniaApp
         }
 
 
-        private void OnScanProgress(object? sender, ScanProgressEventArgs e)
+  
+        private void Control_OnSizeChanged(object? sender, SizeChangedEventArgs e)
         {
 
+        }
+
+        private void AvaloniaObject_OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            if (e.Property.Name == nameof(Window.WindowState))
+            {
+                if (this.WindowState == WindowState.Maximized)
+                {
+                    Border mainBorder = MainBorder;
+                    mainBorder.BorderThickness = new Thickness(10);
+                }
+                else if (this.WindowState == WindowState.Normal)
+                {
+                    Border mainBorder = MainBorder;
+                    mainBorder.BorderThickness = new Thickness(0);
+                }
+            }
         }
     }
 }

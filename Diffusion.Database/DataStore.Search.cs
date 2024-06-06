@@ -356,6 +356,17 @@ namespace Diffusion.Database
             db.Close();
         }
 
+        public static string[] SortByOptions = new string[]
+        {
+            "Date Created",
+            "Date Modified",
+            "Rating",
+            "Aesthetic Score",
+            "Prompt",
+            "Random",
+            "Name",
+        };
+
         public IEnumerable<ImageView> Search(string? prompt, int pageSize, int offset, string sortBy, string sortDirection)
         {
             using var db = OpenConnection();

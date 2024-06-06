@@ -1,4 +1,6 @@
 ﻿using SQLite;
+using System.Runtime.InteropServices;
+using Diffusion.Common;
 
 namespace Diffusion.Database;
 
@@ -9,6 +11,8 @@ public class MigrationEventArgs
 
 public partial class DataStore
 {
+    private readonly string _extensionsPath;
+    private readonly string _altExtensionsPath;
     public string DatabasePath { get; }
     public bool RescanRequired { get; set; }
 
@@ -20,6 +24,13 @@ public partial class DataStore
 
     public DataStore(string databasePath)
     {
+        DatabasePath = databasePath;
+    }
+
+    public DataStore(string databasePath, string extensionsPath, string altExtensionsPath)
+    {
+        _extensionsPath = extensionsPath;
+        _altExtensionsPath = altExtensionsPath;
         DatabasePath = databasePath;
     }
 
@@ -39,13 +50,42 @@ public partial class DataStore
 
         db.EnableLoadExtension(true);
 
-        if (!File.Exists("extensions\\path0.dll"))
+        var ext = ".dll";
+
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            throw new FileNotFoundException("Failed to load SQLite extensions", "path0.dll");
+            ext = ".dll";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            ext = ".so";
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            ext = ".dylib";
         }
 
-        db.LoadExtension("extensions\\path0.dll");
+        var path = Path.Combine(_extensionsPath, $"path0{ext}");
 
+        if (File.Exists(path))
+        {
+            db.LoadExtension(path);
+        }
+        else
+        {
+            Logger.Log($"Failed to load SQLite extension {path}... Checking alternate path...");
+            path = Path.Combine(_altExtensionsPath, $"path0{ext}");
+
+            if (File.Exists(path))
+            {
+                db.LoadExtension(path);
+            }
+            else
+            {
+                Logger.Log($"Failed to load SQLite extension {path}... aborting! Errors may occur in the database!");
+            }
+        }
 
         var migrations = new Migrations(db);
 
@@ -188,7 +228,7 @@ public partial class DataStore
         File.Copy(DatabasePath, Path.Combine(path, backupFilename));
     }
 
-    public  bool TryRestoreBackup(string path)
+    public bool TryRestoreBackup(string path)
     {
         try
         {

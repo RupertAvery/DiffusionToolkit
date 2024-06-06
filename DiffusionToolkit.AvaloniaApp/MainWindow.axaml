@@ -3,36 +3,79 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:DiffusionToolkit.AvaloniaApp.ViewModels"
-        xmlns:thumbnail="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Thumbnail"
-        xmlns:search="clr-namespace:DiffusionToolkit.AvaloniaApp.Pages.Search"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="DiffusionToolkit.AvaloniaApp.MainWindow"
+        ExtendClientAreaToDecorationsHint="True"
+        SizeChanged="Control_OnSizeChanged"
+        PropertyChanged="AvaloniaObject_OnPropertyChanged"
         Title="DiffusionToolkit.AvaloniaApp">
-  <Window.Resources>
-    <StreamGeometry x:Key="search_regular">M11.5,2.75 C16.3324916,2.75 20.25,6.66750844 20.25,11.5 C20.25,13.6461673 19.4773285,15.6118676 18.1949905,17.1340957 L25.0303301,23.9696699 C25.3232233,24.2625631 25.3232233,24.7374369 25.0303301,25.0303301 C24.7640635,25.2965966 24.3473998,25.3208027 24.0537883,25.1029482 L23.9696699,25.0303301 L17.1340957,18.1949905 C15.6118676,19.4773285 13.6461673,20.25 11.5,20.25 C6.66750844,20.25 2.75,16.3324916 2.75,11.5 C2.75,6.66750844 6.66750844,2.75 11.5,2.75 Z M11.5,4.25 C7.49593556,4.25 4.25,7.49593556 4.25,11.5 C4.25,15.5040644 7.49593556,18.75 11.5,18.75 C15.5040644,18.75 18.75,15.5040644 18.75,11.5 C18.75,7.49593556 15.5040644,4.25 11.5,4.25 Z</StreamGeometry>
-  </Window.Resources>
-
   <Design.DataContext>
     <viewModels:MainWindowViewModel/>
   </Design.DataContext>
   <!--
           ExtendClientAreaChromeHints="NoChrome" 
-        ExtendClientAreaToDecorationsHint="True"
   -->
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="50"/>
-      <ColumnDefinition/>
-    </Grid.ColumnDefinitions>
-    <ListBox
-        ItemsSource="{Binding NavigationMenuItems}"
-        SelectedItem="{Binding CurrentMenuItem}">
-      <ListBox.ItemTemplate>
-        <DataTemplate>
-            <PathIcon Height="30" Width="30" Data="{Binding Icon}"></PathIcon>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-    <ContentControl Grid.Column="1" Content="{Binding CurrentPage}"></ContentControl>
-  </Grid>
+  <Border x:Name="MainBorder">
+    <Grid RowDefinitions="40,2,*">
+      <Grid ColumnDefinitions="*,Auto,*">
+        <StackPanel Orientation="Horizontal">
+          <Border Margin="5" Background="#80383838" Padding="10,2,10,2" CornerRadius="5" BorderBrush="#FFFFFF" BorderThickness="1" Width="150">
+            <StackPanel Orientation="Horizontal">
+              <PathIcon Height="16" Width="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M11.5,2.75 C16.3324916,2.75 20.25,6.66750844 20.25,11.5 C20.25,13.6461673 19.4773285,15.6118676 18.1949905,17.1340957 L25.0303301,23.9696699 C25.3232233,24.2625631 25.3232233,24.7374369 25.0303301,25.0303301 C24.7640635,25.2965966 24.3473998,25.3208027 24.0537883,25.1029482 L23.9696699,25.0303301 L17.1340957,18.1949905 C15.6118676,19.4773285 13.6461673,20.25 11.5,20.25 C6.66750844,20.25 2.75,16.3324916 2.75,11.5 C2.75,6.66750844 6.66750844,2.75 11.5,2.75 Z M11.5,4.25 C7.49593556,4.25 4.25,7.49593556 4.25,11.5 C4.25,15.5040644 7.49593556,18.75 11.5,18.75 C15.5040644,18.75 18.75,15.5040644 18.75,11.5 C18.75,7.49593556 15.5040644,4.25 11.5,4.25 Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+              <Label Margin="10,0,0,0" FontSize="12" Foreground="#80FFFFFF" VerticalContentAlignment="Center">Search</Label>
+            </StackPanel>
+          </Border>
+          <Button Height="32" Width="42" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+            <Button.Content>
+              <PathIcon Width="16" Height="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M2.21978635,9.9670294 L7.96978635,4.2195535 L8.055,4.146 L8.11269139,4.10760235 L8.11269139,4.10760235 L8.18503989,4.06911416 L8.18503989,4.06911416 L8.28978911,4.02991567 L8.28978911,4.02991567 L8.39481013,4.00736963 L8.39481013,4.00736963 L8.4470348,4.00185057 L8.5,4 L8.55711621,4.00214234 L8.55711621,4.00214234 L8.64909717,4.01488655 L8.64909717,4.01488655 L8.75557218,4.04469887 L8.75557218,4.04469887 L8.84123664,4.08190061 L8.84123664,4.08190061 L8.89515395,4.11241606 L8.95830264,4.15627192 L8.95830264,4.15627192 L9.03021365,4.2195535 L14.7802136,9.9670294 C15.0731712,10.2598583 15.0732754,10.734732 14.7804465,11.0276895 C14.5142384,11.2940146 14.09758,11.3183121 13.8039207,11.1005221 L13.7197864,11.0279224 L9.24961357,6.55955034 L9.25,23.25 C9.25,23.6642136 8.91421356,24 8.5,24 C8.12030423,24 7.80650904,23.7178461 7.75684662,23.3517706 L7.75,23.25 L7.74961357,6.55955034 L3.28021365,11.0279224 C3.01388864,11.2941305 2.59721965,11.3182451 2.30365599,11.1003262 L2.2195535,11.0276895 C1.9533454,10.7613645 1.92923082,10.3446956 2.14714973,10.0511319 L2.21978635,9.9670294 Z M19.5,4 C19.8796958,4 20.193491,4.28215388 20.2431534,4.64822944 L20.25,4.75 L20.25,21.437 L24.7197864,16.9695535 L24.8039207,16.8969538 C25.09758,16.6791638 25.5142384,16.7034613 25.7804465,16.9697864 C26.0466546,17.2361114 26.0707692,17.6527804 25.8528503,17.946344 L25.7802136,18.0304465 L20.0524657,23.7572356 C19.9153796,23.9064669 19.7186127,24 19.5,24 C19.3178227,24 19.1508162,23.9350465 19.0208756,23.8270346 L18.9475343,23.7572356 L13.2197864,18.0304465 L13.1471497,17.946344 C12.953444,17.6853985 12.9509747,17.3271847 13.1397838,17.0637545 L13.2195535,16.9697864 L13.303656,16.8971497 C13.5646015,16.703444 13.9228153,16.7009747 14.1862455,16.8897838 L14.2802136,16.9695535 L18.75,21.439 L18.75,4.75 L18.7568466,4.64822944 C18.806509,4.28215388 19.1203042,4 19.5,4 Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+            </Button.Content>
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="Date Created" Command="{Binding SortByCommand}" CommandParameter="Date Modified"></MenuItem>
+                  <MenuItem Header="Date Modified" Command="{Binding SortByCommand}" CommandParameter="Date Modified"></MenuItem>
+                  <MenuItem Header="Rating" Command="{Binding SortByCommand}" CommandParameter="Rating"></MenuItem>
+                  <MenuItem Header="Aesthetic Score" Command="{Binding SortByCommand}" CommandParameter="Aesthetic Score"></MenuItem>
+                  <MenuItem Header="Prompt" Command="{Binding SortByCommand}" CommandParameter="Prompt"></MenuItem>
+                  <MenuItem Header="Random" Command="{Binding SortByCommand}" CommandParameter="Random"></MenuItem>
+                  <MenuItem Header="Name" Command="{Binding SortByCommand}" CommandParameter="Name"></MenuItem>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+          <Button  Height="32" Width="42" Content="A-Z" FontSize="12"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="A-Z" Command="{Binding SortOrderCommand}" CommandParameter="A-Z"></MenuItem>
+                <MenuItem Header="Z-A" Command="{Binding SortOrderCommand}" CommandParameter="Z-A"></MenuItem>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+        </StackPanel>
+        <Label IsHitTestVisible="False" Grid.Column="1" VerticalContentAlignment="Center">Diffusion Toolkit</Label>
+      </Grid>
+      <Grid Row="1">
+        <ProgressBar IsVisible="{Binding IsBusy}" HorizontalAlignment="Stretch" Value="{Binding CurrentProgress}" Maximum="{Binding TotalProgress}"></ProgressBar>
+      </Grid>
+      <Grid Row="2" ColumnDefinitions="50,*">
+        <ListBox
+            ItemsSource="{Binding NavigationMenuItems}"
+            SelectedItem="{Binding CurrentMenuItem, Mode=TwoWay}">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <PathIcon Height="30" Width="30" Data="{Binding Icon}"></PathIcon>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <ContentControl Grid.Column="1" Content="{Binding CurrentPage}"></ContentControl>
+      </Grid>
+    </Grid>
+  </Border>
+
 </Window>

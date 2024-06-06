@@ -1,13 +1,16 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using DiffusionToolkit.AvaloniaApp.Common;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DiffusionToolkit.AvaloniaApp.Pages.Settings;
 
@@ -23,7 +26,14 @@ public partial class SettingsPage : UserControl, INavigationTarget
         InitializeComponent();
         DataContext = _viewModel;
 
-        _viewModel.SelectFolder = SelectFolder;
+        Loaded += OnLoaded;
+
+        _viewModel.SelectFolderDelegate = SelectFolder;
+    }
+
+    private void OnLoaded(object? sender, RoutedEventArgs e)
+    {
+        _viewModel.LoadSettings(ServiceLocator.Settings);
     }
 
     private async Task<string> SelectFolder()
@@ -35,13 +45,28 @@ public partial class SettingsPage : UserControl, INavigationTarget
         var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
         {
             Title = "Select Folder File",
-            AllowMultiple = false
+            AllowMultiple = false,
         });
 
         if (folders != null)
         {
             var folder = folders.First();
-            return folder.Path.AbsolutePath;
+            var path = folder.Path.LocalPath;
+
+            return path;
+
+            //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            //{
+            //    return path.Replace("/", "\\").Replace("%20", " ");
+            //}
+            //else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            //{
+            //    return path.Replace("%20", " ");
+            //}
+            //else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            //{
+            //    return path.Replace("%20", " ");
+            //}
         }
 
         return null;
@@ -49,13 +74,24 @@ public partial class SettingsPage : UserControl, INavigationTarget
 
     public void Activate()
     {
+
     }
 
     public void Deactivate()
     {
+        ServiceLocator.SetSettings(new AvaloniaApp.Settings()
+        {
+            IncludedFolders = _viewModel.IncludedFolders,
+            ExcludedFolders = _viewModel.ExcludedFolders,
+            RecurseFolders = _viewModel.RecurseFolders
+        });
+
         if (_viewModel.IsRescanRequired)
         {
-            _ = _scanManager.ScanFolders(_viewModel.IncludedFolders, _viewModel.ExcludedFolders, _viewModel.RecurseFolders);
+            Task.Run(() =>
+            {
+                _scanManager.ScanFolders(_viewModel.IncludedFolders, _viewModel.ExcludedFolders, _viewModel.RecurseFolders);
+            });
         }
     }
 }

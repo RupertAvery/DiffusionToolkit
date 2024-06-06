@@ -3,8 +3,13 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:thumbnail="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Thumbnail"
+             xmlns:search="clr-namespace:DiffusionToolkit.AvaloniaApp.Pages.Search"
+             xmlns:metadata="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Metadata"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="DiffusionToolkit.AvaloniaApp.Pages.Search.SearchPage">
+  <Design.DataContext>
+    <search:SearchPageViewModel></search:SearchPageViewModel>
+  </Design.DataContext>
   <Grid ColumnDefinitions="300,5,*,5,*">
     <StackPanel Orientation="Vertical">
       <Expander VerticalAlignment="Top" HorizontalAlignment="Stretch">
@@ -29,16 +34,23 @@
         </TextBox>
         <thumbnail:ThumbnailControl
             KeyDown="Thumbnail_OnKeyDown"
+            DoubleTapped="InputElement_OnDoubleTapped"
+            NavigationChanged="ThumbnailControl_OnNavigationChanged"
             Grid.Row="1"
             Thumbnails="{Binding SearchResults}"
-            CurrentItem="{Binding SelectedEntry}"
+            CurrentItem="{Binding SelectedEntry, Mode=TwoWay}"
                 ></thumbnail:ThumbnailControl>
-        <Grid Grid.Row="2">
-          <StackPanel Orientation="Horizontal">
+        <Grid Grid.Row="2" Margin="2,2,2,2">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="1" Orientation="Horizontal">
             <Button Command="{Binding GotoStart}">Start</Button>
             <Button Command="{Binding GotoPrev}">Prev</Button>
-            <TextBox Text="{Binding Page}"></TextBox>
-            <Label Content="{Binding Pages}"></Label>
+            <TextBox Text="{Binding Page}" HorizontalContentAlignment="Center" KeyDown="Page_OnKeyDown"></TextBox>
+            <Label Width="10" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">/</Label>
+            <Label Width="50" Content="{Binding Pages}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Label>
             <Button Command="{Binding GotoNext}">Next</Button>
             <Button Command="{Binding GotoEnd}">End</Button>
           </StackPanel>
@@ -46,22 +58,20 @@
       </Grid>
     </Grid>
     <GridSplitter Background="Black" Grid.Column="3" ResizeDirection="Columns"></GridSplitter>
-    <Grid Background="Black" Grid.Column="4">
-      <Image
-          Stretch="Uniform"
-          Source="{Binding PreviewImage}"/>
-      <Grid Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
-        <ScrollViewer>
-          <StackPanel Margin="5">
-            <Label Background="#000030" Padding="4" FontSize="12">PROMPT</Label>
-            <SelectableTextBlock Margin="15" Text="{Binding Metadata.Prompt}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
-            <Label Background="#000030" Padding="4" FontSize="12">NEGATIVE PROMPT</Label>
-            <SelectableTextBlock Margin="15" Text="{Binding Metadata.NegativePrompt}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
-            <Label Background="#000030" Padding="4" FontSize="12">PATH</Label>
-            <SelectableTextBlock Margin="15" Text="{Binding Metadata.Path}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
-          </StackPanel>
-        </ScrollViewer>
+    <Grid Background="Black" Grid.Column="4" RowDefinitions="*,5,*">
+      <Panel Grid.Row="0">
+        <Image
+            Stretch="Uniform"
+            Source="{Binding PreviewImage}"/>
+      </Panel>
+      <GridSplitter Background="Black" Grid.Row="1" ResizeDirection="Rows"></GridSplitter>
+      <Grid Grid.Row="2">
+          <metadata:MetadataControl Metadata="{Binding Metadata}"></metadata:MetadataControl>
       </Grid>
+      <Grid Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
+        <metadata:MetadataControl Metadata="{Binding Metadata}"></metadata:MetadataControl>
+      </Grid>
+
     </Grid>
   </Grid>
 </UserControl>

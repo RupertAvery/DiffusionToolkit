@@ -11,12 +11,29 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
 
 namespace DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
+
+public enum NavigationState
+{
+    StartOfPage,
+    EndOfPage,
+}
+
+public class NavigationEventArgs : RoutedEventArgs
+{
+    public NavigationEventArgs()
+    {
+        RoutedEvent = ThumbnailControl.NavigationChangedEvent;
+    }
+    public NavigationState NavigationState { get; set; }
+}
 
 public partial class ThumbnailControl : UserControl
 {
@@ -47,12 +64,27 @@ public partial class ThumbnailControl : UserControl
     public static readonly DirectProperty<ThumbnailControl, ThumbnailViewModel?> CurrentItemProperty =
         AvaloniaProperty.RegisterDirect<ThumbnailControl, ThumbnailViewModel?>(nameof(CurrentItem),
             o => o.CurrentItem,
-            (o, v) => o.CurrentItem = v,
+            (o, v) =>
+            {
+                if (o.CurrentItem != null)
+                {
+                    o.CurrentItem.IsCurrent = false;
+                }
+                o.CurrentItem = v;
+                if (o.CurrentItem != null)
+                {
+                    o.CurrentItem.IsCurrent = true;
+                }
+            },
             null,
             BindingMode.TwoWay);
 
     public static readonly RoutedEvent<RoutedEventArgs> CurrentItemChangedEvent =
         RoutedEvent.Register<ThumbnailControl, RoutedEventArgs>(nameof(CurrentItemChanged), RoutingStrategies.Direct);
+
+    public static readonly RoutedEvent<NavigationEventArgs> NavigationChangedEvent =
+        RoutedEvent.Register<ThumbnailControl, NavigationEventArgs>(nameof(NavigationChanged), RoutingStrategies.Direct);
+
 
     public int ThumbnailSize
     {
@@ -70,6 +102,12 @@ public partial class ThumbnailControl : UserControl
     {
         add => AddHandler(CurrentItemChangedEvent, value);
         remove => RemoveHandler(CurrentItemChangedEvent, value);
+    }
+
+    public event EventHandler<NavigationEventArgs> NavigationChanged
+    {
+        add => AddHandler(NavigationChangedEvent, value);
+        remove => RemoveHandler(NavigationChangedEvent, value);
     }
 
     protected virtual void OnCurrentItemChanged()
@@ -98,15 +136,84 @@ public partial class ThumbnailControl : UserControl
 
     private ThumbnailViewModel? _anchorItem;
     private ThumbnailViewModel? _currentItem;
-
-
-
+    private ThumbnailNavigationManager _thumbnailNavigationManager;
     public ThumbnailControl()
     {
         InitializeComponent();
+
+        _thumbnailNavigationManager = ServiceLocator.ThumbnailNavigationManager;
+        _thumbnailNavigationManager.Next += OnNext;
+        _thumbnailNavigationManager.Previous += OnPrevious;
+
+        Loaded += OnLoaded;
+
+
         PropertyChanged += OnPropertyChanged;
         SizeChanged += ThumbnailControl_SizeChanged;
         _dataStore = ServiceLocator.DataStore;
+    }
+
+    private void OnPrevious(object? sender, EventArgs e)
+    {
+        InputElement_OnKeyDown(this, new KeyEventArgs() { Key = Key.Left });
+    }
+
+    private void OnNext(object? sender, EventArgs e)
+    {
+        InputElement_OnKeyDown(this, new KeyEventArgs() { Key = Key.Right });
+    }
+
+    private void OnLoaded(object? sender, RoutedEventArgs e)
+    {
+        var scrollViewer = ItemsScrollViewer;
+        scrollViewer.ScrollChanged += ScrollViewerOnScrollChanged;
+    }
+
+    private void ScrollViewerOnScrollChanged(object? sender, ScrollChangedEventArgs e)
+    {
+        RedrawThumbnails();
+    }
+
+    private void RedrawThumbnails()
+    {
+        var scrollViewer = ItemsScrollViewer;
+        ItemsControl itemsControl = ThumbnailItemsControl;
+
+        // Get the bounds of the ScrollViewer's viewport
+        var viewportBounds = new Rect(scrollViewer.Offset.X, scrollViewer.Offset.Y, scrollViewer.Viewport.Width, scrollViewer.Viewport.Height);
+
+        var wrapPanel = FindVisualChild<WrapPanel>(itemsControl);
+
+        var items = wrapPanel.GetVisualChildren();
+        foreach (var item in items)
+        {
+            var intersects = viewportBounds.Intersects(item.Bounds);
+            if (intersects)
+            {
+                if (item.DataContext is ThumbnailViewModel { IsLoaded: false } thumbnail)
+                {
+                    Task.Run(() => LoadThumbnail(thumbnail));
+                }
+            }
+        }
+    }
+
+    private T? FindVisualChild<T>(Visual control)
+    {
+        if (control == null)
+            return default(T);
+
+        if (control is T visualChild)
+            return visualChild;
+
+        foreach (var child in control.GetVisualChildren())
+        {
+            var result = FindVisualChild<T>(child);
+            if (result != null)
+                return result;
+        }
+
+        return default(T);
     }
 
 
@@ -118,24 +225,37 @@ public partial class ThumbnailControl : UserControl
 
     private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property.Name == nameof(Thumbnails))
+        switch (e.Property.Name)
         {
-            if (Thumbnails != null)
+            case nameof(Thumbnails):
             {
-                LoadThumbnails();
-                Dispatcher.UIThread.Post(() =>
+                if (Thumbnails != null)
                 {
-                    SetCurrent(Thumbnails[0], true);
-                });
+                    Deselect();
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        RedrawThumbnails();
+                    });
+                }
+
+                break;
             }
-        }
-        if (e.Property.Name == nameof(ThumbnailSize))
-        {
-            if (Thumbnails != null)
+            case nameof(ThumbnailSize):
             {
-                UnloadThumbnails();
-                LoadThumbnails();
+                if (Thumbnails != null)
+                {
+                    UnloadThumbnails();
+                    RedrawThumbnails();
+                }
+
+                break;
             }
+            case nameof(CurrentItem):
+                if (CurrentItem != null)
+                {
+                    ThumbnailItemsControl.ScrollIntoView(CurrentItem);
+                }
+                break;
         }
     }
 
@@ -157,29 +277,33 @@ public partial class ThumbnailControl : UserControl
         _cancellationTokenSource = new CancellationTokenSource();
     }
 
-    public void LoadThumbnails()
-    {
-        Task.Run(() =>
-        {
-            if (Thumbnails != null)
-            {
-                foreach (var thumbnail in Thumbnails)
-                {
-                    if (_cancellationTokenSource.Token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-                    LoadThumbnail(thumbnail);
-                }
-            }
-        }, _cancellationTokenSource.Token);
-    }
+    //public void LoadThumbnails()
+    //{
+    //    Task.Run(() =>
+    //    {
+    //        if (Thumbnails != null)
+    //        {
+    //            foreach (var thumbnail in Thumbnails)
+    //            {
+    //                if (_cancellationTokenSource.Token.IsCancellationRequested)
+    //                {
+    //                    break;
+    //                }
+    //                LoadThumbnail(thumbnail);
+    //            }
+    //        }
+    //    }, _cancellationTokenSource.Token);
+    //}
 
 
     public void LoadThumbnail(ThumbnailViewModel thumbnail)
     {
-        using var stream = File.Open(thumbnail.Path, FileMode.Open, FileAccess.Read);
-        thumbnail.ThumbnailImage = Bitmap.DecodeToWidth(stream, ThumbnailSize);
+        Dispatcher.UIThread.Post(() =>
+        {
+            using var stream = File.Open(thumbnail.Path, FileMode.Open, FileAccess.Read);
+            thumbnail.ThumbnailImage = Bitmap.DecodeToWidth(stream, ThumbnailSize);
+            thumbnail.IsLoaded = true;
+        });
     }
 
     private void Deselect()
@@ -280,6 +404,15 @@ public partial class ThumbnailControl : UserControl
 
                     }
 
+                    if (index == -1)
+                    {
+                        RaiseEvent(new NavigationEventArgs() { NavigationState = NavigationState.StartOfPage });
+                    }
+                    if (index == Thumbnails.Count)
+                    {
+                        RaiseEvent(new NavigationEventArgs() { NavigationState = NavigationState.EndOfPage });
+                    }
+
                     index = Math.Clamp(index, 0, Thumbnails.Count - 1);
 
                     if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
@@ -306,7 +439,12 @@ public partial class ThumbnailControl : UserControl
             var start = Thumbnails.IndexOf(_anchorItem);
             var end = Thumbnails.IndexOf(thumbnail);
 
-            for (var i = start; i != end; i += Math.Sign(end - start))
+            if (start > end)
+            {
+                (start, end) = (end, start);
+            }
+
+            for (var i = start; i <= end; i++)
             {
                 Thumbnails[i].IsSelected = true;
             }
@@ -318,9 +456,11 @@ public partial class ThumbnailControl : UserControl
 
     }
 
+    private Point lastPoint;
+
     private void Thumbnail_OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
-        if (sender is Panel { DataContext: ThumbnailViewModel thumbnail })
+        if (sender is Panel { DataContext: ThumbnailViewModel thumbnail } panel)
         {
             if ((e.KeyModifiers & KeyModifiers.Control) != 0)
             {
@@ -337,23 +477,18 @@ public partial class ThumbnailControl : UserControl
             }
             else
             {
-                foreach (var item in Thumbnails)
-                {
-                    item.IsSelected = false;
-                }
 
-                _anchorItem = thumbnail;
+
             }
 
             SetCurrent(thumbnail, true);
-
+            _isMouseDown = true;
+            lastPoint = e.GetPosition(panel);
         }
     }
 
-    private void AddToSelection(ThumbnailViewModel thumbnail)
-    {
-        thumbnail.IsSelected = true;
-    }
+    private bool _isMouseDown = false;
+    private bool _isDragging = false;
 
     private void SetCurrent(ThumbnailViewModel thumbnail, bool scrollIntoView = false)
     {
@@ -362,9 +497,52 @@ public partial class ThumbnailControl : UserControl
         CurrentItem = thumbnail;
         CurrentItem.IsCurrent = true;
 
-        if (scrollIntoView)
+        //if (scrollIntoView)
+        //{
+        //    ThumbnailItemsControl.ScrollIntoView(thumbnail);
+        //}
+    }
+
+    private async void InputElement_OnPointerMoved(object? sender, PointerEventArgs e)
+    {
+
+        if (_isMouseDown && !_isDragging)
         {
-            ThumbnailItemsControl.ScrollIntoView(thumbnail);
+
+            if (sender is Panel panel)
+            {
+                var thisPoint = e.GetPosition(panel);
+
+                var distance = thisPoint - lastPoint;
+
+                if (Math.Abs(distance.X) > 5 || Math.Abs(distance.Y) > 5)
+                {
+                    _isDragging = true;
+
+                    var selectedItems = Thumbnails.Where(t => t.IsSelected || t.IsCurrent).Select(t => t.Path.Replace("\\", "/")).ToArray();
+
+                    DataObject dataObject = new DataObject();
+                    //dataObject.Set("FileDrop", selectedItems);
+                    dataObject.Set(DataFormats.Files, selectedItems);
+                    dataObject.Set("DTCustomDragSource", true);
+
+                    await DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
+                }
+            }
+
+
         }
+    }
+
+    private void InputElement_OnPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (!_isDragging && ((e.KeyModifiers & KeyModifiers.Control) == 0 && (e.KeyModifiers & KeyModifiers.Shift) == 0))
+        {
+            Deselect();
+            _anchorItem = CurrentItem;
+        }
+
+        _isMouseDown = false;
+        _isDragging = false;
     }
 }

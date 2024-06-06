@@ -16,7 +16,7 @@ public class FileParameters
     public int BatchSize { get; set; }
     public int BatchPos { get; set; }
     public string? OtherParameters { get; set; }
-    public string Parameters { get; set; }
+    //public string Parameters { get; set; }
     public decimal? AestheticScore { get; set; }
     public string? HyperNetwork { get; set; }
     public decimal? HyperNetworkStrength { get; set; }
@@ -25,4 +25,6 @@ public class FileParameters
     public decimal? PromptStrength { get; set; }
     public long FileSize { get; set; }
     public bool NoMetadata { get; set; }
+    public string RawData { get; set; }
+    public DateTime CreatedDate { get; set; }
 }

@@ -33,7 +33,7 @@ public class ScanManager
 
     public CancellationTokenSource? CancellationTokenSource { get; private set; }
 
-    public async Task ScanFolders(IEnumerable<string> includeFolders, IEnumerable<string> excludeFolders, bool recurse)
+    public void ScanFolders(IEnumerable<string> includeFolders, IEnumerable<string> excludeFolders, bool recurse)
     {
         int progress = 0;
         int total = 0;
@@ -47,23 +47,17 @@ public class ScanManager
         var added = 0;
         bool updateImages = false;
 
-        //Dispatcher.Invoke(() =>
-        //{
-        //    _model.Status = GetLocalizedText("Actions.Scanning.BeginScanning");
-        //});
+        ScanStatus?.Invoke(this, GetLocalizedText("Actions.Scanning.BeginScanning"));
 
         try
         {
             var existingImages = _dataStore.GetImagePaths().ToList();
 
-            //Dispatcher.Invoke(() =>
-            //{
-            //    _model.Status = GetLocalizedText("Actions.Scanning.CheckRemoved");
-            //});
+            ScanStatus?.Invoke(this, GetLocalizedText("Actions.Scanning.CheckRemoved"));
 
             var filesToScan = new List<string>();
 
-            //var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
+            var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
 
             foreach (var path in includeFolders)
             {
@@ -74,10 +68,7 @@ public class ScanManager
 
                 if (Directory.Exists(path))
                 {
-                    //Dispatcher.Invoke(() =>
-                    //{
-                    //    _model.Status = gatheringFilesMessage.Replace("{path}", path);
-                    //});
+                    ScanStatus?.Invoke(this, gatheringFilesMessage.Replace("{path}", path));
 
                     var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
@@ -105,16 +96,10 @@ public class ScanManager
         {
             //_model.IsBusy = false;
 
-            //Dispatcher.Invoke(() =>
-            //{
-            //    _model.Status = GetLocalizedText("Actions.Scanning.Completed");
-            //});
+            ScanStatus?.Invoke(this, GetLocalizedText("Actions.Scanning.Completed"));
         }
 
-
         //return added + removed > 0;
-
-
 
         ScanEnd?.Invoke(this, EventArgs.Empty);
     }
@@ -124,17 +109,12 @@ public class ScanManager
     {
         var added = 0;
         var scanned = 0;
-
         //var stopwatch = new Stopwatch();
         //stopwatch.Start();
 
-        var max = filesToScan.Count;
+        var total = filesToScan.Count;
 
-        //Dispatcher.Invoke(() =>
-        //{
-        //    _model.TotalProgress = max;
-        //    _model.CurrentProgress = 0;
-        //});
+        ScanStart?.Invoke(this, EventArgs.Empty);
 
         var folderIdCache = new Dictionary<string, int>();
 
@@ -222,16 +202,11 @@ public class ScanManager
 
             if (scanned % 33 == 0)
             {
-                //Dispatcher.Invoke(() =>
-                //{
-                //    _model.CurrentProgress = scanned;
-
-                //    var text = scanning
-                //        .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
-                //        .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                //    _model.Status = text;
-                //});
+                ScanProgress?.Invoke(this, new ScanProgressEventArgs()
+                {
+                    Progress = scanned,
+                    Total = total
+                });
             }
         }
 
@@ -265,9 +240,6 @@ public class ScanManager
         //stopwatch.Stop();
 
         //var elapsedTime = stopwatch.ElapsedMilliseconds / 1000f;
-
-
-        //return (added, elapsedTime);
     }
 
 

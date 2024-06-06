@@ -12,16 +12,22 @@
     <thumbnail:CurrentConverter x:Key="currentConverter"/>
     <thumbnail:ForDeletionConverter x:Key="forDeletionConverter"/>
   </UserControl.Resources>
-  <ScrollViewer Margin="2,5,0,0">
+  <ScrollViewer x:Name="ItemsScrollViewer" Margin="2,5,0,0">
     <ItemsControl
         x:Name="ThumbnailItemsControl"
         ItemsSource="{Binding #root.Thumbnails}"
-        
         PointerPressed="ItemsControl_OnPointerPressed"
         >
+      <!--<ItemsControl.Template>
+        <ControlTemplate>
+          <ScrollViewer x:Name="ItemsScrollViewer">
+            <ItemsPresenter />
+          </ScrollViewer>
+        </ControlTemplate>
+      </ItemsControl.Template>-->
       <ItemsControl.ItemsPanel>
         <ItemsPanelTemplate>
-          <WrapPanel/>
+          <WrapPanel Name="WrapPanel"/>
         </ItemsPanelTemplate>
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>
@@ -31,6 +37,8 @@
               Width="{Binding #root.ThumbnailSize}"
               Classes.selected="{Binding IsSelected}"
               Classes.current="{Binding IsCurrent}"
+              PointerMoved="InputElement_OnPointerMoved"
+              PointerReleased="InputElement_OnPointerReleased"
               PointerPressed="Thumbnail_OnPointerPressed">
             <Panel.Styles>
               <Style Selector="Panel.selected">
