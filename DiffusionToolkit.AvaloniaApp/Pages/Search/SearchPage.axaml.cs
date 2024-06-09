@@ -10,6 +10,7 @@ using Avalonia.Remote.Protocol.Input;
 using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
+using DiffusionToolkit.AvaloniaApp.Win32;
 using Key = Avalonia.Input.Key;
 
 namespace DiffusionToolkit.AvaloniaApp.Pages.Search;
@@ -226,6 +227,19 @@ public partial class SearchPage : UserControl, INavigationTarget
         if (e.NavigationState == NavigationState.EndOfPage)
         {
             _viewModel.GotoNextPage();
+        }
+    }
+
+    private async void ThumbnailControl_OnDragStart(object? sender, DragStartEventArgs e)
+    {
+        if (_viewModel.SelectedItems != null)
+        {
+            var selectedFiles = _viewModel.SelectedItems.Select(t => t.Path).ToArray();
+            DataObject dataObject = new DataObject();
+            dataObject.Set(DataFormats.Files, selectedFiles);
+            dataObject.Set("DTCustomDragSource", true);
+
+            var effects = await DragDrop.DoDragDrop(e.PointerEventArgs, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
         }
     }
 }

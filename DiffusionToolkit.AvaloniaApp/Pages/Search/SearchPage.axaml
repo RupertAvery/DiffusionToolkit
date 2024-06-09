@@ -35,6 +35,7 @@
             KeyDown="Thumbnail_OnKeyDown"
             DoubleTapped="InputElement_OnDoubleTapped"
             NavigationChanged="ThumbnailControl_OnNavigationChanged"
+            DragStart="ThumbnailControl_OnDragStart"
             Grid.Row="0"
             Thumbnails="{Binding SearchResults}"
             SelectedItems="{Binding SelectedItems}"

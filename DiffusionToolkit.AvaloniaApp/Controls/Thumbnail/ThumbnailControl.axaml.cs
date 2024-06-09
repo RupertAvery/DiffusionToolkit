@@ -28,6 +28,16 @@ public enum NavigationState
     EndOfPage,
 }
 
+public class DragStartEventArgs : RoutedEventArgs
+{
+    public DragStartEventArgs()
+    {
+        RoutedEvent = ThumbnailControl.DragStartEvent;
+    }
+
+    public PointerEventArgs PointerEventArgs { get; set; }
+}
+
 public class NavigationEventArgs : RoutedEventArgs
 {
     public NavigationEventArgs()
@@ -98,6 +108,9 @@ public partial class ThumbnailControl : UserControl
     public static readonly RoutedEvent<NavigationEventArgs> NavigationChangedEvent =
         RoutedEvent.Register<ThumbnailControl, NavigationEventArgs>(nameof(NavigationChanged), RoutingStrategies.Direct);
 
+    public static readonly RoutedEvent<DragStartEventArgs> DragStartEvent =
+        RoutedEvent.Register<ThumbnailControl, DragStartEventArgs>(nameof(DragStart), RoutingStrategies.Direct);
+
 
     public int ThumbnailSize
     {
@@ -122,6 +135,13 @@ public partial class ThumbnailControl : UserControl
         add => AddHandler(NavigationChangedEvent, value);
         remove => RemoveHandler(NavigationChangedEvent, value);
     }
+
+    public event EventHandler<DragStartEventArgs> DragStart
+    {
+        add => AddHandler(DragStartEvent, value);
+        remove => RemoveHandler(DragStartEvent, value);
+    }
+
 
     protected virtual void OnCurrentItemChanged()
     {
@@ -596,15 +616,7 @@ public partial class ThumbnailControl : UserControl
                 if (Math.Abs(distance.X) > 5 || Math.Abs(distance.Y) > 5)
                 {
                     _isDragging = true;
-
-                    var selectedItems = Thumbnails.Where(t => t.IsSelected || t.IsCurrent).Select(t => t.Path.Replace("\\", "/")).ToArray();
-
-                    DataObject dataObject = new DataObject();
-                    //dataObject.Set("FileDrop", selectedItems);
-                    dataObject.Set(DataFormats.Files, selectedItems);
-                    dataObject.Set("DTCustomDragSource", true);
-
-                    await DragDrop.DoDragDrop(e, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
+                    RaiseEvent(new DragStartEventArgs() { PointerEventArgs = e });
                 }
             }
 
