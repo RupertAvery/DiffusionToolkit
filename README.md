@@ -10,7 +10,7 @@ Thanks to Bill Meeks for putting together a demonstration video.
 
 [![Organize your AI Images](https://img.youtube.com/vi/r7J3n1LjojE/hqdefault.jpg)](https://www.youtube.com/watch?v=r7J3n1LjojE&ab_channel=BillMeeks)
 
-# Installation
+# Installation 
 
 * Currently runs on Windows only 
 * [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/latest
@@ -19,19 +19,45 @@ Thanks to Bill Meeks for putting together a demonstration video.
 * Unzip all the files to a folder
 * You may need to install the [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) if you haven't already
 
+## Linux / OSX
+
+* You can build the AvaloniaUI branch (see below)
+
 # Build from source
 
-## Prerequisites
+## Windows
 
-* Requires Visual Studio 2022
-* [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (includes the desktop runtime)
+### Requirements
 
-## Building
+* Visual Studio 2022 (Make sure to install .NET desktop development workload)
+* or [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (includes the desktop runtime)
+
+*NOTE: Visual Studio 2022 is only required if you want to work on WPF. If you only want to build from scratch, you only need the .NET 6 SDK.*
+
+### Building
 
 * Clone this repository
 * Run `publish.cmd`
 
 A folder named `build` will be created, containing all the necessary files.
+
+## Linux 
+
+### Requirements
+
+* [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (See [Install .NET on Linux](https://learn.microsoft.com/en-us/dotnet/core/install/linux))
+* git
+
+### Building
+
+* Clone this repository
+* Run `git checkout AvaloniaUI`
+* Run `chmod +x build-linux.sh && ./build-linux.sh`
+* The executable `DiffusionToolkit.AvaloniaApp` will be created in `build/linux-x64`
+
+### OSX
+
+* Coming soon
 
 # Features
 
