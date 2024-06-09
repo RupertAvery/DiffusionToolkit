@@ -9,7 +9,7 @@
              KeyDown="InputElement_OnKeyDown"
              x:Class="DiffusionToolkit.AvaloniaApp.Controls.Thumbnail.ThumbnailControl">
   <UserControl.Resources>
-    <thumbnail:CurrentConverter x:Key="currentConverter"/>
+    <thumbnail:NotNullConverter x:Key="notNullConverter"/>
     <thumbnail:ForDeletionConverter x:Key="forDeletionConverter"/>
   </UserControl.Resources>
   <ScrollViewer x:Name="ItemsScrollViewer" Margin="2,5,0,0">
@@ -32,29 +32,43 @@
       </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>
         <DataTemplate>
-          <Panel
+          <Grid
+              RowDefinitions="*,30"
               Height="{Binding #root.ThumbnailSize}"
               Width="{Binding #root.ThumbnailSize}"
+              MaxHeight="{Binding #root.ThumbnailSize}"
+              MaxWidth="{Binding #root.ThumbnailSize}"
               Classes.selected="{Binding IsSelected}"
               Classes.current="{Binding IsCurrent}"
               PointerMoved="InputElement_OnPointerMoved"
               PointerReleased="InputElement_OnPointerReleased"
               PointerPressed="Thumbnail_OnPointerPressed">
-            <Panel.Styles>
-              <Style Selector="Panel.selected">
+            <Grid.Styles>
+              <Style Selector="Grid.selected">
                 <Setter Property="Background" Value="#80306fdb" />
               </Style>
-              <Style Selector="Panel.current">
+              <Style Selector="Grid.current">
                 <Setter Property="Background" Value="#FF306fdb" />
               </Style>
-            </Panel.Styles>
+              <Style Selector="Grid.deselected">
+                <Setter Property="Background" Value="#80306fdb" />
+              </Style>
+            </Grid.Styles>
             <Image
                 Margin="5,5,5,5"
+                Grid.RowSpan="2"
                 Opacity="{Binding ForDeletion, Converter={StaticResource forDeletionConverter}}"
                 Stretch="Uniform"
                 Source="{Binding ThumbnailImage}"
             />
-          </Panel>
+            <StackPanel Margin="2" Orientation="Horizontal" Grid.Row="1">
+              <Grid Width="32" Height="32" IsVisible="{Binding Rating, Converter={StaticResource notNullConverter}}">
+                <Image Width="32" Height="32" Source="../../Icons/star-32.png"></Image>
+                <Label Margin="0,2,0,0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" Foreground="Black" Content="{Binding Rating}"></Label>
+              </Grid>
+              <Image IsVisible="{Binding Favorite}" Width="32" Height="32" Source="../../Icons/blue-heart-32.png"></Image>
+            </StackPanel>
+          </Grid>
         </DataTemplate>
       </ItemsControl.ItemTemplate>
     </ItemsControl>

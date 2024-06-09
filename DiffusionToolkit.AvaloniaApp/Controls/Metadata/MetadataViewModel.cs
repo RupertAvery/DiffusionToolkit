@@ -1,4 +1,5 @@
 using System;
+using Avalonia;
 using Diffusion.IO;
 
 namespace DiffusionToolkit.AvaloniaApp.Controls.Metadata;
@@ -30,6 +31,7 @@ public class MetadataViewModel
     public bool NoMetadata { get; set; }
     public DateTime CreatedDate { get; set; }
     public string RawData { get; set; }
+    public string Size => $"{Width}x{Height}";
 
     public static MetadataViewModel FromFileParameters(FileParameters fp)
     {

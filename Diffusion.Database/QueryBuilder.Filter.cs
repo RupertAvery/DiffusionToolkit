@@ -16,6 +16,18 @@ namespace Diffusion.Database
             var conditions = new List<KeyValuePair<string, object>>();
             var joins = new List<string>();
 
+            if (HideNSFW && !filter.UseNSFW)
+            {
+                conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+                filter.UseNSFW = false;
+            }
+
+            if (HideDeleted && !filter.UseForDeletion)
+            {
+                conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", false));
+                filter.UseForDeletion = false;
+            }
+
             FilterAlbum(filter, conditions, joins);
             FilterFolder(filter, conditions, joins);
             FilterPath(filter, conditions);

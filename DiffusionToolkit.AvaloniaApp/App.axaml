@@ -3,7 +3,22 @@
              x:Class="DiffusionToolkit.AvaloniaApp.App"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-
+  <Application.Resources>
+      <ResourceDictionary>
+          <ResourceDictionary.ThemeDictionaries>
+              <ResourceDictionary x:Key='Dark'>
+                  <SolidColorBrush x:Key='BackgroundBrush'>#182B3C</SolidColorBrush>
+                  <SolidColorBrush x:Key='ForegroundBrush'>Azure</SolidColorBrush>
+                  <SolidColorBrush x:Key="SplitterBrush">#3E5E7C</SolidColorBrush>
+              </ResourceDictionary>
+              <ResourceDictionary x:Key='Light'>
+                  <SolidColorBrush x:Key='BackgroundBrush'>AliceBlue</SolidColorBrush>
+                  <SolidColorBrush x:Key='ForegroundBrush'>#000000</SolidColorBrush>
+                  <SolidColorBrush x:Key="SplitterBrush">#C0C0C0</SolidColorBrush>
+              </ResourceDictionary>
+          </ResourceDictionary.ThemeDictionaries>
+      </ResourceDictionary>
+  </Application.Resources>
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>

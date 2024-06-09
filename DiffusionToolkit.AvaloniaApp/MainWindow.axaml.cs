@@ -6,8 +6,10 @@ using DiffusionToolkit.AvaloniaApp.ViewModels;
 using System;
 using System.IO;
 using Avalonia;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Diffusion.Common;
+using Avalonia.Controls.Primitives;
 
 namespace DiffusionToolkit.AvaloniaApp
 {
@@ -77,15 +79,17 @@ namespace DiffusionToolkit.AvaloniaApp
 
             _scanManager.ScanStart += OnScanStart;
             _scanManager.ScanProgress += OnScanProgress;
-            _scanManager.ScanEnd += OnScanEnd;
+            _scanManager.ScanComplete += OnScanComplete;
 
             ServiceLocator.PreviewManager.SetOwner(this);
 
             _viewModel = new MainWindowViewModel();
             DataContext = _viewModel;
+
+            //SearchBorder.AddHandler(PointerPressedEvent, Search_PointerPressed, RoutingStrategies.Tunnel);
         }
 
-        private void OnScanEnd(object? sender, EventArgs e)
+        private void OnScanComplete(object? sender, ScanCompleteEventArgs e)
         {
             Dispatcher.UIThread.Post(() => { _viewModel.IsBusy = false; });
         }
@@ -134,6 +138,42 @@ namespace DiffusionToolkit.AvaloniaApp
                     mainBorder.BorderThickness = new Thickness(0);
                 }
             }
+        }
+
+        private Control? _searchFlyoutHost;
+
+        private void Search_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            if (sender is Control ctl)
+            {
+                FlyoutBase.ShowAttachedFlyout(ctl);
+            }
+        }
+
+        private void Search_OnKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (sender is TextBox textBox && e.Key == Key.Enter)
+            {
+                if (_searchFlyoutHost is { })
+                {
+                    FlyoutBase.GetAttachedFlyout(_searchFlyoutHost).Hide();
+                }
+                ServiceLocator.SearchManager.SetFilter(new SearchFilter() { Query = textBox.Text });
+            }
+        }
+
+        private void Button_OnClick(object? sender, RoutedEventArgs e)
+        {
+            if (sender is Control ctl)
+            {
+                FlyoutBase.ShowAttachedFlyout(ctl);
+                _searchFlyoutHost = ctl;
+            }
+        }
+
+        private void Cancel_OnClick(object? sender, RoutedEventArgs e)
+        {
+            ServiceLocator.ScanManager.Cancel();
         }
     }
 }

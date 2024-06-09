@@ -7,13 +7,18 @@ namespace DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
 
 public class ThumbnailViewModel : ViewModelBase, IDisposable
 {
-    public object Source { get; set; }
-    public string Path { get; set; }
-
     private Bitmap _thumbnailImage;
     private bool _isCurrent;
     private bool _isSelected;
     private bool _forDeletion;
+    private bool _isDeselected;
+    private int? _rating;
+    private bool _nsfw;
+    private bool _favorite;
+
+    public int Id { get; set; }
+    public object Source { get; set; }
+    public string Path { get; set; }
 
     public Bitmap ThumbnailImage
     {
@@ -24,17 +29,46 @@ public class ThumbnailViewModel : ViewModelBase, IDisposable
     public bool IsCurrent
     {
         get => _isCurrent;
-        set => this.RaiseAndSetIfChanged(ref _isCurrent, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isCurrent, value);
+            this.RaiseAndSetIfChanged(ref _isDeselected, !_isSelected && _isCurrent, nameof(IsDeselected));
+        }
     }
 
     public bool IsSelected
     {
         get => _isSelected;
-        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isSelected, value);
+            this.RaiseAndSetIfChanged(ref _isDeselected, !_isSelected && _isCurrent, nameof(IsDeselected));
+        }
     }
 
-    public int? Rating { get; set; }
-    public bool NSFW { get; set; }
+    public bool IsDeselected
+    {
+        get => _isDeselected;
+    }
+
+    public int? Rating
+    {
+        get => _rating;
+        set => this.RaiseAndSetIfChanged(ref _rating, value);
+    }
+
+    public bool NSFW
+    {
+        get => _nsfw;
+        set => this.RaiseAndSetIfChanged(ref _nsfw, value);
+    }
+
+    public bool Favorite
+    {
+        get => _favorite;
+        set => this.RaiseAndSetIfChanged(ref _favorite, value);
+    }
+
     public int Width { get; set; }
     public int Height { get; set; }
     public string Filename { get; set; }
@@ -42,7 +76,7 @@ public class ThumbnailViewModel : ViewModelBase, IDisposable
     public bool ForDeletion
     {
         get => _forDeletion;
-        set => this.RaiseAndSetIfChanged(ref _forDeletion , value);
+        set => this.RaiseAndSetIfChanged(ref _forDeletion, value);
     }
 
     public bool IsLoaded { get; set; }

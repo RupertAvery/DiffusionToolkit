@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using Diffusion.Database;
 using Diffusion.IO;
-using DiffusionToolkit.AvaloniaApp.Common;
 
-namespace DiffusionToolkit.AvaloniaApp;
+namespace DiffusionToolkit.AvaloniaApp.Common;
 
 public class ScanManager
 {
@@ -19,7 +18,7 @@ public class ScanManager
     public event EventHandler<ScanProgressEventArgs> ScanProgress;
     public event EventHandler<string> ScanStatus;
     public event EventHandler<EventArgs> ScanStart;
-    public event EventHandler<EventArgs> ScanEnd;
+    public event EventHandler<ScanCompleteEventArgs> ScanComplete;
 
     public ScanManager()
     {
@@ -33,11 +32,25 @@ public class ScanManager
 
     public CancellationTokenSource? CancellationTokenSource { get; private set; }
 
-    public void ScanFolders(IEnumerable<string> includeFolders, IEnumerable<string> excludeFolders, bool recurse)
+
+    public void ScanFolders()
+    {
+        var settings = ServiceLocator.Settings;
+        ScanFolders(settings.IncludedFolders, settings.ExcludedFolders, settings.RecurseFolders);
+    }
+
+    public void RebuildMetadata()
+    {
+        var settings = ServiceLocator.Settings;
+        ScanFolders(settings.IncludedFolders, settings.ExcludedFolders, settings.RecurseFolders, true);
+    }
+
+    public void ScanFolders(IEnumerable<string> includeFolders, IEnumerable<string> excludeFolders, bool recurse, bool rebuildMetadata = false)
     {
         int progress = 0;
         int total = 0;
         var fileExtensions = ".png, .jpg, .jpeg, .webp";
+
         CancellationTokenSource?.Cancel();
         CancellationTokenSource = new CancellationTokenSource();
 
@@ -45,7 +58,6 @@ public class ScanManager
 
         var removed = 0;
         var added = 0;
-        bool updateImages = false;
 
         ScanStatus?.Invoke(this, GetLocalizedText("Actions.Scanning.BeginScanning"));
 
@@ -70,14 +82,24 @@ public class ScanManager
                 {
                     ScanStatus?.Invoke(this, gatheringFilesMessage.Replace("{path}", path));
 
-                    var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
+                    var ignoreFiles = rebuildMetadata ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
 
                     filesToScan.AddRange(MetadataScanner.GetFiles(path, fileExtensions, ignoreFiles, recurse, excludeFolders).ToList());
                 }
             }
 
-            //var (_added, elapsedTime) = 
-            ScanFiles(filesToScan, updateImages, CancellationTokenSource.Token);
+            var results = ScanFiles(filesToScan, rebuildMetadata, CancellationTokenSource.Token);
+
+
+            ScanComplete?.Invoke(this, new ScanCompleteEventArgs()
+            {
+                Added = results.Added,
+                Scanned = results.Scanned,
+                Message = "",
+                Cancelled = CancellationTokenSource.IsCancellationRequested,
+                Removed = results.Removed,
+                ElapsedTime = results.ElapsedTime,
+            });
 
             //added = _added;
 
@@ -86,31 +108,37 @@ public class ScanManager
             //    Report(added, removed, elapsedTime, updateImages);
             //}
         }
-        catch (Exception ex)
-        {
-            //await _messagePopupManager.ShowMedium(
-            //    ex.Message,
-            //    "Scan Error", PopupButtons.OK);
-        }
+        //catch (Exception ex)
+        //{
+        //    //await _messagePopupManager.ShowMedium(
+        //    //    ex.Message,
+        //    //    "Scan Error", PopupButtons.OK);
+        //}
         finally
         {
             //_model.IsBusy = false;
 
-            ScanStatus?.Invoke(this, GetLocalizedText("Actions.Scanning.Completed"));
+            //ScanStatus?.Invoke(this, GetLocalizedText("Actions.Scanning.Completed"));
         }
 
         //return added + removed > 0;
 
-        ScanEnd?.Invoke(this, EventArgs.Empty);
     }
 
-
-    private void ScanFiles(IList<string> filesToScan, bool updateImages, CancellationToken cancellationToken)
+    private struct ScanResults
     {
-        var added = 0;
-        var scanned = 0;
-        //var stopwatch = new Stopwatch();
-        //stopwatch.Start();
+        public int Added { get; set; }
+        public int Scanned { get; set; }
+        public float ElapsedTime { get; set; }
+        public int Removed { get; set; }
+    }
+
+    private ScanResults ScanFiles(IList<string> filesToScan, bool rebuildMetadata, CancellationToken cancellationToken)
+    {
+        var scanResults = new ScanResults();
+
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
 
         var total = filesToScan.Count;
 
@@ -136,7 +164,7 @@ public class ScanManager
                 break;
             }
 
-            scanned++;
+            scanResults.Scanned++;
 
             if (file != null)
             {
@@ -186,25 +214,26 @@ public class ScanManager
 
             if (newImages.Count == 100)
             {
-                if (updateImages)
+                if (rebuildMetadata)
                 {
 
-                    added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
+                    scanResults.Added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
                 }
                 else
                 {
                     _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                    added += newImages.Count;
+                    scanResults.Added += newImages.Count;
                 }
 
                 newImages.Clear();
             }
 
-            if (scanned % 33 == 0)
+            if (scanResults.Scanned % 33 == 0)
             {
                 ScanProgress?.Invoke(this, new ScanProgressEventArgs()
                 {
-                    Progress = scanned,
+                    Message = "Scanning {progress} of {total}",
+                    Progress = scanResults.Scanned,
                     Total = total
                 });
             }
@@ -212,14 +241,14 @@ public class ScanManager
 
         if (newImages.Count > 0)
         {
-            if (updateImages)
+            if (rebuildMetadata)
             {
-                added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
+                scanResults.Added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
             }
             else
             {
                 _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                added += newImages.Count;
+                scanResults.Added += newImages.Count;
             }
         }
 
@@ -237,11 +266,17 @@ public class ScanManager
         //    _model.CurrentProgress = 0;
         //});
 
-        //stopwatch.Stop();
+        stopwatch.Stop();
 
-        //var elapsedTime = stopwatch.ElapsedMilliseconds / 1000f;
+        scanResults.ElapsedTime = stopwatch.ElapsedMilliseconds / 1000f;
+
+        return scanResults;
     }
 
-
+    public void Cancel()
+    {
+        CancellationTokenSource?.Cancel();
+        CancellationTokenSource = new CancellationTokenSource();
+    }
 
 }

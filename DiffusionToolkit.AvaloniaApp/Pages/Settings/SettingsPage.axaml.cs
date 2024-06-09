@@ -79,18 +79,12 @@ public partial class SettingsPage : UserControl, INavigationTarget
 
     public void Deactivate()
     {
-        ServiceLocator.SetSettings(new AvaloniaApp.Settings()
-        {
-            IncludedFolders = _viewModel.IncludedFolders,
-            ExcludedFolders = _viewModel.ExcludedFolders,
-            RecurseFolders = _viewModel.RecurseFolders
-        });
 
         if (_viewModel.IsRescanRequired)
         {
             Task.Run(() =>
             {
-                _scanManager.ScanFolders(_viewModel.IncludedFolders, _viewModel.ExcludedFolders, _viewModel.RecurseFolders);
+                _scanManager.ScanFolders();
             });
         }
     }

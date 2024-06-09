@@ -122,10 +122,10 @@ public class SettingsPageViewModel : ViewModelBase
         IsRescanRequired = true;
     }
 
-    public void LoadSettings(AvaloniaApp.Settings settings)
+    public void LoadSettings(Common.Settings settings)
     {
-        this.ExcludedFolders = new ObservableCollection<string>(settings.ExcludedFolders ?? new List<string>());
-        this.IncludedFolders = new ObservableCollection<string>(settings.IncludedFolders ?? new List<string>());
+        this.ExcludedFolders = settings.ExcludedFolders;
+        this.IncludedFolders = settings.IncludedFolders;
         this.RecurseFolders = settings.RecurseFolders;
         //this.HideNSFW = settings.HideNSFW;
     }

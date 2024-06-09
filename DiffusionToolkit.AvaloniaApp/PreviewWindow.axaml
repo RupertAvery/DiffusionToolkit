@@ -15,9 +15,9 @@
     <KeyBinding Gesture="Escape" Command="{Binding CloseCommand}"></KeyBinding>
   </Window.KeyBindings>-->
   <Grid RowDefinitions="30,*">
-      <Grid ColumnDefinitions="*,Auto,*">
+      <!--<Grid ColumnDefinitions="*,Auto,*">
           <Label IsHitTestVisible="False" Grid.Column="1" VerticalContentAlignment="Center">Preview</Label>
-      </Grid>
+      </Grid>-->
       <Grid Row="1">
           <Grid.ColumnDefinitions>
               <ColumnDefinition/>

@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -30,8 +33,8 @@ public class SearchPageViewModel : ViewModelBase
     private int _pages;
     private MetadataViewModel? _metadata;
     private bool _isMetadataVisible;
-    private string _sortOrder;
-    private string _sortBy;
+    private string _resultsSummary;
+    private ObservableCollection<ThumbnailViewModel>? _selectedItems;
 
     public ThumbnailViewModel? SelectedEntry
     {
@@ -69,6 +72,12 @@ public class SearchPageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isMetadataVisible, value);
     }
 
+    public string ResultsSummary
+    {
+        get => _resultsSummary;
+        set => this.RaiseAndSetIfChanged(ref _resultsSummary, value);
+    }
+
     public ICommand GotoStart { get; set; }
     public ICommand GotoPrev { get; set; }
     public ICommand GotoNext { get; set; }
@@ -87,18 +96,6 @@ public class SearchPageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _pages, value);
     }
 
-    public string SortBy
-    {
-        get => _sortBy;
-        set => this.RaiseAndSetIfChanged(ref _sortBy, value);
-    }
-
-    public string SortOrder
-    {
-        get => _sortOrder;
-        set => this.RaiseAndSetIfChanged(ref _sortOrder, value);
-    }
-
     public IEnumerable<string> SortByOptions { get; set; }
     public IEnumerable<string> SortOrderOptions { get; set; }
 
@@ -115,24 +112,51 @@ public class SearchPageViewModel : ViewModelBase
 
         ServiceLocator.SearchManager.SortOrder += OnSortOrder;
         ServiceLocator.SearchManager.SortBy += OnSortBy;
+        ServiceLocator.SearchManager.Filter += OnSetFilter;
+        ServiceLocator.SearchManager.Search += OnSearch;
+        ServiceLocator.SearchManager.View += OnView;
+
+        SelectedItems = new ObservableCollection<ThumbnailViewModel>();
 
         SortByOptions = DataStore.SortByOptions;
         SortOrderOptions = new List<string>() { "A-Z", "Z-A" };
+    }
 
-        SortBy = "Date Created";
-        SortOrder = "Z-A";
+    private SearchView _view = SearchView.Search;
+
+    private void OnView(object? sender, SearchView e)
+    {
+        _view = e;
+        SearchAsync();
+    }
+
+    public Task SearchAsync()
+    {
+        return Task.Run(() =>
+        {
+            Search();
+        });
+    }
+
+    private void OnSearch(object? sender, EventArgs e)
+    {
+        SearchAsync();
     }
 
     private void OnSortBy(object? sender, string e)
     {
-        SortBy = e;
-        Search();
+        SearchAsync();
     }
 
     private void OnSortOrder(object? sender, string e)
     {
-        SortOrder = e;
-        Search();
+        SearchAsync();
+    }
+
+    public void OnSetFilter(object? sender, SearchFilter filter)
+    {
+        SearchText = filter.Query;
+        SearchAsync();
     }
 
     private void OnKeyDown(TopLevel topLevel, KeyEventArgs args)
@@ -218,43 +242,117 @@ public class SearchPageViewModel : ViewModelBase
     public void ToggleNSFW()
     {
         QueryBuilder.HideNSFW = !QueryBuilder.HideNSFW;
-        Search();
+        Task.Run(() =>
+        {
+            Search();
+        });
     }
 
     private int PageSize => ServiceLocator.Settings!.PageSize;
 
-    public void Search()
+    private void Search()
     {
+        _filter = FilterBuilder.ParseFilter(SearchText);
+
+        if (_view == SearchView.RecycleBin)
+        {
+            _filter.ForDeletion = true;
+            _filter.UseForDeletion = true;
+        }
+
         var pageSize = PageSize;
 
-        var total = _dataStore.Count(SearchText);
-        Pages = total / pageSize + (total % pageSize > 0 ? 1 : 0);
+        var totals = _dataStore.CountTotals(_filter);
+
+        Pages = totals.Count / pageSize + (totals.Count % pageSize > 0 ? 1 : 0);
+        TotalSize = totals.TotalSize;
+
+        float fsize = totals.TotalSize;
+
+        var ssize = $"{fsize:n} B";
+
+        if (fsize > 1073741824)
+        {
+            fsize /= 1073741824;
+            ssize = $"{fsize:n2} GiB";
+        }
+        else if (fsize > 1048576)
+        {
+            fsize /= 1048576;
+            ssize = $"{fsize:n2} MiB";
+        }
+        else if (fsize > 1024)
+        {
+            fsize /= 1024;
+            ssize = $"{fsize:n2} KiB";
+        }
+
+        //var text = ServiceLocator.Localization.GetLocalizedText("Search.Results");
+
+        var text = "{count} results found ({size})".Replace("{count}", $"{totals.Count:n0}")
+            .Replace("{size}", $"{ssize}");
+
+        ResultsSummary = text;
+
         Page = 1;
         UpdateResults();
     }
 
-    public void UpdateResults()
+    public long TotalSize { get; set; }
+
+    public string SortBy => ServiceLocator.Settings.SortBy;
+    public string SortOrder => ServiceLocator.Settings.SortOrder;
+
+    public ObservableCollection<ThumbnailViewModel>? SelectedItems
+    {
+        get => _selectedItems;
+        set => this.RaiseAndSetIfChanged(ref _selectedItems, value);
+    }
+
+    public async Task UpdateResultsAsync()
+    {
+        await Task.Run(() => UpdateResults());
+    }
+
+    private Filter _filter = new Filter();
+
+    private void UpdateResults()
     {
         var pageSize = PageSize;
 
-        var results = _dataStore.Search(SearchText, pageSize, (Page - 1) * pageSize, SortBy, SortOrder);
+        var results = _dataStore.Search(_filter, pageSize, (Page - 1) * pageSize, SortBy, SortOrder);
 
         var images = new List<ThumbnailViewModel>();
 
         foreach (var image in results)
         {
-            images.Add(new ThumbnailViewModel()
+            var thumb = new ThumbnailViewModel()
             {
+                Id = image.Id,
                 Source = image,
-                ForDeletion = image.ForDeletion,
                 Path = image.Path,
                 Rating = image.Rating,
                 NSFW = image.NSFW,
-            });
+                Favorite = image.Favorite,
+                ForDeletion = image.ForDeletion
+            };
+
+
+            images.Add(thumb);
+
+
+            //thumb.PropertyChanged += ThumbOnPropertyChanged;
+
         }
 
         SearchResults = images;
     }
 
-
+    //private void ThumbOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    //{
+    //    if (e.PropertyName == nameof(ThumbnailViewModel.IsSelected))
+    //    {
+    //        var x = 1;
+    //    }
+    //}
 }

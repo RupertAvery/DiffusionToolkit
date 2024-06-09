@@ -3,12 +3,38 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:DiffusionToolkit.AvaloniaApp.ViewModels"
+        xmlns:converters="clr-namespace:DiffusionToolkit.AvaloniaApp.Converters"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="DiffusionToolkit.AvaloniaApp.MainWindow"
         ExtendClientAreaToDecorationsHint="True"
         SizeChanged="Control_OnSizeChanged"
         PropertyChanged="AvaloniaObject_OnPropertyChanged"
         Title="DiffusionToolkit.AvaloniaApp">
+  <Window.Resources>
+    <converters:IsEqualConverter x:Key="IsEqualConverter"></converters:IsEqualConverter>
+  </Window.Resources>
+  <Window.Styles>
+    <Style Selector="Window">
+      <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    </Style>
+
+    <Style Selector="Label">
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    </Style>
+    <Style Selector="MenuItem">
+      <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+    </Style>
+    <Style Selector="GridSplitter">
+      <Setter Property="Background" Value="{DynamicResource SplitterBrush}"></Setter>
+    </Style>
+  </Window.Styles>
+
   <Design.DataContext>
     <viewModels:MainWindowViewModel/>
   </Design.DataContext>
@@ -18,18 +44,104 @@
   <Border x:Name="MainBorder">
     <Grid RowDefinitions="40,2,*">
       <Grid ColumnDefinitions="*,Auto,*">
-        <StackPanel Orientation="Horizontal">
-          <Border Margin="5" Background="#80383838" Padding="10,2,10,2" CornerRadius="5" BorderBrush="#FFFFFF" BorderThickness="1" Width="150">
-            <StackPanel Orientation="Horizontal">
+        <Grid Background="{x:Null}"
+              Grid.Column="1" Width="600" ColumnDefinitions="45,45,Auto,45,45,45,45,45">
+
+          <Button Grid.Column="0" Height="32" Width="42" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  Classes.busy="{Binding IsBusy }"
+                  Classes.notbusy="{Binding !IsBusy }"
+                  >
+            <Button.Styles>
+              <Style Selector="Button.busy">
+                <Setter Property="Background" Value="Green"></Setter>
+              </Style>
+              <Style Selector="Button.notbusy">
+                <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"></Setter>
+              </Style>
+            </Button.Styles>
+            <Button.Content>
+              <PathIcon Width="16" Height="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M7.74944331,5.18010908 C8.0006303,5.50946902 7.93725859,5.9800953 7.60789865,6.23128229 C5.81957892,7.59514774 4.75,9.70820889 4.75,12 C4.75,15.7359812 7.57583716,18.8119527 11.2066921,19.2070952 L10.5303301,18.5303301 C10.2374369,18.2374369 10.2374369,17.7625631 10.5303301,17.4696699 C10.7965966,17.2034034 11.2132603,17.1791973 11.5068718,17.3970518 L11.5909903,17.4696699 L13.5909903,19.4696699 C13.8572568,19.7359365 13.8814629,20.1526002 13.6636084,20.4462117 L13.5909903,20.5303301 L11.5909903,22.5303301 C11.298097,22.8232233 10.8232233,22.8232233 10.5303301,22.5303301 C10.2640635,22.2640635 10.2398575,21.8473998 10.4577119,21.5537883 L10.5303301,21.4696699 L11.280567,20.7208479 C6.78460951,20.3549586 3.25,16.5902554 3.25,12 C3.25,9.23526399 4.54178532,6.68321165 6.6982701,5.03856442 C7.02763004,4.78737743 7.49825632,4.85074914 7.74944331,5.18010908 Z M13.4696699,1.46966991 C13.7625631,1.76256313 13.7625631,2.23743687 13.4696699,2.53033009 L12.7204313,3.27923335 C17.2159137,3.64559867 20.75,7.4100843 20.75,12 C20.75,14.6444569 19.5687435,17.0974104 17.5691913,18.7491089 C17.2498402,19.0129038 16.7771069,18.9678666 16.513312,18.6485156 C16.2495171,18.3291645 16.2945543,17.8564312 16.6139054,17.5926363 C18.2720693,16.2229363 19.25,14.1922015 19.25,12 C19.25,8.26436254 16.4246828,5.18861329 12.7943099,4.7930139 L13.4696699,5.46966991 C13.7625631,5.76256313 13.7625631,6.23743687 13.4696699,6.53033009 C13.1767767,6.8232233 12.701903,6.8232233 12.4090097,6.53033009 L10.4090097,4.53033009 C10.1161165,4.23743687 10.1161165,3.76256313 10.4090097,3.46966991 L12.4090097,1.46966991 C12.701903,1.1767767 13.1767767,1.1767767 13.4696699,1.46966991 Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+            </Button.Content>
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem IsVisible="{Binding !IsBusy}" Header="Scan Folders" Command="{Binding ScanFoldersCommand}"></MenuItem>
+                <MenuItem IsVisible="{Binding !IsBusy}" Header="Rebuild Database" Command="{Binding RebuildDatabaseCommand}"></MenuItem>
+                <MenuItem IsVisible="{Binding IsBusy}" Header="Stop" Command="{Binding StopCommand}"></MenuItem>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+
+          <Button Grid.Column="1" Height="32" Width="42" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+            <Button.Content>
+              <PathIcon Width="16" Height="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M12,9.0046246 C14.209139,9.0046246 16,10.7954856 16,13.0046246 C16,15.2137636 14.209139,17.0046246 12,17.0046246 C9.790861,17.0046246 8,15.2137636 8,13.0046246 C8,10.7954856 9.790861,9.0046246 12,9.0046246 Z M12,10.5046246 C10.6192881,10.5046246 9.5,11.6239127 9.5,13.0046246 C9.5,14.3853365 10.6192881,15.5046246 12,15.5046246 C13.3807119,15.5046246 14.5,14.3853365 14.5,13.0046246 C14.5,11.6239127 13.3807119,10.5046246 12,10.5046246 Z M12,5.5 C16.613512,5.5 20.5960869,8.65000641 21.7011157,13.0643865 C21.8017,13.4662019 21.557504,13.8734775 21.1556885,13.9740618 C20.7538731,14.0746462 20.3465976,13.8304502 20.2460132,13.4286347 C19.3071259,9.67795854 15.9213644,7 12,7 C8.07693257,7 4.69009765,9.68026417 3.75285786,13.4331499 C3.65249525,13.8350208 3.24535455,14.0794416 2.84348365,13.979079 C2.44161275,13.8787164 2.19719198,13.4715757 2.29755459,13.0697048 C3.4006459,8.65271806 7.38448293,5.5 12,5.5 Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+            </Button.Content>
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="NSFW" Command="{Binding ToggleNSFWCommand}">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding !Settings.HideNSFW}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Deleted" Command="{Binding ToggleDeletedCommand}">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding !Settings.HideDeleted}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+
+          <Button Grid.Column="2" Margin="5"
+                  Padding="10,2,10,2" CornerRadius="5"
+                  BorderBrush="#FFFFFF"
+                  Click="Button_OnClick"
+                  BorderThickness="1" Width="250">
+            <Button.Styles>
+              <Style Selector="FlyoutPresenter">
+                <Setter Property="Width" Value="600" />
+                <Setter Property="MaxWidth" Value="600" />
+                <Setter Property="Height" Value="64" />
+              </Style>
+            </Button.Styles>
+
+            <Grid IsHitTestVisible="False" ColumnDefinitions="20,*">
               <PathIcon Height="16" Width="16">
                 <PathIcon.Data>
                   <StreamGeometry>M11.5,2.75 C16.3324916,2.75 20.25,6.66750844 20.25,11.5 C20.25,13.6461673 19.4773285,15.6118676 18.1949905,17.1340957 L25.0303301,23.9696699 C25.3232233,24.2625631 25.3232233,24.7374369 25.0303301,25.0303301 C24.7640635,25.2965966 24.3473998,25.3208027 24.0537883,25.1029482 L23.9696699,25.0303301 L17.1340957,18.1949905 C15.6118676,19.4773285 13.6461673,20.25 11.5,20.25 C6.66750844,20.25 2.75,16.3324916 2.75,11.5 C2.75,6.66750844 6.66750844,2.75 11.5,2.75 Z M11.5,4.25 C7.49593556,4.25 4.25,7.49593556 4.25,11.5 C4.25,15.5040644 7.49593556,18.75 11.5,18.75 C15.5040644,18.75 18.75,15.5040644 18.75,11.5 C18.75,7.49593556 15.5040644,4.25 11.5,4.25 Z</StreamGeometry>
                 </PathIcon.Data>
               </PathIcon>
-              <Label Margin="10,0,0,0" FontSize="12" Foreground="#80FFFFFF" VerticalContentAlignment="Center">Search</Label>
-            </StackPanel>
-          </Border>
-          <Button Height="32" Width="42" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+              <Label Grid.ColumnSpan="2" FontSize="12" Foreground="#80FFFFFF" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">Diffusion Toolkit</Label>
+            </Grid>
+            <FlyoutBase.AttachedFlyout>
+              <Flyout Placement="Bottom">
+                <Border>
+                  <TextBox Height="32" KeyDown="Search_OnKeyDown"></TextBox>
+                </Border>
+              </Flyout>
+            </FlyoutBase.AttachedFlyout>
+          </Button>
+
+          <Button Grid.Column="3" Height="32" Width="42" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  ToolTip.Placement="Bottom">
+            <ToolTip.Tip>
+              <Label Content="{Binding Settings.SortBy}"></Label>
+            </ToolTip.Tip>
             <Button.Content>
               <PathIcon Width="16" Height="16">
                 <PathIcon.Data>
@@ -39,17 +151,74 @@
             </Button.Content>
             <Button.Flyout>
               <MenuFlyout Placement="BottomEdgeAlignedLeft">
-                <MenuItem Header="Date Created" Command="{Binding SortByCommand}" CommandParameter="Date Modified"></MenuItem>
-                  <MenuItem Header="Date Modified" Command="{Binding SortByCommand}" CommandParameter="Date Modified"></MenuItem>
-                  <MenuItem Header="Rating" Command="{Binding SortByCommand}" CommandParameter="Rating"></MenuItem>
-                  <MenuItem Header="Aesthetic Score" Command="{Binding SortByCommand}" CommandParameter="Aesthetic Score"></MenuItem>
-                  <MenuItem Header="Prompt" Command="{Binding SortByCommand}" CommandParameter="Prompt"></MenuItem>
-                  <MenuItem Header="Random" Command="{Binding SortByCommand}" CommandParameter="Random"></MenuItem>
-                  <MenuItem Header="Name" Command="{Binding SortByCommand}" CommandParameter="Name"></MenuItem>
+                <MenuItem Header="Date Created" Command="{Binding SortByCommand}" CommandParameter="Date Created">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding Settings.SortBy, Converter={StaticResource IsEqualConverter}, ConverterParameter=Date Created}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Date Modified" Command="{Binding SortByCommand}" CommandParameter="Date Modified">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding Settings.SortBy, Converter={StaticResource IsEqualConverter}, ConverterParameter=Date Modified}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Rating" Command="{Binding SortByCommand}" CommandParameter="Rating">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding Settings.SortBy, Converter={StaticResource IsEqualConverter}, ConverterParameter=Rating}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Aesthetic Score" Command="{Binding SortByCommand}" CommandParameter="Aesthetic Score">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding Settings.SortBy, Converter={StaticResource IsEqualConverter}, ConverterParameter=Aesthetic Score}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Prompt" Command="{Binding SortByCommand}" CommandParameter="Prompt">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding Settings.SortBy, Converter={StaticResource IsEqualConverter}, ConverterParameter=Prompt}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Random" Command="{Binding SortByCommand}" CommandParameter="Random">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding Settings.SortBy, Converter={StaticResource IsEqualConverter}, ConverterParameter=Random}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Name" Command="{Binding SortByCommand}" CommandParameter="Name">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding Settings.SortBy, Converter={StaticResource IsEqualConverter}, ConverterParameter=Name}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
               </MenuFlyout>
             </Button.Flyout>
           </Button>
-          <Button  Height="32" Width="42" Content="A-Z" FontSize="12"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+
+          <Button Grid.Column="4" Height="32" Width="42" Content="{Binding Settings.SortOrder}" FontSize="12"  HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
             <Button.Flyout>
               <MenuFlyout Placement="BottomEdgeAlignedLeft">
                 <MenuItem Header="A-Z" Command="{Binding SortOrderCommand}" CommandParameter="A-Z"></MenuItem>
@@ -57,19 +226,50 @@
               </MenuFlyout>
             </Button.Flyout>
           </Button>
-        </StackPanel>
-        <Label IsHitTestVisible="False" Grid.Column="1" VerticalContentAlignment="Center">Diffusion Toolkit</Label>
+
+          <Button Grid.Column="5"  Height="32" Width="42" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+            <Button.Content>
+              <PathIcon Width="16" Height="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M19.25,3.99813 C20.7125481,3.99813 21.9084055,5.13983743 21.9949813,6.58060798 L22,6.74813 L22,17.2518 C22,18.7143481 20.8583111,19.9102055 19.4175241,19.9967813 L19.25,20.0018 L4.75,20.0018 C3.28747111,20.0018 2.09159594,18.8601111 2.00501881,17.4193241 L2,17.2518 L2,6.74813 C2,5.28559148 3.14170743,4.08972523 4.58247798,4.00314877 L4.75,3.99813 L19.25,3.99813 Z M19.25,5.49813 L15.9959,5.49813 L15.9958,18.5018 L19.25,18.5018 C19.89725,18.5018 20.4295391,18.0099641 20.4935469,17.3796125 L20.5,17.2518 L20.5,6.74813 C20.5,6.1009175 20.0081641,5.56859563 19.3778125,5.50458356 L19.25,5.49813 Z M14.4959,5.49813 L4.75,5.49813 C4.10279688,5.49813 3.5704668,5.99000109 3.50645367,6.62032409 L3.5,6.74813 L3.5,17.2518 C3.5,17.89905 3.99187109,18.4313391 4.62219409,18.4953469 L4.75,18.5018 L14.4959,18.5018 Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+            </Button.Content>
+            <Button.Flyout>
+              <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                <MenuItem Header="Metadata" Command="{Binding ToggleMetadataCommand}">
+                  <MenuItem.Icon>
+                    <CheckBox BorderThickness="0"
+                              IsChecked="{Binding !Settings.ShowMetadata}"
+                              IsHitTestVisible="False"
+                              IsEnabled="False">
+                    </CheckBox>
+                  </MenuItem.Icon>
+                </MenuItem>
+              </MenuFlyout>
+            </Button.Flyout>
+          </Button>
+
+        </Grid>
       </Grid>
       <Grid Row="1">
-        <ProgressBar IsVisible="{Binding IsBusy}" HorizontalAlignment="Stretch" Value="{Binding CurrentProgress}" Maximum="{Binding TotalProgress}"></ProgressBar>
+        <ProgressBar IsVisible="{Binding IsBusy}" HorizontalAlignment="Stretch" Value="{Binding CurrentProgress}" Maximum="{Binding TotalProgress}">
+          <ToolTip.Tip>
+            <Grid Width="250">
+              <Label Content="{Binding ProgressStatus}" Padding="10"
+                     HorizontalContentAlignment="Center"
+                     VerticalContentAlignment="Center"></Label>
+            </Grid>
+          </ToolTip.Tip>
+        </ProgressBar>
       </Grid>
-      <Grid Row="2" ColumnDefinitions="50,*">
+      <Grid Row="2" ColumnDefinitions="42,*">
         <ListBox
             ItemsSource="{Binding NavigationMenuItems}"
             SelectedItem="{Binding CurrentMenuItem, Mode=TwoWay}">
           <ListBox.ItemTemplate>
             <DataTemplate>
-              <PathIcon Height="30" Width="30" Data="{Binding Icon}"></PathIcon>
+              <PathIcon Height="24" Width="24" Data="{Binding Icon}"></PathIcon>
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>

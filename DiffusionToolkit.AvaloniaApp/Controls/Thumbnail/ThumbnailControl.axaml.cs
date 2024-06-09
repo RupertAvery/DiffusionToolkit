@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -79,6 +81,17 @@ public partial class ThumbnailControl : UserControl
             null,
             BindingMode.TwoWay);
 
+    public static readonly DirectProperty<ThumbnailControl, ObservableCollection<ThumbnailViewModel>?> SelectedItemsProperty =
+        AvaloniaProperty.RegisterDirect<ThumbnailControl, ObservableCollection<ThumbnailViewModel>?>(nameof(CurrentItem),
+            o => o.SelectedItems,
+            (o, v) =>
+            {
+                o.SelectedItems = v;
+            },
+            null,
+            BindingMode.TwoWay);
+
+
     public static readonly RoutedEvent<RoutedEventArgs> CurrentItemChangedEvent =
         RoutedEvent.Register<ThumbnailControl, RoutedEventArgs>(nameof(CurrentItemChanged), RoutingStrategies.Direct);
 
@@ -119,8 +132,22 @@ public partial class ThumbnailControl : UserControl
     public ObservableCollection<ThumbnailViewModel>? SelectedItems
     {
         get => _selectedItems;
-        set => _selectedItems = value;
+        set
+        {
+            SetAndRaise(SelectedItemsProperty, ref _selectedItems, value);
+            //if (value != null)
+            //{
+            //    value.CollectionChanged += ValueOnCollectionChanged;
+            //}
+        }
     }
+
+    //private void ValueOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    //{
+    //    Debug.WriteLine(e.Action);
+    //    Debug.WriteLine(e.OldItems);
+    //    Debug.WriteLine(e.NewItems);
+    //}
 
     public ThumbnailViewModel? CurrentItem
     {
@@ -147,7 +174,7 @@ public partial class ThumbnailControl : UserControl
 
         Loaded += OnLoaded;
 
-
+        SelectedItems = new ObservableCollection<ThumbnailViewModel>();
         PropertyChanged += OnPropertyChanged;
         SizeChanged += ThumbnailControl_SizeChanged;
         _dataStore = ServiceLocator.DataStore;
@@ -228,28 +255,28 @@ public partial class ThumbnailControl : UserControl
         switch (e.Property.Name)
         {
             case nameof(Thumbnails):
-            {
-                if (Thumbnails != null)
                 {
-                    Deselect();
-                    Dispatcher.UIThread.Post(() =>
+                    if (Thumbnails != null)
                     {
-                        RedrawThumbnails();
-                    });
-                }
+                        Deselect();
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            RedrawThumbnails();
+                        });
+                    }
 
-                break;
-            }
+                    break;
+                }
             case nameof(ThumbnailSize):
-            {
-                if (Thumbnails != null)
                 {
-                    UnloadThumbnails();
-                    RedrawThumbnails();
-                }
+                    if (Thumbnails != null)
+                    {
+                        UnloadThumbnails();
+                        RedrawThumbnails();
+                    }
 
-                break;
-            }
+                    break;
+                }
             case nameof(CurrentItem):
                 if (CurrentItem != null)
                 {
@@ -300,14 +327,18 @@ public partial class ThumbnailControl : UserControl
     {
         Dispatcher.UIThread.Post(() =>
         {
-            using var stream = File.Open(thumbnail.Path, FileMode.Open, FileAccess.Read);
-            thumbnail.ThumbnailImage = Bitmap.DecodeToWidth(stream, ThumbnailSize);
-            thumbnail.IsLoaded = true;
+            if (File.Exists(thumbnail.Path))
+            {
+                using var stream = File.Open(thumbnail.Path, FileMode.Open, FileAccess.Read);
+                thumbnail.ThumbnailImage = Bitmap.DecodeToWidth(stream, ThumbnailSize);
+                thumbnail.IsLoaded = true;
+            }
         });
     }
 
     private void Deselect()
     {
+        SelectedItems?.Clear();
         foreach (var item in Thumbnails)
         {
             item.IsSelected = false;
@@ -319,6 +350,7 @@ public partial class ThumbnailControl : UserControl
         foreach (var item in Thumbnails)
         {
             item.IsSelected = true;
+            SelectedItems?.Add(item);
         }
     }
 
@@ -336,7 +368,11 @@ public partial class ThumbnailControl : UserControl
         {
             case Key.LeftCtrl:
             case Key.RightCtrl:
-                CurrentItem.IsSelected = true;
+                if (CurrentItem is { })
+                {
+                    CurrentItem.IsSelected = true;
+                    UpdateSelection(CurrentItem);
+                }
                 break;
 
 
@@ -359,7 +395,11 @@ public partial class ThumbnailControl : UserControl
                 break;
 
             case Key.Space:
-                CurrentItem.IsSelected = !CurrentItem.IsSelected;
+                if (CurrentItem is { })
+                {
+                    CurrentItem.IsSelected = !CurrentItem.IsSelected;
+                    UpdateSelection(CurrentItem);
+                }
                 e.Handled = true;
                 break;
 
@@ -379,9 +419,21 @@ public partial class ThumbnailControl : UserControl
                     {
                         case Key.Left:
                             index--;
+
+                            if (index == -1)
+                            {
+                                RaiseEvent(new NavigationEventArgs() { NavigationState = NavigationState.StartOfPage });
+                            }
+
                             break;
                         case Key.Right:
                             index++;
+
+                            if (index == Thumbnails.Count)
+                            {
+                                RaiseEvent(new NavigationEventArgs() { NavigationState = NavigationState.EndOfPage });
+                            }
+
                             break;
                         case Key.Up:
                             index -= _columns;
@@ -404,20 +456,17 @@ public partial class ThumbnailControl : UserControl
 
                     }
 
-                    if (index == -1)
-                    {
-                        RaiseEvent(new NavigationEventArgs() { NavigationState = NavigationState.StartOfPage });
-                    }
-                    if (index == Thumbnails.Count)
-                    {
-                        RaiseEvent(new NavigationEventArgs() { NavigationState = NavigationState.EndOfPage });
-                    }
 
                     index = Math.Clamp(index, 0, Thumbnails.Count - 1);
 
                     if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
                     {
                         SelectRange(Thumbnails[index]);
+                    }
+                    else
+                    {
+                        Thumbnails[index].IsSelected = true;
+                        UpdateSelection(Thumbnails[index]);
                     }
 
                     SetCurrent(Thumbnails[index], true);
@@ -426,6 +475,23 @@ public partial class ThumbnailControl : UserControl
                 }
 
                 break;
+        }
+    }
+
+    private void UpdateSelection(ThumbnailViewModel item)
+    {
+        if (SelectedItems == null) return;
+
+        if (item.IsSelected)
+        {
+            if (!SelectedItems.Contains(item))
+            {
+                SelectedItems.Add(item);
+            }
+        }
+        else
+        {
+            SelectedItems.Remove(item);
         }
     }
 
@@ -447,6 +513,7 @@ public partial class ThumbnailControl : UserControl
             for (var i = start; i <= end; i++)
             {
                 Thumbnails[i].IsSelected = true;
+                SelectedItems?.Add(Thumbnails[i]);
             }
         }
     }
@@ -470,6 +537,7 @@ public partial class ThumbnailControl : UserControl
                 }
 
                 thumbnail.IsSelected = !thumbnail.IsSelected;
+                UpdateSelection(thumbnail);
             }
             else if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
             {
@@ -477,11 +545,20 @@ public partial class ThumbnailControl : UserControl
             }
             else
             {
+                if (!thumbnail.IsSelected)
+                {
+                    Deselect();
+                }
 
-
+                thumbnail.IsSelected = true;
+                if (SelectedItems != null && !SelectedItems.Contains(thumbnail))
+                {
+                    SelectedItems.Add(thumbnail);
+                }
             }
 
             SetCurrent(thumbnail, true);
+
             _isMouseDown = true;
             lastPoint = e.GetPosition(panel);
         }
@@ -492,10 +569,11 @@ public partial class ThumbnailControl : UserControl
 
     private void SetCurrent(ThumbnailViewModel thumbnail, bool scrollIntoView = false)
     {
-
         if (CurrentItem != null) CurrentItem.IsCurrent = false;
+
         CurrentItem = thumbnail;
         CurrentItem.IsCurrent = true;
+
 
         //if (scrollIntoView)
         //{
@@ -538,7 +616,6 @@ public partial class ThumbnailControl : UserControl
     {
         if (!_isDragging && ((e.KeyModifiers & KeyModifiers.Control) == 0 && (e.KeyModifiers & KeyModifiers.Shift) == 0))
         {
-            Deselect();
             _anchorItem = CurrentItem;
         }
 

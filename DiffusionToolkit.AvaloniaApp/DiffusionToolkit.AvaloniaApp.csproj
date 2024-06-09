@@ -17,16 +17,29 @@
     <CFBundleIdentifier>com.endersoft.DiffusionToolkit</CFBundleIdentifier>
     <CFBundleVersion>1.0.0</CFBundleVersion>
     <CFBundlePackageType>APPL</CFBundlePackageType>
-    <CFBundleExecutable>DiffusionToolkit.AvaloniaApp</CFBundleExecutable>
-	<CFBundleShortVersionString>1.0.0
-	</CFBundleShortVersionString>
+    <CFBundleExecutable>launch.sh</CFBundleExecutable>
+	  <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
     <!--<CFBundleIconFile>AppName.icns</CFBundleIconFile>-->
     <!-- Will be copied from output directory -->
     <NSPrincipalClass>NSApplication</NSPrincipalClass>
     <NSHighResolutionCapable>true</NSHighResolutionCapable>
   </PropertyGroup>
 
+  
+  <ItemGroup>
+    <None Remove="Icons\blue-heart-32.png" />
+    <None Remove="Icons\star-32.png" />
+  </ItemGroup>
 
+  
+  <ItemGroup>
+    <AvaloniaResource Include="Icons\blue-heart-32.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Icons\star-32.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </AvaloniaResource>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Condition="'$(RuntimeIdentifier)' == 'osx-x64'" Include="Dotnet.Bundle" Version="*" />
@@ -66,6 +79,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="launch.sh">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="runme-osx.sh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

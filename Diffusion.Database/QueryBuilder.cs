@@ -6,9 +6,6 @@ using System.Text.RegularExpressions;
 
 namespace Diffusion.Database;
 
-
-
-
 public static partial class QueryBuilder
 {
     public static readonly Regex DayRegex = new Regex("\\d+ day(?:s)? ago", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -53,6 +50,7 @@ public static partial class QueryBuilder
     public static List<string> Samplers { get; set; }
 
     public static bool HideNSFW { get; set; }
+    public static bool HideDeleted { get; set; }
 
     public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) QueryPrompt(string prompt)
     {
@@ -64,6 +62,11 @@ public static partial class QueryBuilder
         if (HideNSFW)
         {
             conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+        }
+
+        if (HideDeleted)
+        {
+            conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", false));
         }
 
         return (string.Join(" AND ", conditions.Select(c => c.Key)),
@@ -78,7 +81,6 @@ public static partial class QueryBuilder
                 joins
             );
     }
-
 
     public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) Parse(string prompt)
     {

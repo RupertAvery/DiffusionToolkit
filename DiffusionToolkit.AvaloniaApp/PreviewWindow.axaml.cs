@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Input;
 using Avalonia;
@@ -40,21 +41,21 @@ public partial class PreviewWindow : Window
 
         if (ServiceLocator.Settings.Preview != null)
         {
-            switch (ServiceLocator.Settings.Preview.WindowState)
-            {
-                case WindowState.Normal:
-                    Position = ServiceLocator.Settings.Preview.Position;
-                    ClientSize = ServiceLocator.Settings.Preview.ClientSize;
-                    WindowState = ServiceLocator.Settings.Preview.WindowState;
-                    break;
+            //switch (ServiceLocator.Settings.Preview.WindowState)
+            //{
+            //    case WindowState.Normal:
+            //        Position = ServiceLocator.Settings.Preview.Position;
+            //        //ClientSize = ServiceLocator.Settings.Preview.ClientSize;
+            //        //WindowState = ServiceLocator.Settings.Preview.WindowState;
+            //        break;
 
-                case WindowState.Maximized:
-                case WindowState.FullScreen:
-                    Position = ServiceLocator.Settings.Preview.MaxPosition;
-                    ClientSize = ServiceLocator.Settings.Preview.MaxClientSize;
-                    WindowState = ServiceLocator.Settings.Preview.WindowState;
-                    break;
-            }
+            //    case WindowState.Maximized:
+            //    case WindowState.FullScreen:
+            //        //Position = ServiceLocator.Settings.Preview.MaxPosition;
+            //        //ClientSize = ServiceLocator.Settings.Preview.MaxClientSize;
+            //        WindowState = ServiceLocator.Settings.Preview.WindowState;
+            //        break;
+            //}
 
             
 
@@ -75,16 +76,19 @@ public partial class PreviewWindow : Window
 
                 case WindowState.Maximized:
                 case WindowState.FullScreen:
-                    ServiceLocator.Settings.Preview.MaxPosition = Position;
+                    //ServiceLocator.Settings.Preview.MaxPosition = Position;
                     break;
             }
+
+            Debug.WriteLine($"{Position.X},{Position.Y} {ClientSize.Width},{ClientSize.Height} {WindowState}");
+
             //ServiceLocator.Settings.Preview.Position = e.Point;
         }
     }
 
     private void PreviewWindow_Loaded(object? sender, RoutedEventArgs e)
     {
-        if (ServiceLocator.Settings.Preview == null)
+        if (ServiceLocator.Settings!.Preview == null)
         {
             ServiceLocator.Settings.Preview = new WindowPosition()
             {
@@ -100,7 +104,7 @@ public partial class PreviewWindow : Window
         switch (e.Property.Name)
         {
             case nameof(WindowState):
-                ServiceLocator.Settings.Preview.WindowState = WindowState;
+                //ServiceLocator.Settings.Preview.WindowState = WindowState;
                 break;
             //case nameof(Position):
             //    ServiceLocator.Settings.Preview.Position = Position;
@@ -109,12 +113,12 @@ public partial class PreviewWindow : Window
                 switch (WindowState)
                 {
                     case WindowState.Normal:
-                        ServiceLocator.Settings.Preview.ClientSize = ClientSize;
+                        //ServiceLocator.Settings.Preview.ClientSize = ClientSize;
                         break;
 
                     case WindowState.Maximized:
                     case WindowState.FullScreen:
-                        ServiceLocator.Settings.Preview.MaxClientSize = ClientSize;
+                        //ServiceLocator.Settings.Preview.MaxClientSize = ClientSize;
                         break;
                 }
 
@@ -158,9 +162,9 @@ public partial class PreviewWindow : Window
                     _ => WindowState
                 };
 
-
-                Position = ServiceLocator.Settings.Preview.Position;
-                ClientSize = ServiceLocator.Settings.Preview.ClientSize;
+                Debug.WriteLine($"{Position.X},{Position.Y} {ClientSize.Width},{ClientSize.Height} {WindowState}");
+                //Position = ServiceLocator.Settings.Preview.Position;
+                //ClientSize = ServiceLocator.Settings.Preview.ClientSize;
 
                 break;
             case Key.Left:

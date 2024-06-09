@@ -6,12 +6,13 @@
              xmlns:search="clr-namespace:DiffusionToolkit.AvaloniaApp.Pages.Search"
              xmlns:metadata="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Metadata"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             Background="{DynamicResource BackgroundBrush}"
              x:Class="DiffusionToolkit.AvaloniaApp.Pages.Search.SearchPage">
   <Design.DataContext>
     <search:SearchPageViewModel></search:SearchPageViewModel>
   </Design.DataContext>
-  <Grid ColumnDefinitions="300,5,*,5,*">
-    <StackPanel Orientation="Vertical">
+  <Grid x:Name="MainGrid" ColumnDefinitions="3*,2,1*">
+    <!--<StackPanel Orientation="Vertical">
       <Expander VerticalAlignment="Top" HorizontalAlignment="Stretch">
         <Expander.Header>
           Folders
@@ -26,47 +27,72 @@
         <Grid>
         </Grid>
       </Expander>
-    </StackPanel>
-    <GridSplitter Background="Black" Grid.Column="1" ResizeDirection="Columns"></GridSplitter>
-    <Grid Background="Black" Grid.Column="2">
-      <Grid RowDefinitions="30,*,30">
-        <TextBox Grid.Row="0" Text="{Binding SearchText}" KeyDown="InputElement_OnKeyDown">
-        </TextBox>
+    </StackPanel>-->
+    <!--<GridSplitter Grid.Column="1" ResizeDirection="Columns"></GridSplitter>-->
+    <Grid Grid.Column="0">
+      <Grid RowDefinitions="*,36">
         <thumbnail:ThumbnailControl
             KeyDown="Thumbnail_OnKeyDown"
             DoubleTapped="InputElement_OnDoubleTapped"
             NavigationChanged="ThumbnailControl_OnNavigationChanged"
-            Grid.Row="1"
+            Grid.Row="0"
             Thumbnails="{Binding SearchResults}"
+            SelectedItems="{Binding SelectedItems}"
             CurrentItem="{Binding SelectedEntry, Mode=TwoWay}"
                 ></thumbnail:ThumbnailControl>
-        <Grid Grid.Row="2" Margin="2,2,2,2">
+        <Grid Grid.Row="1" Margin="2,2,2,2">
           <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
             <ColumnDefinition/>
             <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
-          <StackPanel Grid.Column="1" Orientation="Horizontal">
-            <Button Command="{Binding GotoStart}">Start</Button>
-            <Button Command="{Binding GotoPrev}">Prev</Button>
-            <TextBox Text="{Binding Page}" HorizontalContentAlignment="Center" KeyDown="Page_OnKeyDown"></TextBox>
+          <Label VerticalContentAlignment="Center" Content="{Binding ResultsSummary}"></Label>
+          <StackPanel Grid.Column="2" Orientation="Horizontal">
+            <Button Command="{Binding GotoStart}">
+              <PathIcon Width="16" Height="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M5.75,3 C5.37030423,3 5.05650904,3.28215388 5.00684662,3.64822944 L5,3.75 L5,20.25 C5,20.6642136 5.33578644,21 5.75,21 C6.12969577,21 6.44349096,20.7178461 6.49315338,20.3517706 L6.5,20.25 L6.5,3.75 C6.5,3.33578644 6.16421356,3 5.75,3 Z M18.7803301,3.21966991 C18.5140635,2.95340335 18.0973998,2.9291973 17.8037883,3.14705176 L17.7196699,3.21966991 L9.46966991,11.4696699 C9.20340335,11.7359365 9.1791973,12.1526002 9.39705176,12.4462117 L9.46966991,12.5303301 L17.7196699,20.7803301 C18.0125631,21.0732233 18.4874369,21.0732233 18.7803301,20.7803301 C19.0465966,20.5140635 19.0708027,20.0973998 18.8529482,19.8037883 L18.7803301,19.7196699 L11.0606602,12 L18.7803301,4.28033009 C19.0732233,3.98743687 19.0732233,3.51256313 18.7803301,3.21966991 Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+            </Button>
+            <Button Command="{Binding GotoPrev}">
+              <PathIcon Width="16" Height="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M3 20.25C3 20.6642 3.33579 21 3.75 21C4.16421 21 4.5 20.6642 4.5 20.25L4.5 3.75C4.5 3.33579 4.16422 3 3.75 3C3.33579 3 3 3.33579 3 3.75V20.25Z M18.2303 20.4748C19.3883 21.305 21 20.4774 21 19.0526L21 4.82961C21 3.44582 19.4698 2.60946 18.3051 3.35665L7.8354 10.073C6.79467 10.7407 6.75574 12.2477 7.76062 12.9682L18.2303 20.4748ZM19.5 19.0526C19.5 19.2561 19.2697 19.3743 19.1043 19.2557L8.63465 11.7492C8.4911 11.6463 8.49666 11.431 8.64534 11.3356L19.115 4.61919C19.2814 4.51245 19.5 4.63193 19.5 4.82961L19.5 19.0526Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+            </Button>
+            <TextBox Width="40" Text="{Binding Page}" HorizontalContentAlignment="Center" KeyDown="Page_OnKeyDown"></TextBox>
             <Label Width="10" VerticalContentAlignment="Center" HorizontalContentAlignment="Center">/</Label>
-            <Label Width="50" Content="{Binding Pages}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Label>
-            <Button Command="{Binding GotoNext}">Next</Button>
-            <Button Command="{Binding GotoEnd}">End</Button>
+            <Label Width="40" Content="{Binding Pages}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Label>
+            <Button Command="{Binding GotoNext}">
+              <PathIcon Width="16" Height="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M21 3.75C21 3.33579 20.6642 3 20.25 3C19.8358 3 19.5 3.33579 19.5 3.75V20.25C19.5 20.6642 19.8358 21 20.25 21C20.6642 21 21 20.6642 21 20.25V3.75Z M5.7697 3.52521C4.61175 2.69498 3 3.5226 3 4.94743V19.1704C3 20.5542 4.53019 21.3905 5.69492 20.6434L16.1646 13.927C17.2053 13.2593 17.2443 11.7523 16.2394 11.0318L5.7697 3.52521ZM4.5 4.94743C4.5 4.74388 4.73025 4.62565 4.89567 4.74425L15.3653 12.2508C15.5089 12.3537 15.5033 12.569 15.3547 12.6644L4.88499 19.3808C4.7186 19.4876 4.5 19.3681 4.5 19.1704V4.94743Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+            </Button>
+            <Button Command="{Binding GotoEnd}">
+              <PathIcon Width="16" Height="16">
+                <PathIcon.Data>
+                  <StreamGeometry>M18.25,3 C18.6296958,3 18.943491,3.28215388 18.9931534,3.64822944 L19,3.75 L19,20.25 C19,20.6642136 18.6642136,21 18.25,21 C17.8703042,21 17.556509,20.7178461 17.5068466,20.3517706 L17.5,20.25 L17.5,3.75 C17.5,3.33578644 17.8357864,3 18.25,3 Z M5.21966991,3.21966991 C5.48593648,2.95340335 5.90260016,2.9291973 6.19621165,3.14705176 L6.28033009,3.21966991 L14.5303301,11.4696699 C14.7965966,11.7359365 14.8208027,12.1526002 14.6029482,12.4462117 L14.5303301,12.5303301 L6.28033009,20.7803301 C5.98743687,21.0732233 5.51256313,21.0732233 5.21966991,20.7803301 C4.95340335,20.5140635 4.9291973,20.0973998 5.14705176,19.8037883 L5.21966991,19.7196699 L12.9393398,12 L5.21966991,4.28033009 C4.9267767,3.98743687 4.9267767,3.51256313 5.21966991,3.21966991 Z</StreamGeometry>
+                </PathIcon.Data>
+              </PathIcon>
+            </Button>
           </StackPanel>
         </Grid>
       </Grid>
     </Grid>
-    <GridSplitter Background="Black" Grid.Column="3" ResizeDirection="Columns"></GridSplitter>
-    <Grid Background="Black" Grid.Column="4" RowDefinitions="*,5,*">
+    <GridSplitter  Grid.Column="1" ResizeDirection="Columns" ></GridSplitter>
+    <Grid x:Name="ImageGrid" Grid.Column="2" RowDefinitions="*,2,*">
       <Panel Grid.Row="0">
         <Image
             Stretch="Uniform"
             Source="{Binding PreviewImage}"/>
       </Panel>
-      <GridSplitter Background="Black" Grid.Row="1" ResizeDirection="Rows"></GridSplitter>
+      <GridSplitter Grid.Row="1" ResizeDirection="Rows"></GridSplitter>
       <Grid Grid.Row="2">
-          <metadata:MetadataControl Metadata="{Binding Metadata}"></metadata:MetadataControl>
+        <metadata:MetadataControl Metadata="{Binding Metadata}"></metadata:MetadataControl>
       </Grid>
       <Grid Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
         <metadata:MetadataControl Metadata="{Binding Metadata}"></metadata:MetadataControl>
