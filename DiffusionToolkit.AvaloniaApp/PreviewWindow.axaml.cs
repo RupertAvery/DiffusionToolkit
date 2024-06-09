@@ -40,13 +40,10 @@ public partial class PreviewWindow : Window
 
         Loaded += PreviewWindow_Loaded;
 
-        if (Environment.OSVersion.Platform == PlatformID.Unix)
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                Grid grid = MainGrid;
-                grid.RowDefinitions[0].Height = GridLength.Parse("0");
-            }
+            Grid grid = MainGrid;
+            grid.RowDefinitions[0].Height = GridLength.Parse("0");
         }
 
         if (ServiceLocator.Settings.Preview != null)
@@ -172,15 +169,17 @@ public partial class PreviewWindow : Window
                     _ => WindowState
                 };
 
-                if (WindowState == WindowState.FullScreen)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     Grid grid = MainGrid;
-                    grid.RowDefinitions[0].Height = GridLength.Parse("0");
-                }
-                else
-                {
-                    Grid grid = MainGrid;
-                    grid.RowDefinitions[0].Height = GridLength.Parse("30");
+                    if (WindowState == WindowState.FullScreen)
+                    {
+                        grid.RowDefinitions[0].Height = GridLength.Parse("0");
+                    }
+                    else
+                    {
+                        grid.RowDefinitions[0].Height = GridLength.Parse("30");
+                    }
                 }
 
                 //Debug.WriteLine($"{Position.X},{Position.Y} {ClientSize.Width},{ClientSize.Height} {WindowState}");

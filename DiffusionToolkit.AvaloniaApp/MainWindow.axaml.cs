@@ -10,6 +10,7 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using Diffusion.Common;
 using Avalonia.Controls.Primitives;
+using System.Runtime.InteropServices;
 
 namespace DiffusionToolkit.AvaloniaApp
 {
@@ -113,15 +114,18 @@ namespace DiffusionToolkit.AvaloniaApp
         {
             if (e.Property.Name == nameof(Window.WindowState))
             {
-                if (this.WindowState == WindowState.Maximized)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    Border mainBorder = MainBorder;
-                    mainBorder.BorderThickness = new Thickness(10);
-                }
-                else if (this.WindowState == WindowState.Normal)
-                {
-                    Border mainBorder = MainBorder;
-                    mainBorder.BorderThickness = new Thickness(0);
+                    if (this.WindowState == WindowState.Maximized)
+                    {
+                        Border mainBorder = MainBorder;
+                        mainBorder.BorderThickness = new Thickness(10);
+                    }
+                    else if (this.WindowState == WindowState.Normal)
+                    {
+                        Border mainBorder = MainBorder;
+                        mainBorder.BorderThickness = new Thickness(0);
+                    }
                 }
             }
         }
