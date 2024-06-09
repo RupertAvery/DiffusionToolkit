@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia;
+using Avalonia.Styling;
+using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.ViewModels;
 using ReactiveUI;
 
@@ -17,6 +21,7 @@ public class SettingsPageViewModel : ViewModelBase
     private string _selectedIncludedFolder;
     private string _selectedExcludedFolder;
     private bool _recurseFolders;
+    private string _theme;
 
     public IEnumerable<string> MenuItems
     {
@@ -69,13 +74,19 @@ public class SettingsPageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _recurseFolders, value);
     }
 
+    public string Theme
+    {
+        get => _theme;
+        set => this.RaiseAndSetIfChanged(ref _theme, value);
+    }
+
     public SettingsPageViewModel()
     {
 
         MenuItems = new List<string>()
         {
             "General",
-            "Images"
+            "Theme"
         };
 
         SelectedMenuItem = "General";
@@ -87,8 +98,38 @@ public class SettingsPageViewModel : ViewModelBase
 
         IncludedFolders = new ObservableCollection<string>();
         ExcludedFolders = new ObservableCollection<string>();
+
+
+        Themes = new List<string>()
+        {
+            "Default",
+            "Light",
+            "Dark",
+        };
+
+        PropertyChanged += OnPropertyChanged;
     }
 
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Theme))
+        {
+            var app = ((App)Application.Current);
+
+            app.RequestedThemeVariant = Theme switch
+            {
+                "Dark" => ThemeVariant.Dark,
+                "Light" => ThemeVariant.Light,
+                "Default" => ThemeVariant.Default,
+                _ => app.RequestedThemeVariant
+            };
+
+            ServiceLocator.Settings.Theme = Theme;
+        }
+
+    }
+
+    private List<string> Themes { get; }
 
     private async void AddIncludedFolder()
     {
@@ -127,6 +168,7 @@ public class SettingsPageViewModel : ViewModelBase
         this.ExcludedFolders = settings.ExcludedFolders;
         this.IncludedFolders = settings.IncludedFolders;
         this.RecurseFolders = settings.RecurseFolders;
+        this.Theme = settings.Theme ?? "Default";
         //this.HideNSFW = settings.HideNSFW;
     }
 

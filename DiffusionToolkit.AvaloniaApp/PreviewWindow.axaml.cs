@@ -162,7 +162,18 @@ public partial class PreviewWindow : Window
                     _ => WindowState
                 };
 
-                Debug.WriteLine($"{Position.X},{Position.Y} {ClientSize.Width},{ClientSize.Height} {WindowState}");
+                if (WindowState == WindowState.FullScreen)
+                {
+                    Grid grid = MainGrid;
+                    grid.RowDefinitions[0].Height = GridLength.Parse("0");
+                }
+                else
+                {
+                    Grid grid = MainGrid;
+                    grid.RowDefinitions[0].Height = GridLength.Parse("30");
+                }
+
+                //Debug.WriteLine($"{Position.X},{Position.Y} {ClientSize.Width},{ClientSize.Height} {WindowState}");
                 //Position = ServiceLocator.Settings.Preview.Position;
                 //ClientSize = ServiceLocator.Settings.Preview.ClientSize;
 

@@ -23,6 +23,7 @@ public class Settings : ViewModelBase
     private bool _hideDeleted = false;
     private GridSettings _mainGrid;
     private GridSettings _imageGrid;
+    private string? _theme = "Default";
 
     public ObservableCollection<string> IncludedFolders
     {
@@ -96,6 +97,12 @@ public class Settings : ViewModelBase
 
     [JsonIgnore]
     public bool IsDirty { get; private set; }
+
+    public string? Theme
+    {
+        get => _theme;
+        set => this.RaiseAndSetIfChanged(ref _theme, value);
+    }
 
     public Settings()
     {

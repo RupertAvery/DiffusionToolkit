@@ -7,17 +7,17 @@
              x:Class="DiffusionToolkit.AvaloniaApp.Controls.Metadata.MetadataControl">
     <ScrollViewer DataContext="{Binding #root.Metadata}">
         <StackPanel Margin="5">
-            <Label Background="#000030" Padding="4" FontSize="12">PROMPT</Label>
+            <Label Background="#000030" Foreground="White" Padding="4" FontSize="12">PROMPT</Label>
             <SelectableTextBlock Margin="15" Text="{Binding Prompt}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
 
-            <Label Background="#000030" Padding="4" FontSize="12">NEGATIVE PROMPT</Label>
+            <Label Background="#000030" Foreground="White" Padding="4" FontSize="12">NEGATIVE PROMPT</Label>
             <SelectableTextBlock Margin="15" Text="{Binding NegativePrompt}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
 
             <Grid RowDefinitions="*,*" ColumnDefinitions="*,50,50,100">
-                <Label Grid.Row="0" Grid.Column="0" Background="#000030" Padding="4" FontSize="12">SEED</Label>
-                <Label Grid.Row="0" Grid.Column="1" Background="#000030" Padding="4" FontSize="12">CFG</Label>
-                <Label Grid.Row="0" Grid.Column="2" Background="#000030" Padding="4" FontSize="12">Steps</Label>
-                <Label Grid.Row="0" Grid.Column="3" Background="#000030" Padding="4" FontSize="12">Size</Label>
+                <Label Grid.Row="0" Grid.Column="0" Background="#000030" Foreground="White" Padding="4" FontSize="12">SEED</Label>
+                <Label Grid.Row="0" Grid.Column="1" Background="#000030" Foreground="White" Padding="4" FontSize="12">CFG</Label>
+                <Label Grid.Row="0" Grid.Column="2" Background="#000030" Foreground="White" Padding="4" FontSize="12">Steps</Label>
+                <Label Grid.Row="0" Grid.Column="3" Background="#000030" Foreground="White" Padding="4" FontSize="12">Size</Label>
                 <SelectableTextBlock Grid.Row="1" Grid.Column="0" Margin="15" Text="{Binding Seed}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
                 <SelectableTextBlock Grid.Row="1" Grid.Column="1" Margin="15" Text="{Binding CFGScale}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
                 <SelectableTextBlock Grid.Row="1" Grid.Column="2" Margin="15" Text="{Binding Steps}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
@@ -25,20 +25,20 @@
             </Grid>
 
             <Grid RowDefinitions="*,*" ColumnDefinitions="*,150">
-                <Label Grid.Row="0" Grid.Column="0" Background="#000030" Padding="4" FontSize="12">MODEL</Label>
-                <Label Grid.Row="0" Grid.Column="1" Background="#000030" Padding="4" FontSize="12">HASH</Label>
+                <Label Grid.Row="0" Grid.Column="0" Background="#000030"  Foreground="White" Padding="4" FontSize="12">MODEL</Label>
+                <Label Grid.Row="0" Grid.Column="1" Background="#000030"  Foreground="White" Padding="4" FontSize="12">HASH</Label>
                 <SelectableTextBlock Grid.Row="1" Grid.Column="0" Margin="15" Text="{Binding Model}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
                 <SelectableTextBlock Grid.Row="1" Grid.Column="1" Margin="15" Text="{Binding ModelHash}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
             </Grid>
 
-            <Label Background="#000030" Padding="4" FontSize="12">PATH</Label>
+            <Label Background="#000030" Foreground="White" Padding="4" FontSize="12">PATH</Label>
             <SelectableTextBlock Margin="15" Text="{Binding Path}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
 
-            <Label Background="#000030" Padding="4" FontSize="12">DATE</Label>
+            <Label Background="#000030" Foreground="White" Padding="4" FontSize="12">DATE</Label>
             <SelectableTextBlock Margin="15" Text="{Binding CreatedDate}" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
 
-            <Label Background="#000030" Padding="4" FontSize="12">Albums</Label>
-            <SelectableTextBlock Margin="15" Text="Albums" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>
+            <!--<Label Background="#000030" Foreground="White" Padding="4" FontSize="12">Albums</Label>
+            <SelectableTextBlock Margin="15" Text="Albums" xml:space="preserve" TextWrapping="Wrap"></SelectableTextBlock>-->
 
         </StackPanel>
     </ScrollViewer>

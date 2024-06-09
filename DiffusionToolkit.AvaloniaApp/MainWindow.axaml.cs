@@ -18,10 +18,13 @@ namespace DiffusionToolkit.AvaloniaApp
         private MainWindowViewModel _viewModel;
         private NavigationManager _navigationManager;
         private ScanManager _scanManager;
+        private Configuration<Settings> _configuration;
 
-        public MainWindow()
+
+        public MainWindow(Configuration<Settings> configuration)
         {
             InitializeComponent();
+            _configuration = configuration;
         }
 
         protected override void OnClosed(EventArgs e)
@@ -31,28 +34,11 @@ namespace DiffusionToolkit.AvaloniaApp
             _configuration.Save(ServiceLocator.Settings);
         }
 
-        private Configuration<Settings> _configuration;
-
         protected override async void OnLoaded(RoutedEventArgs e)
         {
             base.OnLoaded(e);
 
-            var configFile = Path.Combine(AppInfo.AppDataPath, "settings-xp.json");
 
-            _configuration = new Configuration<Settings>(configFile);
-
-            Settings? settings = null;
-
-            if (File.Exists(configFile))
-            {
-                _configuration.Load(out settings);
-            }
-            else
-            {
-                settings = new Settings();
-            }
-
-            ServiceLocator.SetSettings(settings);
 
             // DataStore needs to be created and set before any of the controls/pages are created because of the
             // ServiceLocator pattern

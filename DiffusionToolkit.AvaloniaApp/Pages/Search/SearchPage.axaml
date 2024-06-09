@@ -96,7 +96,7 @@
         <metadata:MetadataControl Metadata="{Binding Metadata}"></metadata:MetadataControl>
       </Grid>
       <Grid Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
-        <metadata:MetadataControl Metadata="{Binding Metadata}"></metadata:MetadataControl>
+        <metadata:MetadataControl Foreground="White" Metadata="{Binding Metadata}"></metadata:MetadataControl>
       </Grid>
 
     </Grid>

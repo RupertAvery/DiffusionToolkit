@@ -21,5 +21,25 @@
   </Application.Resources>
     <Application.Styles>
         <FluentTheme />
+
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        </Style>
+
+        <Style Selector="Label">
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        </Style>
+        <Style Selector="MenuItem">
+            <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}" />
+        </Style>
+        <Style Selector="GridSplitter">
+            <Setter Property="Background" Value="{DynamicResource SplitterBrush}"></Setter>
+        </Style>
     </Application.Styles>
 </Application>
