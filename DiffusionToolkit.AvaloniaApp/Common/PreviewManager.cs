@@ -32,7 +32,7 @@ public class PreviewManager
 
             if (fullScreen)
             {
-                _previewWindow.WindowState = WindowState.FullScreen;
+                _previewWindow.FullScreen();
             }
         }
         else

@@ -71,6 +71,8 @@ public class MainWindowViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _progressStatus, value);
     }
 
+    public ReactiveCommand<string, Unit> SetIconSizeCommand { get; set; }
+
     public MainWindowViewModel()
     {
         _navigationManager = ServiceLocator.NavigationManager;
@@ -134,6 +136,15 @@ public class MainWindowViewModel : ViewModelBase
         ScanFoldersCommand = ReactiveCommand.Create(ScanFolders);
         RebuildDatabaseCommand = ReactiveCommand.Create(RebuildDatabase);
         StopCommand = ReactiveCommand.Create(Stop);
+
+        SetIconSizeCommand = ReactiveCommand.Create<string, Unit>(SetIconSize);
+    }
+
+    private Unit SetIconSize(string size)
+    {
+        ServiceLocator.Settings.IconSize = int.Parse(size);
+
+        return Unit.Default;
     }
 
     private void Stop()

@@ -221,6 +221,18 @@ public partial class ThumbnailControl : UserControl
         RedrawThumbnails();
     }
 
+    private void InvalidateThumbnails()
+    {
+        if (Thumbnails != null)
+        {
+            foreach (var thumbnail in Thumbnails)
+            {
+                //thumbnail.ThumbnailImage?.Dispose();
+                thumbnail.IsLoaded = false;
+            }
+        }
+    }
+
     private void RedrawThumbnails()
     {
         var scrollViewer = ItemsScrollViewer;
@@ -267,7 +279,6 @@ public partial class ThumbnailControl : UserControl
     private void ThumbnailControl_SizeChanged(object? sender, SizeChangedEventArgs e)
     {
         _columns = (int)(e.NewSize.Width / ThumbnailSize);
-
     }
 
     private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -291,7 +302,7 @@ public partial class ThumbnailControl : UserControl
                 {
                     if (Thumbnails != null)
                     {
-                        UnloadThumbnails();
+                        InvalidateThumbnails();
                         RedrawThumbnails();
                     }
 
@@ -308,20 +319,18 @@ public partial class ThumbnailControl : UserControl
 
     public void UnloadThumbnails()
     {
-        _cancellationTokenSource.Cancel();
-
-        Task.Run(() =>
+        if (Thumbnails != null)
         {
-            if (Thumbnails != null)
+            var thumbNails = Thumbnails.ToList();
+
+            Task.Run(() =>
             {
-                foreach (var thumbnail in Thumbnails.ToList())
+                foreach (var thumbnail in thumbNails)
                 {
                     thumbnail.Dispose();
                 }
-            }
-        });
-
-        _cancellationTokenSource = new CancellationTokenSource();
+            });
+        }
     }
 
     //public void LoadThumbnails()

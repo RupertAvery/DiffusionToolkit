@@ -80,11 +80,11 @@
           <StackPanel Margin="10,10,10,0">
             <Label>Theme</Label>
             <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <Label Content="{Binding .}"></Label>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
+              <ComboBox.ItemTemplate>
+                <DataTemplate>
+                  <Label Content="{Binding .}"></Label>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
             </ComboBox>
           </StackPanel>
         </Grid>

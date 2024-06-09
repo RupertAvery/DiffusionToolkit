@@ -41,5 +41,11 @@
         <Style Selector="GridSplitter">
             <Setter Property="Background" Value="{DynamicResource SplitterBrush}"></Setter>
         </Style>
+        <Styles>
+            <Style Selector="FlyoutPresenter.flyoutBackground">
+                <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+                <Setter Property="Opacity" Value="0.8" />
+            </Style>
+        </Styles>
     </Application.Styles>
 </Application>

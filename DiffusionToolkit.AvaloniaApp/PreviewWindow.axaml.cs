@@ -69,6 +69,12 @@ public partial class PreviewWindow : Window
         }
     }
 
+    public void FullScreen()
+    {
+        WindowState = WindowState.FullScreen;
+        UpdateTitleBar();
+    }
+
     private PixelPoint _lastPosition;
 
     private void OnPositionChanged(object? sender, PixelPointEventArgs e)
@@ -169,18 +175,7 @@ public partial class PreviewWindow : Window
                     _ => WindowState
                 };
 
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    Grid grid = MainGrid;
-                    if (WindowState == WindowState.FullScreen)
-                    {
-                        grid.RowDefinitions[0].Height = GridLength.Parse("0");
-                    }
-                    else
-                    {
-                        grid.RowDefinitions[0].Height = GridLength.Parse("30");
-                    }
-                }
+                UpdateTitleBar();
 
                 //Debug.WriteLine($"{Position.X},{Position.Y} {ClientSize.Width},{ClientSize.Height} {WindowState}");
                 //Position = ServiceLocator.Settings.Preview.Position;
@@ -193,6 +188,22 @@ public partial class PreviewWindow : Window
             case Key.Right:
                 ServiceLocator.ThumbnailNavigationManager.MoveNext();
                 break;
+        }
+    }
+
+    private void UpdateTitleBar()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Grid grid = MainGrid;
+            if (WindowState == WindowState.FullScreen)
+            {
+                grid.RowDefinitions[0].Height = GridLength.Parse("0");
+            }
+            else
+            {
+                grid.RowDefinitions[0].Height = GridLength.Parse("30");
+            }
         }
     }
 

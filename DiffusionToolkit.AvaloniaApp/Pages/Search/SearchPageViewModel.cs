@@ -118,8 +118,20 @@ public class SearchPageViewModel : ViewModelBase
 
         SelectedItems = new ObservableCollection<ThumbnailViewModel>();
 
+        ServiceLocator.Settings.PropertyChanged += SettingsOnPropertyChanged;
+
+        ThumbnailSize = ServiceLocator.Settings.IconSize;
+
         SortByOptions = DataStore.SortByOptions;
         SortOrderOptions = new List<string>() { "A-Z", "Z-A" };
+    }
+
+    private void SettingsOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(Common.Settings.IconSize))
+        {
+            ThumbnailSize = ((Common.Settings)sender).IconSize;
+        }
     }
 
     private SearchView _view = SearchView.Search;
@@ -309,12 +321,19 @@ public class SearchPageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedItems, value);
     }
 
+    public int ThumbnailSize
+    {
+        get => _thumbnailSize;
+        set => this.RaiseAndSetIfChanged(ref _thumbnailSize, value);
+    }
+
     public async Task UpdateResultsAsync()
     {
         await Task.Run(() => UpdateResults());
     }
 
     private Filter _filter = new Filter();
+    private int _thumbnailSize;
 
     private void UpdateResults()
     {
