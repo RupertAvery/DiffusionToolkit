@@ -1,16 +1,11 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
-using Avalonia.Remote.Protocol.Input;
-using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
-using DiffusionToolkit.AvaloniaApp.Win32;
 using Key = Avalonia.Input.Key;
 
 namespace DiffusionToolkit.AvaloniaApp.Pages.Search;
