@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -38,6 +39,15 @@ public partial class PreviewWindow : Window
         AddHandler(InputElement.KeyDownEvent, Handler);
 
         Loaded += PreviewWindow_Loaded;
+
+        if (Environment.OSVersion.Platform == PlatformID.Unix)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Grid grid = MainGrid;
+                grid.RowDefinitions[0].Height = GridLength.Parse("0");
+            }
+        }
 
         if (ServiceLocator.Settings.Preview != null)
         {

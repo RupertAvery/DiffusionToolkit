@@ -7,19 +7,17 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="DiffusionToolkit.AvaloniaApp.PreviewWindow"
         ExtendClientAreaToDecorationsHint="True"
-        
+        Focusable="True"
         Title="Image Preview">
   <Design.DataContext>
     <avaloniaApp:PreviewWindowViewModel></avaloniaApp:PreviewWindowViewModel>
   </Design.DataContext>
-  <!--<Window.KeyBindings>
-    <KeyBinding Gesture="Escape" Command="{Binding CloseCommand}"></KeyBinding>
-  </Window.KeyBindings>-->
-  <Grid x:Name="MainGrid"  RowDefinitions="30,*">
+
+    <Grid x:Name="MainGrid" RowDefinitions="30,*">
       <!--<Grid ColumnDefinitions="*,Auto,*">
           <Label IsHitTestVisible="False" Grid.Column="1" VerticalContentAlignment="Center">Preview</Label>
       </Grid>-->
-      <Grid Background="#000000" Row="1">
+      <Grid  Background="#000000" Row="1">
           <Grid.ColumnDefinitions>
               <ColumnDefinition/>
               <ColumnDefinition Width="400"/>
