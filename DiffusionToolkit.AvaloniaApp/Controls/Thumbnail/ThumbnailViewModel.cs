@@ -5,6 +5,14 @@ using ReactiveUI;
 
 namespace DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
 
+public enum ThumbnailStatus
+{
+    New,
+    Loading,
+    Loaded,
+    Error
+}
+
 public class ThumbnailViewModel : ViewModelBase, IDisposable
 {
     private Bitmap _thumbnailImage;
@@ -79,10 +87,11 @@ public class ThumbnailViewModel : ViewModelBase, IDisposable
         set => this.RaiseAndSetIfChanged(ref _forDeletion, value);
     }
 
-    public bool IsLoaded { get; set; }
+    public ThumbnailStatus Status { get; set; }
 
     public void Dispose()
     {
         _thumbnailImage?.Dispose();
     }
 }
+

@@ -4,32 +4,51 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:metadata="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Metadata"
         xmlns:avaloniaApp="clr-namespace:DiffusionToolkit.AvaloniaApp"
+        xmlns:converters="clr-namespace:DiffusionToolkit.AvaloniaApp.Converters"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="DiffusionToolkit.AvaloniaApp.PreviewWindow"
         ExtendClientAreaToDecorationsHint="True"
         Focusable="True"
         Title="Image Preview">
+  <Window.Resources>
+    <converters:GreaterThanOrEqualToConverter x:Key="greaterThanOrEqualToConverter"></converters:GreaterThanOrEqualToConverter>
+  </Window.Resources>
+
   <Design.DataContext>
     <avaloniaApp:PreviewWindowViewModel></avaloniaApp:PreviewWindowViewModel>
   </Design.DataContext>
 
-    <Grid x:Name="MainGrid" RowDefinitions="30,*">
-      <!--<Grid ColumnDefinitions="*,Auto,*">
+  <Grid x:Name="MainGrid" RowDefinitions="30,*">
+    <!--<Grid ColumnDefinitions="*,Auto,*">
           <Label IsHitTestVisible="False" Grid.Column="1" VerticalContentAlignment="Center">Preview</Label>
       </Grid>-->
-      <Grid  Background="#000000" Row="1">
-          <Grid.ColumnDefinitions>
-              <ColumnDefinition/>
-              <ColumnDefinition Width="400"/>
-          </Grid.ColumnDefinitions>
-          <Border Grid.ColumnSpan="2">
-              <Image
-                  Stretch="Uniform"
-                  Source="{Binding PreviewImage}"/>
-          </Border>
-          <Grid Grid.Column="1" Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
-              <metadata:MetadataControl Foreground="White" Metadata="{Binding Metadata}"></metadata:MetadataControl>
-          </Grid>
+    <Grid  Background="#000000" Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition/>
+        <ColumnDefinition Width="400"/>
+      </Grid.ColumnDefinitions>
+      <Border Grid.ColumnSpan="2">
+        <Grid RowDefinitions="*,40">
+          <Image
+              Stretch="Uniform"
+              Source="{Binding PreviewImage}"/>
+          <StackPanel Margin="5" Grid.Row="1" Orientation="Horizontal">
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=1}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=2}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=3}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=4}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=5}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=6}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=7}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=8}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=9}"></Image>
+            <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=10}"></Image>
+          </StackPanel>
+        </Grid>
+      </Border>
+      <Grid Grid.Column="1" Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
+        <metadata:MetadataControl Foreground="White" Metadata="{Binding Metadata}"></metadata:MetadataControl>
       </Grid>
+    </Grid>
   </Grid>
 </Window>

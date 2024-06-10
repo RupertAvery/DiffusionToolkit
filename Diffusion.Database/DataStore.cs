@@ -9,6 +9,17 @@ public class MigrationEventArgs
     public MigrationType MigrationType { get; set; }
 }
 
+public class ThumbnailEntry
+{
+    [PrimaryKey]
+    public int Id { get; set; }
+    public int Size { get; set; }
+    public int Width { get; set; }
+    public int Height { get; set; }
+    public string Path { get; set; }
+    public byte[] Data { get; set; }
+}
+
 public partial class DataStore
 {
     private readonly string _extensionsPath;

@@ -19,6 +19,8 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
+using DiffusionToolkit.AvaloniaApp.Thumbnails;
+using SkiaSharp;
 
 namespace DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
 
@@ -228,7 +230,7 @@ public partial class ThumbnailControl : UserControl
             foreach (var thumbnail in Thumbnails)
             {
                 //thumbnail.ThumbnailImage?.Dispose();
-                thumbnail.IsLoaded = false;
+                thumbnail.Status = ThumbnailStatus.New;
             }
         }
     }
@@ -238,8 +240,15 @@ public partial class ThumbnailControl : UserControl
         var scrollViewer = ItemsScrollViewer;
         ItemsControl itemsControl = ThumbnailItemsControl;
 
+        var preloadSize = ThumbnailSize * 2;
+
         // Get the bounds of the ScrollViewer's viewport
-        var viewportBounds = new Rect(scrollViewer.Offset.X, scrollViewer.Offset.Y, scrollViewer.Viewport.Width, scrollViewer.Viewport.Height);
+        var viewportBounds = new Rect(
+            scrollViewer.Offset.X,
+            scrollViewer.Offset.Y - preloadSize,
+            scrollViewer.Viewport.Width,
+            scrollViewer.Viewport.Height + preloadSize
+            );
 
         var wrapPanel = FindVisualChild<WrapPanel>(itemsControl);
 
@@ -249,11 +258,77 @@ public partial class ThumbnailControl : UserControl
             var intersects = viewportBounds.Intersects(item.Bounds);
             if (intersects)
             {
-                if (item.DataContext is ThumbnailViewModel { IsLoaded: false } thumbnail)
+                if (item.DataContext is ThumbnailViewModel { Status: ThumbnailStatus.New } thumbnail)
                 {
-                    Task.Run(() => LoadThumbnail(thumbnail));
+                    thumbnail.Status = ThumbnailStatus.Loading;
+
+                    _ = QueueThumbnail(thumbnail);
+                    //Task.Run(() =>
+                    //{
+                    //    LoadThumbnail(thumbnail);
+                    //});
+                    //Task.Run(async () => await LoadThumbnail(thumbnail));
                 }
             }
+        }
+    }
+
+    public async Task QueueThumbnail(ThumbnailViewModel thumbnail)
+    {
+        if (File.Exists(thumbnail.Path))
+        {
+            await ServiceLocator.ThumbnailLoader.QueueAsync(new ThumbnailJob()
+            {
+                Id = thumbnail.Id,
+                Path = thumbnail.Path,
+                Size = ThumbnailSize,
+            }, result =>
+            {
+                if (result.Success)
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        thumbnail.ThumbnailImage = result.Image;
+                        thumbnail.Status = ThumbnailStatus.Loaded;
+                    });
+                }
+                else
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        thumbnail.ThumbnailImage = null;
+                        thumbnail.Status = ThumbnailStatus.Error;
+                    });
+                }
+            });
+        }
+    }
+
+    public void LoadThumbnail(ThumbnailViewModel thumbnail)
+    {
+        if (File.Exists(thumbnail.Path))
+        {
+            thumbnail.Status = ThumbnailStatus.Loading;
+
+            using var stream = File.Open(thumbnail.Path, FileMode.Open, FileAccess.Read);
+
+            using var data = new MemoryStream();
+            stream.CopyTo(data);
+            stream.Flush();
+
+            data.Seek(0, SeekOrigin.Begin);
+            var bitmap = Bitmap.DecodeToWidth(data, ThumbnailSize);
+
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                thumbnail.ThumbnailImage = bitmap;
+                thumbnail.Status = ThumbnailStatus.New;
+            });
+
+
+
+
         }
     }
 
@@ -290,6 +365,8 @@ public partial class ThumbnailControl : UserControl
                     if (Thumbnails != null)
                     {
                         Deselect();
+                        // call redraw after binding has occured
+                        // otherwise item bounds will be 0,0,0,0
                         Dispatcher.UIThread.Post(() =>
                         {
                             RedrawThumbnails();
@@ -352,18 +429,6 @@ public partial class ThumbnailControl : UserControl
     //}
 
 
-    public void LoadThumbnail(ThumbnailViewModel thumbnail)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            if (File.Exists(thumbnail.Path))
-            {
-                using var stream = File.Open(thumbnail.Path, FileMode.Open, FileAccess.Read);
-                thumbnail.ThumbnailImage = Bitmap.DecodeToWidth(stream, ThumbnailSize);
-                thumbnail.IsLoaded = true;
-            }
-        });
-    }
 
     private void Deselect()
     {

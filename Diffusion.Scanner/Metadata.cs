@@ -86,7 +86,7 @@ public class Metadata
         var ext = Path.GetExtension(file).ToLowerInvariant();
 
 
-        using var stream = File.OpenRead(file);
+        using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         var fileType = GetFileType(stream);
 

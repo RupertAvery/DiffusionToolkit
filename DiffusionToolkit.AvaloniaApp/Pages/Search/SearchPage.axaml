@@ -5,9 +5,13 @@
              xmlns:thumbnail="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Thumbnail"
              xmlns:search="clr-namespace:DiffusionToolkit.AvaloniaApp.Pages.Search"
              xmlns:metadata="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Metadata"
+             xmlns:converters="clr-namespace:DiffusionToolkit.AvaloniaApp.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              Background="{DynamicResource BackgroundBrush}"
              x:Class="DiffusionToolkit.AvaloniaApp.Pages.Search.SearchPage">
+  <UserControl.Resources>
+    <converters:GreaterThanOrEqualToConverter x:Key="greaterThanOrEqualToConverter"></converters:GreaterThanOrEqualToConverter>
+  </UserControl.Resources>
   <Design.DataContext>
     <search:SearchPageViewModel></search:SearchPageViewModel>
   </Design.DataContext>
@@ -87,17 +91,30 @@
     </Grid>
     <GridSplitter  Grid.Column="1" ResizeDirection="Columns" ></GridSplitter>
     <Grid x:Name="ImageGrid" Grid.Column="2" RowDefinitions="*,2,*">
-      <Panel Grid.Row="0">
-        <Image
+      <Grid Grid.Row="0" RowDefinitions="*,40">
+        <Image Grid.RowSpan="2"
             Stretch="Uniform"
             Source="{Binding PreviewImage}"/>
-      </Panel>
+        <StackPanel Margin="5" Grid.Row="1" Orientation="Horizontal">
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=1}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=2}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=3}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=4}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=5}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=6}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=7}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=8}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=9}"></Image>
+          <Image Width="32" Height="32" Source="../../Icons/star-32.png" IsVisible="{Binding SelectedEntry.Rating, Converter={StaticResource greaterThanOrEqualToConverter}, ConverterParameter=10}"></Image>
+        </StackPanel>
+      </Grid>
       <GridSplitter Grid.Row="1" ResizeDirection="Rows"></GridSplitter>
       <Grid Grid.Row="2">
         <metadata:MetadataControl Metadata="{Binding Metadata}"></metadata:MetadataControl>
       </Grid>
       <Grid Background="#c0000000" IsVisible="{Binding IsMetadataVisible}">
-        <metadata:MetadataControl Foreground="White" Metadata="{Binding Metadata}"></metadata:MetadataControl>
+        <metadata:MetadataControl Grid.RowSpan="2" Foreground="White" Metadata="{Binding Metadata}"></metadata:MetadataControl>
+
       </Grid>
 
     </Grid>

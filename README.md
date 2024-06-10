@@ -57,7 +57,24 @@ A folder named `build` will be created, containing all the necessary files.
 
 ### OSX
 
-* Coming soon
+### Requirements
+
+* [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+* git
+
+### Building
+
+* Clone this repository
+* Run `git checkout AvaloniaUI`
+* Run `chmod +x build-osx.sh && ./build-osx.sh`
+* The application `Diffusion Toolkit.app` will be created in `build/osx-x64`
+
+You will need to unblock the app the first time you run it. To do this, run the app for the first time. It will be blocked. Click OK.
+
+* Open **System Settings**.
+* Click **Privacy & Security**, scroll down, and click the **Open Anyway** button to confirm your intent to open or install the app.
+
+
 
 # Features
 

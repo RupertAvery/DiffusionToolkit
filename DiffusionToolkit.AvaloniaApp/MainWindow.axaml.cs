@@ -11,6 +11,7 @@ using Avalonia.Threading;
 using Diffusion.Common;
 using Avalonia.Controls.Primitives;
 using System.Runtime.InteropServices;
+using DiffusionToolkit.AvaloniaApp.Thumbnails;
 
 namespace DiffusionToolkit.AvaloniaApp
 {
@@ -21,6 +22,10 @@ namespace DiffusionToolkit.AvaloniaApp
         private ScanManager _scanManager;
         private Configuration<Settings> _configuration;
 
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
 
         public MainWindow(Configuration<Settings> configuration)
         {
@@ -31,6 +36,8 @@ namespace DiffusionToolkit.AvaloniaApp
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
+
+            ServiceLocator.ThumbnailLoader.Stop();
 
             _configuration.Save(ServiceLocator.Settings);
         }
@@ -47,6 +54,7 @@ namespace DiffusionToolkit.AvaloniaApp
             var appPath = AppInfo.AppDir;
 
             var databasePath = Path.Combine(AppInfo.AppDataPath, "diffusion-toolkit.db");
+            var thumbnailCachePath = Path.Combine(AppInfo.AppDataPath, "thumbnail-cache.db");
             var extensionsPath = Path.Combine(AppInfo.AppDir, "extensions");
             var altExtensionsPath = Path.Combine(AppInfo.AppDataPath, "extensions");
 
@@ -60,6 +68,19 @@ namespace DiffusionToolkit.AvaloniaApp
             ServiceLocator.SetDataStore(dataStore);
 
             await dataStore.Create();
+
+            var thumbnailCache = new ThumbnailCache(thumbnailCachePath);
+
+            ServiceLocator.SetThumbnailCache(thumbnailCache);
+
+            await thumbnailCache.Create();
+
+
+            var thumbnailLoader = new ThumbnailLoader();
+
+            _ = thumbnailLoader.StartRun();
+
+            ServiceLocator.SetThumbnailLoader(thumbnailLoader);
 
             _navigationManager = ServiceLocator.NavigationManager;
             _scanManager = ServiceLocator.ScanManager;

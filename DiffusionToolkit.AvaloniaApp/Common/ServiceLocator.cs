@@ -1,5 +1,6 @@
 using System.Threading;
 using Diffusion.Database;
+using DiffusionToolkit.AvaloniaApp.Thumbnails;
 
 namespace DiffusionToolkit.AvaloniaApp.Common;
 
@@ -14,9 +15,24 @@ public class ServiceLocator
     private static PreviewManager? _previewManager;
     private static ThumbnailNavigationManager? _thumbnailNavigationManager;
     private static SearchManager? _searchManager;
+    private static ThumbnailCache? _thumbnailCache;
+    private static ThumbnailLoader _thumbnailLoader;
 
     public static DataStore? DataStore => _dataStore;
+    public static ThumbnailCache? ThumbnailCache => _thumbnailCache;
     public static Settings? Settings => _settings;
+    public static ThumbnailLoader? ThumbnailLoader => _thumbnailLoader;
+
+    public static void SetThumbnailLoader(ThumbnailLoader thumbnailLoader)
+    {
+        _thumbnailLoader = thumbnailLoader;
+    }
+
+    public static void SetThumbnailCache(ThumbnailCache thumbnailCache)
+    {
+        _thumbnailCache = thumbnailCache;
+    }
+
 
     public static void SetDataStore(DataStore dataStore)
     {
