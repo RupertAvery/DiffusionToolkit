@@ -176,7 +176,7 @@ public partial class SearchPage : UserControl, INavigationTarget
         {
             if (_viewModel.SelectedEntry != null)
             {
-                ServiceLocator.PreviewManager.ShowPreview(_viewModel.SelectedEntry.Path, isShiftPressed);
+                ServiceLocator.PreviewManager.ShowPreview(_viewModel.SelectedEntry, isShiftPressed);
             }
         }
     }
@@ -209,7 +209,7 @@ public partial class SearchPage : UserControl, INavigationTarget
 
         if (_viewModel.SelectedEntry is { })
         {
-            ServiceLocator.PreviewManager.ShowPreview(_viewModel.SelectedEntry.Path, isShiftPressed);
+            ServiceLocator.PreviewManager.ShowPreview(_viewModel.SelectedEntry, isShiftPressed);
         }
     }
 

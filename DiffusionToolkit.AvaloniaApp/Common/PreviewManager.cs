@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
 
 namespace DiffusionToolkit.AvaloniaApp.Common;
 
@@ -13,21 +14,21 @@ public class PreviewManager
     {
         _owner = owner;
     }
-    public void UpdatePreview(string path)
+    public void UpdatePreview(ThumbnailViewModel thumbnail)
     {
         if (_previewWindow != null)
         {
-            _previewWindow.LoadImage(path);
+            _previewWindow.LoadImage(thumbnail);
         }
     }
 
-    public void ShowPreview(string path, bool fullScreen = false)
+    public void ShowPreview(ThumbnailViewModel thumbnail, bool fullScreen = false)
     {
         if (_previewWindow == null)
         {
             _previewWindow = new PreviewWindow();
             _previewWindow.Closed += PreviewWindowOnClosed;
-            _previewWindow.LoadImage(path);
+            _previewWindow.LoadImage(thumbnail);
             _previewWindow.Show(_owner);
 
             if (fullScreen)
@@ -37,7 +38,7 @@ public class PreviewManager
         }
         else
         {
-            _previewWindow.LoadImage(path);
+            _previewWindow.LoadImage(thumbnail);
         }
     }
 

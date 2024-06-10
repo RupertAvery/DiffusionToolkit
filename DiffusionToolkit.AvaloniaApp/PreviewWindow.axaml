@@ -30,6 +30,7 @@
       <Border Grid.ColumnSpan="2">
         <Grid RowDefinitions="*,40">
           <Image
+              Grid.RowSpan="2"
               Stretch="Uniform"
               Source="{Binding PreviewImage}"/>
           <StackPanel Margin="5" Grid.Row="1" Orientation="Horizontal">

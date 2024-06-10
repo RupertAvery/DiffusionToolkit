@@ -237,7 +237,7 @@ public class SearchPageViewModel : ViewModelBase
                 {
                     Metadata = MetadataViewModel.FromFileParameters(Diffusion.IO.Metadata.ReadFromFile(SelectedEntry.Path)!);
                     PreviewImage = new Bitmap(SelectedEntry.Path);
-                    ServiceLocator.PreviewManager.UpdatePreview(SelectedEntry.Path);
+                    ServiceLocator.PreviewManager.UpdatePreview(SelectedEntry);
                 }
             }
         }
@@ -254,6 +254,8 @@ public class SearchPageViewModel : ViewModelBase
     public void ToggleNSFW()
     {
         QueryBuilder.HideNSFW = !QueryBuilder.HideNSFW;
+        ServiceLocator.Settings.HideNSFW = QueryBuilder.HideNSFW;
+
         Task.Run(() =>
         {
             Search();

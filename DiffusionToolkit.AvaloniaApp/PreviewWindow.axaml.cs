@@ -13,6 +13,7 @@ using Diffusion.Database;
 using Diffusion.IO;
 using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.Controls.Metadata;
+using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
 using ReactiveUI;
 using SkiaSharp;
 
@@ -207,12 +208,13 @@ public partial class PreviewWindow : Window
         }
     }
 
-    public void LoadImage(string path)
+    public void LoadImage(ThumbnailViewModel thumbnail)
     {
-        if (_viewModel.PreviewImage != null)
-        {
-            _viewModel.PreviewImage.Dispose();
-        }
+        _viewModel.SelectedEntry = thumbnail;
+
+        var path = _viewModel.SelectedEntry.Path;
+
+        _viewModel.PreviewImage?.Dispose();
 
         _viewModel.Metadata = null;
 
@@ -220,7 +222,6 @@ public partial class PreviewWindow : Window
         {
             _viewModel.PreviewImage = new Bitmap(path);
             _viewModel.Metadata = MetadataViewModel.FromFileParameters(Metadata.ReadFromFile(path));
-            _viewModel.IsMetadataVisible = true;
         }
     }
 }
