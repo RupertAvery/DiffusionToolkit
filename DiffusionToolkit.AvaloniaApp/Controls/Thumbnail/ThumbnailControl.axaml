@@ -7,6 +7,7 @@
              x:Name="root"
              Focusable="True"
              KeyDown="InputElement_OnKeyDown"
+             KeyUp="InputElement_OnKeyUp"
              x:Class="DiffusionToolkit.AvaloniaApp.Controls.Thumbnail.ThumbnailControl">
   <UserControl.Resources>
     <thumbnail:NotNullConverter x:Key="notNullConverter"/>

@@ -448,6 +448,8 @@ public partial class ThumbnailControl : UserControl
         }
     }
 
+    private bool _startMultiSelect = false;
+
     private void InputElement_OnKeyDown(object? sender, KeyEventArgs e)
     {
         var validKeys = new Key[] { Key.Up, Key.Down, Key.Left, Key.Right, Key.PageUp, Key.PageDown };
@@ -460,16 +462,6 @@ public partial class ThumbnailControl : UserControl
 
         switch (e.Key)
         {
-            case Key.LeftCtrl:
-            case Key.RightCtrl:
-                if (CurrentItem is { })
-                {
-                    CurrentItem.IsSelected = true;
-                    UpdateSelection(CurrentItem);
-                }
-                break;
-
-
             case Key.LeftShift:
             case Key.RightShift:
                 if (_anchorItem == null)
@@ -553,14 +545,23 @@ public partial class ThumbnailControl : UserControl
 
                     index = Math.Clamp(index, 0, Thumbnails.Count - 1);
 
-                    if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
+                    if ((e.KeyModifiers & KeyModifiers.Control) != 0)
+                    {
+                        if (!_startMultiSelect)
+                        {
+                            CurrentItem.IsSelected = true;
+                            UpdateSelection(CurrentItem);
+                            _startMultiSelect = true;
+                        }
+                    }
+                    else if ((e.KeyModifiers & KeyModifiers.Shift) != 0)
                     {
                         SelectRange(Thumbnails[index]);
                     }
                     else
                     {
-                        Thumbnails[index].IsSelected = true;
-                        UpdateSelection(Thumbnails[index]);
+                        //Thumbnails[index].IsSelected = true;
+                        //UpdateSelection(Thumbnails[index]);
                     }
 
                     SetCurrent(Thumbnails[index], true);
@@ -625,6 +626,14 @@ public partial class ThumbnailControl : UserControl
         {
             if ((e.KeyModifiers & KeyModifiers.Control) != 0)
             {
+                if (!_startMultiSelect && CurrentItem != null)
+                {
+                    CurrentItem.IsSelected = true;
+                    UpdateSelection(CurrentItem);
+                    _startMultiSelect = true;
+                }
+
+
                 if (_anchorItem == null)
                 {
                     _anchorItem = thumbnail;
@@ -705,7 +714,25 @@ public partial class ThumbnailControl : UserControl
             _anchorItem = CurrentItem;
         }
 
+
+        if (sender is Panel panel)
+        {
+            var thisPoint = e.GetPosition(panel);
+
+            var distance = thisPoint - lastPoint;
+
+            if (Math.Abs(distance.X) < 5 && Math.Abs(distance.Y) < 5 && (e.KeyModifiers & KeyModifiers.Shift) == 0 && (e.KeyModifiers & KeyModifiers.Control) == 0)
+            {
+                Deselect();
+            }
+        }
+
         _isMouseDown = false;
         _isDragging = false;
+    }
+
+    private void InputElement_OnKeyUp(object? sender, KeyEventArgs e)
+    {
+        _startMultiSelect = false;
     }
 }
