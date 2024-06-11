@@ -1,4 +1,4 @@
-namespace DiffusionToolkit.AvaloniaApp.Common;
+namespace DiffusionToolkit.AvaloniaApp.Services;
 
 public class ScanCompleteEventArgs
 {

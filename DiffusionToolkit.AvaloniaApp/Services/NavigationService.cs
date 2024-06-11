@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace DiffusionToolkit.AvaloniaApp.Common;
+namespace DiffusionToolkit.AvaloniaApp.Services;
 
-public class NavigationManager
+public class NavigationService
 {
     private readonly Dictionary<string, INavigationTarget> _navigation;
 
-    public NavigationManager()
+    public NavigationService()
     {
         _navigation = new Dictionary<string, INavigationTarget>();
     }

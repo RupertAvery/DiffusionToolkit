@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
+using DiffusionToolkit.AvaloniaApp.Services;
 using Key = Avalonia.Input.Key;
 
 namespace DiffusionToolkit.AvaloniaApp.Pages.Search;
@@ -42,13 +43,13 @@ public partial class SearchPage : UserControl, INavigationTarget
     {
         Grid mainGrid = MainGrid;
         ServiceLocator.Settings.MainGrid.GridLengths = new List<GridLengthSetting>() {
-            mainGrid.ColumnDefinitions[0].Width.ToSetting(), 
+            mainGrid.ColumnDefinitions[0].Width.ToSetting(),
             mainGrid.ColumnDefinitions[2].Width.ToSetting()
         };
 
         Grid imageGrid = ImageGrid;
         ServiceLocator.Settings.ImageGrid.GridLengths = new List<GridLengthSetting>() {
-            imageGrid.RowDefinitions[0].Height.ToSetting(), 
+            imageGrid.RowDefinitions[0].Height.ToSetting(),
             imageGrid.RowDefinitions[2].Height.ToSetting()
         };
     }
@@ -70,7 +71,7 @@ public partial class SearchPage : UserControl, INavigationTarget
 
         if (isShiftPressed && isCtrlPressed && e.Key == Key.N)
         {
-            _viewModel.ToggleNSFW();
+            _viewModel.ToggleHideNSFW();
             e.Handled = true;
         }
 
@@ -88,86 +89,32 @@ public partial class SearchPage : UserControl, INavigationTarget
 
         else if (e.Key == Key.Delete)
         {
-            if (_viewModel.SelectedItems != null)
-            {
-                var forDeletion = !_viewModel.SelectedItems.GroupBy(e => e.ForDeletion).OrderByDescending(g => g.Count()).First().Key;
-                
-                foreach (var item in _viewModel.SelectedItems)
-                {
-                    item.ForDeletion = forDeletion;
-                }
+            _viewModel.ToggleForDeletion();
 
-                var ids = _viewModel.SelectedItems.Select(item => item.Id).ToList();
-
-                ServiceLocator.DataStore!.SetDeleted(ids, forDeletion);
-
-            }
             e.Handled = true;
         }
 
         else if (e.Key == Key.N)
         {
-            if (_viewModel.SelectedItems != null)
-            {
-                var nsfw = !_viewModel.SelectedItems.GroupBy(e => e.NSFW).OrderByDescending(g => g.Count()).First().Key;
-
-                foreach (var item in _viewModel.SelectedItems)
-                {
-                    item.NSFW = nsfw;
-                }
-
-                var ids = _viewModel.SelectedItems.Select(item => item.Id).ToList();
-
-                ServiceLocator.DataStore!.SetNSFW(ids, nsfw);
-            }
+            _viewModel.ToggleNSFW();
 
             e.Handled = true;
         }
 
         else if (e.Key == Key.F)
         {
-            if (_viewModel.SelectedItems != null)
-            {
-                var favorite = !_viewModel.SelectedItems.GroupBy(e => e.Favorite).OrderByDescending(g => g.Count()).First().Key;
-
-                foreach (var item in _viewModel.SelectedItems)
-                {
-                    item.Favorite = favorite;
-                }
-
-                var ids = _viewModel.SelectedItems.Select(item => item.Id).ToList();
-
-                ServiceLocator.DataStore!.SetFavorite(ids, favorite);
-            }
+            _viewModel.ToggleFavorite();
 
             e.Handled = true;
         }
 
         else if (e.Key is >= Key.D0 and <= Key.D9)
         {
-            if (_viewModel.SelectedItems != null)
-            {
-                int? rating = e.Key - Key.D0;
+            int? rating = e.Key - Key.D0;
 
-                if (rating == 0) rating = 10;
-
-                var ratings = _viewModel.SelectedItems.Select(item => item.Rating).ToList();
-
-                // The selected ratings match the new rating, toggle them all off
-                if (ratings.All(r => r == rating))
-                {
-                    rating = null;
-                }
-
-                foreach (var item in _viewModel.SelectedItems)
-                {
-                    item.Rating = rating;
-                }
-
-                var ids = _viewModel.SelectedItems.Select(item => item.Id).ToList();
-
-                ServiceLocator.DataStore!.SetRating(ids, rating);
-            }
+            if (rating == 0) rating = 10;
+            
+            _viewModel.SetRating(rating);
 
             e.Handled = true;
         }
@@ -176,7 +123,7 @@ public partial class SearchPage : UserControl, INavigationTarget
         {
             if (_viewModel.SelectedEntry != null)
             {
-                ServiceLocator.PreviewManager.ShowPreview(_viewModel.SelectedEntry, isShiftPressed);
+                ServiceLocator.PreviewService.ShowPreview(_viewModel.SelectedEntry, isShiftPressed);
             }
         }
     }
@@ -209,7 +156,7 @@ public partial class SearchPage : UserControl, INavigationTarget
 
         if (_viewModel.SelectedEntry is { })
         {
-            ServiceLocator.PreviewManager.ShowPreview(_viewModel.SelectedEntry, isShiftPressed);
+            ServiceLocator.PreviewService.ShowPreview(_viewModel.SelectedEntry, isShiftPressed);
         }
     }
 

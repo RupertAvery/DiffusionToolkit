@@ -1,8 +1,8 @@
 using System;
 
-namespace DiffusionToolkit.AvaloniaApp.Common;
+namespace DiffusionToolkit.AvaloniaApp.Services;
 
-public class SearchManager
+public class SearchService
 {
     public event EventHandler<string> SortBy;
     public event EventHandler<string> SortOrder;
@@ -34,16 +34,4 @@ public class SearchManager
     {
         View?.Invoke(this, view);
     }
-}
-
-public enum SearchView {
-    Search,
-    Folders,
-    Albums,
-    RecycleBin,
-}
-
-public class SearchFilter
-{
-    public string? Query { get; set; }
 }

@@ -1,8 +1,8 @@
 using System;
 
-namespace DiffusionToolkit.AvaloniaApp.Common;
+namespace DiffusionToolkit.AvaloniaApp.Services;
 
-public class ThumbnailNavigationManager
+public class ThumbnailNavigationService
 {
     public event EventHandler Previous;
     public event EventHandler Next;

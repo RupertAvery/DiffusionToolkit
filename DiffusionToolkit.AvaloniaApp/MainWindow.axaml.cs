@@ -11,6 +11,7 @@ using Avalonia.Threading;
 using Diffusion.Common;
 using Avalonia.Controls.Primitives;
 using System.Runtime.InteropServices;
+using DiffusionToolkit.AvaloniaApp.Services;
 using DiffusionToolkit.AvaloniaApp.Thumbnails;
 
 namespace DiffusionToolkit.AvaloniaApp
@@ -18,8 +19,8 @@ namespace DiffusionToolkit.AvaloniaApp
     public partial class MainWindow : Window
     {
         private MainWindowViewModel _viewModel;
-        private NavigationManager _navigationManager;
-        private ScanManager _scanManager;
+        private NavigationService _navigationService;
+        private ScanService _scanService;
         private Configuration<Settings> _configuration;
 
         public MainWindow()
@@ -82,14 +83,14 @@ namespace DiffusionToolkit.AvaloniaApp
 
             ServiceLocator.SetThumbnailLoader(thumbnailLoader);
 
-            _navigationManager = ServiceLocator.NavigationManager;
-            _scanManager = ServiceLocator.ScanManager;
+            _navigationService = ServiceLocator.NavigationService;
+            _scanService = ServiceLocator.ScanService;
 
-            _scanManager.ScanStart += OnScanStart;
-            _scanManager.ScanProgress += OnScanProgress;
-            _scanManager.ScanComplete += OnScanComplete;
+            _scanService.ScanStart += OnScanStart;
+            _scanService.ScanProgress += OnScanProgress;
+            _scanService.ScanComplete += OnScanComplete;
 
-            ServiceLocator.PreviewManager.SetOwner(this);
+            ServiceLocator.PreviewService.SetOwner(this);
 
             _viewModel = new MainWindowViewModel();
             DataContext = _viewModel;
@@ -169,7 +170,7 @@ namespace DiffusionToolkit.AvaloniaApp
                 {
                     FlyoutBase.GetAttachedFlyout(_searchFlyoutHost).Hide();
                 }
-                ServiceLocator.SearchManager.SetFilter(new SearchFilter() { Query = textBox.Text });
+                ServiceLocator.SearchService.SetFilter(new SearchFilter() { Query = textBox.Text });
             }
         }
 
@@ -184,7 +185,7 @@ namespace DiffusionToolkit.AvaloniaApp
 
         private void Cancel_OnClick(object? sender, RoutedEventArgs e)
         {
-            ServiceLocator.ScanManager.Cancel();
+            ServiceLocator.ScanService.Cancel();
         }
     }
 }

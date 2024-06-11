@@ -8,7 +8,6 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="DiffusionToolkit.AvaloniaApp.PreviewWindow"
         ExtendClientAreaToDecorationsHint="True"
-        Focusable="True"
         Title="Image Preview">
   <Window.Resources>
     <converters:GreaterThanOrEqualToConverter x:Key="greaterThanOrEqualToConverter"></converters:GreaterThanOrEqualToConverter>
@@ -22,7 +21,10 @@
     <!--<Grid ColumnDefinitions="*,Auto,*">
           <Label IsHitTestVisible="False" Grid.Column="1" VerticalContentAlignment="Center">Preview</Label>
       </Grid>-->
-    <Grid  Background="#000000" Row="1">
+    <Grid x:Name="ImageGrid" Background="#000000" Row="1"
+          Focusable="True"
+          KeyDown="InputElement_OnKeyDown"
+    >
       <Grid.ColumnDefinitions>
         <ColumnDefinition/>
         <ColumnDefinition Width="400"/>

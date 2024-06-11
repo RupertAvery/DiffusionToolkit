@@ -2,9 +2,9 @@ using System;
 using Avalonia.Controls;
 using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
 
-namespace DiffusionToolkit.AvaloniaApp.Common;
+namespace DiffusionToolkit.AvaloniaApp.Services;
 
-public class PreviewManager
+public class PreviewService
 {
     private PreviewWindow? _previewWindow;
 

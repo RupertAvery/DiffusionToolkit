@@ -6,6 +6,7 @@ using Avalonia.Styling;
 using Diffusion.Common;
 using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
+using DiffusionToolkit.AvaloniaApp.Services;
 using DiffusionToolkit.AvaloniaApp.ViewModels;
 
 namespace DiffusionToolkit.AvaloniaApp

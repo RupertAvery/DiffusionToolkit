@@ -11,6 +11,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
+using DiffusionToolkit.AvaloniaApp.Services;
 
 namespace DiffusionToolkit.AvaloniaApp.Thumbnails
 {

@@ -4,14 +4,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
-using Avalonia.Threading;
 using Diffusion.Database;
 using Diffusion.IO;
 
-namespace DiffusionToolkit.AvaloniaApp.Common;
+namespace DiffusionToolkit.AvaloniaApp.Services;
 
-public class ScanManager
+public class ScanService
 {
     private DataStore _dataStore;
 
@@ -20,7 +18,7 @@ public class ScanManager
     public event EventHandler<EventArgs> ScanStart;
     public event EventHandler<ScanCompleteEventArgs> ScanComplete;
 
-    public ScanManager()
+    public ScanService()
     {
         _dataStore = ServiceLocator.DataStore;
     }

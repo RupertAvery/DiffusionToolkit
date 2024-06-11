@@ -7,6 +7,7 @@
              xmlns:metadata="clr-namespace:DiffusionToolkit.AvaloniaApp.Controls.Metadata"
              xmlns:converters="clr-namespace:DiffusionToolkit.AvaloniaApp.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             Focusable="True"
              Background="{DynamicResource BackgroundBrush}"
              x:Class="DiffusionToolkit.AvaloniaApp.Pages.Search.SearchPage">
   <UserControl.Resources>

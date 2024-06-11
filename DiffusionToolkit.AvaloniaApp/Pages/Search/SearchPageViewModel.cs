@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ using Diffusion.IO;
 using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.Controls.Metadata;
 using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
+using DiffusionToolkit.AvaloniaApp.Services;
 using DiffusionToolkit.AvaloniaApp.ViewModels;
 using ReactiveUI;
 
@@ -110,11 +112,11 @@ public class SearchPageViewModel : ViewModelBase
         GotoNext = ReactiveCommand.Create(GotoNextPage);
         GotoEnd = ReactiveCommand.Create(GotoEndPage);
 
-        ServiceLocator.SearchManager.SortOrder += OnSortOrder;
-        ServiceLocator.SearchManager.SortBy += OnSortBy;
-        ServiceLocator.SearchManager.Filter += OnSetFilter;
-        ServiceLocator.SearchManager.Search += OnSearch;
-        ServiceLocator.SearchManager.View += OnView;
+        ServiceLocator.SearchService.SortOrder += OnSortOrder;
+        ServiceLocator.SearchService.SortBy += OnSortBy;
+        ServiceLocator.SearchService.Filter += OnSetFilter;
+        ServiceLocator.SearchService.Search += OnSearch;
+        ServiceLocator.SearchService.View += OnView;
 
         SelectedItems = new ObservableCollection<ThumbnailViewModel>();
 
@@ -124,6 +126,118 @@ public class SearchPageViewModel : ViewModelBase
 
         SortByOptions = DataStore.SortByOptions;
         SortOrderOptions = new List<string>() { "A-Z", "Z-A" };
+
+        ServiceLocator.TaggingService.Rate += TaggingServiceOnRate;
+        ServiceLocator.TaggingService.ForDeletion += TaggingServiceOnForDeletion;
+        ServiceLocator.TaggingService.Favorite += TaggingServiceOnFavorite;
+        ServiceLocator.TaggingService.NSFW += TaggingServiceOnNSFW;
+    }
+
+    private void TaggingServiceOnRate(object? sender, int e)
+    {
+        if (SelectedEntry.Rating == e)
+        {
+            SelectedEntry.Rating = null;
+            ServiceLocator.DataStore.SetRating(SelectedEntry.Id, null);
+        }
+        else
+        {
+            SelectedEntry.Rating = e;
+            ServiceLocator.DataStore.SetRating(SelectedEntry.Id, e);
+        }
+    }
+
+    private void TaggingServiceOnForDeletion(object? sender, bool e)
+    {
+        SelectedEntry.ForDeletion = e;
+        ServiceLocator.DataStore.SetDeleted(SelectedEntry.Id, e);
+    }
+
+    private void TaggingServiceOnFavorite(object? sender, bool e)
+    {
+        SelectedEntry.Favorite = e;
+        ServiceLocator.DataStore.SetFavorite(SelectedEntry.Id, e);
+    }
+
+    private void TaggingServiceOnNSFW(object? sender, bool e)
+    {
+        SelectedEntry.NSFW = e;
+        ServiceLocator.DataStore.SetNSFW(SelectedEntry.Id, e);
+    }
+
+    public void SetRating(int? rating)
+    {
+        if (SelectedItems != null)
+        {
+            var ratings = SelectedItems.Select(item => item.Rating).ToList();
+
+            // The selected ratings match the new rating, toggle them all off
+            if (ratings.All(r => r == rating))
+            {
+                rating = null;
+            }
+
+            foreach (var item in SelectedItems)
+            {
+                item.Rating = rating;
+            }
+
+            var ids = SelectedItems.Select(item => item.Id).ToList();
+
+            ServiceLocator.DataStore!.SetRating(ids, rating);
+        }
+
+    }
+
+    public void ToggleForDeletion()
+    {
+        if (SelectedItems != null)
+        {
+            var forDeletion = !SelectedItems.GroupBy(e => e.ForDeletion).OrderByDescending(g => g.Count()).First().Key;
+
+            foreach (var item in SelectedItems)
+            {
+                item.ForDeletion = forDeletion;
+            }
+
+            var ids = SelectedItems.Select(item => item.Id).ToList();
+
+            ServiceLocator.DataStore!.SetDeleted(ids, forDeletion);
+        }
+    }
+
+    public void ToggleNSFW()
+    {
+        if (SelectedItems != null)
+        {
+            var nsfw = !SelectedItems.GroupBy(e => e.NSFW).OrderByDescending(g => g.Count()).First().Key;
+
+            foreach (var item in SelectedItems)
+            {
+                item.NSFW = nsfw;
+            }
+
+            var ids = SelectedItems.Select(item => item.Id).ToList();
+
+            ServiceLocator.DataStore!.SetNSFW(ids, nsfw);
+        }
+    }
+
+    public void ToggleFavorite()
+    {
+        if (SelectedItems != null)
+        {
+            var favorite = !SelectedItems.GroupBy(e => e.Favorite).OrderByDescending(g => g.Count()).First().Key;
+
+            foreach (var item in SelectedItems)
+            {
+                item.Favorite = favorite;
+            }
+
+            var ids = SelectedItems.Select(item => item.Id).ToList();
+
+            ServiceLocator.DataStore!.SetFavorite(ids, favorite);
+        }
     }
 
     private void SettingsOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -237,7 +351,7 @@ public class SearchPageViewModel : ViewModelBase
                 {
                     Metadata = MetadataViewModel.FromFileParameters(Diffusion.IO.Metadata.ReadFromFile(SelectedEntry.Path)!);
                     PreviewImage = new Bitmap(SelectedEntry.Path);
-                    ServiceLocator.PreviewManager.UpdatePreview(SelectedEntry);
+                    ServiceLocator.PreviewService.UpdatePreview(SelectedEntry);
                 }
             }
         }
@@ -251,7 +365,7 @@ public class SearchPageViewModel : ViewModelBase
 
 
 
-    public void ToggleNSFW()
+    public void ToggleHideNSFW()
     {
         QueryBuilder.HideNSFW = !QueryBuilder.HideNSFW;
         ServiceLocator.Settings.HideNSFW = QueryBuilder.HideNSFW;

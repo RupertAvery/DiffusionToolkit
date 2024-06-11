@@ -18,6 +18,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
+using DiffusionToolkit.AvaloniaApp.Services;
 using DiffusionToolkit.AvaloniaApp.Thumbnails;
 
 namespace DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
@@ -150,15 +151,15 @@ public partial class ThumbnailControl : UserControl
 
     private ThumbnailViewModel? _anchorItem;
     private ThumbnailViewModel? _currentItem;
-    private ThumbnailNavigationManager _thumbnailNavigationManager;
+    private ThumbnailNavigationService _thumbnailNavigationService;
 
     public ThumbnailControl()
     {
         InitializeComponent();
 
-        _thumbnailNavigationManager = ServiceLocator.ThumbnailNavigationManager;
-        _thumbnailNavigationManager.Next += OnNext;
-        _thumbnailNavigationManager.Previous += OnPrevious;
+        _thumbnailNavigationService = ServiceLocator.ThumbnailNavigationService;
+        _thumbnailNavigationService.Next += OnNext;
+        _thumbnailNavigationService.Previous += OnPrevious;
 
         Loaded += OnLoaded;
 
@@ -530,8 +531,8 @@ public partial class ThumbnailControl : UserControl
                     }
                     else
                     {
-                        //Thumbnails[index].IsSelected = true;
-                        //UpdateSelection(Thumbnails[index]);
+                        Thumbnails[index].IsSelected = true;
+                        UpdateSelection(Thumbnails[index]);
                     }
 
                     SetCurrent(Thumbnails[index], true);

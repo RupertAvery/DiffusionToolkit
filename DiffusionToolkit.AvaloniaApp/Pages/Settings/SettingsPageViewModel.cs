@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Avalonia;
 using Avalonia.Styling;
 using DiffusionToolkit.AvaloniaApp.Common;
+using DiffusionToolkit.AvaloniaApp.Services;
 using DiffusionToolkit.AvaloniaApp.ViewModels;
 using ReactiveUI;
 

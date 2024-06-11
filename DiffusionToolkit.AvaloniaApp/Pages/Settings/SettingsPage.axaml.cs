@@ -10,6 +10,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using DiffusionToolkit.AvaloniaApp.Common;
+using DiffusionToolkit.AvaloniaApp.Services;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace DiffusionToolkit.AvaloniaApp.Pages.Settings;
@@ -17,12 +18,12 @@ namespace DiffusionToolkit.AvaloniaApp.Pages.Settings;
 public partial class SettingsPage : UserControl, INavigationTarget
 {
     private SettingsPageViewModel _viewModel = new SettingsPageViewModel();
-    private readonly ScanManager _scanManager;
+    private readonly ScanService _scanService;
 
     public SettingsPage()
     {
         _viewModel = new SettingsPageViewModel();
-        _scanManager = ServiceLocator.ScanManager;
+        _scanService = ServiceLocator.ScanService;
         InitializeComponent();
         DataContext = _viewModel;
 
@@ -84,7 +85,7 @@ public partial class SettingsPage : UserControl, INavigationTarget
         {
             Task.Run(() =>
             {
-                _scanManager.ScanFolders();
+                _scanService.ScanFolders();
             });
         }
     }

@@ -14,6 +14,7 @@ using Diffusion.IO;
 using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.Controls.Metadata;
 using DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
+using DiffusionToolkit.AvaloniaApp.Services;
 using ReactiveUI;
 using SkiaSharp;
 
@@ -65,7 +66,7 @@ public partial class PreviewWindow : Window
             //        break;
             //}
 
-            
+
 
         }
     }
@@ -111,6 +112,8 @@ public partial class PreviewWindow : Window
                 ClientSize = ClientSize,
             };
         }
+
+        ImageGrid.Focus();
     }
 
     private void OnPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -162,6 +165,7 @@ public partial class PreviewWindow : Window
             //        _ => WindowState
             //    };
             //    break;
+            case Key.Enter when (e.KeyModifiers & KeyModifiers.Control) != 0:
             case Key.F11:
                 if (WindowState != WindowState.FullScreen)
                 {
@@ -184,10 +188,10 @@ public partial class PreviewWindow : Window
 
                 break;
             case Key.Left:
-                ServiceLocator.ThumbnailNavigationManager.MovePrevious();
+                ServiceLocator.ThumbnailNavigationService.MovePrevious();
                 break;
             case Key.Right:
-                ServiceLocator.ThumbnailNavigationManager.MoveNext();
+                ServiceLocator.ThumbnailNavigationService.MoveNext();
                 break;
         }
     }
@@ -222,6 +226,51 @@ public partial class PreviewWindow : Window
         {
             _viewModel.PreviewImage = new Bitmap(path);
             _viewModel.Metadata = MetadataViewModel.FromFileParameters(Metadata.ReadFromFile(path));
+        }
+    }
+
+    private void InputElement_OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        var isShiftPressed = (e.KeyModifiers & KeyModifiers.Shift) != 0;
+        var isCtrlPressed = (e.KeyModifiers & KeyModifiers.Shift) != 0;
+
+
+        if (e.Key == Key.I)
+        {
+            _viewModel.IsMetadataVisible = !_viewModel.IsMetadataVisible;
+            e.Handled = true;
+        }
+
+        else if (e.Key == Key.Delete)
+        {
+            ServiceLocator.TaggingService.SetForDeletion(!_viewModel.SelectedEntry.ForDeletion);
+
+            e.Handled = true;
+        }
+
+        else if (e.Key == Key.N)
+        {
+            ServiceLocator.TaggingService.SetNSFW(!_viewModel.SelectedEntry.ForDeletion);
+
+            e.Handled = true;
+        }
+
+        else if (e.Key == Key.F)
+        {
+            ServiceLocator.TaggingService.SetFavorite(!_viewModel.SelectedEntry.Favorite);
+
+            e.Handled = true;
+        }
+
+        else if (e.Key is >= Key.D0 and <= Key.D9)
+        {
+            int rating = e.Key - Key.D0;
+
+            if (rating == 0) rating = 10;
+
+            ServiceLocator.TaggingService.SetRating(rating);
+
+            e.Handled = true;
         }
     }
 }
