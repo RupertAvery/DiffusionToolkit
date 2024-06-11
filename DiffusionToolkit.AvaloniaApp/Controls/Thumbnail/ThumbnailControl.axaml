@@ -45,6 +45,9 @@
               PointerReleased="InputElement_OnPointerReleased"
               PointerPressed="Thumbnail_OnPointerPressed">
             <Grid.Styles>
+                <Style Selector="Grid">
+                    <Setter Property="Background" Value="{DynamicResource BackgroundBrush}" />
+                </Style>
               <Style Selector="Grid.selected">
                 <Setter Property="Background" Value="#80306fdb" />
               </Style>
