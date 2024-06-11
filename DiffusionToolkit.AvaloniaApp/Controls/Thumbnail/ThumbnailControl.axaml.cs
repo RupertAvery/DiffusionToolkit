@@ -13,42 +13,14 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Diffusion.Database;
 using DiffusionToolkit.AvaloniaApp.Common;
 using DiffusionToolkit.AvaloniaApp.Thumbnails;
-using SkiaSharp;
 
 namespace DiffusionToolkit.AvaloniaApp.Controls.Thumbnail;
-
-public enum NavigationState
-{
-    StartOfPage,
-    EndOfPage,
-}
-
-public class DragStartEventArgs : RoutedEventArgs
-{
-    public DragStartEventArgs()
-    {
-        RoutedEvent = ThumbnailControl.DragStartEvent;
-    }
-
-    public PointerEventArgs PointerEventArgs { get; set; }
-}
-
-public class NavigationEventArgs : RoutedEventArgs
-{
-    public NavigationEventArgs()
-    {
-        RoutedEvent = ThumbnailControl.NavigationChangedEvent;
-    }
-    public NavigationState NavigationState { get; set; }
-}
-
 public partial class ThumbnailControl : UserControl
 {
     private int _thumbnailSize = 256;
@@ -200,6 +172,8 @@ public partial class ThumbnailControl : UserControl
         PropertyChanged += OnPropertyChanged;
         SizeChanged += ThumbnailControl_SizeChanged;
         _dataStore = ServiceLocator.DataStore;
+
+        _debounceRedrawThumbnails = Utility.Debounce(() => Dispatcher.UIThread.Post(RedrawThumbnails), 50);
     }
 
     private void OnPrevious(object? sender, EventArgs e)
@@ -218,9 +192,11 @@ public partial class ThumbnailControl : UserControl
         scrollViewer.ScrollChanged += ScrollViewerOnScrollChanged;
     }
 
+    private readonly Action _debounceRedrawThumbnails;
+
     private void ScrollViewerOnScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
-        RedrawThumbnails();
+        _debounceRedrawThumbnails();
     }
 
     private void InvalidateThumbnails()
@@ -239,7 +215,7 @@ public partial class ThumbnailControl : UserControl
     {
         var scrollViewer = ItemsScrollViewer;
         ItemsControl itemsControl = ThumbnailItemsControl;
-
+        
         var preloadSize = ThumbnailSize * 2;
 
         // Get the bounds of the ScrollViewer's viewport
