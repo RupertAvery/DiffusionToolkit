@@ -66,14 +66,13 @@ public partial class ThumbnailControl : UserControl
             BindingMode.TwoWay);
 
     public static readonly DirectProperty<ThumbnailControl, ObservableCollection<ThumbnailViewModel>?> SelectedItemsProperty =
-        AvaloniaProperty.RegisterDirect<ThumbnailControl, ObservableCollection<ThumbnailViewModel>?>(nameof(CurrentItem),
+        AvaloniaProperty.RegisterDirect<ThumbnailControl, ObservableCollection<ThumbnailViewModel>?>(nameof(SelectedItems),
             o => o.SelectedItems,
             (o, v) =>
             {
                 o.SelectedItems = v;
             },
-            null,
-            BindingMode.TwoWay);
+            null);
 
 
     public static readonly RoutedEvent<RoutedEventArgs> CurrentItemChangedEvent =
@@ -136,12 +135,12 @@ public partial class ThumbnailControl : UserControl
         }
     }
 
-    //private void ValueOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    //{
-    //    Debug.WriteLine(e.Action);
-    //    Debug.WriteLine(e.OldItems);
-    //    Debug.WriteLine(e.NewItems);
-    //}
+    private void ValueOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        Debug.WriteLine(e.Action);
+        Debug.WriteLine(e.OldItems);
+        Debug.WriteLine(e.NewItems);
+    }
 
     public ThumbnailViewModel? CurrentItem
     {
@@ -149,15 +148,10 @@ public partial class ThumbnailControl : UserControl
         set => SetAndRaise(CurrentItemProperty, ref _currentItem, value);
     }
 
-    //public CancellationToken CancellationToken
-    //{
-    //    get => _cancellationToken;
-    //    set => SetAndRaise(CancellationTokenProperty, ref _cancellationToken, value);
-    //}
-
     private ThumbnailViewModel? _anchorItem;
     private ThumbnailViewModel? _currentItem;
     private ThumbnailNavigationManager _thumbnailNavigationManager;
+
     public ThumbnailControl()
     {
         InitializeComponent();
@@ -168,7 +162,7 @@ public partial class ThumbnailControl : UserControl
 
         Loaded += OnLoaded;
 
-        SelectedItems = new ObservableCollection<ThumbnailViewModel>();
+        //SelectedItems = new ObservableCollection<ThumbnailViewModel>();
         PropertyChanged += OnPropertyChanged;
         SizeChanged += ThumbnailControl_SizeChanged;
         _dataStore = ServiceLocator.DataStore;
@@ -602,10 +596,13 @@ public partial class ThumbnailControl : UserControl
         {
             if ((e.KeyModifiers & KeyModifiers.Control) != 0)
             {
-                if (!_startMultiSelect && CurrentItem != null)
+                if (!_startMultiSelect)
                 {
-                    CurrentItem.IsSelected = true;
-                    UpdateSelection(CurrentItem);
+                    if (CurrentItem != null)
+                    {
+                        CurrentItem.IsSelected = true;
+                        UpdateSelection(CurrentItem);
+                    }
                     _startMultiSelect = true;
                 }
 
@@ -630,10 +627,7 @@ public partial class ThumbnailControl : UserControl
                 }
 
                 thumbnail.IsSelected = true;
-                if (SelectedItems != null && !SelectedItems.Contains(thumbnail))
-                {
-                    SelectedItems.Add(thumbnail);
-                }
+                UpdateSelection(thumbnail);
             }
 
             SetCurrent(thumbnail, true);
@@ -700,6 +694,11 @@ public partial class ThumbnailControl : UserControl
             if (Math.Abs(distance.X) < 5 && Math.Abs(distance.Y) < 5 && (e.KeyModifiers & KeyModifiers.Shift) == 0 && (e.KeyModifiers & KeyModifiers.Control) == 0)
             {
                 Deselect();
+                if (CurrentItem != null)
+                {
+                    CurrentItem.IsSelected = true;
+                    UpdateSelection(CurrentItem);
+                }
             }
         }
 
@@ -709,6 +708,9 @@ public partial class ThumbnailControl : UserControl
 
     private void InputElement_OnKeyUp(object? sender, KeyEventArgs e)
     {
-        _startMultiSelect = false;
+        if (e.Key is Key.LeftCtrl or Key.RightCtrl)
+        {
+            _startMultiSelect = false;
+        }
     }
 }
