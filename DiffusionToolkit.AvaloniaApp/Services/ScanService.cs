@@ -92,8 +92,12 @@ public class ScanService
             ScanComplete?.Invoke(this, new ScanCompleteEventArgs()
             {
                 Added = results.Added,
+                Updated = results.Updated,
                 Scanned = results.Scanned,
-                Message = "",
+                Message = "Scan Completed in {time}. {count} images {action}"
+                    .Replace("{count}", rebuildMetadata ? $"{results.Updated:N0}" : $"{results.Added:N0}")
+                    .Replace("{action}", rebuildMetadata ? "updated" : "added")
+                    .Replace("{time}", $"{results.ElapsedTime:N0}s"),
                 Cancelled = CancellationTokenSource.IsCancellationRequested,
                 Removed = results.Removed,
                 ElapsedTime = results.ElapsedTime,
@@ -129,6 +133,7 @@ public class ScanService
         public int Scanned { get; set; }
         public float ElapsedTime { get; set; }
         public int Removed { get; set; }
+        public int Updated { get; set; }
     }
 
     private ScanResults ScanFiles(IList<string> filesToScan, bool rebuildMetadata, CancellationToken cancellationToken)
@@ -215,7 +220,7 @@ public class ScanService
                 if (rebuildMetadata)
                 {
 
-                    scanResults.Added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
+                    scanResults.Updated += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
                 }
                 else
                 {

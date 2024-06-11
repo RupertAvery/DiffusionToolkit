@@ -101,6 +101,12 @@ public class SearchPageViewModel : ViewModelBase
     public IEnumerable<string> SortByOptions { get; set; }
     public IEnumerable<string> SortOrderOptions { get; set; }
 
+    public string? NotificationText
+    {
+        get => _notificationText;
+        set => this.RaiseAndSetIfChanged(ref _notificationText, value);
+    }
+
     public SearchPageViewModel()
     {
         _dataStore = ServiceLocator.DataStore;
@@ -131,6 +137,32 @@ public class SearchPageViewModel : ViewModelBase
         ServiceLocator.TaggingService.ForDeletion += TaggingServiceOnForDeletion;
         ServiceLocator.TaggingService.Favorite += TaggingServiceOnFavorite;
         ServiceLocator.TaggingService.NSFW += TaggingServiceOnNSFW;
+        ServiceLocator.NotificationService.Notify += NotificationServiceOnNotify;
+
+        _debounceCloseNotifiation = Utility.Debounce(() => Dispatcher.UIThread.Post(CloseNotification), 10000);
+
+        CloseNotificationCommand = ReactiveCommand.Create(CloseNotification);
+    }
+
+    private Action _debounceCloseNotifiation;
+
+    public void CloseNotification()
+    {
+        NotificationText = null;
+        IsNotificationVisible = false;
+    }
+
+    private void NotificationServiceOnNotify(object? sender, string e)
+    {
+        IsNotificationVisible = true;
+        NotificationText = e;
+        _debounceCloseNotifiation();
+    }
+
+    public bool IsNotificationVisible
+    {
+        get => _isNotificationVisible;
+        set => this.RaiseAndSetIfChanged(ref _isNotificationVisible, value);
     }
 
     private void TaggingServiceOnRate(object? sender, int e)
@@ -253,6 +285,7 @@ public class SearchPageViewModel : ViewModelBase
     private void OnView(object? sender, SearchView e)
     {
         _view = e;
+        SearchResults = new List<ThumbnailViewModel>();
         SearchAsync();
     }
 
@@ -443,6 +476,8 @@ public class SearchPageViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _thumbnailSize, value);
     }
 
+    public ICommand CloseNotificationCommand { get; set; }
+
     public async Task UpdateResultsAsync()
     {
         await Task.Run(() => UpdateResults());
@@ -450,6 +485,8 @@ public class SearchPageViewModel : ViewModelBase
 
     private Filter _filter = new Filter();
     private int _thumbnailSize;
+    private string? _notificationText;
+    private bool _isNotificationVisible;
 
     private void UpdateResults()
     {

@@ -9,15 +9,16 @@ namespace DiffusionToolkit.AvaloniaApp.Services;
 public class ServiceLocator
 {
     private static DataStore? _dataStore;
-    private static NavigationService? _navigationManager;
+    private static NavigationService? _navigationService;
     private static ScanService? _scanManager;
     private static Settings? _settings;
-    private static PreviewService? _previewManager;
-    private static ThumbnailNavigationService? _thumbnailNavigationManager;
-    private static SearchService? _searchManager;
+    private static PreviewService? _previewService;
+    private static ThumbnailNavigationService? _thumbnailNavigationService;
+    private static SearchService? _searchService;
     private static ThumbnailCache? _thumbnailCache;
     private static ThumbnailLoader? _thumbnailLoader;
     private static TaggingService? _taggingService;
+    private static NotificationService? _notificationService;
 
     public static DataStore? DataStore => _dataStore;
     public static ThumbnailCache? ThumbnailCache => _thumbnailCache;
@@ -47,12 +48,12 @@ public class ServiceLocator
     
     public static NavigationService NavigationService
     {
-        get { return _navigationManager ??= new NavigationService(); }
+        get { return _navigationService ??= new NavigationService(); }
     }
 
     public static PreviewService PreviewService
     {
-        get { return _previewManager ??= new PreviewService(); }
+        get { return _previewService ??= new PreviewService(); }
     }
 
     public static ScanService ScanService
@@ -62,17 +63,22 @@ public class ServiceLocator
 
     public static ThumbnailNavigationService ThumbnailNavigationService
     {
-        get { return _thumbnailNavigationManager ??= new ThumbnailNavigationService(); }
+        get { return _thumbnailNavigationService ??= new ThumbnailNavigationService(); }
     }
     
     public static SearchService SearchService
     {
-        get { return _searchManager ??= new SearchService(); }
+        get { return _searchService ??= new SearchService(); }
     }
 
 
     public static TaggingService TaggingService
     {
         get { return _taggingService ??= new TaggingService(); }
+    }
+
+    public static NotificationService NotificationService
+    {
+        get { return _notificationService ??= new NotificationService();  }
     }
 }

@@ -37,6 +37,19 @@ public partial class SearchPage : UserControl, INavigationTarget
 
         mainGrid.ColumnDefinitions[0].PropertyChanged += OnGridChanged;
         imageGrid.RowDefinitions[0].PropertyChanged += OnGridChanged;
+
+        ServiceLocator.ScanService.ScanStatus += ScanServiceOnScanStatus;
+        ServiceLocator.ScanService.ScanComplete += ScanServiceOnScanComplete;
+    }
+
+    private void ScanServiceOnScanComplete(object? sender, ScanCompleteEventArgs e)
+    {
+        ServiceLocator.NotificationService.SetNotification(e.Message);
+    }
+
+    private void ScanServiceOnScanStatus(object? sender, string e)
+    {
+        ServiceLocator.NotificationService.SetNotification(e);
     }
 
     private void OnGridChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -178,8 +191,9 @@ public partial class SearchPage : UserControl, INavigationTarget
         {
             var selectedFiles = _viewModel.SelectedItems.Select(t => t.Path).ToArray();
             DataObject dataObject = new DataObject();
-            dataObject.Set(DataFormats.Files, selectedFiles);
-            dataObject.Set("DTCustomDragSource", true);
+            dataObject.Set("FileDrop", selectedFiles);
+            //dataObject.Set(DataFormats.Files, selectedFiles);
+            //dataObject.Set("DTCustomDragSource", true);
 
             var effects = await DragDrop.DoDragDrop(e.PointerEventArgs, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
         }

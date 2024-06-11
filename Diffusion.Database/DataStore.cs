@@ -9,29 +9,10 @@ public class MigrationEventArgs
     public MigrationType MigrationType { get; set; }
 }
 
-public class ThumbnailEntry
-{
-    [PrimaryKey]
-    public int Id { get; set; }
-    public int Size { get; set; }
-    public int Width { get; set; }
-    public int Height { get; set; }
-    public string Path { get; set; }
-    public byte[] Data { get; set; }
-}
-
-public partial class DataStore
+public partial class DataStore : SQLiteDB
 {
     private readonly string _extensionsPath;
     private readonly string _altExtensionsPath;
-    public string DatabasePath { get; }
-    public bool RescanRequired { get; set; }
-
-    public SQLiteConnection OpenConnection()
-    {
-        var db = new SQLiteConnection(DatabasePath);
-        return db;
-    }
 
     public DataStore(string databasePath)
     {
@@ -48,7 +29,7 @@ public partial class DataStore
     public event EventHandler<MigrationEventArgs> BeforeMigrate;
     public event EventHandler<MigrationEventArgs> AfterMigrate;
 
-    public async Task Create()
+    public override async Task Create()
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
 

@@ -1,24 +1,14 @@
-﻿using SQLite;
+﻿namespace Diffusion.Database;
 
-namespace Diffusion.Database;
-
-public class ThumbnailCache
+public class ThumbnailCache : SQLiteDB
 {
-    public string DatabasePath { get; }
-
-    public SQLiteConnection OpenConnection()
-    {
-        var db = new SQLiteConnection(DatabasePath);
-        return db;
-    }
 
     public ThumbnailCache(string databasePath)
     {
         DatabasePath = databasePath;
     }
 
-
-    public async Task Create()
+    public override async Task Create()
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
 
@@ -30,7 +20,9 @@ public class ThumbnailCache
         using var db = OpenConnection();
         db.CreateTable<ThumbnailEntry>();
         db.CreateIndex<ThumbnailEntry>(image => image.Path);
+        db.CreateIndex<ThumbnailEntry>(image => image.CreatedDate);
     }
+    
 
     public ThumbnailEntry? GetThumbnail(int id)
     {
@@ -57,9 +49,9 @@ public class ThumbnailCache
     {
         using var db = OpenConnection();
 
-        var query = "DELETE FROM ThumbnailEntry WHERE Id = @Id";
+        var sql = "DELETE FROM ThumbnailEntry WHERE Id = @Id";
 
-        var command = db.CreateCommand(query);
+        var command = db.CreateCommand(sql);
         command.Bind("@Id", id);
 
         command.ExecuteNonQuery();
@@ -72,8 +64,8 @@ public class ThumbnailCache
         db.BeginTransaction();
 
 
-        var query = "DELETE FROM ThumbnailEntry WHERE Id = @Id";
-        var command = db.CreateCommand(query);
+        var sql = "DELETE FROM ThumbnailEntry WHERE Id = @Id";
+        var command = db.CreateCommand(sql);
 
         foreach (var id in ids)
         {
@@ -82,5 +74,29 @@ public class ThumbnailCache
         }
 
         db.Commit();
+    }
+
+    public void RemoveAllThumbnails()
+    {
+        using var db = OpenConnection();
+
+        var sql = "DELETE FROM ThumbnailEntry";
+        var command = db.CreateCommand(sql);
+
+        command.ExecuteNonQuery();
+    }
+
+
+    public void RemoveThumbnailsByAge(int age)
+    {
+        using var db = OpenConnection();
+
+        var expiryDate = DateTime.Now.Subtract(TimeSpan.FromDays(age));
+
+        var sql = "DELETE FROM ThumbnailEntry WHERE CreatedDate < @ExpiryDate";
+        var command = db.CreateCommand(sql);
+
+        command.Bind("@ExpiryDate", expiryDate);
+        command.ExecuteNonQuery();
     }
 }

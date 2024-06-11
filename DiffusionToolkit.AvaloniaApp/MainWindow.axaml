@@ -73,7 +73,7 @@
                   >
             <Button.Styles>
               <Style Selector="Button.busy">
-                <Setter Property="Background" Value="Green"></Setter>
+                <Setter Property="Background" Value="Red"></Setter>
               </Style>
               <Style Selector="Button.notbusy">
                 <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"></Setter>

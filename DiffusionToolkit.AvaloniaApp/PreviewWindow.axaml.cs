@@ -156,17 +156,8 @@ public partial class PreviewWindow : Window
             case Key.I:
                 _viewModel.ToggleMetadata();
                 break;
-            //case Key.F11 when (e.KeyModifiers & KeyModifiers.Shift) != 0:
-            //    WindowState = WindowState switch
-            //    {
-            //        WindowState.Normal => WindowState.FullScreen,
-            //        WindowState.Maximized => WindowState.FullScreen,
-            //        WindowState.FullScreen => WindowState.Normal,
-            //        _ => WindowState
-            //    };
-            //    break;
             case Key.Enter when (e.KeyModifiers & KeyModifiers.Control) != 0:
-            case Key.F11:
+
                 if (WindowState != WindowState.FullScreen)
                 {
                     _lastState = WindowState;

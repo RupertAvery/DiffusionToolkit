@@ -8,4 +8,5 @@ public class ScanCompleteEventArgs
     public int Scanned { get; set; }
     public int Removed { get; set; }
     public float ElapsedTime { get; set; }
+    public int Updated { get; set; }
 }
