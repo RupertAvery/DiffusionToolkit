@@ -359,7 +359,10 @@ namespace Diffusion.Toolkit
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            var dataStore = new DataStore(_dbPath);
+            var extensionsPath = Path.Combine(AppInfo.AppDir, "extensions");
+            var altExtensionsPath = Path.Combine(AppInfo.AppDataPath, "extensions");
+
+            var dataStore = new DataStore(_dbPath, extensionsPath, altExtensionsPath);
 
             if (!_configuration.Exists())
             {

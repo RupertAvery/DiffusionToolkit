@@ -14,11 +14,6 @@ public partial class DataStore : SQLiteDB
     private readonly string _extensionsPath;
     private readonly string _altExtensionsPath;
 
-    public DataStore(string databasePath)
-    {
-        DatabasePath = databasePath;
-    }
-
     public DataStore(string databasePath, string extensionsPath, string altExtensionsPath)
     {
         _extensionsPath = extensionsPath;

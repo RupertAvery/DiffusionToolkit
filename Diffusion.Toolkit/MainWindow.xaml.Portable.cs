@@ -125,7 +125,10 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Opening database at {targetDbPath}");
 
-            _dataStoreOptions.UpdateValue(new DataStore(targetDbPath));
+            var extensionsPath = Path.Combine(AppInfo.AppDir, "extensions");
+            var altExtensionsPath = Path.Combine(AppInfo.AppDataPath, "extensions");
+
+            _dataStoreOptions.UpdateValue(new DataStore(targetDbPath, extensionsPath, altExtensionsPath));
         }
 
     }
