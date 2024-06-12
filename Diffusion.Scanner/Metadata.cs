@@ -261,7 +261,23 @@ public class Metadata
                         var isFoocus = false;
                         foreach (var directory in directories)
                         {
-                            if (directory.Name == "Exif IFD0")
+                            if (directory.Name == "Exif SubIFD")
+                            {
+                                foreach (var tag in directory.Tags)
+                                {
+                                    switch (tag.Name)
+                                    {
+                                        case "User Comment":
+                                            var description = tag.Description;
+                                            if (description.Contains("sui_image_params"))
+                                            {
+                                                fileParameters = ReadStableSwarmParameters(description);
+                                            }
+                                            break;
+                                    }
+                                }
+                            }
+                            else if (directory.Name == "Exif IFD0")
                             {
                                 foreach (var tag in directory.Tags)
                                 {
@@ -997,6 +1013,46 @@ public class Metadata
         fp.Model = root.RootElement.GetProperty("base_model").GetString();
 
         fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Size: {fp.Width}x{fp.Height}";
+
+        return fp;
+    }
+
+
+    private static FileParameters ReadStableSwarmParameters(string data)
+    {
+        var json = JsonDocument.Parse(data);
+
+        var root = json.RootElement;
+
+        var fp = new FileParameters();
+
+        var suiRoot = root.GetProperty("sui_image_params");
+
+        fp.Prompt = suiRoot.GetProperty("prompt").GetString();
+        fp.NegativePrompt = suiRoot.GetProperty("negativeprompt").GetString();
+        fp.Steps = suiRoot.GetProperty("steps").GetInt32();
+        fp.CFGScale = suiRoot.GetProperty("cfgscale").GetDecimal();
+
+        //var resolution = root.GetProperty("resolution").GetString();
+        //resolution = resolution.Substring(1, resolution.Length - 2);
+        //var parts = resolution.Split(new[] { ',' }, StringSplitOptions.TrimEntries);
+
+        fp.Width = suiRoot.GetProperty("width").GetInt32();
+        fp.Height = suiRoot.GetProperty("height").GetInt32();
+        fp.Seed = suiRoot.GetProperty("seed").GetInt64();
+
+        if (suiRoot.TryGetProperty("sampler", out var sampler))
+        {
+            fp.Sampler = sampler.GetString();
+        }
+
+        if (suiRoot.TryGetProperty("model", out var model))
+        {
+            fp.Model = model.GetString();
+        }
+
+        //fp.ModelHash = root.GetProperty("base_model_hash").GetString();
+        fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
 
         return fp;
     }
