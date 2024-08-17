@@ -30,6 +30,7 @@
         <KeyBinding Key="F3" Command="{Binding ToggleNavigationPane}"></KeyBinding>
         <KeyBinding Key="F4" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Key="F5" Command="{Binding Refresh}"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="F5" Command="{Binding Refresh}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D2" Command="{Binding ShowAlbums}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D3" Command="{Binding ShowSearch}"></KeyBinding>
@@ -242,7 +243,8 @@
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowMarked}">
                             <fa:ImageAwesome ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
-                        </Button>                    </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </Grid>
                 <Frame x:Name="Frame" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
             </DockPanel>
