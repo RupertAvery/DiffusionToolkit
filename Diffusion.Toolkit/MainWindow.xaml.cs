@@ -119,6 +119,8 @@ namespace Diffusion.Toolkit
             _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
 
             _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
+            _model.ToggleHideDeleted = new RelayCommand<object>((o) => ToggleHideDeleted());
+
             _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
             _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
@@ -470,9 +472,12 @@ namespace Diffusion.Toolkit
             }
 
             _model.AutoRefresh = _settings.AutoRefresh;
-            _model.HideNSFWCommand = _settings.HideNSFW;
-            QueryBuilder.HideNSFW = _model.HideNSFWCommand;
-            _model.NSFWBlurCommand = _settings.NSFWBlur;
+            _model.HideNSFW = _settings.HideNSFW;
+            _model.HideDeleted = _settings.HideDeleted;
+
+            QueryBuilder.HideNSFW = _model.HideNSFW;
+            QueryBuilder.HideDeleted = _model.HideDeleted;
+            _model.NSFWBlur = _settings.NSFWBlur;
             _model.FitToPreview = _settings.FitToPreview;
 
             _model.Settings = _settings;

@@ -53,6 +53,7 @@ public class Settings : SettingsContainer, IScanOptions
     private string _theme;
     private bool _watchFolders;
     private bool _hideNsfw;
+    private bool _hideDeleted;
     private bool _nsfwBlur;
     private bool _scanForNewImagesOnStartup;
     private bool _checkForUpdatesOnStartup;
@@ -241,6 +242,12 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _hideNsfw;
         set => UpdateValue(ref _hideNsfw, value);
+    }
+
+    public bool HideDeleted
+    {
+        get => _hideDeleted;
+        set => UpdateValue(ref _hideDeleted, value);
     }
 
     public bool NSFWBlur

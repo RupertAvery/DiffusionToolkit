@@ -433,7 +433,7 @@
                                         Images="{Binding Images}" 
                                         Page="{Binding Page, Mode=TwoWay}" 
                                         Pages="{Binding Pages}" 
-                                        NSFWBlur="{Binding MainModel.NSFWBlurCommand}"
+                                        NSFWBlur="{Binding MainModel.NSFWBlur}"
                                         SelectedImages="{Binding MainModel.SelectedImages, Mode=TwoWay}"
                                         IsEmpty="{Binding IsEmpty}"
                                         Results="{Binding Results}"
@@ -481,7 +481,7 @@
             </Grid.RowDefinitions>
 
             <controls:PreviewPane x:Name="PreviewPane" 
-                                  NSFWBlur="{Binding MainModel.NSFWBlurCommand}" 
+                                  NSFWBlur="{Binding MainModel.NSFWBlur}" 
                                   Image="{Binding CurrentImage}" 
                                   IsLoading="{Binding CurrentImage.IsLoading}"
                                   AllowDrop="True" 
