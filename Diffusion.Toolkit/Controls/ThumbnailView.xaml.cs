@@ -136,7 +136,12 @@ namespace Diffusion.Toolkit.Controls
             //_model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
             //_model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             //_model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
+
+            _debounceRedrawThumbnails = Utility.Debounce<double>((offset) => Dispatcher.Invoke(ReloadThumbnailsView, offset));
         }
+
+        private Action<double> _debounceRedrawThumbnails;
+
 
         private void MoveSelected()
         {
@@ -178,7 +183,7 @@ namespace Diffusion.Toolkit.Controls
                 case Key.Enter when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                     OpenSelected();
                     break;
-                
+
                 case Key.Delete:
                 case Key.X:
                     {
@@ -193,7 +198,7 @@ namespace Diffusion.Toolkit.Controls
 
                         break;
                     }
-                
+
                 case Key.F when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                     FavoriteSelected();
                     break;
@@ -457,6 +462,8 @@ namespace Diffusion.Toolkit.Controls
             {
                 var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
+                if (!imageEntries.Any()) return;
+
                 var favorite = !imageEntries.GroupBy(e => e.Favorite).OrderByDescending(g => g.Count()).First().Key;
 
                 foreach (var entry in imageEntries)
@@ -478,6 +485,8 @@ namespace Diffusion.Toolkit.Controls
             if (ThumbnailListView.SelectedItems != null)
             {
                 var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+                if (!imageEntries.Any()) return;
 
                 var nsfw = !imageEntries.GroupBy(e => e.NSFW).OrderByDescending(g => g.Count()).First().Key;
 
@@ -755,7 +764,7 @@ namespace Diffusion.Toolkit.Controls
 
         private void RefreshAlbum_OnClick(object sender, RoutedEventArgs e)
         {
-            ReloadAlbums(); 
+            ReloadAlbums();
         }
 
         private void AddToAlbum_OnClick(object sender, RoutedEventArgs e)

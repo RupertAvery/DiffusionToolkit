@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace Diffusion.Toolkit.Controls
@@ -93,7 +96,8 @@ namespace Diffusion.Toolkit.Controls
 
             var item = wrapPanel.Children[0] as ListViewItem;
 
-        
+            var preloadSize = item.ActualHeight * 2;
+
             double top = 0;
             double left = 0;
             var maxHeight = item.ActualHeight;
@@ -101,8 +105,8 @@ namespace Diffusion.Toolkit.Controls
             for (var i = 0; i < wrapPanel.Children.Count; i++)
             {
                 item = wrapPanel.Children[i] as ListViewItem;
-
-                if (top + item.ActualHeight >= offset && top <= offset + height)
+                
+                if (top + item.ActualHeight >= (offset - preloadSize) && top <= (offset + height + preloadSize))
                 {
                     if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
                     {
@@ -116,6 +120,7 @@ namespace Diffusion.Toolkit.Controls
                 }
 
                 left += item.ActualWidth;
+
                 if (left + item.ActualWidth > wrapPanel.ActualWidth)
                 {
                     top += maxHeight;
@@ -142,7 +147,52 @@ namespace Diffusion.Toolkit.Controls
 
         private void ScrollViewer_OnScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            ReloadThumbnailsView(e.VerticalOffset);
+            _debounceRedrawThumbnails(e.VerticalOffset);
+            //ReloadThumbnailsView(e.VerticalOffset);
+        }
+
+    }
+
+    public static class Utility
+    {
+        public static Action Debounce(Action func, int milliseconds = 300)
+        {
+            CancellationTokenSource? cancelTokenSource = null;
+
+            return () =>
+            {
+                cancelTokenSource?.Cancel();
+                cancelTokenSource = new CancellationTokenSource();
+
+                Task.Delay(milliseconds, cancelTokenSource.Token)
+                    .ContinueWith(t =>
+                    {
+                        if (t.IsCompletedSuccessfully)
+                        {
+                            func();
+                        }
+                    }, TaskScheduler.Default);
+            };
+        }
+
+        public static Action<T> Debounce<T>(Action<T> func, int milliseconds = 300)
+        {
+            CancellationTokenSource? cancelTokenSource = null;
+
+            return (arg) =>
+            {
+                cancelTokenSource?.Cancel();
+                cancelTokenSource = new CancellationTokenSource();
+
+                Task.Delay(milliseconds, cancelTokenSource.Token)
+                    .ContinueWith(t =>
+                    {
+                        if (t.IsCompletedSuccessfully)
+                        {
+                            func(arg);
+                        }
+                    }, TaskScheduler.Default);
+            };
         }
     }
 }
