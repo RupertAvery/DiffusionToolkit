@@ -47,7 +47,11 @@ Thanks to Terence for a whole bunch of bug fixes and enhancements!
 
 ## Enhancements
 
-* Improved thumbnail loading performance on scrolling
+* Added a **Slideshow** function in the Popout Preview window. 
+   * Press Space to start/stop the slideshow
+   * Go to **Settings > Image > Slide show delay** to adjust the time between image changes
+* Improved thumbnail loading efficiency - only thumbnails in current view are loaded
+   * Scrolling quickly will not trigger thumbnail loads
 * Add **Actual Size** option in Preview
 * Added filters: (Click the Filter button or press CTRL-F)    
    * **Aesthetic Score - No Score** - show images without an Aesthetic Score
@@ -65,6 +69,7 @@ Thanks to Terence for a whole bunch of bug fixes and enhancements!
 ## Bugfixes
 
 * Additional indexes to fix query slowdowns
+* Fixed bug where Preview Pane loses focus when changing pages
 * Move txt files when moving images #239
 * Fix issue with unsetting rating of selected images in thumbnail view #237
 * Fixed some startup crashes

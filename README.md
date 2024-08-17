@@ -72,15 +72,17 @@ A folder named `build` will be created, containing all the necessary files.
 
 # Supported Metadata formats
 
-* AUTOMATIC1111
+* AUTOMATIC1111 and A1111-compatible metadata such as
+  * Tensor.Art
+  * SDNext
 * InvokeAI (Dream/sd-metadata/invokeai_metadata)
 * NovelAI
 * Stable Diffusion
-* SDNext
 * EasyDiffusion
 * RuinedFooocus
+* Fooocus
 * FooocusMRE
-* ComfyUI + SDXL (Work in progress) 
+* Stable Swarm
 
 You can even use it on images without metadata and still use the other features such as rating and albums!
 
