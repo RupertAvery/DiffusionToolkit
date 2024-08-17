@@ -54,7 +54,17 @@ namespace Diffusion.Toolkit
         private void ToggleFitToPreview()
         {
             _model.FitToPreview = !_model.FitToPreview;
+            _model.HundredPercent = false;
             _settings.FitToPreview = _model.FitToPreview;
+            _settings.HundredPercent = _model.HundredPercent;
+        }
+
+        private void ToggleHundredPercent()
+        {
+            _model.HundredPercent = !_model.HundredPercent;
+            _model.FitToPreview = false;
+            _settings.FitToPreview = _model.FitToPreview;
+            _settings.HundredPercent = _model.HundredPercent;
         }
 
         private void ToggleInfo()

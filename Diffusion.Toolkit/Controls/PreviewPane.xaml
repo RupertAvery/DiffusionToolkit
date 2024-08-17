@@ -78,6 +78,7 @@
                 <ScrollViewer.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Fit to Preview" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
+                        <MenuItem Header="Actual Size" Command="{Binding MainModel.ToggleHundredPercent}" IsChecked="{Binding MainModel.HundredPercent}"></MenuItem>
                     </ContextMenu>
                     
                     <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->

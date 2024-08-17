@@ -41,7 +41,9 @@ public class MainModel : BaseNotify
     private bool _nsfwBlur;
     private ICommand _showPromptsCommand;
     private bool _fitToPreview;
+    private bool _hundredPercent;
     private ICommand _toggleFitToPreview;
+    private ICommand _toggleHundredPercent;
     private ICommand _setThumbnailSize;
     private ICommand _poputPreview;
     private ICommand _togglePreview;
@@ -292,11 +294,22 @@ public class MainModel : BaseNotify
         set => SetField(ref _fitToPreview, value);
     }
 
-
     public ICommand ToggleFitToPreview
     {
         get => _toggleFitToPreview;
         set => SetField(ref _toggleFitToPreview, value);
+    }
+
+    public bool HundredPercent
+    {
+        get => _hundredPercent;
+        set => SetField(ref _hundredPercent, value);
+    }
+
+    public ICommand ToggleHundredPercent
+    {
+        get => _toggleHundredPercent;
+        set => SetField(ref _toggleHundredPercent, value);
     }
 
     public ICommand SetThumbnailSize
