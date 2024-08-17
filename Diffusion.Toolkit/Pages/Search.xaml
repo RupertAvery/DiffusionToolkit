@@ -615,6 +615,10 @@
                     <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
                 </Border.Effect>
                 <Grid >
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
                     <ScrollViewer  VerticalScrollBarVisibility="Auto">
                         <StackPanel>
                             <controls:FilterControl  
@@ -623,18 +627,19 @@
                                 SearchCommand="{Binding FilterCommand}" 
                                                      
                                 VerticalAlignment="Stretch"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Button Grid.Column="0" Height="30" Command="{Binding ClearCommand}">Clear</Button>
-                                <Button Grid.Column="1" Height="30" Command="{Binding FilterCommand}">Apply (CTRL+Enter)</Button>
-                                <Button Grid.Column="2" Height="30" Command="{Binding HideFilter}">Close</Button>
-                            </Grid>
+
                         </StackPanel>
                     </ScrollViewer>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Height="30" Command="{Binding ClearCommand}">Clear</Button>
+                        <Button Grid.Column="1" Height="30" Command="{Binding FilterCommand}">Apply (CTRL+Enter)</Button>
+                        <Button Grid.Column="2" Height="30" Command="{Binding HideFilter}">Close</Button>
+                    </Grid>
                 </Grid>
             </Border>
         </Popup>
