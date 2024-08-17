@@ -570,8 +570,13 @@ public static class SearchControlModelExtensions
 
         filter.UsePrompt = model.UsePrompt;
         filter.Prompt = model.Prompt;
+        filter.UsePromptEx = model.UsePromptEx;
+        filter.PromptEx = model.PromptEx;
         filter.UseNegativePrompt = model.UseNegativePrompt;
         filter.NegativePrompt = model.NegativePrompt;
+        filter.UseNegativePromptEx = model.UseNegativePromptEx;
+        filter.NegativePromptEx = model.NegativePromptEx;
+
         filter.UseSteps = model.UseSteps;
         filter.Steps = model.Steps;
         filter.UseSampler = model.UseSampler;
@@ -597,6 +602,7 @@ public static class SearchControlModelExtensions
         filter.Unrated = model.Unrated;
         filter.UseNSFW = model.UseNSFW;
         filter.NSFW = model.NSFW;
+        
         filter.UseForDeletion = model.UseForDeletion;
         filter.ForDeletion = model.ForDeletion;
 
@@ -627,6 +633,9 @@ public static class SearchControlModelExtensions
 
         filter.UseNoMetadata = model.UseNoMetadata;
         filter.NoMetadata = model.NoMetadata;
+
+        filter.UseInAlbum = model.UseInAlbum;
+        filter.InAlbum = model.InAlbum;
 
         return filter;
     }

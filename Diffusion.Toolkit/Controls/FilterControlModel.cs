@@ -10,8 +10,12 @@ public class FilterControlModel : BaseNotify
 {
     private bool _usePrompt;
     private string _prompt;
+    private bool _usePromptEx;
+    private string _promptEx;
     private bool _useNegativePrompt;
     private string _negativePrompt;
+    private bool _useNegativePromptEx;
+    private string _negativePromptEx;
     private bool _useSteps;
     private string _steps;
     private bool _useSampler;
@@ -58,8 +62,8 @@ public class FilterControlModel : BaseNotify
     private double _hyperNetStr;
     private bool _useNoMetadata;
     private bool _noMetadata;
-
-
+    private bool _useInAlbum;
+    private bool _inAlbum;
 
     public FilterControlModel()
     {
@@ -86,6 +90,18 @@ public class FilterControlModel : BaseNotify
         set => SetField(ref _prompt, value);
     }
 
+    public bool UsePromptEx
+    {
+        get => _usePromptEx;
+        set => SetField(ref _usePromptEx, value);
+    }
+
+    public string PromptEx
+    {
+        get => _promptEx;
+        set => SetField(ref _promptEx, value);
+    }
+
     public bool UseNegativePrompt
     {
         get => _useNegativePrompt;
@@ -96,6 +112,18 @@ public class FilterControlModel : BaseNotify
     {
         get => _negativePrompt;
         set => SetField(ref _negativePrompt, value);
+    }
+
+    public bool UseNegativePromptEx
+    {
+        get => _useNegativePromptEx;
+        set => SetField(ref _useNegativePromptEx, value);
+    }
+
+    public string NegativePromptEx
+    {
+        get => _negativePromptEx;
+        set => SetField(ref _negativePromptEx, value);
     }
 
     public bool UseSteps
@@ -374,8 +402,23 @@ public class FilterControlModel : BaseNotify
         set => SetField(ref _noMetadata, value);
     }
 
+    public bool UseInAlbum
+    {
+        get => _useInAlbum;
+        set => SetField(ref _useInAlbum, value);
+    }
+
+    public bool InAlbum
+    {
+        get => _inAlbum;
+        set => SetField(ref _inAlbum, value);
+    }
+
+
     public bool IsActive => (UsePrompt ||
+                             UsePromptEx ||
                              UseNegativePrompt ||
+                             UseNegativePromptEx ||
                              UseSteps ||
                              UseSampler ||
                              UseSeed ||
@@ -396,12 +439,15 @@ public class FilterControlModel : BaseNotify
                              UseCreationDate ||
                              UseHyperNet ||
                              UseHyperNetStr ||
-                             UseNoMetadata);
+                             UseNoMetadata ||
+                             UseInAlbum);
 
     public void Clear()
     {
         Prompt = String.Empty;
+        PromptEx = String.Empty;
         NegativePrompt = String.Empty;
+        NegativePromptEx = String.Empty;
         Steps = String.Empty;
         Sampler = String.Empty;
         SeedStart = null;
@@ -428,10 +474,12 @@ public class FilterControlModel : BaseNotify
         HyperNet = String.Empty;
         HyperNetStr = 0;
         NoMetadata = false;
-
+        InAlbum = false;
 
         UsePrompt = false;
+        UsePromptEx = false;
         UseNegativePrompt = false;
+        UseNegativePromptEx = false;
         UseSteps = false;
         UseSampler = false;
         UseSeed = false;
@@ -451,6 +499,7 @@ public class FilterControlModel : BaseNotify
         UseHyperNet = false;
         UseHyperNetStr = false;
         UseNoMetadata = false;
+        UseInAlbum = false;
 
     }
 }

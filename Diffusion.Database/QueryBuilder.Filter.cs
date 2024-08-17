@@ -16,6 +16,18 @@ namespace Diffusion.Database
             var conditions = new List<KeyValuePair<string, object>>();
             var joins = new List<string>();
 
+            if (HideNSFW && !filter.UseNSFW)
+            {
+                conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+                filter.UseNSFW = false;
+            }
+
+            if (HideDeleted && !filter.UseForDeletion)
+            {
+                conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", false));
+                filter.UseForDeletion = false;
+            }
+
             FilterAlbum(filter, conditions, joins);
             FilterFolder(filter, conditions, joins);
             FilterPath(filter, conditions);
@@ -35,9 +47,14 @@ namespace Diffusion.Database
             FilterForDeletion(filter, conditions);
             FilterNSFW(filter, conditions);
             FilterNoMetadata(filter, conditions);
+            FilterInAlbum(filter, conditions);
 
             FilterNegativePrompt(filter, conditions);
             FilterPrompt(filter, conditions);
+
+            FilterNegativePromptEx(filter, conditions);
+            FilterPromptEx(filter, conditions);
+
 
             return (string.Join(" AND ", conditions.Select(c => c.Key)),
                 conditions.SelectMany(c =>
@@ -58,7 +75,7 @@ namespace Diffusion.Database
             {
                 var value = filter.Folder;
                 conditions.Add(new KeyValuePair<string, object>("(Folder.Path = ?)", value));
-                joins.Add("INNER JOIN Folder ON Folder.Id = Image.FolderId");
+                joins.Add("INNER JOIN Folder ON Folder.Id = m1.FolderId");
             }
         }
 
@@ -70,7 +87,7 @@ namespace Diffusion.Database
             {
                 var value = filter.Album;
                 conditions.Add(new KeyValuePair<string, object>("(Album.Name = ?)", value));
-                joins.Add("INNER JOIN AlbumImage ON Image.Id = AlbumImage.ImageId");
+                joins.Add("INNER JOIN AlbumImage ON m1.Id = AlbumImage.ImageId");
                 joins.Add("INNER JOIN Album ON AlbumImage.AlbumId = Album.Id");
             }
         }
@@ -81,7 +98,7 @@ namespace Diffusion.Database
             {
                 var value = filter.Path;
 
-                conditions.Add(new KeyValuePair<string, object>("(Image.Path LIKE ?)", value.Replace("*", "%")));
+                conditions.Add(new KeyValuePair<string, object>("(m1.Path LIKE ?)", value.Replace("*", "%")));
 
             }
         }
@@ -210,8 +227,22 @@ namespace Diffusion.Database
                 }
 
             }
+        }
 
+        private static void FilterNegativePromptEx(Filter filter, List<KeyValuePair<string, object>> conditions)
+        {
+            if (filter.UseNegativePromptEx)
+            {
+                var value = filter.NegativePromptEx;
 
+                var tokens = CSVParser.Parse(value);
+
+                foreach (var token in tokens)
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(NegativePrompt NOT LIKE ?)", $"%{token.Trim()}%"));
+                }
+
+            }
         }
 
         private static void FilterPrompt(Filter filter, List<KeyValuePair<string, object>> conditions)
@@ -229,6 +260,25 @@ namespace Diffusion.Database
                 foreach (var token in tokens)
                 {
                     conditions.Add(new KeyValuePair<string, object>("(Prompt LIKE ?)", $"%{token.Trim()}%"));
+                }
+            }
+        }
+
+        private static void FilterPromptEx(Filter filter, List<KeyValuePair<string, object>> conditions)
+        {
+            if (filter.UsePromptEx)
+            {
+                //if (filter.PromptEx.Trim().Length == 0)
+                //{
+                //    conditions.Add(new KeyValuePair<string, object>("(Prompt NOT LIKE ? OR Prompt IS NULL)", "%%"));
+                //    return;
+                //}
+
+                var tokens = CSVParser.Parse(filter.PromptEx);
+
+                foreach (var token in tokens)
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(Prompt NOT LIKE ?)", $"%{token.Trim()}%"));
                 }
             }
         }
@@ -401,6 +451,23 @@ namespace Diffusion.Database
                     }
 
                     conditions.Add(new KeyValuePair<string, object>("(Seed = ?)", filter.SeedStart));
+                }
+            }
+        }
+
+        private static void FilterInAlbum(Filter filter, List<KeyValuePair<string, object>> conditions)
+        {
+            if (filter.UseInAlbum)
+            {
+                var value = filter.InAlbum;
+
+                if (value)
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) > 0", null));
+                }
+                else
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) = 0", null));
                 }
             }
         }

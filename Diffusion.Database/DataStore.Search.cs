@@ -50,7 +50,7 @@ namespace Diffusion.Database
 
             if (string.IsNullOrEmpty(prompt))
             {
-                var query = $"SELECT SUM(FileSize) FROM Image";
+                var query = $"SELECT SUM(FileSize) FROM Image m1";
 
                 if (QueryBuilder.HideNSFW)
                 {
@@ -63,7 +63,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Parse(prompt);
 
-            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
+            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
 
             db.Close();
 
@@ -99,6 +99,31 @@ namespace Diffusion.Database
 
 
 
+        private string GetInitialWhereClause(bool forceDeleted = false)
+        {
+
+            var whereClauses = new List<string>();
+
+            if (QueryBuilder.HideNSFW)
+            {
+                whereClauses.Add("(NSFW = 0 OR NSFW IS NULL)");
+            }
+
+            if (forceDeleted)
+            {
+                whereClauses.Add("ForDeletion = 1");
+            }
+            else if (QueryBuilder.HideDeleted)
+            {
+                whereClauses.Add("ForDeletion = 0");
+            }
+
+            var whereExpression = string.Join(" AND ", whereClauses);
+
+            return whereClauses.Any() ? $" WHERE {whereExpression}" : "";
+        }
+
+
         public int Count(string prompt)
         {
             using var db = OpenConnection();
@@ -118,7 +143,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Parse(prompt);
 
-            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
 
             db.Close();
 
@@ -144,7 +169,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.QueryPrompt(prompt);
 
-            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
 
             db.Close();
 
@@ -158,7 +183,7 @@ namespace Diffusion.Database
 
             if (filter.IsEmpty)
             {
-                var query = $"SELECT SUM(FileSize) FROM Image";
+                var query = $"SELECT SUM(FileSize) FROM Image m1 ";
 
                 if (QueryBuilder.HideNSFW)
                 {
@@ -172,7 +197,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Filter(filter);
 
-            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
+            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
 
             db.Close();
 
@@ -186,7 +211,7 @@ namespace Diffusion.Database
 
             if (filter.IsEmpty)
             {
-                var query = "SELECT COUNT(*) FROM Image";
+                var query = "SELECT COUNT(*) FROM Image m1";
 
                 if (QueryBuilder.HideNSFW)
                 {
@@ -200,7 +225,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Filter(filter);
 
-            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image {string.Join(' ', q.Joins)} WHERE {q.Item1}", q.Item2.ToArray());
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.Item1}", q.Item2.ToArray());
 
             db.Close();
 
@@ -381,7 +406,7 @@ namespace Diffusion.Database
 
             if (string.IsNullOrEmpty(prompt))
             {
-                var query = "SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image ";
+                var query = $"SELECT m1.Id, m1.Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) AS AlbumCount FROM Image m1 ";
 
                 if (QueryBuilder.HideNSFW)
                 {
@@ -407,7 +432,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Parse(prompt);
 
-            var images = db.Query<ImageView>($"SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
+            var images = db.Query<ImageView>($"SELECT m1.Id, m1.Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) AS AlbumCount FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {
@@ -416,6 +441,13 @@ namespace Diffusion.Database
 
             db.Close();
         }
+
+ 
+        const string columns = "FolderId, FileName, Prompt, NegativePrompt, Steps, Sampler, " +
+                      "CFGScale, Seed, Width, Height, ModelHash, Model, BatchSize, BatchPos, CreatedDate, ModifiedDate, " +
+                      "CustomTags, Rating, Favorite, ForDeletion, NSFW, " +
+                      "AestheticScore, HyperNetwork, HyperNetworkStrength, ClipSkip, ENSD, FileSize, NoMetadata";
+
 
         public IEnumerable<ImageView> Search(Filter filter, int pageSize, int offset, string sortBy, string sortDirection)
         {
@@ -442,14 +474,15 @@ namespace Diffusion.Database
 
             if (filter.IsEmpty)
             {
-                var query = "SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image ";
+                //var query = "SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image ";
+                //var query = $"SELECT {columns} FROM Image ";
+                var where = GetInitialWhereClause(filter.UseForDeletion && filter.ForDeletion);
 
-                if (QueryBuilder.HideNSFW)
-                {
-                    query += " WHERE (NSFW = 0 OR NSFW IS NULL)";
-                }
+                var query = $"SELECT Image.Id, Image.Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image WHERE Image.rowid IN (SELECT m1.rowid FROM Image m1 {where} ORDER BY {sortField} {sortDir} limit ? offset ?) ORDER BY {sortField} {sortDir}";
+                //var query = $"SELECT {columns} FROM Image ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?";
 
-                var allimages = db.Query<ImageView>($"{query} ORDER BY {sortField} {sortDir}  LIMIT ? OFFSET ?", pageSize, offset);
+
+                var allimages = db.Query<ImageView>(query, pageSize, offset);
 
                 foreach (var image in allimages)
                 {
@@ -463,7 +496,11 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.Filter(filter);
 
-            var images = db.Query<ImageView>($"SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image  {string.Join(' ', q.Joins)}  WHERE {q.Item1} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
+            // var query2 = "SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image ";
+            //var query2 = $"SELECT {columns} FROM Image {string.Join(' ', q.Joins)}  WHERE {q.Item1} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?";
+            var query2 = $"SELECT Image.Id, Image.Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount  FROM Image WHERE Image.rowid IN (SELECT m1.rowid FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.Item1} ORDER BY {sortField} {sortDir} limit ? offset ?) ORDER BY {sortField} {sortDir}";
+
+            var images = db.Query<ImageView>(query2, q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {

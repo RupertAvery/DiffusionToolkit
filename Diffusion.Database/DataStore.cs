@@ -84,6 +84,9 @@ public partial class DataStore
         db.CreateIndex<Image>(image => image.FileSize);
         db.CreateIndex<Image>(image => image.ModifiedDate);
 
+        db.CreateIndex("Image", new[] { "ForDeletion", "CreatedDate" });
+        db.CreateIndex("Image", new[] { "NSFW", "CreatedDate" });
+
         db.CreateTable<Album>();
         db.CreateIndex<Album>(album => album.Name, true);
         db.CreateIndex<Album>(album => album.LastUpdated);
