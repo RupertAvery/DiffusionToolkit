@@ -86,11 +86,17 @@ public class ThumbnailViewModel : BaseNotify
         set => SetField(ref _currentImage, value);
     }
 
+    public bool IsImage => SelectedImageEntry != null && SelectedImageEntry.EntryType == EntryType.File;
+
 
     public ImageEntry? SelectedImageEntry
     {
         get => _selectedImage;
-        set => SetField(ref _selectedImage, value);
+        set
+        {
+            SetField(ref _selectedImage, value);
+            OnPropertyChanged(nameof(IsImage));
+        }
     }
 
 

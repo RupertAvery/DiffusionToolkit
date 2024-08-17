@@ -194,14 +194,14 @@
             </ListView.InputBindings>
             <ListView.ContextMenu>
                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                    <MenuItem ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
+                    <MenuItem IsEnabled="{Binding IsImage}"  ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
                         <!--<MenuItem Header="_New Album" Click="CreateAlbum_OnClick"></MenuItem>
                                                 <Separator></Separator>-->
                     </MenuItem>
                     <MenuItem Visibility="{Binding ViewMode, Converter={StaticResource albumModeVis}}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}" Click="RemoveFromAlbum_OnClick"></MenuItem>
                     <Separator />
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Favorite}" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate}">
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Favorite}" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Rate}">
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate.1}" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate.2}" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate.3}" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
@@ -215,9 +215,9 @@
                         <Separator></Separator>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate.Remove}" Click="Unrate_OnClick"></MenuItem>
                     </MenuItem>
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.NSFW}" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.NSFW}" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
                     <Separator />
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter}">
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter}">
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.Prompt}"  Command="{Binding CopyPromptCommand}"/>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.NegativePrompt}"  Command="{Binding CopyNegativePromptCommand}"/>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.Seed}"  Command="{Binding CopySeedCommand}"/>
@@ -225,15 +225,15 @@
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.All}"  Command="{Binding CopyParametersCommand}"/>
                     </MenuItem>
                     <Separator />
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Copy}" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Move}" Command="{Binding MoveCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Copy}" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Move}" Command="{Binding MoveCommand}"/>
                     <Separator />
                     <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.ShowInExplorer}"  Command="{Binding ShowInExplorerCommand}"/>
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.ExpandToFolder}"  Command="{Binding ExpandToFolderCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.ExpandToFolder}"  Command="{Binding ExpandToFolderCommand}"/>
                     <Separator />
-                    <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.SendToTrash}" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
-                    <MenuItem Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.Restore}" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Remove}" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.SendToTrash}" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.Restore}" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Remove}" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.Template>

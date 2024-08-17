@@ -701,8 +701,8 @@ namespace Diffusion.Toolkit.Controls
 
         private void ShowInExplorer(object obj)
         {
-            if (Model.CurrentImage == null) return;
-            var p = Model.CurrentImage.Path;
+            if (Model.SelectedImageEntry == null) return;
+            var p = Model.SelectedImageEntry.Path;
             var processInfo = new ProcessStartInfo()
             {
                 FileName = "explorer.exe",
