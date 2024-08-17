@@ -36,6 +36,7 @@ using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
 using System.Configuration;
 using System.Windows.Input;
+using ThumbnailCache = Diffusion.Toolkit.Thumbnails.ThumbnailCache;
 
 namespace Diffusion.Toolkit
 {

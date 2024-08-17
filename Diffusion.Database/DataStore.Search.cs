@@ -282,6 +282,8 @@ namespace Diffusion.Database
         public IEnumerable<Image> QueryAll()
         {
             using var db = OpenConnection();
+            
+            var query = $"SELECT Image.* FROM Image";
 
             var images = db.Query<Image>(query + GetInitialWhereClause());
 
