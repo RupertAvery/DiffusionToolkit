@@ -192,11 +192,18 @@ namespace Diffusion.Database
         {
             if (filter.UseAestheticScore)
             {
-                var oper = filter.AestheticScoreOp;
-                conditions.Add(new KeyValuePair<string, object>($"(AestheticScore {oper} ?)", filter.AestheticScore));
-            } else if (filter.NoAestheticScore)
-            {
-                conditions.Add(new KeyValuePair<string, object>($"(AestheticScore IS NULL)", null));
+                if (filter.NoAestheticScore)
+                {
+                    conditions.Add(new KeyValuePair<string, object>($"(AestheticScore IS NULL)", null));
+                }
+                else
+                {
+                    var oper = filter.AestheticScoreOp;
+                    if (oper is { Length: > 0 } && filter.AestheticScore.HasValue)
+                    {
+                        conditions.Add(new KeyValuePair<string, object>($"(AestheticScore {oper} ?)", filter.AestheticScore));
+                    }
+                }
             }
         }
 
@@ -205,11 +212,18 @@ namespace Diffusion.Database
         {
             if (filter.UseRating)
             {
-                var oper = filter.RatingOp;
-                conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)", filter.Rating));
-            } else if (filter.Unrated)
-            {
-                conditions.Add(new KeyValuePair<string, object>($"(Rating IS NULL)", null));
+                if (filter.Unrated)
+                {
+                    conditions.Add(new KeyValuePair<string, object>($"(Rating IS NULL)", null));
+                }
+                else
+                {
+                    var oper = filter.RatingOp;
+                    if (oper is { Length: > 0 } && filter.Rating.HasValue)
+                    {
+                        conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)", filter.Rating));
+                    }
+                }
             }
         }
 
