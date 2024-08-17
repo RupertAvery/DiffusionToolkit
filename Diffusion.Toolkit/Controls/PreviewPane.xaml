@@ -78,6 +78,7 @@
                 <ScrollViewer.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Fit to Preview" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
+                        <MenuItem Header="Actual Size" Command="{Binding MainModel.ToggleHundredPercent}" IsChecked="{Binding MainModel.HundredPercent}"></MenuItem>
                     </ContextMenu>
                     
                     <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
@@ -91,7 +92,7 @@
                     <Image.Visibility>
                         <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
                             <Binding Path="NSFW"></Binding>
-                            <Binding Path="MainModel.NSFWBlurCommand" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
+                            <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
                         </MultiBinding>
                     </Image.Visibility>
                     <Image.Effect>
@@ -99,7 +100,7 @@
                             <BlurEffect.Radius>
                                 <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
                                     <Binding Path="NSFW"></Binding>
-                                    <Binding Path="MainModel.NSFWBlurCommand" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                                    <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
                                 </MultiBinding>
                             </BlurEffect.Radius>
                         </BlurEffect>
@@ -114,7 +115,7 @@
                     <fa:ImageAwesome.Visibility>
                         <MultiBinding Converter="{StaticResource boolToVisMulti}" ConverterParameter="20">
                             <Binding Path="NSFW"></Binding>
-                            <Binding Path="MainModel.NSFWBlurCommand" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                            <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
                         </MultiBinding>
                     </fa:ImageAwesome.Visibility>
                 </fa:ImageAwesome>

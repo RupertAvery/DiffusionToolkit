@@ -44,6 +44,22 @@
                         <ColumnDefinition Width="130"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
+                    <CheckBox IsChecked="{Binding UsePromptEx}" VerticalContentAlignment="Center">Exclude Prompt</CheckBox>
+                    <TextBox x:Name="PromptExTextBox" 
+                             Text="{Binding PromptEx}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
+                             Height="60"
+                             ToolTip="Separate terms with commas"
+                             HorizontalScrollBarVisibility="Disabled"
+                             VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                    ></TextBox>
+                </Grid>
+                <Grid Margin="0,0,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
                     <CheckBox IsChecked="{Binding UseNegativePrompt}" VerticalContentAlignment="Center">Negative Prompt</CheckBox>
                     <TextBox Text="{Binding NegativePrompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
                              Height="60"
@@ -53,6 +69,21 @@
                              TextWrapping="Wrap"
                              AcceptsReturn="True"
                              ></TextBox>
+                </Grid>
+                <Grid Margin="0,0,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox IsChecked="{Binding UseNegativePromptEx}" VerticalContentAlignment="Center">Exclude Negative</CheckBox>
+                    <TextBox Text="{Binding NegativePromptEx}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
+                             Height="60"
+                             ToolTip="Separate terms with commas"
+                             HorizontalScrollBarVisibility="Disabled"
+                             VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                    ></TextBox>
                 </Grid>
                 <Grid Margin="0,0,0,5">
                     <Grid.ColumnDefinitions>
@@ -244,7 +275,17 @@
                         <RadioButton Click="ButtonBase_OnClick" GroupName="NoMetadata" IsChecked="{Binding NoMetadata, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
                     </StackPanel>
                 </Grid>
-
+                <Grid Margin="0,0,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox IsChecked="{Binding UseInAlbum}" VerticalContentAlignment="Center">In Album</CheckBox>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <RadioButton Click="ButtonBase_OnClick" GroupName="InAlbum" IsChecked="{Binding InAlbum, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0">True</RadioButton>
+                        <RadioButton Click="ButtonBase_OnClick" GroupName="InAlbum" IsChecked="{Binding InAlbum, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </Grid>
     </Grid>

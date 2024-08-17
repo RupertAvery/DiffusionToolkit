@@ -108,7 +108,7 @@ public static partial class QueryBuilder
         ParseFavorite(ref prompt, conditions);
         ParseForDeletion(ref prompt, conditions);
         ParseNSFW(ref prompt, conditions);
-        ParseInAlbum(ref prompt, conditions, joins);
+        ParseInAlbum(ref prompt, conditions);
         ParseNoMetadata(ref prompt, conditions);
 
         ParseNegativePrompt(ref prompt, conditions);
@@ -143,7 +143,7 @@ public static partial class QueryBuilder
 
             var value = match.Groups["value"].Value;
             conditions.Add(new KeyValuePair<string, object>("(Album.Name = ?)", value));
-            joins.Add("INNER JOIN AlbumImage ON Image.Id = AlbumImage.ImageId");
+            joins.Add("INNER JOIN AlbumImage ON m1.Id = AlbumImage.ImageId");
             joins.Add("INNER JOIN Album ON AlbumImage.AlbumId = Album.Id");
         }
     }
@@ -158,7 +158,7 @@ public static partial class QueryBuilder
 
             var value = match.Groups["value"].Value;
             conditions.Add(new KeyValuePair<string, object>("(Folder.Path = ?)", value));
-            joins.Add("INNER JOIN Folder ON Image.FolderId = Folder.Id");
+            joins.Add("INNER JOIN Folder ON m1.FolderId = Folder.Id");
         }
     }
 
@@ -191,7 +191,7 @@ public static partial class QueryBuilder
                 }
             }
 
-            conditions.Add(new KeyValuePair<string, object>("(Image.Path LIKE ?)", value.Replace("*", "%")));
+            conditions.Add(new KeyValuePair<string, object>("(m1.Path LIKE ?)", value.Replace("*", "%")));
 
         }
     }
@@ -241,7 +241,7 @@ public static partial class QueryBuilder
         //return false;
     }
 
-    private static void ParseInAlbum(ref string prompt, List<KeyValuePair<string, object>> conditions, List<string> joins)
+    private static void ParseInAlbum(ref string prompt, List<KeyValuePair<string, object>> conditions)
     {
         var match = InAlbumRegex.Match(prompt);
         if (match.Success)
@@ -257,13 +257,11 @@ public static partial class QueryBuilder
 
             if (value)
             {
-                conditions.Add(new KeyValuePair<string, object>("(AlbumImage.ImageId IS NOT NULL)", null));
-                joins.Add("LEFT OUTER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id");
+                conditions.Add(new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) > 0", null));
             }
             else
             {
-                conditions.Add(new KeyValuePair<string, object>("(AlbumImage.ImageId IS NULL)", null));
-                joins.Add("LEFT OUTER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id");
+                conditions.Add(new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) = 0", null));
             }
         }
 

@@ -28,6 +28,7 @@ public class UnavailableFilesModel : BaseNotify
     private bool _deleteImmediately;
     private bool _markForDeletion;
     private bool _isStartEnabled;
+    private bool _markOnly;
 
     public bool UseRootFolders
     {
@@ -75,5 +76,11 @@ public class UnavailableFilesModel : BaseNotify
     {
         get => _isStartEnabled;
         set => SetField(ref _isStartEnabled, value);
+    }
+
+    public bool MarkOnly
+    {
+        get => _markOnly;
+        set => SetField(ref _markOnly, value);
     }
 }

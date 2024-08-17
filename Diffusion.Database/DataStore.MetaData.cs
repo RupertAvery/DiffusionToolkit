@@ -113,6 +113,7 @@ namespace Diffusion.Database
             db.Commit();
         }
 
+
         public void SetRating(int id, int? rating)
         {
             using var db = OpenConnection();
@@ -140,6 +141,42 @@ namespace Diffusion.Database
             foreach (var id in ids)
             {
                 command.Bind("@Rating", rating);
+                command.Bind("@Id", id);
+                command.ExecuteNonQuery();
+            }
+
+            db.Commit();
+        }
+
+        public IEnumerable<ImagePath> GetUnavailable(bool unavailable)
+        {
+            using var db = OpenConnection();
+
+            var query = "SELECT Id, Path FROM Image WHERE Unavailable = @Unavailable";
+
+            var images = db.Query<ImagePath>(query,  new { Unavailable = unavailable });
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+
+            db.Close();
+        }
+
+
+        public void SetUnavailable(IEnumerable<int> ids, bool unavailable)
+        {
+            using var db = OpenConnection();
+
+            db.BeginTransaction();
+
+            var query = $"UPDATE Image SET Unavailable = @Unavailable WHERE Id = @Id";
+            var command = db.CreateCommand(query);
+
+            foreach (var id in ids)
+            {
+                command.Bind("@Unavailable", unavailable);
                 command.Bind("@Id", id);
                 command.ExecuteNonQuery();
             }

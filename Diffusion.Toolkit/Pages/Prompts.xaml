@@ -89,7 +89,7 @@
                                 x:Name="ThumbnailListView" 
                                 Images="{Binding Images}" 
                                 SelectedImages="{Binding MainModel.SelectedImages, Mode=TwoWay}"
-                                NSFWBlur="{Binding MainModel.NSFWBlurCommand}" 
+                                NSFWBlur="{Binding MainModel.NSFWBlur}" 
                                 PageChangedCommand="{Binding PageChangedCommand}"
                                 OpenCommand="{Binding OpenCommand}"
                                 AddAlbumCommand="{Binding MainModel.AddAlbumCommand}"

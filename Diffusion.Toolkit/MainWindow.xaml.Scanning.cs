@@ -23,6 +23,7 @@ namespace Diffusion.Toolkit
             return Task.Run(() =>
             {
                 var candidateImages = new List<int>();
+                var restoredImages = new List<int>();
 
                 Dispatcher.Invoke(() =>
                 {
@@ -61,6 +62,8 @@ namespace Diffusion.Toolkit
 
                         var folderImages = _dataStore.GetAllPathImages(folder.Path).ToDictionary(f => f.Path);
 
+
+
                         if (Directory.Exists(folder.Path))
                         {
                             //var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, null, _settings.RecurseFolders.GetValueOrDefault(true), null);
@@ -73,8 +76,12 @@ namespace Diffusion.Toolkit
                                     break;
                                 }
 
-                                if (folderImages.ContainsKey(file))
+                                if (folderImages.TryGetValue(file, out var imagePath))
                                 {
+                                    if (imagePath.Unavailable)
+                                    {
+                                        restoredImages.Add(imagePath.Id);
+                                    }
                                     folderImages.Remove(file);
                                 }
 
@@ -137,25 +144,35 @@ namespace Diffusion.Toolkit
 
                         var unavailableFiles = GetLocalizedText("UnavailableFiles");
 
-                        if (options.DeleteImmediately)
+                        if (restoredImages.Any())
                         {
-                            _dataStore.RemoveImages(candidateImages);
-
-                            var removed = GetLocalizedText("UnavailableFiles.Results.Removed");
-
-                            removed = removed.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                            _messagePopupManager.Show(removed, unavailableFiles, PopupButtons.OK);
+                            _dataStore.SetUnavailable(restoredImages, false);
                         }
-                        else
+
+                        _dataStore.SetUnavailable(candidateImages, true);
+
+                        if (!options.MarkOnly)
                         {
-                            _dataStore.SetDeleted(candidateImages, true);
+                            if (options.DeleteImmediately)
+                            {
+                                _dataStore.RemoveImages(candidateImages);
 
-                            var marked = GetLocalizedText("UnavailableFiles.Results.MarkedForDeletion");
+                                var removed = GetLocalizedText("UnavailableFiles.Results.Removed");
 
-                            marked = marked.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+                                removed = removed.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
 
-                            _messagePopupManager.Show(marked, unavailableFiles, PopupButtons.OK);
+                                _messagePopupManager.Show(removed, unavailableFiles, PopupButtons.OK);
+                            }
+                            else
+                            {
+                                _dataStore.SetDeleted(candidateImages, true);
+
+                                var marked = GetLocalizedText("UnavailableFiles.Results.MarkedForDeletion");
+
+                                marked = marked.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+
+                                _messagePopupManager.Show(marked, unavailableFiles, PopupButtons.OK);
+                            }
                         }
 
                         var completed = GetLocalizedText("Actions.Scanning.Completed");

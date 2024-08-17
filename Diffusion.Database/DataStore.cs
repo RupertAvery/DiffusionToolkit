@@ -109,11 +109,15 @@ public partial class DataStore : SQLiteDB
         db.CreateIndex<Image>(image => image.Rating);
         db.CreateIndex<Image>(image => image.ForDeletion);
         db.CreateIndex<Image>(image => image.NSFW);
+        db.CreateIndex<Image>(image => image.Unavailable);
         db.CreateIndex<Image>(image => image.CreatedDate);
         db.CreateIndex<Image>(image => image.HyperNetwork);
         db.CreateIndex<Image>(image => image.HyperNetworkStrength);
         db.CreateIndex<Image>(image => image.FileSize);
         db.CreateIndex<Image>(image => image.ModifiedDate);
+
+        db.CreateIndex("Image", new[] { "ForDeletion", "CreatedDate" });
+        db.CreateIndex("Image", new[] { "NSFW", "CreatedDate" });
 
         db.CreateTable<Album>();
         db.CreateIndex<Album>(album => album.Name, true);
@@ -234,6 +238,7 @@ public class ImagePath
     public int Id { get; set; }
     public int FolderId { get; set; }
     public string Path { get; set; }
+    public bool Unavailable { get; set; }
 }
 
 public class UsedPrompt

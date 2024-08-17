@@ -23,9 +23,9 @@ namespace Diffusion.Toolkit
     {
         private void ToggleHideNSFW()
         {
-            _model.HideNSFWCommand = !_model.HideNSFWCommand;
-            QueryBuilder.HideNSFW = _model.HideNSFWCommand;
-            _settings.HideNSFW = _model.HideNSFWCommand;
+            _model.HideNSFW = !_model.HideNSFW;
+            QueryBuilder.HideNSFW = _model.HideNSFW;
+            _settings.HideNSFW = _model.HideNSFW;
             _search.SearchImages();
 
             _prompts.ReloadPrompts();
@@ -33,16 +33,38 @@ namespace Diffusion.Toolkit
             LoadImageModels();
         }
 
+        private void ToggleHideDeleted()
+        {
+            _model.HideDeleted = !_model.HideDeleted;
+            QueryBuilder.HideDeleted = _model.HideDeleted;
+            _settings.HideDeleted = _model.HideDeleted;
+            _search.SearchImages();
+
+            _prompts.ReloadPrompts();
+            _prompts.LoadImages();
+        }
+
+
         private void ToggleNSFWBlur()
         {
-            _model.NSFWBlurCommand = !_model.NSFWBlurCommand;
-            _settings.NSFWBlur = _model.NSFWBlurCommand;
+            _model.NSFWBlur = !_model.NSFWBlur;
+            _settings.NSFWBlur = _model.NSFWBlur;
         }
 
         private void ToggleFitToPreview()
         {
             _model.FitToPreview = !_model.FitToPreview;
+            _model.HundredPercent = false;
             _settings.FitToPreview = _model.FitToPreview;
+            _settings.HundredPercent = _model.HundredPercent;
+        }
+
+        private void ToggleHundredPercent()
+        {
+            _model.HundredPercent = !_model.HundredPercent;
+            _model.FitToPreview = false;
+            _settings.FitToPreview = _model.FitToPreview;
+            _settings.HundredPercent = _model.HundredPercent;
         }
 
         private void ToggleInfo()

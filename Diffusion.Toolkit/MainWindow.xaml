@@ -30,6 +30,7 @@
         <KeyBinding Key="F3" Command="{Binding ToggleNavigationPane}"></KeyBinding>
         <KeyBinding Key="F4" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Key="F5" Command="{Binding Refresh}"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="F5" Command="{Binding Refresh}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D2" Command="{Binding ShowAlbums}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D3" Command="{Binding ShowSearch}"></KeyBinding>
@@ -84,8 +85,9 @@
                     <MenuItem Header="512x512" IsChecked="{Binding ThumbnailSize, Converter={StaticResource thumbSizeChecked}, ConverterParameter=512}" Command="{Binding SetThumbnailSize}" CommandParameter="512"/>
                 </MenuItem>
                 <Separator/>
-                <MenuItem Header="{lex:Loc Menu.View.BlurNSFW}" IsChecked="{Binding NSFWBlurCommand}" InputGestureText="B" Command="{Binding ToggleNSFWBlurCommand}"/>
-                <MenuItem Header="{lex:Loc Menu.View.HideNSFWFromResults}" IsChecked="{Binding HideNSFWCommand}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
+                <MenuItem Header="{lex:Loc Menu.View.BlurNSFW}" IsChecked="{Binding NSFWBlur}" InputGestureText="B" Command="{Binding ToggleNSFWBlurCommand}"/>
+                <MenuItem Header="{lex:Loc Menu.View.HideNSFWFromResults}" IsChecked="{Binding HideNSFW}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
+                <MenuItem Header="{lex:Loc Menu.View.HideDeletedFromResults}" IsChecked="{Binding HideDeleted}" Command="{Binding ToggleHideDeleted}" InputGestureText="Ctrl+Shift+D"/>
                 <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.Folders}" IsChecked="{Binding Settings.NavigationSection.ShowFolders}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Folders"/>
                 <MenuItem Header="{lex:Loc Menu.View.Models}" IsChecked="{Binding Settings.NavigationSection.ShowModels}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Models"/>
@@ -241,7 +243,8 @@
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowMarked}">
                             <fa:ImageAwesome ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
-                        </Button>                    </StackPanel>
+                        </Button>
+                    </StackPanel>
                 </Grid>
                 <Frame x:Name="Frame" Content="{Binding Page}" NavigationUIVisibility="Hidden"></Frame>
             </DockPanel>

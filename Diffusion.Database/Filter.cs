@@ -5,8 +5,12 @@ public class Filter
 
     public bool UsePrompt { get; set; }
     public string Prompt { get; set; }
+    public bool UsePromptEx { get; set; }
+    public string PromptEx { get; set; }
     public bool UseNegativePrompt { get; set; }
     public string NegativePrompt { get; set; }
+    public bool UseNegativePromptEx { get; set; }
+    public string NegativePromptEx { get; set; }
     public bool UseSteps { get; set; }
     public string Steps { get; set; }
     public bool UseSampler { get; set; }
@@ -64,7 +68,9 @@ public class Filter
     public bool NoMetadata { get; set; }
 
     public bool IsEmpty => !(UsePrompt ||
+                            UsePromptEx ||
                             UseNegativePrompt ||
+                            UseNegativePromptEx ||
                             UseSteps ||
                             UseSampler ||
                             UseSeed ||
@@ -87,10 +93,13 @@ public class Filter
                             UseHyperNetStr ||
                             UseNoMetadata ||
                             UseAlbum || 
-                            UseFolder);
+                            UseFolder ||
+                            UseInAlbum);
 
     public bool UseFolder => !string.IsNullOrEmpty(Folder);
     public string? Folder { get; set; }
     public bool UseAlbum => !string.IsNullOrEmpty(Album);
     public string? Album { get; set; }
+    public bool UseInAlbum { get; set; }
+    public bool InAlbum { get; set; }
 }

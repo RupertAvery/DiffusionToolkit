@@ -202,7 +202,17 @@ namespace Diffusion.Toolkit.Pages
                 SearchImages(null);
             });
 
-            _model.Refresh = new RelayCommand<object>((o) => ReloadMatches(null));
+            _model.Refresh = new RelayCommand<object>((o) =>
+            {
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                {
+                    SearchImages(null);
+                }
+                else
+                {
+                    ReloadMatches(null);
+                }
+            });
             _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
             _model.CopyFiles = new RelayCommand<object>((o) => CopyFiles());
 

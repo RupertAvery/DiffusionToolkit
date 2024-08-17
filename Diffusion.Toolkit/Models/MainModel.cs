@@ -35,11 +35,15 @@ public class MainModel : BaseNotify
     private ICommand _toggleInfoCommand;
     private ICommand _toggleNsfwBlurCommand;
     private ICommand _toggleHideNsfw;
-    private bool _hideNsfwCommand;
-    private bool _nsfwBlurCommand;
+    private ICommand _toggleHideDeleted;
+    private bool _hideNsfw;
+    private bool _hideDeleted;
+    private bool _nsfwBlur;
     private ICommand _showPromptsCommand;
     private bool _fitToPreview;
+    private bool _hundredPercent;
     private ICommand _toggleFitToPreview;
+    private ICommand _toggleHundredPercent;
     private ICommand _setThumbnailSize;
     private ICommand _poputPreview;
     private ICommand _togglePreview;
@@ -254,16 +258,28 @@ public class MainModel : BaseNotify
         set => SetField(ref _toggleHideNsfw, value);
     }
 
-    public bool NSFWBlurCommand
+    public ICommand ToggleHideDeleted
     {
-        get => _nsfwBlurCommand;
-        set => SetField(ref _nsfwBlurCommand, value);
+        get => _toggleHideDeleted;
+        set => SetField(ref _toggleHideDeleted, value);
     }
 
-    public bool HideNSFWCommand
+    public bool NSFWBlur
     {
-        get => _hideNsfwCommand;
-        set => SetField(ref _hideNsfwCommand, value);
+        get => _nsfwBlur;
+        set => SetField(ref _nsfwBlur, value);
+    }
+
+    public bool HideNSFW
+    {
+        get => _hideNsfw;
+        set => SetField(ref _hideNsfw, value);
+    }
+
+    public bool HideDeleted
+    {
+        get => _hideDeleted;
+        set => SetField(ref _hideDeleted, value);
     }
 
     public ICommand ShowPromptsCommand
@@ -278,11 +294,22 @@ public class MainModel : BaseNotify
         set => SetField(ref _fitToPreview, value);
     }
 
-
     public ICommand ToggleFitToPreview
     {
         get => _toggleFitToPreview;
         set => SetField(ref _toggleFitToPreview, value);
+    }
+
+    public bool HundredPercent
+    {
+        get => _hundredPercent;
+        set => SetField(ref _hundredPercent, value);
+    }
+
+    public ICommand ToggleHundredPercent
+    {
+        get => _toggleHundredPercent;
+        set => SetField(ref _toggleHundredPercent, value);
     }
 
     public ICommand SetThumbnailSize

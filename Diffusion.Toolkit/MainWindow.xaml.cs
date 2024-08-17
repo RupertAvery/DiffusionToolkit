@@ -35,7 +35,7 @@ using Diffusion.Toolkit.Localization;
 using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
 using System.Configuration;
-using ThumbnailCache = Diffusion.Toolkit.Thumbnails.ThumbnailCache;
+using System.Windows.Input;
 
 namespace Diffusion.Toolkit
 {
@@ -120,7 +120,11 @@ namespace Diffusion.Toolkit
             _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
 
             _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
+            _model.ToggleHideDeleted = new RelayCommand<object>((o) => ToggleHideDeleted());
+
             _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
+            _model.ToggleHundredPercent = new RelayCommand<object>((o) => ToggleHundredPercent());
+
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
             _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
             _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
@@ -241,7 +245,14 @@ namespace Diffusion.Toolkit
 
         private void Refresh()
         {
-            _search.SearchImages(null);
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                _search.SearchImages(null);
+            }
+            else
+            {
+                _search.ReloadMatches(null);
+            }
         }
 
         private PreviewWindow? _previewWindow;
@@ -474,10 +485,14 @@ namespace Diffusion.Toolkit
             }
 
             _model.AutoRefresh = _settings.AutoRefresh;
-            _model.HideNSFWCommand = _settings.HideNSFW;
-            QueryBuilder.HideNSFW = _model.HideNSFWCommand;
-            _model.NSFWBlurCommand = _settings.NSFWBlur;
+            _model.HideNSFW = _settings.HideNSFW;
+            _model.HideDeleted = _settings.HideDeleted;
+
+            QueryBuilder.HideNSFW = _model.HideNSFW;
+            QueryBuilder.HideDeleted = _model.HideDeleted;
+            _model.NSFWBlur = _settings.NSFWBlur;
             _model.FitToPreview = _settings.FitToPreview;
+            _model.HundredPercent = _settings.HundredPercent;
 
             _model.Settings = _settings;
 

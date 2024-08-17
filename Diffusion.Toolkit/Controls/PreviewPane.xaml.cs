@@ -80,6 +80,10 @@ namespace Diffusion.Toolkit.Controls
             {
                 FitToPreview();
             }
+            if (MainModel.HundredPercent)
+            {
+                HundredPercent();
+            }
         }
 
         public bool IsLoading
@@ -117,6 +121,11 @@ namespace Diffusion.Toolkit.Controls
             {
                 FitToPreview();
             }
+
+            if (MainModel is { HundredPercent: true })
+            {
+                HundredPercent();
+            }
         }
 
         private void FitToPreview()
@@ -134,11 +143,25 @@ namespace Diffusion.Toolkit.Controls
                 factor = Math.Min(hfactor, vfactor);
 
                 Preview.LayoutTransform = new ScaleTransform(factor, factor);
-                ScrollViewer.ScrollToHorizontalOffset(0);
-                ScrollViewer.ScrollToVerticalOffset(0);
 
                 UpdateLayout();
             }
+        }
+
+        private void HundredPercent()
+        {
+            if (Image is { Image: { } })
+            {
+
+                Preview.LayoutTransform = new ScaleTransform(1, 1);
+                UpdateLayout();
+            }
+        }
+
+        private void ResetScrollbars()
+        {
+            ScrollViewer.ScrollToHorizontalOffset(0);
+            ScrollViewer.ScrollToVerticalOffset(0);
         }
 
         private Cursor handCursor;
@@ -180,6 +203,7 @@ namespace Diffusion.Toolkit.Controls
         private void UIElement_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
             MainModel.FitToPreview = false;
+            MainModel.HundredPercent = false;
 
             var ctrlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 
@@ -362,6 +386,13 @@ namespace Diffusion.Toolkit.Controls
                 if (MainModel.FitToPreview)
                 {
                     FitToPreview();
+                }
+            }
+            if (e.PropertyName == nameof(MainModel.HundredPercent))
+            {
+                if (MainModel.HundredPercent)
+                {
+                    HundredPercent();
                 }
             }
         }

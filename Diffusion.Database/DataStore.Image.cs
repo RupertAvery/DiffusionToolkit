@@ -89,7 +89,7 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var images = db.Query<ImagePath>("SELECT Id, FolderId, Path FROM Image WHERE PATH LIKE ? || '%'", path);
+            var images = db.Query<ImagePath>("SELECT Id, FolderId, Path, Unavailable FROM Image WHERE PATH LIKE ? || '%'", path);
 
             foreach (var image in images)
             {
@@ -151,7 +151,8 @@ namespace Diffusion.Database
                 nameof(Image.Rating),
                 nameof(Image.Favorite),
                 nameof(Image.ForDeletion),
-                nameof(Image.NSFW)
+                nameof(Image.NSFW),
+                nameof(Image.Unavailable)
             };
 
 
