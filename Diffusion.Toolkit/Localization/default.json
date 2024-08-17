@@ -36,7 +36,7 @@
   "Menu.Tools.Folders.FixMissingImages": "_Fix missing images",
   "Menu.Tools.Folders.RemoveExcludedImages": "_Remove excluded images",
   "Menu.Tools.Folders.CleanRemovedFolders": "_Clean removed folders",
-  "Menu.Tools.UnavailableFiles": "Unavailable Files",
+  "Menu.Tools.UnavailableFiles": "Scan for Unavailable Files",
   "Menu.Help": "_Help",
   "Menu.Help.About": "About",
   "Menu.Help.GettingStarted": "Getting Started",

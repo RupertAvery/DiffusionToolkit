@@ -34,7 +34,7 @@ public class Image
     public bool Favorite { get; set; }
     public bool ForDeletion { get; set; }
     public bool NSFW { get; set; }
-
+    public bool Unavailable { get; set; }
 
     public decimal? AestheticScore { get; set; }
     public string? HyperNetwork { get; set; }

@@ -78,6 +78,7 @@ public partial class DataStore
         db.CreateIndex<Image>(image => image.Rating);
         db.CreateIndex<Image>(image => image.ForDeletion);
         db.CreateIndex<Image>(image => image.NSFW);
+        db.CreateIndex<Image>(image => image.Unavailable);
         db.CreateIndex<Image>(image => image.CreatedDate);
         db.CreateIndex<Image>(image => image.HyperNetwork);
         db.CreateIndex<Image>(image => image.HyperNetworkStrength);
@@ -206,6 +207,7 @@ public class ImagePath
     public int Id { get; set; }
     public int FolderId { get; set; }
     public string Path { get; set; }
+    public bool Unavailable { get; set; }
 }
 
 public class UsedPrompt
