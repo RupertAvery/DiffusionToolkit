@@ -275,6 +275,9 @@ namespace Diffusion.Toolkit
 
                 _previewWindow.PreviewKeyUp += _search.ExtOnKeyUp;
                 _previewWindow.PreviewKeyDown += _search.ExtOnKeyDown;
+
+                _previewWindow.AdvanceSlideShow = _search.Advance;
+
                 _previewWindow.OnDrop = (s) => _search.LoadPreviewImage(s);
                 _previewWindow.Changed = (id) => _search.Update(id);
                 _previewWindow.Closed += (sender, args) =>
@@ -282,8 +285,12 @@ namespace Diffusion.Toolkit
                     _search.OnCurrentImageChange = null;
                     _search.ThumbnailListView.FocusCurrentItem();
                     _previewWindow = null;
+                    _search.NavigationCompleted -= SearchOnNavigationCompleted;
                 };
                 _previewWindow.SetCurrentImage(_search.CurrentImage);
+
+                _search.NavigationCompleted += SearchOnNavigationCompleted;
+
                 _search.OnCurrentImageChange = (image) =>
                 {
                     _previewWindow?.SetCurrentImage(image);
@@ -303,6 +310,11 @@ namespace Diffusion.Toolkit
             {
                 _previewWindow.SetCurrentImage(_search.CurrentImage);
             }
+        }
+
+        private void SearchOnNavigationCompleted(object? sender, EventArgs e)
+        {
+            _previewWindow?.SetFocus();
         }
 
 

@@ -1089,6 +1089,12 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
+        public void Advance()
+        {
+            StartNavigateCursor();
+            NavigateCursorNext();
+        }
+
         public void NavigateCursorNext()
         {
             if (_model.Images == null) return;
@@ -1114,6 +1120,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         _model.SelectedImageEntry = _model.Images[0];
                         ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
+                        NavigationCompleted(this, new EventArgs());
                     });
                     _startIndex = 0;
 
@@ -1145,6 +1152,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         _model.SelectedImageEntry = _model.Images[^1];
                         ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
+                        NavigationCompleted(this, new EventArgs());
                     }, true);
                     _startIndex = _model.Images.Count - 1;
 
@@ -2051,6 +2059,8 @@ namespace Diffusion.Toolkit.Pages
         {
             EndNavigateCursor();
         }
+
+        public event EventHandler NavigationCompleted;
 
         public void ExtOnKeyDown(object sender, KeyEventArgs e)
         {

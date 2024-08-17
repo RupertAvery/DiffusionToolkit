@@ -46,6 +46,7 @@ public class SettingsModel : BaseNotify
     private string _customCommandLineArgs;
     private bool _autoRefresh;
     private IEnumerable<Langauge> _cultures;
+    private int _slideShowDelay;
 
     public SettingsModel()
     {
@@ -210,4 +211,9 @@ public class SettingsModel : BaseNotify
 
     public IEnumerable<OptionValue> ThemeOptions { get; set; }
 
+    public int SlideShowDelay
+    {
+        get => _slideShowDelay;
+        set => SetField(ref _slideShowDelay, value);
+    }
 }

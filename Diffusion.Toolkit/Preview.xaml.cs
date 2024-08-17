@@ -1,7 +1,10 @@
 ﻿using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;
 using System;
+using System.ComponentModel;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -20,6 +23,7 @@ namespace Diffusion.Toolkit
         public Action<string> OnDrop { get; set; }
 
         public Action<int> Changed { get; set; }
+        public Action AdvanceSlideShow { get; set; }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
@@ -38,31 +42,91 @@ namespace Diffusion.Toolkit
             {
                 Close();
             });
+
             PreviewPane.IsPopout = true;
+            
             PreviewPane.NSFW = (id, v) =>
             {
                 _dataStore.SetNSFW(id, v);
                 Changed?.Invoke(id);
             };
+            
             PreviewPane.Favorite = (id, v) =>
             {
                 _dataStore.SetFavorite(id, v);
                 Changed?.Invoke(id);
             };
+            
             PreviewPane.Rate = (id, v) =>
             {
                 _dataStore.SetRating(id, v);
                 Changed?.Invoke(id);
             }; 
+            
             PreviewPane.Delete = (id, v) =>
             {
                 _dataStore.SetDeleted(id, v);
                 Changed?.Invoke(id);
             };
+            
             PreviewPane.MainModel = mainModel;
-            _model.ToggleFitToPreview = PreviewPane.MainModel.ToggleFitToPreview;
-            _model.ToggleInfo = PreviewPane.MainModel.ToggleInfoCommand;
+
+
+            _model.ToggleFitToPreview = mainModel.ToggleFitToPreview;
+            _model.ToggleHundredPercent = mainModel.ToggleHundredPercent;
+            _model.ToggleInfo = mainModel.ToggleInfoCommand;
+            //_slideShowDelay = mainModel.Settings.SlideShowDelay;
             _model.ToggleFullScreen = new RelayCommand<object>((o) => ToggleFullScreen());
+            _model.StartStopSlideShow = new RelayCommand<object>((o) => StartStopSlideShow());
+
+            Closing += OnClosing;
+        }
+
+        private void RestartSlideShowTimer()
+        {
+            if (_slideShowTimer != null && _model.SlideShowActive)
+            {
+                _slideShowTimer.Change(TimeSpan.FromSeconds(_slideShowDelay), TimeSpan.FromSeconds(_slideShowDelay));
+            }
+        }
+
+        private void OnClosing(object? sender, CancelEventArgs e)
+        {
+            _slideShowTimer?.Dispose();
+        }
+
+        private Timer? _slideShowTimer = null;
+        private int _slideShowDelay => PreviewPane.MainModel.Settings.SlideShowDelay;
+
+        private void SlideShowAdvance(object? state)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                AdvanceSlideShow?.Invoke();
+            });
+        }
+
+        private void StartStopSlideShow()
+        {
+            if (_slideShowTimer == null)
+            {
+                _slideShowTimer = new Timer(SlideShowAdvance, null, TimeSpan.FromSeconds(_slideShowDelay), TimeSpan.FromSeconds(_slideShowDelay));
+                _model.SlideShowActive = true;
+                 
+            }
+            else
+            {
+                if (_model.SlideShowActive)
+                {
+                    _slideShowTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    _model.SlideShowActive = false;
+                }
+                else
+                {
+                    _slideShowTimer.Change(TimeSpan.FromSeconds(_slideShowDelay), TimeSpan.FromSeconds(_slideShowDelay));
+                    _model.SlideShowActive = true;
+                }
+            }
         }
 
         private bool _isFullScreen = false;
@@ -116,11 +180,22 @@ namespace Diffusion.Toolkit
         private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
             OnPreviewKeyUp(e);
+
+            SetFocus();
+        }
+
+        public void SetFocus()
+        {
+            PreviewPane.SetFocus();
         }
 
         private void PreviewPane_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
+            RestartSlideShowTimer();
+
             OnPreviewKeyDown(e);
+
+            SetFocus();
         }
     }
 

@@ -70,6 +70,7 @@ namespace Diffusion.Toolkit
             _model.UseCustomViewer = settings.UseCustomViewer.GetValueOrDefault(false);
             _model.CustomCommandLine = settings.CustomCommandLine;
             _model.CustomCommandLineArgs = settings.CustomCommandLineArgs;
+            _model.SlideShowDelay = settings.SlideShowDelay;
 
             _model.Culture = settings.Culture;
 
@@ -118,6 +119,17 @@ namespace Diffusion.Toolkit
             if (e.PropertyName == nameof(SettingsModel.Theme))
             {
                 ThemeManager.ChangeTheme(_model.Theme);
+            }
+            if (e.PropertyName == nameof(SettingsModel.SlideShowDelay))
+            {
+                if (_model.SlideShowDelay < 1)
+                {
+                    _model.SlideShowDelay = 1;
+                }
+                if (_model.SlideShowDelay > 100)
+                {
+                    _model.SlideShowDelay = 100;
+                }
             }
         }
 
@@ -326,6 +338,7 @@ namespace Diffusion.Toolkit
             _settings.UseCustomViewer = _model.UseCustomViewer;
             _settings.CustomCommandLine = _model.CustomCommandLine;
             _settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
+            _settings.SlideShowDelay = _model.SlideShowDelay;
 
             _settings.Culture = _model.Culture;
         }

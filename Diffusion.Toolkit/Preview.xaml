@@ -39,8 +39,10 @@
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Close}"></KeyBinding>
         <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding ToggleFitToPreview}"></KeyBinding>
+        <KeyBinding Key="A" Modifiers="Control+Shift" Command="{Binding ToggleHundredPercent}"></KeyBinding>
         <KeyBinding Key="I" Command="{Binding ToggleInfo}"></KeyBinding>
         <KeyBinding Key="F11" Command="{Binding ToggleFullScreen}"></KeyBinding>
+        <KeyBinding Key="Space" Command="{Binding StartStopSlideShow}"></KeyBinding>
     </Window.InputBindings>
     <Grid Name="BackgroundGrid" Margin="-2">
 
@@ -60,8 +62,22 @@
                 <ColumnDefinition/>
                 <ColumnDefinition Width="500"/>
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
 
-            <Grid Grid.Column="1" Background="{x:Null}" >
+            <Grid Background="{x:Null}" Grid.Row="1" Grid.ColumnSpan="2" Margin="10">
+                <StackPanel Orientation="Horizontal">
+                    <fa:ImageAwesome Visibility="{Binding SlideShowActive, Converter={StaticResource boolToVis}}" Icon="Play" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <fa:ImageAwesome.Effect>
+                            <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                        </fa:ImageAwesome.Effect>
+                    </fa:ImageAwesome>
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Column="1" Grid.RowSpan="2" Background="{x:Null}" >
                 <Grid Background="{x:Null}" IsHitTestVisible="False" DataContext="{Binding CurrentImage}">
                     <fa:ImageAwesome VerticalAlignment="Center" Height="64" Width="64" Icon="EyeSlash" Foreground="{DynamicResource ForegroundBrush}">
                         <fa:ImageAwesome.Visibility>

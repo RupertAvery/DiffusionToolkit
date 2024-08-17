@@ -9,6 +9,7 @@ public class PreviewModel : BaseNotify
     private ImageViewModel? _currentImage;
     private bool _nsfwBlur;
     private bool _fitToPreview;
+    private bool _slideShowActive;
 
     public PreviewModel()
     {
@@ -27,8 +28,16 @@ public class PreviewModel : BaseNotify
         set => SetField(ref _nsfwBlur, value);
     }
 
+    public bool SlideShowActive
+    {
+        get => _slideShowActive;
+        set => SetField(ref _slideShowActive, value);
+    }
+
     public ICommand Close { get; set;  }
     public ICommand ToggleFitToPreview { get; set; }
+    public ICommand ToggleHundredPercent { get; set; }
+    public ICommand StartStopSlideShow { get; set; }
     public ICommand ToggleInfo { get; set; }
     public ICommand ToggleFullScreen { get; set; }
 }

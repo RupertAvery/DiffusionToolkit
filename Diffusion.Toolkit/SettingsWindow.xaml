@@ -182,6 +182,10 @@
                             <TextBox Grid.Column="1" Height="20"  Text="{Binding CustomCommandLineArgs}"></TextBox>
                         </Grid>
                         <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>
+                        <StackPanel Orientation="Horizontal" Margin="0,10,0,0" >
+                            <Label>Slide show delay (seconds)</Label>
+                            <TextBox Text="{Binding SlideShowDelay, UpdateSourceTrigger=PropertyChanged}" Height="20" Width="50"></TextBox>
+                        </StackPanel>
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="{lex:Loc Settings.NSFW}">

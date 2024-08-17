@@ -105,7 +105,7 @@ public class Settings : SettingsContainer, IScanOptions
         NavigationThumbnailGridWidth2 = "3*";
         PreviewGridHeight = "*";
         PreviewGridHeight2 = "3*";
-
+        SlideShowDelay = 5;
 
         NavigationSection = new NavigationSectionSettings(initialize);
         NavigationSection.Attach(this);
@@ -368,6 +368,7 @@ public class Settings : SettingsContainer, IScanOptions
 
     private string? _culture;
     private bool _hundredPercent;
+    private int _slideShowDelay;
 
     public string? Culture
     {
@@ -383,6 +384,12 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _hundredPercent;
         set => UpdateValue(ref _hundredPercent, value);
+    }
+
+    public int SlideShowDelay
+    {
+        get => _slideShowDelay;
+        set => UpdateValue(ref _slideShowDelay, value);
     }
 }
 
