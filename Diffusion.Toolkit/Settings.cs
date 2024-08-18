@@ -73,6 +73,12 @@ public class Settings : SettingsContainer, IScanOptions
     private string _sortAlbumsBy;
     private string _sortBy;
     private string _sortDirection;
+    private bool _autoRefresh;
+    private string? _culture;
+    private bool _hundredPercent;
+    private int _slideShowDelay;
+    private bool _scrollNavigation;
+    private bool _advanceOnDelete;
 
     public Settings() : this(false)
     {
@@ -199,6 +205,7 @@ public class Settings : SettingsContainer, IScanOptions
 
     private double? _top;
     private double? _left;
+    private bool _hideUnavailable;
 
     public double? Top
     {
@@ -357,18 +364,11 @@ public class Settings : SettingsContainer, IScanOptions
         set => UpdateValue(ref _sortDirection, value);
     }
 
-
-    private bool _autoRefresh;
-
     public bool AutoRefresh
     {
         get => _autoRefresh;
         set => UpdateValue(ref _autoRefresh, value);
     }
-
-    private string? _culture;
-    private bool _hundredPercent;
-    private int _slideShowDelay;
 
     public string? Culture
     {
@@ -390,6 +390,24 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _slideShowDelay;
         set => UpdateValue(ref _slideShowDelay, value);
+    }
+
+    public bool ScrollNavigation
+    {
+        get => _scrollNavigation;
+        set => UpdateValue(ref _scrollNavigation, value);
+    }
+
+    public bool AdvanceOnDelete
+    {
+        get => _advanceOnDelete;
+        set => UpdateValue(ref _advanceOnDelete, value);
+    }
+
+    public bool HideUnavailable
+    {
+        get => _hideUnavailable;
+        set => UpdateValue(ref _hideUnavailable, value);
     }
 }
 

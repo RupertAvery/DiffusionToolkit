@@ -167,4 +167,10 @@ INSERT INTO AlbumImageTemp SELECT AlbumId, ImageId FROM AlbumImage;
 DROP TABLE ""AlbumImage"";
 ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
     }
+
+    [Migrate(MigrationType.Post)]
+    private string RupertAvery20240818_0001_SetUnavailable()
+    {
+        return "UPDATE Image SET Unavailable = 0";
+    }
 }

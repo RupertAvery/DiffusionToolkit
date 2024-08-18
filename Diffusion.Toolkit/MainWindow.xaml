@@ -88,6 +88,7 @@
                 <MenuItem Header="{lex:Loc Menu.View.BlurNSFW}" IsChecked="{Binding NSFWBlur}" InputGestureText="B" Command="{Binding ToggleNSFWBlurCommand}"/>
                 <MenuItem Header="{lex:Loc Menu.View.HideNSFWFromResults}" IsChecked="{Binding HideNSFW}" Command="{Binding ToggleHideNSFW}" InputGestureText="Ctrl+Shift+N"/>
                 <MenuItem Header="{lex:Loc Menu.View.HideDeletedFromResults}" IsChecked="{Binding HideDeleted}" Command="{Binding ToggleHideDeleted}" InputGestureText="Ctrl+Shift+D"/>
+                <MenuItem Header="{lex:Loc Menu.View.HideUnavailableFromResults}" IsChecked="{Binding HideUnavailable}" Command="{Binding ToggleHideUnavailable}" InputGestureText="Ctrl+Shift+U"/>
                 <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.Folders}" IsChecked="{Binding Settings.NavigationSection.ShowFolders}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Folders"/>
                 <MenuItem Header="{lex:Loc Menu.View.Models}" IsChecked="{Binding Settings.NavigationSection.ShowModels}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Models"/>

@@ -89,18 +89,18 @@ public class ThumbnailIcons : FrameworkElement
         var y = 0;
         const int xOffset = 22;
 
-        if (Data.ForDeletion)
-        {
-            if (ThemeManager.CurrentTheme == "Dark")
-            {
-                drawingContext.DrawImage(_darkTrashIcon, new Rect(new Point(x, y), new Size(24, 24)));
-            }
-            else if (ThemeManager.CurrentTheme == "Light")
-            {
-                drawingContext.DrawImage(_lightTrashIcon, new Rect(new Point(x, y), new Size(24, 24)));
-            }
-            x += xOffset;
-        }
+        //if (Data.ForDeletion)
+        //{
+        //    if (ThemeManager.CurrentTheme == "Dark")
+        //    {
+        //        drawingContext.DrawImage(_darkTrashIcon, new Rect(new Point(x, y), new Size(24, 24)));
+        //    }
+        //    else if (ThemeManager.CurrentTheme == "Light")
+        //    {
+        //        drawingContext.DrawImage(_lightTrashIcon, new Rect(new Point(x, y), new Size(24, 24)));
+        //    }
+        //    x += xOffset;
+        //}
 
         if (Data.NSFW)
         {

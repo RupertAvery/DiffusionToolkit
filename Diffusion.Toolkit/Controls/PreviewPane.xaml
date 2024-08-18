@@ -7,6 +7,7 @@
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+             xmlns:lex="http://wpflocalizeextension.codeplex.com"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.Resources>
@@ -45,6 +46,8 @@
             <TextBlock TextAlignment="Center" FontSize="30" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Image.Message}">
             </TextBlock>
         </Grid>
+
+
 
         <!--<Grid.RowDefinitions>
                 <RowDefinition/>
@@ -318,6 +321,13 @@
                 </Grid>
             </Grid>
 
+        </Grid>
+
+        <Grid  Background="{x:Null}" Visibility="{Binding Image.ForDeletion, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Border BorderBrush="White" BorderThickness="1" Background="#81000000" CornerRadius="5">
+                <TextBlock Margin="15,5,15,5" TextAlignment="Center" FontSize="20" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{lex:Loc Preview.Deleted}">
+                </TextBlock>
+            </Border>
         </Grid>
 
     </Grid>

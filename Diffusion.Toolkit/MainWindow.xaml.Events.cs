@@ -44,6 +44,16 @@ namespace Diffusion.Toolkit
             _prompts.LoadImages();
         }
 
+        private void ToggleHideUnavailable()
+        {
+            _model.HideUnavailable = !_model.HideUnavailable;
+            QueryBuilder.HideUnavailable = _model.HideUnavailable;
+            _settings.HideUnavailable = _model.HideUnavailable;
+            _search.SearchImages();
+
+            _prompts.ReloadPrompts();
+            _prompts.LoadImages();
+        }
 
         private void ToggleNSFWBlur()
         {

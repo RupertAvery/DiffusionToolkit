@@ -15,6 +15,7 @@ using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 using Microsoft.Extensions.Options;
 using Image = Diffusion.Database.Image;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -290,6 +291,18 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
+        public void FocusItem(int index)
+        {
+            if (index >= 0)
+            {
+                var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+                var item = wrapPanel.Children[index] as ListViewItem;
+                ThumbnailListView.ScrollIntoView(item);
+                item.BringIntoView();
+                item.Focus();
+            }
+        }
+
         /// <summary>
         /// Handle wrapping around if an arrow key is pressed at the edge of the <see cref="ListView"/>.
         /// </summary>
@@ -555,6 +568,15 @@ namespace Diffusion.Toolkit.Controls
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
                 DataStore.SetDeleted(ids, delete);
+
+                if (imageEntries.Count == 1)
+                {
+                    if (ServiceLocator.Settings.AdvanceOnDelete)
+                    {
+                        ServiceLocator.ThumbnailNavigationService.MoveNext();
+                        FocusItem(ThumbnailListView.SelectedIndex);
+                    }
+                }
             }
         }
 

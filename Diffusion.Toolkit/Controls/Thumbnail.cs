@@ -95,12 +95,16 @@ public class Thumbnail : FrameworkElement
 
             var margin = 5;
 
-            var borderRect = new Rect(margin, margin, Width- margin, Height - margin);
+            var borderRect = new Rect(margin, margin, Width - margin, Height - margin);
 
             var pen = new Pen(Foreground, 1);
 
             drawingContext.DrawRoundedRectangle(Brushes.Transparent, pen, borderRect, 3, 3);
 
+            if (Data.ForDeletion)
+            {
+                DrawDeleted(drawingContext, 25);
+            }
 
         }
 
@@ -136,6 +140,36 @@ public class Thumbnail : FrameworkElement
         if (Data.ForDeletion)
         {
             drawingContext.Pop();
+
+            DrawDeleted(drawingContext, 0);
         }
+    }
+
+    private void DrawDeleted(DrawingContext drawingContext, int yOffset)
+    {
+        var formattedText = new FormattedText(GetLocalizedText("Thumbnail.Deleted"),
+            CultureInfo.DefaultThreadCurrentCulture ?? CultureInfo.InvariantCulture,
+            FlowDirection.LeftToRight,
+            new Typeface(new FontFamily("Calibri"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal),
+            12,
+            Foreground,
+            1
+        );
+
+        double centerX = (ActualWidth - formattedText.Width) / 2;
+        double centerY = (ActualHeight - formattedText.Height) / 2;
+
+        var margin = 5;
+
+        var pillWidth = formattedText.Width + margin;
+        var pillHeight = formattedText.Height + margin;
+
+        var borderRect = new Rect(centerX - margin, centerY - margin + yOffset, pillWidth + margin, pillHeight + margin);
+
+        var pen = new Pen(Foreground, 1);
+
+        drawingContext.DrawRoundedRectangle(Brushes.Black, pen, borderRect, 3, 3);
+
+        drawingContext.DrawText(formattedText, new Point(centerX, centerY + yOffset));
     }
 }

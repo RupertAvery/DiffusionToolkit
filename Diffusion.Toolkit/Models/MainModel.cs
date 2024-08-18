@@ -264,6 +264,12 @@ public class MainModel : BaseNotify
         set => SetField(ref _toggleHideDeleted, value);
     }
 
+    public ICommand ToggleHideUnavailable
+    {
+        get => _toggleHideUnavailable;
+        set => SetField(ref _toggleHideUnavailable, value);
+    }
+
     public bool NSFWBlur
     {
         get => _nsfwBlur;
@@ -280,6 +286,12 @@ public class MainModel : BaseNotify
     {
         get => _hideDeleted;
         set => SetField(ref _hideDeleted, value);
+    }
+
+    public bool HideUnavailable
+    {
+        get => _hideUnavailable;
+        set => SetField(ref _hideUnavailable, value);
     }
 
     public ICommand ShowPromptsCommand
@@ -563,6 +575,8 @@ public class MainModel : BaseNotify
     private FolderViewModel? _currentFolder;
     private ICommand _resetLayout;
     private ICommand _unavailableFilesCommand;
+    private bool _hideUnavailable;
+    private ICommand _toggleHideUnavailable;
 
     public FolderViewModel? CurrentFolder
     {
@@ -580,4 +594,5 @@ public class MainModel : BaseNotify
     public ICommand RenameFolderCommand { get; set; }
     public ICommand DeleteFolderCommand { get; set; }
     public ICommand ToggleNavigationPane { get; set; }
+
 }

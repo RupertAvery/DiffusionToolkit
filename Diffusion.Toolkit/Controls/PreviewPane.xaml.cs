@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 using Point = System.Windows.Point;
 
 namespace Diffusion.Toolkit.Controls
@@ -200,6 +201,31 @@ namespace Diffusion.Toolkit.Controls
             this.UpdateLayout();
         }
 
+        private void Zoom(MouseWheelEventArgs e)
+        {
+            Point mouseAtImage = e.GetPosition(Preview); // ScrollViewer_CanvasMain.TranslatePoint(middleOfScrollViewer, Canvas_Main);
+            Point mouseAtScrollViewer = e.GetPosition(ScrollViewer);
+
+            // Calculate the new zoom level based on the mouse wheel delta
+            double zoomDelta = e.Delta > 0 ? 0.1 : -0.1;
+
+            zoomDelta = Preview.LayoutTransform.Value.M11 * zoomDelta;
+
+            double newZoom = Math.Min(Math.Max(Preview.LayoutTransform.Value.M11 + zoomDelta, 0.1), 10);
+
+
+            Preview.LayoutTransform = new ScaleTransform(newZoom, newZoom);
+
+            ScrollViewer.ScrollToHorizontalOffset(0);
+            ScrollViewer.ScrollToVerticalOffset(0);
+            this.UpdateLayout();
+
+            Vector offset = Preview.TranslatePoint(mouseAtImage, ScrollViewer) - mouseAtScrollViewer; // (Vector)middleOfScrollViewer;
+            ScrollViewer.ScrollToHorizontalOffset(offset.X);
+            ScrollViewer.ScrollToVerticalOffset(offset.Y);
+            this.UpdateLayout();
+        }
+
         private void UIElement_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
             MainModel.FitToPreview = false;
@@ -209,47 +235,43 @@ namespace Diffusion.Toolkit.Controls
 
             var active = true;
 
-            if (active)
+            var scrollNavigation = ServiceLocator.Settings.ScrollNavigation;
+
+
+
+            if (ctrlPressed)
             {
-                Point mouseAtImage = e.GetPosition(Preview); // ScrollViewer_CanvasMain.TranslatePoint(middleOfScrollViewer, Canvas_Main);
-                Point mouseAtScrollViewer = e.GetPosition(ScrollViewer);
-
-                // Calculate the new zoom level based on the mouse wheel delta
-                double zoomDelta = e.Delta > 0 ? 0.1 : -0.1;
-
-                zoomDelta = Preview.LayoutTransform.Value.M11 * zoomDelta;
-
-                double newZoom = Math.Min(Math.Max(Preview.LayoutTransform.Value.M11 + zoomDelta, 0.1), 10);
-
-
-                Preview.LayoutTransform = new ScaleTransform(newZoom, newZoom);
-
-                ScrollViewer.ScrollToHorizontalOffset(0);
-                ScrollViewer.ScrollToVerticalOffset(0);
-                this.UpdateLayout();
-
-                Vector offset = Preview.TranslatePoint(mouseAtImage, ScrollViewer) - mouseAtScrollViewer; // (Vector)middleOfScrollViewer;
-                ScrollViewer.ScrollToHorizontalOffset(offset.X);
-                ScrollViewer.ScrollToVerticalOffset(offset.Y);
-                this.UpdateLayout();
-
-                e.Handled = true;
+                if (scrollNavigation)
+                {
+                    Zoom(e);
+                    e.Handled = true;
+                }
             }
             else
             {
-                //Key vkey = e.Delta > 0 ? Key.Left : e.Delta < 0 ? Key.Right : Key.None;
+                if (scrollNavigation)
+                {
+                    Key vkey = e.Delta > 0 ? Key.Left : e.Delta < 0 ? Key.Right : Key.None;
 
-                //var ps = PresentationSource.FromVisual((ScrollViewer)sender);
+                    var ps = PresentationSource.FromVisual((ScrollViewer)sender);
 
-                //if (vkey == Key.None)
-                //{
-                //    OnPreviewKeyUp(new KeyEventArgs(null, ps, 0, vkey));
-                //}
-                //else
-                //{
-                //    OnPreviewKeyDown(new KeyEventArgs(null, ps, 0, vkey));
-                //}
+                    switch (vkey)
+                    {
+                        case Key.Left:
+                            ServiceLocator.ThumbnailNavigationService.MovePrevious();
+                            break;
+                        case Key.Right:
+                            ServiceLocator.ThumbnailNavigationService.MoveNext();
+                            break;
+                    }
 
+                    e.Handled = true;
+                }
+                else
+                {
+                    Zoom(e);
+                    e.Handled = true;
+                }
             }
         }
 

@@ -137,11 +137,11 @@
 
                     <StackPanel Orientation="Horizontal" FlowDirection="RightToLeft"  Grid.Row="1"  DataContext="{Binding CurrentImage}">
 
-                        <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=ForDeletion, Converter={StaticResource boolToVisCol}}">
+                        <!--<Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=ForDeletion, Converter={StaticResource boolToVisCol}}">
                             <Image.Effect>
                                 <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
                             </Image.Effect>
-                        </Image>
+                        </Image>-->
 
                         <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
                             <Image.Effect>

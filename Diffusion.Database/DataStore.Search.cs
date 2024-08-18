@@ -103,6 +103,11 @@ namespace Diffusion.Database
                 whereClauses.Add("ForDeletion = 0");
             }
 
+            if (QueryBuilder.HideUnavailable)
+            {
+                whereClauses.Add("(Unavailable = 0)");
+            }
+
             var whereExpression = string.Join(" AND ", whereClauses);
 
             return whereClauses.Any() ? $" WHERE {whereExpression}" : "";

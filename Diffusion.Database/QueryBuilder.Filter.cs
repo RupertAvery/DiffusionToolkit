@@ -28,6 +28,12 @@ namespace Diffusion.Database
                 filter.UseForDeletion = false;
             }
 
+            if (HideUnavailable && !filter.UseUnavailable)
+            {
+                conditions.Add(new KeyValuePair<string, object>("(Unavailable = ?)", false));
+                filter.UseUnavailable = false;
+            }
+
             FilterAlbum(filter, conditions, joins);
             FilterFolder(filter, conditions, joins);
             FilterPath(filter, conditions);

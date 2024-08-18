@@ -54,6 +54,7 @@ public static partial class QueryBuilder
 
     public static bool HideNSFW { get; set; }
     public static bool HideDeleted { get; set; }
+    public static bool HideUnavailable { get; set; }
 
     public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) QueryPrompt(string prompt)
     {
@@ -69,7 +70,12 @@ public static partial class QueryBuilder
 
         if (HideDeleted)
         {
-            conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", false));
+            conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ? OR ForDeletion IS NULL)", false));
+        }
+        
+        if (HideUnavailable)
+        {
+            conditions.Add(new KeyValuePair<string, object>("(Unavailable = ? OR Unavailable IS NULL)", false));
         }
 
         return (string.Join(" AND ", conditions.Select(c => c.Key)),

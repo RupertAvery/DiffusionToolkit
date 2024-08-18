@@ -36,6 +36,7 @@ using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
 using System.Configuration;
 using System.Windows.Input;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
 {
@@ -121,6 +122,7 @@ namespace Diffusion.Toolkit
 
             _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
             _model.ToggleHideDeleted = new RelayCommand<object>((o) => ToggleHideDeleted());
+            _model.ToggleHideUnavailable = new RelayCommand<object>((o) => ToggleHideUnavailable());
 
             _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
             _model.ToggleHundredPercent = new RelayCommand<object>((o) => ToggleHundredPercent());
@@ -496,9 +498,12 @@ namespace Diffusion.Toolkit
             _model.AutoRefresh = _settings.AutoRefresh;
             _model.HideNSFW = _settings.HideNSFW;
             _model.HideDeleted = _settings.HideDeleted;
+            _model.HideUnavailable = _settings.HideUnavailable;
 
             QueryBuilder.HideNSFW = _model.HideNSFW;
             QueryBuilder.HideDeleted = _model.HideDeleted;
+            QueryBuilder.HideUnavailable = _model.HideUnavailable;
+
             _model.NSFWBlur = _settings.NSFWBlur;
             _model.FitToPreview = _settings.FitToPreview;
             _model.HundredPercent = _settings.HundredPercent;
@@ -510,6 +515,7 @@ namespace Diffusion.Toolkit
             SizeChanged += OnSizeChanged;
             LocationChanged += OnLocationChanged;
 
+            ServiceLocator.SetSettings(_settings);
 
             Logger.Log($"Initializing pages");
 
@@ -936,6 +942,8 @@ namespace Diffusion.Toolkit
                     }
 
                     _settings.SetPristine();
+
+                    ServiceLocator.SetSettings(_settings);
 
                 }
             }

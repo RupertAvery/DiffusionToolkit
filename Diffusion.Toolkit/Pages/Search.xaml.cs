@@ -33,9 +33,12 @@ using static System.Net.WebRequestMethods;
 using WPFLocalizeExtension.Engine;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Pages
 {
+
+ 
     public class ReloadOptions
     {
         public bool Focus { get; set; }
@@ -94,6 +97,10 @@ namespace Diffusion.Toolkit.Pages
                 _ = ThumbnailLoader.Instance.StartRun();
             });
 
+            ServiceLocator.ThumbnailNavigationService.Next += ThumbnailNavigationServiceOnNext;
+            ServiceLocator.ThumbnailNavigationService.Previous +=  ThumbnailNavigationServiceOnPrevious;
+            ServiceLocator.ThumbnailNavigationService.NextPage += ThumbnailNavigationServiceOnNextPage;
+            ServiceLocator.ThumbnailNavigationService.PreviousPage += ThumbnailNavigationServiceOnPreviousPage;
 
             //var str = new System.Text.StringBuilder();
             //using (var writer = new System.IO.StringWriter(str))
@@ -102,6 +109,29 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
+        private void ThumbnailNavigationServiceOnPreviousPage(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ThumbnailNavigationServiceOnNextPage(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ThumbnailNavigationServiceOnPrevious(object? sender, EventArgs e)
+        {
+            StartNavigateCursor();
+            NavigateCursorPrevious();
+            EndNavigateCursor();
+        }
+
+        private void ThumbnailNavigationServiceOnNext(object? sender, EventArgs e)
+        {
+            StartNavigateCursor();
+            NavigateCursorNext();
+            EndNavigateCursor();
+        }
 
 
         private Random r = new Random();
@@ -514,6 +544,10 @@ namespace Diffusion.Toolkit.Pages
             {
                 DataStore.SetDeleted(id, b);
                 Update(id);
+                if (ServiceLocator.Settings.AdvanceOnDelete)
+                {
+                    ServiceLocator.ThumbnailNavigationService.MoveNext();
+                }
             };
 
             FilterPopup.Closed += (sender, args) =>
@@ -1123,7 +1157,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         _model.SelectedImageEntry = _model.Images[0];
                         ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-                        NavigationCompleted(this, new EventArgs());
+                        NavigationCompleted?.Invoke(this, new EventArgs());
                     });
                     _startIndex = 0;
 
@@ -1155,7 +1189,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         _model.SelectedImageEntry = _model.Images[^1];
                         ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-                        NavigationCompleted(this, new EventArgs());
+                        NavigationCompleted?.Invoke(this, new EventArgs());
                     }, true);
                     _startIndex = _model.Images.Count - 1;
 

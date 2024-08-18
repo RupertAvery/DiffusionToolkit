@@ -8,6 +8,8 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Diffusion.Toolkit.Services;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Diffusion.Toolkit
 {
@@ -180,6 +182,14 @@ namespace Diffusion.Toolkit
         private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
             OnPreviewKeyUp(e);
+            
+            if (e.Key == Key.Delete)
+            {
+                if (ServiceLocator.Settings.AdvanceOnDelete)
+                {
+                    ServiceLocator.ThumbnailNavigationService.MoveNext();
+                }
+            }
 
             SetFocus();
         }
@@ -195,7 +205,13 @@ namespace Diffusion.Toolkit
 
             OnPreviewKeyDown(e);
 
+
             SetFocus();
+        }
+
+        public void LoadImage(ThumbnailViewModel thumbnail)
+        {
+            _model.CurrentImage = thumbnail.CurrentImage;
         }
     }
 

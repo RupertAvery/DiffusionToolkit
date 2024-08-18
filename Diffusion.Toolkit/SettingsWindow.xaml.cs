@@ -18,6 +18,7 @@ using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Localization;
 using System.Globalization;
+using static Dapper.SqlMapper;
 
 namespace Diffusion.Toolkit
 {
@@ -71,6 +72,8 @@ namespace Diffusion.Toolkit
             _model.CustomCommandLine = settings.CustomCommandLine;
             _model.CustomCommandLineArgs = settings.CustomCommandLineArgs;
             _model.SlideShowDelay = settings.SlideShowDelay;
+            _model.ScrollNavigation = settings.ScrollNavigation;
+            _model.AdvanceOnDelete = settings.AdvanceOnDelete;
 
             _model.Culture = settings.Culture;
 
@@ -339,6 +342,8 @@ namespace Diffusion.Toolkit
             _settings.CustomCommandLine = _model.CustomCommandLine;
             _settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
             _settings.SlideShowDelay = _model.SlideShowDelay;
+            _settings.ScrollNavigation = _model.ScrollNavigation;
+            _settings.AdvanceOnDelete = _model.AdvanceOnDelete;
 
             _settings.Culture = _model.Culture;
         }

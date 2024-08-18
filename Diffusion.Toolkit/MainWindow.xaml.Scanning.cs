@@ -710,7 +710,10 @@ namespace Diffusion.Toolkit
                             unavailable++;
                         }
 
-                        _dataStore.SetUnavailable(unavailableIds, false);
+                        foreach (var chunk in unavailableIds.Chunk(100))
+                        {
+                            _dataStore.SetUnavailable(chunk, true);
+                        }
 
                         Dispatcher.Invoke(() =>
                         {
