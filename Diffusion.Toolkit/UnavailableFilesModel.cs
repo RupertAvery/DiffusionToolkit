@@ -24,11 +24,11 @@ public class UnavailableFilesModel : BaseNotify
     private bool _useSpecificFolders;
     private ObservableCollection<ImageFileItem> _imagePaths;
     private int _selectedIndex;
-    private bool _removeFromUnavailableRootFolders;
-    private bool _deleteImmediately;
+    private bool _showUnavailableRootFolders;
+    private bool _removeImmediately;
     private bool _markForDeletion;
     private bool _isStartEnabled;
-    private bool _markOnly;
+    private bool _justUpdate;
 
     public bool UseRootFolders
     {
@@ -54,16 +54,22 @@ public class UnavailableFilesModel : BaseNotify
         set => SetField(ref _selectedIndex, value);
     }
 
-    public bool RemoveFromUnavailableRootFolders
+    public bool ShowUnavailableRootFolders
     {
-        get => _removeFromUnavailableRootFolders;
-        set => SetField(ref _removeFromUnavailableRootFolders, value);
+        get => _showUnavailableRootFolders;
+        set => SetField(ref _showUnavailableRootFolders, value);
     }
 
-    public bool DeleteImmediately
+    public bool JustUpdate
     {
-        get => _deleteImmediately;
-        set => SetField(ref _deleteImmediately, value);
+        get => _justUpdate;
+        set => SetField(ref _justUpdate, value);
+    }
+
+    public bool RemoveImmediately
+    {
+        get => _removeImmediately;
+        set => SetField(ref _removeImmediately, value);
     }
 
     public bool MarkForDeletion
@@ -76,11 +82,5 @@ public class UnavailableFilesModel : BaseNotify
     {
         get => _isStartEnabled;
         set => SetField(ref _isStartEnabled, value);
-    }
-
-    public bool MarkOnly
-    {
-        get => _markOnly;
-        set => SetField(ref _markOnly, value);
     }
 }

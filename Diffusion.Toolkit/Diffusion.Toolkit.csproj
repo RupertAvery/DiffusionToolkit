@@ -15,6 +15,7 @@
     <None Remove="Icons\Dark\copy-32.png" />
     <None Remove="Icons\Dark\favorite-32.png" />
     <None Remove="Icons\Dark\filter-32.png" />
+    <None Remove="Icons\Dark\hide-24.png" />
     <None Remove="Icons\Dark\link-32.png" />
     <None Remove="Icons\Dark\models-32.png" />
     <None Remove="Icons\Dark\rebuild-32.png" />
@@ -33,6 +34,7 @@
     <None Remove="Icons\Light\copy-32.png" />
     <None Remove="Icons\Light\favorite-32.png" />
     <None Remove="Icons\Light\filter-32.png" />
+    <None Remove="Icons\Light\hide-24.png" />
     <None Remove="Icons\Light\link-32.png" />
     <None Remove="Icons\Light\models-32.png" />
     <None Remove="Icons\Light\rebuild-32.png" />
@@ -110,6 +112,7 @@
     <Resource Include="Icons\Dark\copy-32.png" />
     <Resource Include="Icons\Dark\favorite-32.png" />
     <Resource Include="Icons\Dark\filter-32.png" />
+    <Resource Include="Icons\Dark\hide-24.png" />
     <Resource Include="Icons\Dark\link-32.png" />
     <Resource Include="Icons\Dark\models-32.png" />
     <Resource Include="Icons\Dark\rebuild-32.png" />
@@ -124,6 +127,7 @@
     <Resource Include="Icons\Light\copy-32.png" />
     <Resource Include="Icons\Light\favorite-32.png" />
     <Resource Include="Icons\Light\filter-32.png" />
+    <Resource Include="Icons\Light\hide-24.png" />
     <Resource Include="Icons\Light\link-32.png" />
     <Resource Include="Icons\Light\models-32.png" />
     <Resource Include="Icons\Light\rebuild-32.png" />
@@ -187,10 +191,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Themes\Window.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Themes\Light.xaml">
       <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
       <SubType>Designer</SubType>
     </Page>

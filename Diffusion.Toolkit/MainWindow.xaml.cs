@@ -141,7 +141,7 @@ namespace Diffusion.Toolkit
             _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
             _model.CleanRemovedFoldersCommand = new AsyncCommand<object>(CleanRemovedFolders);
 
-            _model.UnavailableFilesCommand = new RelayCommand<object>((o) => UnavailableFiles());
+            _model.UnavailableFilesCommand = new AsyncCommand<object>(UnavailableFiles);
 
             _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
             _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
@@ -195,14 +195,14 @@ namespace Diffusion.Toolkit
             //System.Diagnostics.Debug.Write(str);
         }
 
-        private void UnavailableFiles()
+        private async Task UnavailableFiles(object o)
         {
             var window = new UnavailableFilesWindow(_dataStore, _settings);
             window.Owner = this;
             window.ShowDialog();
             if (window.DialogResult is true)
             {
-                ScanUnavailable(window.Model);
+                await ScanUnavailable(window.Model);
             }
         }
 

@@ -12,6 +12,7 @@
     <Color x:Key="DisabledBackground">#797979</Color>
     <Color x:Key="Foreground">Azure</Color>
     <Color x:Key="PreviewBackground">#182B3C</Color>
+    <Color x:Key="ToastBackground">#00B3BB</Color>
 
 
     <BitmapImage  x:Key="CopyIcon" CreateOptions="IgnoreImageCache" CacheOption="OnLoad" UriSource="pack://application:,,,/Icons/Dark/copy-32.png" />

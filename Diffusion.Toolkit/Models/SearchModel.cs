@@ -637,6 +637,9 @@ public static class SearchControlModelExtensions
         filter.UseInAlbum = model.UseInAlbum;
         filter.InAlbum = model.InAlbum;
 
+        filter.UseUnavailable = model.UseUnavailable;
+        filter.Unavailable = model.Unavailable;
+
         return filter;
     }
 

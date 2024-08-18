@@ -11,5 +11,6 @@ namespace Diffusion.Database
         public string Path { get; set; }
         public int ImageCount { get; set; }
         public DateTime ScannedDate { get; set; }
+        public bool Unavailable { get; set; }
     }
 }

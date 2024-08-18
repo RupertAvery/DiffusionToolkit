@@ -48,6 +48,7 @@ namespace Diffusion.Database
             FilterNSFW(filter, conditions);
             FilterNoMetadata(filter, conditions);
             FilterInAlbum(filter, conditions);
+            FilterUnavailable(filter, conditions);
 
             FilterNegativePrompt(filter, conditions);
             FilterPrompt(filter, conditions);
@@ -482,6 +483,23 @@ namespace Diffusion.Database
                 else
                 {
                     conditions.Add(new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) = 0", null));
+                }
+            }
+        }
+
+        private static void FilterUnavailable(Filter filter, List<KeyValuePair<string, object>> conditions)
+        {
+            if (filter.UseUnavailable)
+            {
+                var value = filter.Unavailable;
+
+                if (value)
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(Unavailable = 1)", null));
+                }
+                else
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(Unavailable = 0 OR Unavailable IS NULL)", null));
                 }
             }
         }

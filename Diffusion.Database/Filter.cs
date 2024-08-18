@@ -94,7 +94,8 @@ public class Filter
                             UseNoMetadata ||
                             UseAlbum || 
                             UseFolder ||
-                            UseInAlbum);
+                            UseInAlbum || 
+                            UseUnavailable);
 
     public bool UseFolder => !string.IsNullOrEmpty(Folder);
     public string? Folder { get; set; }
@@ -102,4 +103,6 @@ public class Filter
     public string? Album { get; set; }
     public bool UseInAlbum { get; set; }
     public bool InAlbum { get; set; }
+    public bool UseUnavailable { get; set; }
+    public bool Unavailable { get; set; }
 }

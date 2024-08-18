@@ -286,6 +286,17 @@
                         <RadioButton Click="ButtonBase_OnClick" GroupName="InAlbum" IsChecked="{Binding InAlbum, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
                     </StackPanel>
                 </Grid>
+                <Grid Margin="0,0,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox IsChecked="{Binding UseUnavailable}" VerticalContentAlignment="Center">Unavailable</CheckBox>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <RadioButton Click="ButtonBase_OnClick" GroupName="Unavailable" IsChecked="{Binding Unavailable, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0">True</RadioButton>
+                        <RadioButton Click="ButtonBase_OnClick" GroupName="Unavailable" IsChecked="{Binding Unavailable, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </Grid>
     </Grid>

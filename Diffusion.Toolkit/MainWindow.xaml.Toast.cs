@@ -1,24 +1,64 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace Diffusion.Toolkit
 {
+    public class Toast
+    {
+        public string Message { get; set; }
+        public string Caption { get; set; }
+        public int Timeout { get; set; }
+    }
+
     public partial class MainWindow
     {
+        private Queue<Toast> _toastMessages = new Queue<Toast>();
+        private void DismissToast()
+        {
+            ToastPopup.IsOpen = false;
+            if (_toastMessages.Count > 0)
+            {
+                DisplayToast();
+            }
+        }
 
-        private void Toast(string message, string caption, int timeout = 5)
+        private void DisplayToast()
         {
             ToastPopup.IsOpen = true;
-            ToastMessage.Text = message;
-            Task.Delay(timeout * 1000).ContinueWith((_) =>
+            var toast = _toastMessages.Dequeue();
+            ToastMessage.Text = toast.Message;
+            Task.Delay(toast.Timeout * 1000).ContinueWith((_) =>
             {
                 Dispatcher.Invoke(() =>
                 {
-                    ToastPopup.IsOpen = false;
+                    DismissToast();
                 });
             });
+        }
+
+        private void Toast(string message, string caption, int timeout = 5)
+        {
+            if (timeout == 0)
+            {
+                timeout = 5;
+            }
+
+            _toastMessages.Enqueue(new Toast()
+            {
+                Message = message,
+                Caption = caption,
+                Timeout = timeout
+            });
+
+            if (!ToastPopup.IsOpen)
+            {
+                DisplayToast();
+            }
         }
 
         public CustomPopupPlacement[] GetPopupPlacement(Size popupSize, Size targetSize, Point offset)
@@ -29,7 +69,7 @@ namespace Diffusion.Toolkit
 
         private void CloseToast(object sender, MouseButtonEventArgs e)
         {
-            ToastPopup.IsOpen = false;
+            DismissToast();
         }
     }
 }

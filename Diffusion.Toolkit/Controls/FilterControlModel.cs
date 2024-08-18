@@ -64,6 +64,8 @@ public class FilterControlModel : BaseNotify
     private bool _noMetadata;
     private bool _useInAlbum;
     private bool _inAlbum;
+    private bool _useUnavailable;
+    private bool _unavailable;
 
     public FilterControlModel()
     {
@@ -414,6 +416,17 @@ public class FilterControlModel : BaseNotify
         set => SetField(ref _inAlbum, value);
     }
 
+    public bool UseUnavailable
+    {
+        get => _useUnavailable;
+        set => SetField(ref _useUnavailable, value);
+    }
+
+    public bool Unavailable
+    {
+        get => _unavailable;
+        set => SetField(ref _unavailable, value);
+    }
 
     public bool IsActive => (UsePrompt ||
                              UsePromptEx ||
@@ -440,7 +453,8 @@ public class FilterControlModel : BaseNotify
                              UseHyperNet ||
                              UseHyperNetStr ||
                              UseNoMetadata ||
-                             UseInAlbum);
+                             UseInAlbum ||
+                             UseUnavailable);
 
     public void Clear()
     {
@@ -500,6 +514,6 @@ public class FilterControlModel : BaseNotify
         UseHyperNetStr = false;
         UseNoMetadata = false;
         UseInAlbum = false;
-
+        UseUnavailable = false;
     }
 }

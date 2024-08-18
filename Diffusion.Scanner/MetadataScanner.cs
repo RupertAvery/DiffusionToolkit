@@ -4,10 +4,39 @@ namespace Diffusion.IO
 {
     public class MetadataScanner
     {
-        public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, IEnumerable<string>? excludePaths)
+        public static IEnumerable<string> GetFiles(string path, string extensions, bool recursive)
         {
             var files = Enumerable.Empty<string>();
 
+            if (Directory.Exists(path))
+            {
+
+                foreach (var extension in extensions.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    try
+                    {
+                        var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
+                        {
+                            RecurseSubdirectories = recursive,
+                            IgnoreInaccessible = true
+                        });
+
+                        files = files.Concat(dirFiles);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log($"MetadataScanner.GetFiles: {ex}");
+                    }
+
+                }
+            }
+
+            return files;
+        }
+
+        public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, IEnumerable<string>? excludePaths)
+        {
+            var files = Enumerable.Empty<string>();
 
             if (Directory.Exists(path))
             {

@@ -93,6 +93,15 @@ public class Thumbnail : FrameworkElement
 
             drawingContext.DrawText(formattedText, new Point(centerX, centerY));
 
+            var margin = 5;
+
+            var borderRect = new Rect(margin, margin, Width- margin, Height - margin);
+
+            var pen = new Pen(Foreground, 1);
+
+            drawingContext.DrawRoundedRectangle(Brushes.Transparent, pen, borderRect, 3, 3);
+
+
         }
 
         if (Source == null)

@@ -323,9 +323,25 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var folder = db.FindWithQuery<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate FROM Folder WHERE Path = ?", path);
+            var folder = db.FindWithQuery<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable FROM Folder WHERE Path = ?", path);
 
             return folder;
+        }
+
+        public void SetFolderUnavailable(string path, bool unavailable)
+        {
+            using var db = OpenConnection();
+
+            db.BeginTransaction();
+
+            var query = $"UPDATE Folder SET Unavailable = @Unavailable WHERE Path = @Path";
+            var command = db.CreateCommand(query);
+
+            command.Bind("@Unavailable", unavailable);
+            command.Bind("@Path", path);
+            command.ExecuteNonQuery();
+
+            db.Commit();
         }
 
         public IEnumerable<ImagePath> GetImagePaths()

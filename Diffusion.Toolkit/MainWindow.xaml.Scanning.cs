@@ -14,13 +14,22 @@ namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
-        private Task ScanUnavailable(UnavailableFilesModel options)
+        private async Task ScanUnavailable(UnavailableFilesModel options)
         {
+            if (options.RemoveImmediately)
+            {
+                var result = await _messagePopupManager.Show("Are you sure you want to remove all unavailable files?", "Scan for Unavailable Images", PopupButtons.YesNo);
+                if (result == PopupResult.No)
+                {
+                    return;
+                }
+            }
+
             _progressCancellationTokenSource = new CancellationTokenSource();
 
             var token = _progressCancellationTokenSource.Token;
 
-            return Task.Run(() =>
+            await Task.Run(() =>
             {
                 var candidateImages = new List<int>();
                 var restoredImages = new List<int>();
@@ -61,7 +70,6 @@ namespace Diffusion.Toolkit
                         HashSet<string> ignoreFiles = new HashSet<string>();
 
                         var folderImages = _dataStore.GetAllPathImages(folder.Path).ToDictionary(f => f.Path);
-
 
 
                         if (Directory.Exists(folder.Path))
@@ -110,7 +118,7 @@ namespace Diffusion.Toolkit
                         }
                         else
                         {
-                            if (options.RemoveFromUnavailableRootFolders)
+                            if (options.ShowUnavailableRootFolders)
                             {
                                 foreach (var folderImage in folderImages)
                                 {
@@ -149,31 +157,60 @@ namespace Diffusion.Toolkit
                             _dataStore.SetUnavailable(restoredImages, false);
                         }
 
-                        _dataStore.SetUnavailable(candidateImages, true);
-
-                        if (!options.MarkOnly)
+                        if (options.JustUpdate)
                         {
-                            if (options.DeleteImmediately)
+                            //var currentUnavailableImages = _dataStore.GetUnavailable(true);
+                            //candidateImages = candidateImages.Except(currentUnavailableImages.Select(i => i.Id)).ToList();
+
+                            _dataStore.SetUnavailable(candidateImages, true);
+
+                            var updated = GetLocalizedText("UnavailableFiles.Results.Updated");
+                            updated = updated.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+
+                            if (restoredImages.Any())
                             {
-                                _dataStore.RemoveImages(candidateImages);
-
-                                var removed = GetLocalizedText("UnavailableFiles.Results.Removed");
-
-                                removed = removed.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                                _messagePopupManager.Show(removed, unavailableFiles, PopupButtons.OK);
+                                var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
+                                updated += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
                             }
-                            else
-                            {
-                                _dataStore.SetDeleted(candidateImages, true);
 
-                                var marked = GetLocalizedText("UnavailableFiles.Results.MarkedForDeletion");
-
-                                marked = marked.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                                _messagePopupManager.Show(marked, unavailableFiles, PopupButtons.OK);
-                            }
+                            _messagePopupManager.Show(updated, unavailableFiles, PopupButtons.OK);
                         }
+                        else if (options.MarkForDeletion)
+                        {
+                            //var currentUnavailableImages = _dataStore.GetUnavailable(true);
+                            //candidateImages = candidateImages.Except(currentUnavailableImages.Select(i => i.Id)).ToList();
+
+                            _dataStore.SetUnavailable(candidateImages, true);
+                            _dataStore.SetDeleted(candidateImages, true);
+
+                            var marked = GetLocalizedText("UnavailableFiles.Results.MarkedForDeletion");
+                            marked = marked.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+
+                            if (restoredImages.Any())
+                            {
+                                var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
+                                marked += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+                            }
+
+                            _messagePopupManager.Show(marked, unavailableFiles, PopupButtons.OK);
+                        }
+                        else if (options.RemoveImmediately)
+                        {
+                            _dataStore.RemoveImages(candidateImages);
+
+                            var removed = GetLocalizedText("UnavailableFiles.Results.Removed");
+                            removed = removed.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+
+                            if (restoredImages.Any())
+                            {
+                                var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
+                                removed += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+                            }
+
+
+                            _messagePopupManager.Show(removed, unavailableFiles, PopupButtons.OK);
+                        }
+
 
                         var completed = GetLocalizedText("Actions.Scanning.Completed");
 
@@ -604,11 +641,14 @@ namespace Diffusion.Toolkit
 
         private async Task<bool> ScanInternal(IScanOptions settings, bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
         {
+            bool foldersUnavailable = false;
+            bool foldersRestored = false;
+
             if (_model.IsBusy) return false;
 
             _model.IsBusy = true;
 
-            var removed = 0;
+            var unavailable = 0;
             var added = 0;
 
             Dispatcher.Invoke(() =>
@@ -618,12 +658,7 @@ namespace Diffusion.Toolkit
 
             try
             {
-                var existingImages = _dataStore.GetImagePaths().ToList();
-
-                Dispatcher.Invoke(() =>
-                {
-                    _model.Status = GetLocalizedText("Actions.Scanning.CheckRemoved");
-                });
+                //var existingImages = _dataStore.GetImagePaths().ToList();
 
                 var filesToScan = new List<string>();
 
@@ -638,14 +673,67 @@ namespace Diffusion.Toolkit
 
                     if (Directory.Exists(path))
                     {
+                        var folder = _dataStore.GetFolder(path);
+
+                        if (folder.Unavailable)
+                        {
+                            foldersRestored = true;
+
+                            _dataStore.SetFolderUnavailable(path, false);
+
+                            var childImages = _dataStore.GetAllPathImages(path);
+
+                            foreach (var childImageChunk in childImages.Chunk(100))
+                            {
+                                _dataStore.SetUnavailable(childImageChunk.Select(c => c.Id), false);
+                            }
+                        }
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.Status = GetLocalizedText("Actions.Scanning.CheckUnavailable");
+                        });
+
+                        var folderImages = _dataStore.GetAllPathImages(path).ToList();
+
+                        var folderImagesHashSet = folderImages.Select(p => p.Path).ToHashSet();
+
+                        var allDirectoryFiles = MetadataScanner.GetFiles(path, settings.FileExtensions, true).ToHashSet();
+
+                        var unavailableFiles = folderImagesHashSet.Except(allDirectoryFiles).ToHashSet();
+
+                        var unavailableIds = new List<int>();
+
+                        foreach (var image in folderImages.Where(f => unavailableFiles.Contains(f.Path)))
+                        {
+                            unavailableIds.Add(image.Id);
+                            unavailable++;
+                        }
+
+                        _dataStore.SetUnavailable(unavailableIds, false);
+
                         Dispatcher.Invoke(() =>
                         {
                             _model.Status = gatheringFilesMessage.Replace("{path}", path);
                         });
 
-                        var ignoreFiles = updateImages ? null : existingImages.Where(p => p.Path.StartsWith(path)).Select(p => p.Path).ToHashSet();
+                        var ignoreFiles = updateImages ? null : folderImagesHashSet;
 
                         filesToScan.AddRange(MetadataScanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), settings.ExcludePaths).ToList());
+                    }
+                    else
+                    {
+                        foldersUnavailable = true;
+
+                        _dataStore.SetFolderUnavailable(path, true);
+
+                        var childImages = _dataStore.GetAllPathImages(path);
+
+                        foreach (var childImageChunk in childImages.Chunk(100))
+                        {
+                            _dataStore.SetUnavailable(childImageChunk.Select(c => c.Id), true);
+                        }
+
                     }
                 }
 
@@ -653,9 +741,11 @@ namespace Diffusion.Toolkit
 
                 added = _added;
 
-                if ((added + removed == 0 && reportIfNone) || added + removed > 0)
+                LoadFolders();
+
+                if ((added + unavailable == 0 && reportIfNone) || added + unavailable > 0)
                 {
-                    Report(added, removed, elapsedTime, updateImages);
+                    Report(added, unavailable, elapsedTime, updateImages, foldersUnavailable, foldersRestored);
                 }
             }
             catch (Exception ex)
@@ -675,16 +765,18 @@ namespace Diffusion.Toolkit
             }
 
 
-            return added + removed > 0;
+            return added + unavailable > 0;
         }
 
-        private void Report(int added, int removed, float elapsedTime, bool updateImages)
+        private void Report(int added, int unavailable, float elapsedTime, bool updateImages, bool foldersUnavailable, bool foldersRestored)
         {
             Dispatcher.Invoke(() =>
             {
-                var scanComplete = GetLocalizedText("Actions.Scanning.ScanComplete.Caption");
+                var scanComplete = updateImages
+                    ? GetLocalizedText("Actions.Scanning.RebuildComplete.Caption")
+                    : GetLocalizedText("Actions.Scanning.ScanComplete.Caption");
 
-                if (added == 0 && removed == 0)
+                if (added == 0 && unavailable == 0)
                 {
                     var message = GetLocalizedText("Actions.Scanning.NoNewImages.Toast");
                     Toast(message, scanComplete);
@@ -693,32 +785,29 @@ namespace Diffusion.Toolkit
                 {
                     var updatedMessage = GetLocalizedText("Actions.Scanning.ImagesUpdated.Toast");
                     var addedMessage = GetLocalizedText("Actions.Scanning.ImagesAdded.Toast");
-                    var removedMessage = GetLocalizedText("Actions.Scanning.MissingImagesRemoved.Toast");
+                    var unavailableMessage = GetLocalizedText("Actions.Scanning.FilesUnavailable.Toast");
+                    var foldersUnavailableMessage = GetLocalizedText("Actions.Scanning.FoldersUnavailable.Toast");
+                    var foldersRestoredMessage = GetLocalizedText("Actions.Scanning.FoldersRestored.Toast");
 
                     updatedMessage = updatedMessage.Replace("{count}", $"{added:#,###,##0}");
                     addedMessage = addedMessage.Replace("{count}", $"{added:#,###,##0}");
-                    removedMessage = removedMessage.Replace("{count}", $"{removed:#,###,##0}");
+                    unavailableMessage = unavailableMessage.Replace("{count}", $"{unavailable:#,###,##0}");
 
                     var newOrOpdated = updateImages ? updatedMessage : addedMessage;
 
-                    var missing = removed > 0 ? removedMessage : string.Empty;
+                    var messages = new[]
+                     {
+                        newOrOpdated,
+                        unavailable > 0 ? unavailableMessage : string.Empty,
+                        foldersUnavailable ? foldersUnavailableMessage : string.Empty,
+                        foldersRestored ? foldersRestoredMessage : string.Empty,
+                    };
 
-                    var messages = new[] { newOrOpdated, missing };
-
-                    var message = string.Join("\n", messages.Where(m => !string.IsNullOrEmpty(m)));
-
-                    message = $"{message}";
-
-                    if (updateImages)
+                    foreach (var message in messages.Where(m => !string.IsNullOrEmpty(m)))
                     {
-                        var rebuildComplete = GetLocalizedText("Actions.Scanning.RebuildComplete.Caption");
+                        Toast(message, scanComplete, 5);
+                    }
 
-                        Toast(message, rebuildComplete);
-                    }
-                    else
-                    {
-                        Toast(message, scanComplete, 10);
-                    }
                 }
 
                 SetTotalFilesStatus();

@@ -272,7 +272,7 @@
             <Grid Background="Transparent" MouseDown="CloseToast">
                 <Border         
                     BorderBrush="{DynamicResource SecondaryBrush}"
-                    Background="{DynamicResource PrimaryBrush}"
+                    Background="{DynamicResource ToastBrush}"
                     BorderThickness="2"
                     CornerRadius="2"
                     Opacity="0.75"

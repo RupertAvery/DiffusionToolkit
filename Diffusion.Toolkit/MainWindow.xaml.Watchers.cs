@@ -21,7 +21,7 @@ namespace Diffusion.Toolkit
 
             if (addedTotal > 0)
             {
-                Report(addedTotal, 0, 0, false);
+                Report(addedTotal, 0, 0, false, false, false);
                 lock (_lock)
                 {
                     addedTotal = 0;
@@ -124,7 +124,7 @@ namespace Diffusion.Toolkit
                     var currentWindow = Application.Current.Windows.OfType<Window>().First();
                     if (currentWindow.IsActive)
                     {
-                        Report(added, 0, elapsed, false);
+                        Report(added, 0, elapsed, false, false, false);
                     }
                     else
                     {

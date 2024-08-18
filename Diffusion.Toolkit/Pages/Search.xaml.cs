@@ -71,7 +71,8 @@ namespace Diffusion.Toolkit.Pages
         private readonly SearchModel _model;
         private NavigatorService _navigatorService;
         private IOptions<DataStore> _dataStoreOptions;
-
+        private Dictionary<string, ModeSettings> _modeSettings = new Dictionary<string, ModeSettings>();
+        private readonly MessagePopupManager _messagePopupManager;
 
         private DataStore DataStore => _dataStoreOptions.Value;
 
@@ -481,6 +482,8 @@ namespace Diffusion.Toolkit.Pages
             ThumbnailListView.DataStoreOptions = _dataStoreOptions;
 
             ThumbnailListView.MessagePopupManager = messagePopupManager;
+
+            _messagePopupManager = messagePopupManager;
 
             ThumbnailListView.OnExpandToFolder = entry =>
             {
@@ -1254,10 +1257,16 @@ namespace Diffusion.Toolkit.Pages
                 {
                     if (!Directory.Exists(_currentModeSettings.CurrentFolder))
                     {
-                        MessageBox.Show("This folder appears to have been removed.  Please remove the entry from the Folder list in Settings", "Folder Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(GetLocalizedText("Search.Folders.Unavailable"), GetLocalizedText("Search.Folders.Unavailable.TItle"), MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
-                    folders = new[] { Path.Combine(_currentModeSettings.CurrentFolder, "..") }.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolder));
+
+                    if (!_settings.ImagePaths.Contains(_currentModeSettings.CurrentFolder))
+                    {
+                        folders = folders.Concat(new[] { Path.Combine(_currentModeSettings.CurrentFolder, "..") });
+                    }
+
+                    folders = folders.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolder));
                 }
 
                 foreach (var folder in folders)
@@ -1787,8 +1796,6 @@ namespace Diffusion.Toolkit.Pages
                 e.Handled = true;
             }
         }
-
-        private Dictionary<string, ModeSettings> _modeSettings = new Dictionary<string, ModeSettings>();
 
         private ModeSettings GetModeSettings(string mode)
         {

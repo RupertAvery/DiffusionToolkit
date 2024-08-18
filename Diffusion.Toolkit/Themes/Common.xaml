@@ -6,6 +6,7 @@
 
     <SolidColorBrush x:Key="ControlBackgroundBrush" Color="{DynamicResource ControlBackground}"/>
     <SolidColorBrush x:Key="PrimaryBrush" Color="{DynamicResource Background}"/>
+    <SolidColorBrush x:Key="ToastBrush" Color="{DynamicResource ToastBackground}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{DynamicResource Splitter}"/>
     <SolidColorBrush x:Key="SplitterBrush" Color="{DynamicResource Splitter}"/>
     <SolidColorBrush x:Key="FocusedBrush" Color="{DynamicResource Focused}"/>

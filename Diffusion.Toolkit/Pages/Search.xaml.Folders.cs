@@ -128,9 +128,9 @@ namespace Diffusion.Toolkit.Pages
         {
             if (!Directory.Exists(folder.Path))
             {
-                MessageBox.Show("This folder appears to have been removed.  Please remove the entry from the Folder list in Settings", "Folder Not Found", MessageBoxButton.OK, MessageBoxImage.Error);
                 return Enumerable.Empty<FolderViewModel>();
             }
+
             var directories = Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
             {
                 IgnoreInaccessible = true

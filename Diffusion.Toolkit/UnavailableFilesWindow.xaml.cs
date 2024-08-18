@@ -1,18 +1,8 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Diffusion.Database;
 
 namespace Diffusion.Toolkit
@@ -23,48 +13,67 @@ namespace Diffusion.Toolkit
     public partial class UnavailableFilesWindow : BorderlessWindow
     {
         private readonly DataStore _dataStore;
+        private readonly Settings _settings;
         public UnavailableFilesModel Model { get; }
 
         public UnavailableFilesWindow(DataStore dataStore, Settings settings)
         {
             _dataStore = dataStore;
+            _settings = settings;
             InitializeComponent();
 
-            Model = new UnavailableFilesModel();
-            Model.DeleteImmediately = false;
-            Model.MarkForDeletion = false;
-            Model.RemoveFromUnavailableRootFolders = false;
-            Model.UseRootFolders = true;
+            Model = new UnavailableFilesModel
+            {
+                JustUpdate = true,
+                RemoveImmediately = false,
+                MarkForDeletion = false,
+                ShowUnavailableRootFolders = false,
+                UseRootFolders = true
+            };
 
-            Model.ImagePaths = new ObservableCollection<ImageFileItem>(settings.ImagePaths.Select(p => new ImageFileItem()
+            LoadImagePaths(false);
+
+
+            Model.PropertyChanged += ModelOnPropertyChanged;
+
+            DataContext = Model;
+        }
+
+        private void LoadImagePaths(bool showUnavailable)
+        {
+            var paths = _settings.ImagePaths.Select(p => new ImageFileItem()
             {
                 Path = p,
                 IsUnavailable = !Directory.Exists(p)
-            }));
+            })
+            .Where(p => showUnavailable || !p.IsUnavailable);
+
+            Model.ImagePaths = new ObservableCollection<ImageFileItem>(paths);
 
             foreach (var item in Model.ImagePaths)
             {
                 item.PropertyChanged += ItemOnPropertyChanged;
             }
-
-            Model.PropertyChanged += ModelOnPropertyChanged; 
-
-            DataContext = Model;
         }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            Model.IsStartEnabled = (Model.MarkForDeletion || Model.DeleteImmediately) && (Model.ImagePaths.Any(p => p.IsSelected));
+            if (e.PropertyName == nameof(Model.ShowUnavailableRootFolders))
+            {
+                LoadImagePaths(Model.ShowUnavailableRootFolders);
+            }
+
+            Model.IsStartEnabled = (Model.JustUpdate || Model.MarkForDeletion || Model.RemoveImmediately) && (Model.ImagePaths.Any(p => p.IsSelected));
         }
 
         private void ItemOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            Model.IsStartEnabled = (Model.MarkForDeletion || Model.DeleteImmediately) && (Model.ImagePaths.Any(p => p.IsSelected));
+            Model.IsStartEnabled = (Model.JustUpdate || Model.MarkForDeletion || Model.RemoveImmediately) && (Model.ImagePaths.Any(p => p.IsSelected));
         }
 
         private void OK_OnClick(object sender, RoutedEventArgs e)
         {
-            if (Model.DeleteImmediately || Model.MarkForDeletion)
+            if (Model.JustUpdate || Model.RemoveImmediately || Model.MarkForDeletion)
             {
                 DialogResult = true;
                 Close();

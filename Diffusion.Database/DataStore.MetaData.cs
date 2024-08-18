@@ -154,7 +154,7 @@ namespace Diffusion.Database
 
             var query = "SELECT Id, Path FROM Image WHERE Unavailable = @Unavailable";
 
-            var images = db.Query<ImagePath>(query,  new { Unavailable = unavailable });
+            var images = db.Query<ImagePath>(query, unavailable);
 
             foreach (var image in images)
             {
