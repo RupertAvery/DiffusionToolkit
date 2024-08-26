@@ -12,19 +12,13 @@
              d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
-            <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVisCol"></converters:InverseBoolToVisibilityCollapsedConverter>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
-            <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
-            <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
-            <converters:BoolToBlurIntConverter x:Key="boolToBlur"></converters:BoolToBlurIntConverter>
             <converters:BoolToBlurIntMultiConverter x:Key="boolToBlurMulti"></converters:BoolToBlurIntMultiConverter>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
             <converters:BoolToVisibilityMultiConverter x:Key="boolToVisMulti"></converters:BoolToVisibilityMultiConverter>
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
-            <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
-            <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
 
 
             <Style x:Key="ShowOnHover" TargetType="Grid">
@@ -91,7 +85,7 @@
                 <Image x:Name="Preview"
                        DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
                        Stretch="None"
-                       Opacity="{Binding ForDeletion, Converter={StaticResource BoolToOpacity}, ConverterParameter=0.5}"
+                       Opacity="{Binding ForDeletion, Converter={StaticResource BoolToOpacity}}"
                        RenderOptions.BitmapScalingMode="Fant"
                        Source="{Binding Image}" >
                     <Image.Visibility>

@@ -8,11 +8,7 @@ public class BoolToOpacityConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        var opacity = 0.35d;
-        if (parameter != null)
-        {
-            opacity = double.Parse((string)parameter);
-        }
+        var opacity = 0.5d;
         return (bool)value ? opacity : 1.0;
     }
 
