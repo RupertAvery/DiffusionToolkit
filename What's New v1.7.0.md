@@ -42,13 +42,13 @@ Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image 
 * Drag and Drop from Diffusion Toolkit to another app
 * Translations - Diffusion Toolkit is localized
 
-# What's New in v1.6.2
+# What's New in v1.7.0
 
 After several months without any updates, here's a few that include some features users have suggested or requested. 
 
-Please make sure to check each one below to make sure you don't miss out on anything, there are a lot of changes and some might be what you are looking for.
+Just to name a few, improved handling of unavailable images, with a option to scan for them in Tools. A ComfyUI metadata viewer was added. The nodes are simply displayed in a list, without any layout or wiring. Auto advance on tag and mouse wheel navigation were added. A slideshow function was added to the popout preview. Filters were for excluding terms in the Prompt / Negative Prompt. Now you can properly search for "cape", and exclude "landscape", or "superhero" from the search results.
 
-One nice feature you might gloss over is added filters for excluding terms in the Prompt / Negative Prompt. Now you can properly search for "cape", and exclude "landscape", or "superhero" from the search results.
+Please make sure to check each one below to make sure you don't miss out on anything, there are a lot of changes and some might be what you are looking for.
 
 Thanks to Terence for a whole bunch of bug fixes and enhancements!
 
