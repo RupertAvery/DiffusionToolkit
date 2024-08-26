@@ -506,6 +506,7 @@ public class MetadataSection : BaseNotify
     private AccordionState _othersState;
     private AccordionState _modelState;
     private AccordionState _dateState;
+    private AccordionState _workflowState;
 
     public AccordionState PromptState
     {
@@ -559,6 +560,12 @@ public class MetadataSection : BaseNotify
     {
         get => _albumState;
         set => SetField(ref _albumState, value);
+    }
+
+    public AccordionState WorkflowState
+    {
+        get => _workflowState; 
+        set => SetField(ref _workflowState, value);
     }
 }
 

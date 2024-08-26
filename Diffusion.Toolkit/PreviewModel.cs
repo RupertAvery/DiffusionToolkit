@@ -36,7 +36,8 @@ public class PreviewModel : BaseNotify
 
     public ICommand Close { get; set;  }
     public ICommand ToggleFitToPreview { get; set; }
-    public ICommand ToggleHundredPercent { get; set; }
+    public ICommand ToggleActualSize { get; set; }
+    public ICommand ToggleAutoAdvance { get; set; }
     public ICommand StartStopSlideShow { get; set; }
     public ICommand ToggleInfo { get; set; }
     public ICommand ToggleFullScreen { get; set; }

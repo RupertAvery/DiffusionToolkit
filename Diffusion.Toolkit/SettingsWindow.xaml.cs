@@ -73,7 +73,7 @@ namespace Diffusion.Toolkit
             _model.CustomCommandLineArgs = settings.CustomCommandLineArgs;
             _model.SlideShowDelay = settings.SlideShowDelay;
             _model.ScrollNavigation = settings.ScrollNavigation;
-            _model.AdvanceOnDelete = settings.AdvanceOnDelete;
+            _model.AdvanceOnTag = settings.AutoAdvance;
 
             _model.Culture = settings.Culture;
 
@@ -343,7 +343,7 @@ namespace Diffusion.Toolkit
             _settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
             _settings.SlideShowDelay = _model.SlideShowDelay;
             _settings.ScrollNavigation = _model.ScrollNavigation;
-            _settings.AdvanceOnDelete = _model.AdvanceOnDelete;
+            _settings.AutoAdvance = _model.AdvanceOnTag;
 
             _settings.Culture = _model.Culture;
         }

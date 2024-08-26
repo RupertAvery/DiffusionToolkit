@@ -185,7 +185,7 @@
                             <Label>Slide show delay (seconds)</Label>
                             <TextBox Text="{Binding SlideShowDelay, UpdateSourceTrigger=PropertyChanged}" Height="20" Width="50"></TextBox>
                         </StackPanel>
-                        <CheckBox IsChecked="{Binding AdvanceOnDelete}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.AdvanceOnDelete}"></CheckBox>
+                        <CheckBox IsChecked="{Binding AdvanceOnTag}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.AdvanceOnTag}"></CheckBox>
                         <CheckBox IsChecked="{Binding ScrollNavigation}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ScrollNavigation}"></CheckBox>
                         <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>
                     </StackPanel>

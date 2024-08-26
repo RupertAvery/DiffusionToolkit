@@ -39,7 +39,8 @@
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Close}"></KeyBinding>
         <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding ToggleFitToPreview}"></KeyBinding>
-        <KeyBinding Key="A" Modifiers="Control+Shift" Command="{Binding ToggleHundredPercent}"></KeyBinding>
+        <KeyBinding Key="A" Modifiers="Control+Shift" Command="{Binding ToggleActualSize}"></KeyBinding>
+        <KeyBinding Key="T" Modifiers="Control+Shift" Command="{Binding ToggleAutoAdvance}"></KeyBinding>
         <KeyBinding Key="I" Command="{Binding ToggleInfo}"></KeyBinding>
         <KeyBinding Key="F11" Command="{Binding ToggleFullScreen}"></KeyBinding>
         <KeyBinding Key="Space" Command="{Binding StartStopSlideShow}"></KeyBinding>
@@ -52,6 +53,7 @@
             IsLoading="{Binding CurrentImage.IsLoading}"
             PreviewKeyUp="PreviewPane_OnPreviewKeyUp"
             PreviewKeyDown="PreviewPane_OnPreviewKeyDown"
+            MouseDoubleClick="PreviewPane_OnMouseDoubleClick"
             x:Name="PreviewPane" 
             AllowDrop="True" 
             Drop="PreviewPane_OnDrop"></controls:PreviewPane>

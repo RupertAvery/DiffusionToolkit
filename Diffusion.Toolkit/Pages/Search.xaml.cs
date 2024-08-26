@@ -22,6 +22,7 @@ using Task = System.Threading.Tasks.Task;
 using static System.String;
 using Diffusion.Toolkit.Controls;
 using System.Collections.Specialized;
+using System.Text.Json;
 using System.Threading;
 using Diffusion.IO;
 using Image = Diffusion.Database.Image;
@@ -526,28 +527,32 @@ namespace Diffusion.Toolkit.Pages
             {
                 DataStore.SetNSFW(id, b);
                 Update(id);
+
+                AdvanceOnTag();
             };
 
             PreviewPane.Favorite = (id, b) =>
             {
                 DataStore.SetFavorite(id, b);
                 Update(id);
+
+                AdvanceOnTag();
             };
 
             PreviewPane.Rate = (id, b) =>
             {
                 DataStore.SetRating(id, b);
                 Update(id);
+
+                AdvanceOnTag();
             };
 
             PreviewPane.Delete = (id, b) =>
             {
                 DataStore.SetDeleted(id, b);
                 Update(id);
-                if (ServiceLocator.Settings.AdvanceOnDelete)
-                {
-                    ServiceLocator.ThumbnailNavigationService.MoveNext();
-                }
+
+                AdvanceOnTag();
             };
 
             FilterPopup.Closed += (sender, args) =>
@@ -558,6 +563,14 @@ namespace Diffusion.Toolkit.Pages
             //PreviewPane.OnNext = Next;
             //PreviewPane.OnPrev = Prev;
             GetRandomHint();
+        }
+
+        private void AdvanceOnTag()
+        {
+            if (ServiceLocator.Settings.AutoAdvance)
+            {
+                ServiceLocator.ThumbnailNavigationService.MoveNext();
+            }
         }
 
         public void ShowFilter()
@@ -984,6 +997,12 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.ModelHash = parameters.ModelHash;
                     imageViewModel.Seed = parameters.Seed;
                     imageViewModel.AestheticScore = $"{parameters.AestheticScore}";
+
+                    imageViewModel.Workflow = parameters.Workflow;
+
+                    var parser = new ComfyUIParser();
+                    imageViewModel.Nodes = parser.Parse(parameters.Workflow);
+
 
                     var notFound = GetLocalizedText("Metadata.Modelname.NotFound");
 
@@ -2056,11 +2075,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (!e.Data.GetDataPresent("DTCustomDragSource"))
                 {
-                    // Note that you can have more than one file.
                     string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-
-                    // Assuming you have one file that you care about, pass it off to whatever
-                    // handling code you have defined.
                     LoadPreviewImage(files[0]);
                 }
             }
@@ -2098,21 +2113,51 @@ namespace Diffusion.Toolkit.Pages
 
         public void ExtOnKeyUp(object sender, KeyEventArgs e)
         {
-            EndNavigateCursor();
+            if (Keyboard.Modifiers == ModifierKeys.None)
+            {
+                if (e.Key == Key.Left)
+                {
+                    EndNavigateCursor();
+                }
+                else if (e.Key == Key.Right)
+                {
+                    EndNavigateCursor();
+                }
+                else if (e.Key == Key.Delete)
+                {
+                    AdvanceOnTag();
+                }
+                else if (e.Key >= Key.D0 && e.Key <= Key.D9)
+                {
+                    AdvanceOnTag();
+                }
+                else if (e.Key == Key.F)
+                {
+                    AdvanceOnTag();
+                }
+                else if (e.Key == Key.F)
+                {
+                    AdvanceOnTag();
+                }
+            }
         }
 
         public event EventHandler NavigationCompleted;
 
         public void ExtOnKeyDown(object sender, KeyEventArgs e)
         {
-            StartNavigateCursor();
-            if (e.Key == Key.Left)
+            if (Keyboard.Modifiers == ModifierKeys.None)
             {
-                NavigateCursorPrevious();
-            }
-            else if (e.Key == Key.Right)
-            {
-                NavigateCursorNext();
+                if (e.Key == Key.Left)
+                {
+                    StartNavigateCursor();
+                    NavigateCursorPrevious();
+                }
+                else if (e.Key == Key.Right)
+                {
+                    StartNavigateCursor();
+                    NavigateCursorNext();
+                }
             }
         }
 
@@ -2225,6 +2270,11 @@ namespace Diffusion.Toolkit.Pages
             _settings.NavigationThumbnailGridWidth2 = "3*";
             _settings.PreviewGridHeight = "*";
             _settings.PreviewGridHeight2 = "3*";
+        }
+
+        private void PreviewPane_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            OnCurrentImageOpen?.Invoke(_model.CurrentImage);
         }
     }
 }

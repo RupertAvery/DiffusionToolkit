@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Net;
@@ -81,9 +82,9 @@ namespace Diffusion.Toolkit.Controls
             {
                 FitToPreview();
             }
-            if (MainModel.HundredPercent)
+            if (MainModel.ActualSize)
             {
-                HundredPercent();
+                ActualSize();
             }
         }
 
@@ -123,9 +124,9 @@ namespace Diffusion.Toolkit.Controls
                 FitToPreview();
             }
 
-            if (MainModel is { HundredPercent: true })
+            if (MainModel is { ActualSize: true })
             {
-                HundredPercent();
+                ActualSize();
             }
         }
 
@@ -149,7 +150,7 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
-        private void HundredPercent()
+        private void ActualSize()
         {
             if (Image is { Image: { } })
             {
@@ -229,7 +230,7 @@ namespace Diffusion.Toolkit.Controls
         private void UIElement_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
             MainModel.FitToPreview = false;
-            MainModel.HundredPercent = false;
+            MainModel.ActualSize = false;
 
             var ctrlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 
@@ -252,6 +253,8 @@ namespace Diffusion.Toolkit.Controls
                 if (scrollNavigation)
                 {
                     Key vkey = e.Delta > 0 ? Key.Left : e.Delta < 0 ? Key.Right : Key.None;
+
+                    Debug.WriteLine(e.Delta);
 
                     var ps = PresentationSource.FromVisual((ScrollViewer)sender);
 
@@ -410,11 +413,11 @@ namespace Diffusion.Toolkit.Controls
                     FitToPreview();
                 }
             }
-            if (e.PropertyName == nameof(MainModel.HundredPercent))
+            if (e.PropertyName == nameof(MainModel.ActualSize))
             {
-                if (MainModel.HundredPercent)
+                if (MainModel.ActualSize)
                 {
-                    HundredPercent();
+                    ActualSize();
                 }
             }
         }

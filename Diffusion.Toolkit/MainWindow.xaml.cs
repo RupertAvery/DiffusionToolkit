@@ -125,7 +125,9 @@ namespace Diffusion.Toolkit
             _model.ToggleHideUnavailable = new RelayCommand<object>((o) => ToggleHideUnavailable());
 
             _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
-            _model.ToggleHundredPercent = new RelayCommand<object>((o) => ToggleHundredPercent());
+            _model.ToggleActualSize = new RelayCommand<object>((o) => ToggleActualSize());
+
+            _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
 
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
             _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
@@ -195,6 +197,12 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void ToggleAutoAdvance()
+        {
+            _model.AutoAdvance = !_model.AutoAdvance;
+            _model.Settings.AutoAdvance = _model.AutoAdvance;
         }
 
         private async Task UnavailableFiles(object o)
@@ -451,7 +459,7 @@ namespace Diffusion.Toolkit
                     MessageBox.Show(this, "An error occured while loading configuration settings. The application will exit", "Startup failed!", MessageBoxButton.OK, MessageBoxImage.Error);
                     throw;
                 }
-              
+
             }
 
 
@@ -506,7 +514,8 @@ namespace Diffusion.Toolkit
 
             _model.NSFWBlur = _settings.NSFWBlur;
             _model.FitToPreview = _settings.FitToPreview;
-            _model.HundredPercent = _settings.HundredPercent;
+            _model.ActualSize = _settings.ActualSize;
+            _model.AutoAdvance = _settings.AutoAdvance;
 
             _model.Settings = _settings;
 
@@ -533,7 +542,7 @@ namespace Diffusion.Toolkit
             _dataStoreOptions = new DataStoreOptions(dataStore);
 
             var total = _dataStore.GetTotal();
-            
+
             var text = GetLocalizedText("Main.Status.ImagesInDatabase").Replace("{count}", $"{total:n0}");
 
             _model.Status = text;

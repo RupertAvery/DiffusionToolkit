@@ -48,7 +48,7 @@ public class SettingsModel : BaseNotify
     private IEnumerable<Langauge> _cultures;
     private int _slideShowDelay;
     private bool _scrollNavigation;
-    private bool _advanceOnDelete;
+    private bool _advanceOnTag;
 
     public SettingsModel()
     {
@@ -225,9 +225,9 @@ public class SettingsModel : BaseNotify
         set => SetField(ref _scrollNavigation, value);
     }
 
-    public bool AdvanceOnDelete
+    public bool AdvanceOnTag
     {
-        get => _advanceOnDelete;
-        set => SetField(ref _advanceOnDelete, value);
+        get => _advanceOnTag;
+        set => SetField(ref _advanceOnTag, value);
     }
 }

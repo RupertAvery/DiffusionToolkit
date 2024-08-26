@@ -46,36 +46,37 @@ namespace Diffusion.Toolkit
             });
 
             PreviewPane.IsPopout = true;
-            
+
             PreviewPane.NSFW = (id, v) =>
             {
                 _dataStore.SetNSFW(id, v);
                 Changed?.Invoke(id);
             };
-            
+
             PreviewPane.Favorite = (id, v) =>
             {
                 _dataStore.SetFavorite(id, v);
                 Changed?.Invoke(id);
             };
-            
+
             PreviewPane.Rate = (id, v) =>
             {
                 _dataStore.SetRating(id, v);
                 Changed?.Invoke(id);
-            }; 
-            
+            };
+
             PreviewPane.Delete = (id, v) =>
             {
                 _dataStore.SetDeleted(id, v);
                 Changed?.Invoke(id);
             };
-            
+
             PreviewPane.MainModel = mainModel;
 
 
             _model.ToggleFitToPreview = mainModel.ToggleFitToPreview;
-            _model.ToggleHundredPercent = mainModel.ToggleHundredPercent;
+            _model.ToggleActualSize = mainModel.ToggleActualSize;
+            _model.ToggleAutoAdvance = mainModel.ToggleAutoAdvance;
             _model.ToggleInfo = mainModel.ToggleInfoCommand;
             //_slideShowDelay = mainModel.Settings.SlideShowDelay;
             _model.ToggleFullScreen = new RelayCommand<object>((o) => ToggleFullScreen());
@@ -114,7 +115,7 @@ namespace Diffusion.Toolkit
             {
                 _slideShowTimer = new Timer(SlideShowAdvance, null, TimeSpan.FromSeconds(_slideShowDelay), TimeSpan.FromSeconds(_slideShowDelay));
                 _model.SlideShowActive = true;
-                 
+
             }
             else
             {
@@ -182,14 +183,6 @@ namespace Diffusion.Toolkit
         private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
             OnPreviewKeyUp(e);
-            
-            if (e.Key == Key.Delete)
-            {
-                if (ServiceLocator.Settings.AdvanceOnDelete)
-                {
-                    ServiceLocator.ThumbnailNavigationService.MoveNext();
-                }
-            }
 
             SetFocus();
         }
@@ -213,7 +206,12 @@ namespace Diffusion.Toolkit
         {
             _model.CurrentImage = thumbnail.CurrentImage;
         }
+
+        private void PreviewPane_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            Close();
+        }
     }
 
-    
+
 }

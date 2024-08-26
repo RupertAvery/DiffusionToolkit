@@ -37,10 +37,11 @@
         <KeyBinding Modifiers="Control" Key="D4" Command="{Binding ShowFavorite}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D5" Command="{Binding ShowMarked}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="R" Command="{Binding Rescan}"></KeyBinding>
-        <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleAlbumCommand}"></KeyBinding>
+        <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleActualSize}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="P" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="F" Command="{Binding ToggleFitToPreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="N" Command="{Binding ToggleHideNSFW}"></KeyBinding>
+        <KeyBinding Modifiers="Control+Shift" Key="T" Command="{Binding ToggleAutoAdvance}"></KeyBinding>
     </Window.InputBindings>
     <Window.Resources>
         <ResourceDictionary>
@@ -95,6 +96,11 @@
                 <MenuItem Header="{lex:Loc Menu.View.Albums}" IsChecked="{Binding Settings.NavigationSection.ShowAlbums}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Albums"/>
                 <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.FitToPreview}" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
+                <MenuItem Header="{lex:Loc Menu.View.ActualSize}" IsChecked="{Binding ActualSize}" Command="{Binding ToggleActualSize}"  InputGestureText="Ctrl+Shift+A"/>
+                <Separator/>
+                <MenuItem Header="{lex:Loc Menu.View.AutoAdvance}" IsChecked="{Binding AutoAdvance}" Command="{Binding ToggleAutoAdvance}"  InputGestureText="Ctrl+Shift+T"/>
+                <Separator/>
+                <MenuItem Header="{lex:Loc Menu.View.ToggleInfo}" Command="{Binding ToggleInfoCommand}" InputGestureText="I"/>
                 <MenuItem Header="{lex:Loc Menu.View.TogglePreview}" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
                 <MenuItem Header="{lex:Loc Menu.View.PopoutPreview}" Command="{Binding PoputPreview}"/>
                 <Separator/>

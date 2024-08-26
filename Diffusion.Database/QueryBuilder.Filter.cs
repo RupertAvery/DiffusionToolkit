@@ -62,7 +62,6 @@ namespace Diffusion.Database
             FilterNegativePromptEx(filter, conditions);
             FilterPromptEx(filter, conditions);
 
-
             return (string.Join(" AND ", conditions.Select(c => c.Key)),
                 conditions.SelectMany(c =>
                 {

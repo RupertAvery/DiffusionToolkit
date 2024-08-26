@@ -43,6 +43,8 @@ public class Image
     public int? ENSD { get; set; }
     public long FileSize { get; set; }
     public bool NoMetadata { get; set; }
+    public string? Workflow { get; set; }
+    public string? WorkflowId { get; set; }
 }
 
 

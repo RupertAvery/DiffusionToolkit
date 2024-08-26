@@ -41,9 +41,9 @@ public class MainModel : BaseNotify
     private bool _nsfwBlur;
     private ICommand _showPromptsCommand;
     private bool _fitToPreview;
-    private bool _hundredPercent;
+    private bool _actualSize;
     private ICommand _toggleFitToPreview;
-    private ICommand _toggleHundredPercent;
+    private ICommand _toggleActualSize;
     private ICommand _setThumbnailSize;
     private ICommand _poputPreview;
     private ICommand _togglePreview;
@@ -252,6 +252,18 @@ public class MainModel : BaseNotify
         set;
     }
 
+    public bool AutoAdvance
+    {
+        get => _autoAdvance;
+        set => SetField(ref _autoAdvance, value);
+    }
+
+    public ICommand ToggleAutoAdvance
+    {
+        get => _toggleAutoAdvance;
+        set => SetField(ref _toggleAutoAdvance, value);
+    }
+
     public ICommand ToggleHideNSFW
     {
         get => _toggleHideNsfw;
@@ -305,23 +317,23 @@ public class MainModel : BaseNotify
         get => _fitToPreview;
         set => SetField(ref _fitToPreview, value);
     }
-
+    
     public ICommand ToggleFitToPreview
     {
         get => _toggleFitToPreview;
         set => SetField(ref _toggleFitToPreview, value);
     }
 
-    public bool HundredPercent
+    public bool ActualSize
     {
-        get => _hundredPercent;
-        set => SetField(ref _hundredPercent, value);
+        get => _actualSize;
+        set => SetField(ref _actualSize, value);
     }
 
-    public ICommand ToggleHundredPercent
+    public ICommand ToggleActualSize
     {
-        get => _toggleHundredPercent;
-        set => SetField(ref _toggleHundredPercent, value);
+        get => _toggleActualSize;
+        set => SetField(ref _toggleActualSize, value);
     }
 
     public ICommand SetThumbnailSize
@@ -577,6 +589,8 @@ public class MainModel : BaseNotify
     private ICommand _unavailableFilesCommand;
     private bool _hideUnavailable;
     private ICommand _toggleHideUnavailable;
+    private bool _autoAdvance;
+    private ICommand _toggleAutoAdvance;
 
     public FolderViewModel? CurrentFolder
     {

@@ -444,6 +444,11 @@ namespace Diffusion.Toolkit.Controls
                 var ids = imageEntries.Select(x => x.Id).ToList();
 
                 DataStore.SetRating(ids, effectiveRating);
+
+                if (imageEntries.Count == 1)
+                {
+                    AdvanceOnTag();
+                }
             }
         }
 
@@ -490,6 +495,11 @@ namespace Diffusion.Toolkit.Controls
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
                 DataStore.SetFavorite(ids, favorite);
+
+                if (imageEntries.Count == 1)
+                {
+                    AdvanceOnTag();
+                }
             }
         }
 
@@ -514,6 +524,20 @@ namespace Diffusion.Toolkit.Controls
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
                 DataStore.SetNSFW(ids, nsfw);
+
+                if (imageEntries.Count == 1)
+                {
+                    AdvanceOnTag();
+                }
+            }
+        }
+
+        void AdvanceOnTag()
+        {
+            if (ServiceLocator.Settings.AutoAdvance)
+            {
+                ServiceLocator.ThumbnailNavigationService.MoveNext();
+                FocusItem(ThumbnailListView.SelectedIndex);
             }
         }
 
@@ -571,11 +595,7 @@ namespace Diffusion.Toolkit.Controls
 
                 if (imageEntries.Count == 1)
                 {
-                    if (ServiceLocator.Settings.AdvanceOnDelete)
-                    {
-                        ServiceLocator.ThumbnailNavigationService.MoveNext();
-                        FocusItem(ThumbnailListView.SelectedIndex);
-                    }
+                    AdvanceOnTag();
                 }
             }
         }

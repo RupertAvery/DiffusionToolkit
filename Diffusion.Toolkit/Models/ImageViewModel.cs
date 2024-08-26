@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Diffusion.IO;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -47,6 +48,8 @@ public class ImageViewModel : BaseNotify
     private bool _isMessageVisible;
     private string _message;
     private ICommand _openAlbumCommand;
+    private string? _workflow;
+    private IReadOnlyCollection<Node> _nodes;
 
     public ImageViewModel()
     {
@@ -270,5 +273,17 @@ public class ImageViewModel : BaseNotify
     {
         get => _openAlbumCommand;
         set => SetField(ref _openAlbumCommand, value);
+    }
+
+    public string? Workflow
+    {
+        get => _workflow;
+        set => SetField(ref _workflow, value);
+    }
+
+    public IReadOnlyCollection<Node> Nodes
+    {
+        get => _nodes;
+        set => SetField(ref _nodes, value);
     }
 }

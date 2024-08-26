@@ -26,6 +26,7 @@
             <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
             <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
 
+
             <Style x:Key="ShowOnHover" TargetType="Grid">
                 <Setter Property="Opacity" Value="0.25"/>
                 <Style.Triggers>
@@ -80,8 +81,8 @@
             >
                 <ScrollViewer.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Fit to Preview" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
-                        <MenuItem Header="Actual Size" Command="{Binding MainModel.ToggleHundredPercent}" IsChecked="{Binding MainModel.HundredPercent}"></MenuItem>
+                        <MenuItem Header="Fit to Preview" InputGestureText="CTRL+Shift+F" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
+                        <MenuItem Header="Actual Size" InputGestureText="CTRL+Shift+A" Command="{Binding MainModel.ToggleActualSize}" IsChecked="{Binding MainModel.ActualSize}"></MenuItem>
                     </ContextMenu>
                     
                     <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
@@ -90,6 +91,7 @@
                 <Image x:Name="Preview"
                        DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
                        Stretch="None"
+                       Opacity="{Binding ForDeletion, Converter={StaticResource BoolToOpacity}, ConverterParameter=0.5}"
                        RenderOptions.BitmapScalingMode="Fant"
                        Source="{Binding Image}" >
                     <Image.Visibility>
@@ -134,201 +136,25 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="56"/>
                     </Grid.RowDefinitions>
-
-                    <!--<Grid  Grid.Row="1" MaxWidth="600" 
-                           Visibility="{Binding IsParametersVisible, Converter={StaticResource boolToVis}}" Margin="10" Background="Transparent" VerticalAlignment="Bottom"
-                    >
-                        <Grid Margin="-20" Background="Transparent"></Grid>
-
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-
-                            <StackPanel Background="#AF000000">
-
-                                <Grid Background="#80000000" >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="80"/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Style="{StaticResource SmallCaps}" Margin="10,0,0,0">PROMPT</Label>
-                                    <Button Grid.Column="1" Command="{Binding CopyParametersCommand}">Copy All</Button>
-                                    <Button Grid.Column="2" Command="{Binding CopyPromptCommand}">Copy</Button>
-                                </Grid>
-
-
-                                <Grid  Background="Transparent" Margin="10">
-                                    <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
-                                                 IsReadOnly="True"
-                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Prompt}"></TextBox>
-                                </Grid>
-
-                                <Grid  Background="#80000000"  >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">NEGATIVE PROMPT</Label>
-                                    <Button Grid.Column="1" Command="{Binding CopyNegativePromptCommand}">Copy</Button>
-                                </Grid>
-
-                                <Grid Background="Transparent" Margin="10">
-                                    <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
-                                                 IsReadOnly="True"
-                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"></TextBox>
-                                </Grid>
-
-                                <Grid  Background="#80000000"  >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">OTHERS</Label>
-                                    <Button Grid.Column="1" Command="{Binding CopyOthersCommand}">Copy</Button>
-                                </Grid>
-
-                                <Grid Background="Transparent" Margin="10">
-                                    <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
-                                                 IsReadOnly="True"
-                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"></TextBox>
-                                </Grid>
-
-
-                                <Grid Background="#80000000" >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">MODEL NAME</Label>
-                                    <Label Grid.Column="1" Style="{DynamicResource SmallCaps}">MODEL HASH</Label>
-                                    <Button Grid.Column="2" Command="{Binding SearchModelCommand}">Search</Button>
-                                </Grid>
-
-
-                                <Grid  Background="Transparent"  Margin="10">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                             IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
-                                    <TextBox Grid.Column="1" Foreground="White" FontSize="14" BorderThickness="0"
-                                             IsReadOnly="True" Padding="5" Background="Transparent"   Text="{Binding ModelHash}"></TextBox>
-                                </Grid>
-
-
-                                <Grid  Background="Transparent" >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="32"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                             IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"></TextBox>
-                                    <Button Style="{DynamicResource BorderlessButton}"  Grid.Column="1" Command="{Binding SearchModelCommand}" >
-                                        <Image Source="{DynamicResource SearchIcon}" Height="16" Width="16" ToolTip="Search Civitai"></Image>
-                                    </Button>
-                                </Grid>
-
-
-                                <Grid  Background="#80000000" >
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="80"/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">PATH</Label>
-                                    <Button Grid.Column="1" Command="{Binding ShowInExplorerCommand}">Show</Button>
-                                    <Button Grid.Column="2" Command="{Binding CopyPathCommand}">Copy</Button>
-                                </Grid>
-
-                                <Grid  Background="Transparent" Margin="10">
-                                    <TextBox Foreground="White"  Background="#00000000" FontSize="14" BorderThickness="0"
-                                                 IsReadOnly="True"
-                                                 Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Path}"></TextBox>
-                                </Grid>
-
-                                <Grid  Background="#80000000" >
-                                    <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">DATE</Label>
-                                </Grid>
-
-
-                                <Grid  Background="Transparent" Margin="10">
-                                    <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                             IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Date}"></TextBox>
-                                </Grid>
-
-                                <Grid  Background="#80000000" >
-                                    <Label Style="{DynamicResource SmallCaps}" Margin="10,0,0,0">ALBUMS</Label>
-                                </Grid>
-
-
-                                <Grid  Background="Transparent" Margin="10">
-                                    <ItemsControl ItemsSource="{Binding Path=Albums}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <TextBox Foreground="White" FontSize="14" BorderThickness="0"
-                                                         IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding Name}"></TextBox>
-
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal"/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                    </ItemsControl>
-                                </Grid>
-                            </StackPanel>
-                        </ScrollViewer>
-                    </Grid>-->
-
-                    <!--<Grid Grid.Row="2" Background="{x:Null}" IsHitTestVisible="true">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="16"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="1" Command="{Binding CopyParametersCommand}">
-                            <fa:ImageAwesome ToolTip="Copy Parameters" Icon="FileText" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <fa:ImageAwesome.Effect>
-                                    <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                                </fa:ImageAwesome.Effect>
-                            </fa:ImageAwesome>
-                        </Button>
-
-                        <Button Background="Transparent" Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding ShowInExplorerCommand}">
-                            <fa:ImageAwesome ToolTip="Show in Explorer" Icon="ExternalLink" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <fa:ImageAwesome.Effect>
-                                    <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                                </fa:ImageAwesome.Effect>
-                            </fa:ImageAwesome>
-                        </Button>
-
-                        <Button Style="{DynamicResource BorderlessButton}" Grid.Column="3" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleParameters}">
-                            <fa:ImageAwesome ToolTip="Show info (I)" Icon="Eye" Width="24"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <fa:ImageAwesome.Effect>
-                                    <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                                </fa:ImageAwesome.Effect>
-                            </fa:ImageAwesome>
-                        </Button>
-
-                    </Grid>-->
-
+ 
                 </Grid>
             </Grid>
 
         </Grid>
 
-        <Grid  Background="{x:Null}" Visibility="{Binding Image.ForDeletion, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <Border BorderBrush="White" BorderThickness="1" Background="#81000000" CornerRadius="5">
-                <TextBlock Margin="15,5,15,5" TextAlignment="Center" FontSize="20" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{lex:Loc Preview.Deleted}">
-                </TextBlock>
+        <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=Image.ForDeletion, Converter={StaticResource boolToVisCol}}">
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <!--<Grid  Background="{x:Null}" Visibility="{Binding Image.ForDeletion, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Border BorderBrush="White" BorderThickness="2" Background="#FF000000" CornerRadius="5">
+                <StackPanel Orientation="Horizontal" Margin="35,15,35,15">
+                    <fa:FontAwesome Icon="Trash" FontSize="30" Foreground="White" Margin="0,0,0,0" ></fa:FontAwesome>
+                </StackPanel>
             </Border>
-        </Grid>
+        </Grid>-->
 
     </Grid>
 </UserControl>

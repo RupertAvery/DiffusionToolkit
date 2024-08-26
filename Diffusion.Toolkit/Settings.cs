@@ -75,10 +75,10 @@ public class Settings : SettingsContainer, IScanOptions
     private string _sortDirection;
     private bool _autoRefresh;
     private string? _culture;
-    private bool _hundredPercent;
+    private bool _actualSize;
     private int _slideShowDelay;
     private bool _scrollNavigation;
-    private bool _advanceOnDelete;
+    private bool _autoAdvance;
 
     public Settings() : this(false)
     {
@@ -380,10 +380,10 @@ public class Settings : SettingsContainer, IScanOptions
 
     public NavigationSectionSettings NavigationSection { get; set; }
 
-    public bool HundredPercent
+    public bool ActualSize
     {
-        get => _hundredPercent;
-        set => UpdateValue(ref _hundredPercent, value);
+        get => _actualSize;
+        set => UpdateValue(ref _actualSize, value);
     }
 
     public int SlideShowDelay
@@ -398,10 +398,10 @@ public class Settings : SettingsContainer, IScanOptions
         set => UpdateValue(ref _scrollNavigation, value);
     }
 
-    public bool AdvanceOnDelete
+    public bool AutoAdvance
     {
-        get => _advanceOnDelete;
-        set => UpdateValue(ref _advanceOnDelete, value);
+        get => _autoAdvance;
+        set => UpdateValue(ref _autoAdvance, value);
     }
 
     public bool HideUnavailable

@@ -1,5 +1,6 @@
 ﻿using Diffusion.Database;
 using Diffusion.Toolkit.Models;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -63,6 +64,11 @@ namespace Diffusion.Toolkit.Controls
             };
 
             CurrentImage.OpenAlbumCommand?.Execute(albumModel);
+        }
+
+        private void UIElement_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            Keyboard.ClearFocus();
         }
     }
 }

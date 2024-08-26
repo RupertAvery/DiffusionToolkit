@@ -25,4 +25,6 @@ public class FileParameters
     public decimal? PromptStrength { get; set; }
     public long FileSize { get; set; }
     public bool NoMetadata { get; set; }
+    public string? Workflow { get; set; }
+    public string? WorkflowId { get; set; }
 }

@@ -553,7 +553,9 @@ namespace Diffusion.Toolkit
                         HyperNetworkStrength = file.HyperNetworkStrength,
                         ClipSkip = file.ClipSkip,
                         FileSize = file.FileSize,
-                        NoMetadata = file.NoMetadata
+                        NoMetadata = file.NoMetadata,
+                        Workflow = file.Workflow,
+                        WorkflowId = file.WorkflowId,
                     };
 
                     if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
@@ -707,13 +709,18 @@ namespace Diffusion.Toolkit
                         foreach (var image in folderImages.Where(f => unavailableFiles.Contains(f.Path)))
                         {
                             unavailableIds.Add(image.Id);
-                            unavailable++;
                         }
 
-                        foreach (var chunk in unavailableIds.Chunk(100))
+                        var currentUnavailable = _dataStore.GetUnavailable(true);
+
+                        var newlyUnavailable = unavailableIds.Except(currentUnavailable.Select(i => i.Id)).ToList();
+
+                        foreach (var chunk in newlyUnavailable.Chunk(100))
                         {
                             _dataStore.SetUnavailable(chunk, true);
                         }
+
+                        unavailable += newlyUnavailable.Count;
 
                         Dispatcher.Invoke(() =>
                         {
@@ -800,7 +807,7 @@ namespace Diffusion.Toolkit
 
                     var messages = new[]
                      {
-                        newOrOpdated,
+                        added > 0 ? newOrOpdated : string.Empty,
                         unavailable > 0 ? unavailableMessage : string.Empty,
                         foldersUnavailable ? foldersUnavailableMessage : string.Empty,
                         foldersRestored ? foldersRestoredMessage : string.Empty,

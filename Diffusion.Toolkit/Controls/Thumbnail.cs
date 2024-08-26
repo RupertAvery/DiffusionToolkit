@@ -1,4 +1,5 @@
 ﻿using Diffusion.Toolkit.Localization;
+using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Markup;
@@ -48,6 +49,19 @@ public class Thumbnail : FrameworkElement
                 break;
         }
 
+    }
+
+    static Thumbnail()
+    {
+        InitIcons();
+    }
+
+    private static void InitIcons()
+    {
+        Uri darkTrashIconUri = new Uri("pack://application:,,,/Icons/Dark/trash-32.png", UriKind.RelativeOrAbsolute);
+        _darkTrashIcon = new BitmapImage(darkTrashIconUri);
+        Uri lightTrashIconUri = new Uri("pack://application:,,,/Icons/Light/trash-32.png", UriKind.RelativeOrAbsolute);
+        _lightTrashIcon = new BitmapImage(lightTrashIconUri);
     }
 
     public Brush Foreground
@@ -132,7 +146,7 @@ public class Thumbnail : FrameworkElement
 
         if (Data.ForDeletion)
         {
-            drawingContext.PushOpacity(0.2);
+            drawingContext.PushOpacity(0.5);
         }
 
         drawingContext.DrawImage(Source, rect);
@@ -145,31 +159,22 @@ public class Thumbnail : FrameworkElement
         }
     }
 
+    private static BitmapImage? _darkTrashIcon;
+    private static BitmapImage? _lightTrashIcon;
+
+
     private void DrawDeleted(DrawingContext drawingContext, int yOffset)
     {
-        var formattedText = new FormattedText(GetLocalizedText("Thumbnail.Deleted"),
-            CultureInfo.DefaultThreadCurrentCulture ?? CultureInfo.InvariantCulture,
-            FlowDirection.LeftToRight,
-            new Typeface(new FontFamily("Calibri"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal),
-            12,
-            Foreground,
-            1
-        );
-
-        double centerX = (ActualWidth - formattedText.Width) / 2;
-        double centerY = (ActualHeight - formattedText.Height) / 2;
-
         var margin = 5;
 
-        var pillWidth = formattedText.Width + margin;
-        var pillHeight = formattedText.Height + margin;
+        double centerX = ActualWidth / 2;
+        double centerY = ActualHeight / 2;
 
-        var borderRect = new Rect(centerX - margin, centerY - margin + yOffset, pillWidth + margin, pillHeight + margin);
+        drawingContext.PushOpacity(0.6);
+        drawingContext.DrawImage(_lightTrashIcon, new Rect(new Point(centerX - 16 + 2, centerY - 16 + 2 + yOffset), new Size(32, 32)));
+        drawingContext.Pop();
 
-        var pen = new Pen(Foreground, 1);
+        drawingContext.DrawImage(_darkTrashIcon, new Rect(new Point(centerX - 16, centerY - 16 + yOffset), new Size(32, 32)));
 
-        drawingContext.DrawRoundedRectangle(Brushes.Black, pen, borderRect, 3, 3);
-
-        drawingContext.DrawText(formattedText, new Point(centerX, centerY + yOffset));
     }
 }
