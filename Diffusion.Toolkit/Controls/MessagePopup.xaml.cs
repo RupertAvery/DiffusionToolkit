@@ -26,6 +26,13 @@ namespace Diffusion.Toolkit.Controls
             return this;
         }
 
+        public async Task CloseAsync()
+        {
+            await _popup.WaitUntilReady();
+            _popup.Close();
+            _closing?.Invoke();
+        }
+
         public void Close()
         {
             _popup.Close();
@@ -84,6 +91,9 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
+
+
+
         public MessagePopup(MessagePopupManager manager, UIElement placementTarget, int timeout) : this(manager, placementTarget, timeout, false)
         {
         }
@@ -91,6 +101,8 @@ namespace Diffusion.Toolkit.Controls
 
         public MessagePopup(MessagePopupManager manager, UIElement placementTarget, int timeout, bool showInput)
         {
+            _semaphore = new SemaphoreSlim(1);
+
             _manager = manager;
             _timeout = timeout;
             InitializeComponent();
@@ -137,6 +149,26 @@ namespace Diffusion.Toolkit.Controls
             });
 
             DataContext = _model;
+
+            Loaded += OnLoaded;
+            Unloaded += OnUnloaded;
+        }
+
+        public async Task WaitUntilReady()
+        {
+            await _semaphore.WaitAsync(100);
+        }
+
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            _semaphore.Dispose();
+        }
+
+        private SemaphoreSlim _semaphore;
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _semaphore.Release();
         }
 
 

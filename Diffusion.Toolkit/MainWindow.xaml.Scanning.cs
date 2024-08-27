@@ -38,96 +38,68 @@ namespace Diffusion.Toolkit
                 {
                     _model.IsBusy = true;
                 });
-
-                if (options.UseRootFolders)
+                try
                 {
-                    var rootFolders = options.ImagePaths.Where(f => f.IsSelected);
 
-                    var total = 0;
-
-                    foreach (var folder in rootFolders)
+                    if (options.UseRootFolders)
                     {
-                        total += _dataStore.CountAllPathImages(folder.Path);
-                    }
+                        var rootFolders = options.ImagePaths.Where(f => f.IsSelected);
 
-                    Dispatcher.Invoke(() =>
-                    {
-                        _model.CurrentProgress = 0;
-                        _model.TotalProgress = total;
-                    });
+                        var total = 0;
 
-                    var current = 0;
-
-                    var scanning = GetLocalizedText("Actions.Scanning.Status");
-
-                    foreach (var folder in rootFolders)
-                    {
-                        if (token.IsCancellationRequested)
+                        foreach (var folder in rootFolders)
                         {
-                            break;
+                            total += _dataStore.CountAllPathImages(folder.Path);
                         }
 
-                        HashSet<string> ignoreFiles = new HashSet<string>();
-
-                        var folderImages = _dataStore.GetAllPathImages(folder.Path).ToDictionary(f => f.Path);
-
-
-                        if (Directory.Exists(folder.Path))
+                        Dispatcher.Invoke(() =>
                         {
-                            //var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, null, _settings.RecurseFolders.GetValueOrDefault(true), null);
-                            var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), _settings.ExcludePaths);
+                            _model.CurrentProgress = 0;
+                            _model.TotalProgress = total;
+                        });
 
-                            foreach (var file in filesOnDisk)
+                        var current = 0;
+
+                        var scanning = GetLocalizedText("Actions.Scanning.Status");
+
+                        foreach (var folder in rootFolders)
+                        {
+                            if (token.IsCancellationRequested)
                             {
-                                if (token.IsCancellationRequested)
-                                {
-                                    break;
-                                }
+                                break;
+                            }
 
-                                if (folderImages.TryGetValue(file, out var imagePath))
+                            HashSet<string> ignoreFiles = new HashSet<string>();
+
+                            var folderImages = _dataStore.GetAllPathImages(folder.Path).ToDictionary(f => f.Path);
+
+
+                            if (Directory.Exists(folder.Path))
+                            {
+                                //var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, null, _settings.RecurseFolders.GetValueOrDefault(true), null);
+                                var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), _settings.ExcludePaths);
+
+                                foreach (var file in filesOnDisk)
                                 {
-                                    if (imagePath.Unavailable)
+                                    if (token.IsCancellationRequested)
                                     {
-                                        restoredImages.Add(imagePath.Id);
+                                        break;
                                     }
-                                    folderImages.Remove(file);
-                                }
 
-                                current++;
-
-                                if (current % 113 == 0)
-                                {
-
-                                    Dispatcher.Invoke(() =>
+                                    if (folderImages.TryGetValue(file, out var imagePath))
                                     {
-                                        _model.CurrentProgress = current;
-
-                                        var status = scanning
-                                            .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
-                                            .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                                        _model.Status = status;
-                                    });
-                                }
-                            }
-
-                            foreach (var folderImage in folderImages)
-                            {
-                                candidateImages.Add(folderImage.Value.Id);
-                            }
-                        }
-                        else
-                        {
-                            if (options.ShowUnavailableRootFolders)
-                            {
-                                foreach (var folderImage in folderImages)
-                                {
-                                    candidateImages.Add(folderImage.Value.Id);
+                                        if (imagePath.Unavailable)
+                                        {
+                                            restoredImages.Add(imagePath.Id);
+                                        }
+                                        folderImages.Remove(file);
+                                    }
 
                                     current++;
 
                                     if (current % 113 == 0)
                                     {
+
                                         Dispatcher.Invoke(() =>
                                         {
                                             _model.CurrentProgress = current;
@@ -140,87 +112,125 @@ namespace Diffusion.Toolkit
                                         });
                                     }
                                 }
+
+                                foreach (var folderImage in folderImages)
+                                {
+                                    candidateImages.Add(folderImage.Value.Id);
+                                }
+                            }
+                            else
+                            {
+                                if (options.ShowUnavailableRootFolders)
+                                {
+                                    foreach (var folderImage in folderImages)
+                                    {
+                                        candidateImages.Add(folderImage.Value.Id);
+
+                                        current++;
+
+                                        if (current % 113 == 0)
+                                        {
+                                            Dispatcher.Invoke(() =>
+                                            {
+                                                _model.CurrentProgress = current;
+
+                                                var status = scanning
+                                                    .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
+                                                    .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
+
+                                                _model.Status = status;
+                                            });
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.CurrentProgress = total;
+                            _model.TotalProgress = total;
+
+                            var unavailableFiles = GetLocalizedText("UnavailableFiles");
+
+                            if (restoredImages.Any())
+                            {
+                                _dataStore.SetUnavailable(restoredImages, false);
                             }
 
-                        }
-                    }
+                            if (options.JustUpdate)
+                            {
+                                //var currentUnavailableImages = _dataStore.GetUnavailable(true);
+                                //candidateImages = candidateImages.Except(currentUnavailableImages.Select(i => i.Id)).ToList();
 
+                                _dataStore.SetUnavailable(candidateImages, true);
+
+                                var updated = GetLocalizedText("UnavailableFiles.Results.Updated");
+                                updated = updated.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+
+                                if (restoredImages.Any())
+                                {
+                                    var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
+                                    updated += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+                                }
+
+                                _messagePopupManager.Show(updated, unavailableFiles, PopupButtons.OK);
+                            }
+                            else if (options.MarkForDeletion)
+                            {
+                                //var currentUnavailableImages = _dataStore.GetUnavailable(true);
+                                //candidateImages = candidateImages.Except(currentUnavailableImages.Select(i => i.Id)).ToList();
+
+                                _dataStore.SetUnavailable(candidateImages, true);
+                                _dataStore.SetDeleted(candidateImages, true);
+
+                                var marked = GetLocalizedText("UnavailableFiles.Results.MarkedForDeletion");
+                                marked = marked.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+
+                                if (restoredImages.Any())
+                                {
+                                    var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
+                                    marked += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+                                }
+
+                                _messagePopupManager.Show(marked, unavailableFiles, PopupButtons.OK);
+                            }
+                            else if (options.RemoveImmediately)
+                            {
+                                _dataStore.RemoveImages(candidateImages);
+
+                                var removed = GetLocalizedText("UnavailableFiles.Results.Removed");
+                                removed = removed.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+
+                                if (restoredImages.Any())
+                                {
+                                    var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
+                                    removed += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
+                                }
+
+
+                                _messagePopupManager.Show(removed, unavailableFiles, PopupButtons.OK);
+                            }
+
+
+                            var completed = GetLocalizedText("Actions.Scanning.Completed");
+
+                            _model.Status = completed;
+                            _model.CurrentProgress = 0;
+                            _model.TotalProgress = Int32.MaxValue;
+                        });
+
+                    }
+                }
+                finally
+                {
                     Dispatcher.Invoke(() =>
                     {
-                        _model.CurrentProgress = total;
-                        _model.TotalProgress = total;
-
-                        var unavailableFiles = GetLocalizedText("UnavailableFiles");
-
-                        if (restoredImages.Any())
-                        {
-                            _dataStore.SetUnavailable(restoredImages, false);
-                        }
-
-                        if (options.JustUpdate)
-                        {
-                            //var currentUnavailableImages = _dataStore.GetUnavailable(true);
-                            //candidateImages = candidateImages.Except(currentUnavailableImages.Select(i => i.Id)).ToList();
-
-                            _dataStore.SetUnavailable(candidateImages, true);
-
-                            var updated = GetLocalizedText("UnavailableFiles.Results.Updated");
-                            updated = updated.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                            if (restoredImages.Any())
-                            {
-                                var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
-                                updated += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-                            }
-
-                            _messagePopupManager.Show(updated, unavailableFiles, PopupButtons.OK);
-                        }
-                        else if (options.MarkForDeletion)
-                        {
-                            //var currentUnavailableImages = _dataStore.GetUnavailable(true);
-                            //candidateImages = candidateImages.Except(currentUnavailableImages.Select(i => i.Id)).ToList();
-
-                            _dataStore.SetUnavailable(candidateImages, true);
-                            _dataStore.SetDeleted(candidateImages, true);
-
-                            var marked = GetLocalizedText("UnavailableFiles.Results.MarkedForDeletion");
-                            marked = marked.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                            if (restoredImages.Any())
-                            {
-                                var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
-                                marked += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-                            }
-
-                            _messagePopupManager.Show(marked, unavailableFiles, PopupButtons.OK);
-                        }
-                        else if (options.RemoveImmediately)
-                        {
-                            _dataStore.RemoveImages(candidateImages);
-
-                            var removed = GetLocalizedText("UnavailableFiles.Results.Removed");
-                            removed = removed.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                            if (restoredImages.Any())
-                            {
-                                var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
-                                removed += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-                            }
-
-
-                            _messagePopupManager.Show(removed, unavailableFiles, PopupButtons.OK);
-                        }
-
-
-                        var completed = GetLocalizedText("Actions.Scanning.Completed");
-
-                        _model.IsBusy = true;
-                        _model.Status = completed;
-                        _model.CurrentProgress = 0;
-                        _model.TotalProgress = Int32.MaxValue;
+                        _model.IsBusy = false;
                     });
-
                 }
+
 
 
             });
@@ -677,7 +687,7 @@ namespace Diffusion.Toolkit
                     {
                         var folder = _dataStore.GetFolder(path);
 
-                        if (folder.Unavailable)
+                        if (folder is { Unavailable: true })
                         {
                             foldersRestored = true;
 

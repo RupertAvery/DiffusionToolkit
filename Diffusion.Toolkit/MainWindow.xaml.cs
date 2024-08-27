@@ -394,6 +394,8 @@ namespace Diffusion.Toolkit
         {
             var dataStore = new DataStore(_dbPath);
 
+            var isFirstTime = false;
+
             if (!_configuration.Exists())
             {
                 Logger.Log($"Opening Settings for first time");
@@ -418,8 +420,7 @@ namespace Diffusion.Toolkit
 
                 ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
 
-                await TryScanFolders();
-
+                isFirstTime = true;
             }
             else
             {
@@ -536,7 +537,7 @@ namespace Diffusion.Toolkit
             },
             () =>
             {
-                handle?.Close();
+                handle?.CloseAsync();
             });
 
             _dataStoreOptions = new DataStoreOptions(dataStore);
@@ -763,6 +764,11 @@ namespace Diffusion.Toolkit
             if (_settings.ImagePaths.Any())
             {
                 _search.SearchImages(null);
+
+                if (isFirstTime)
+                {
+                    await TryScanFolders();
+                }
             }
 
             Logger.Log($"Init completed");

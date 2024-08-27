@@ -99,6 +99,13 @@ public class Migrations
     [Migrate(MigrationType.Pre)]
     private string RupertAvery20240203_0001_UniquePaths()
     {
+        var tableExists = _db.ExecuteScalar<int>("SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name='Image'") == 1;
+
+        if (!tableExists)
+        {
+            return null;
+        }
+
         var dupePaths = _db.QueryScalars<string>("SELECT Path FROM Image GROUP BY Path HAVING COUNT(*) > 1");
 
         void RemoveImages(IEnumerable<int> ids)
