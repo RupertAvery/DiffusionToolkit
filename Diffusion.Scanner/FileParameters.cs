@@ -27,4 +27,8 @@ public class FileParameters
     public bool NoMetadata { get; set; }
     public string? Workflow { get; set; }
     public string? WorkflowId { get; set; }
+    public bool HasError { get; set; }
+
+
+    public string ErrorMessage { get; set; }
 }

@@ -89,7 +89,9 @@ public partial class DataStore
         db.CreateIndex<Image>(image => image.NegativePrompt);
         db.CreateIndex<Image>(image => image.Workflow);
         db.CreateIndex<Image>(image => image.WorkflowId);
+        db.CreateIndex<Image>(image => image.HasError);
 
+        db.CreateIndex("Image", new[] { "HasError", "CreatedDate" });
         db.CreateIndex("Image", new[] { "ForDeletion", "CreatedDate" });
         db.CreateIndex("Image", new[] { "NSFW", "CreatedDate" });
         db.CreateIndex("Image", new[] { "Unavailable", "CreatedDate" });

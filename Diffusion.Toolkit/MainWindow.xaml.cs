@@ -154,7 +154,7 @@ namespace Diffusion.Toolkit
 
             _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
             _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
-
+            _model.ShowInExplorerCommand = new RelayCommand<FolderViewModel>((p) => ShowInExplorer(p));
 
             InitAlbums();
 
@@ -197,6 +197,20 @@ namespace Diffusion.Toolkit
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
             //System.Diagnostics.Debug.Write(str);
+        }
+
+        private void ShowInExplorer(FolderViewModel folder)
+        {
+            var processInfo = new ProcessStartInfo()
+            {
+                FileName = "explorer.exe",
+                Arguments = $"\"{folder.Path}\"",
+                UseShellExecute = true
+            };
+
+            Process.Start(processInfo);
+
+            //Process.Start("explorer.exe", $"/select,\"{p}\"");
         }
 
         private void ToggleAutoAdvance()
@@ -393,6 +407,8 @@ namespace Diffusion.Toolkit
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             var dataStore = new DataStore(_dbPath);
+
+            ServiceLocator.SetDataStore(dataStore);
 
             var isFirstTime = false;
 
@@ -630,7 +646,6 @@ namespace Diffusion.Toolkit
 
             _prompts = new Prompts(_dataStoreOptions, _messagePopupManager, _model, _settings);
 
-
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
 
             _model.ThumbnailSize = _settings.ThumbnailSize;
@@ -777,7 +792,7 @@ namespace Diffusion.Toolkit
             //_previewWindow.ShowInTaskbar = false;
             //_previewWindow.Owner = this;
             //_previewWindow.Show();
-
+            InitScanningEvents();
         }
 
 

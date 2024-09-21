@@ -53,17 +53,10 @@ namespace Diffusion.Toolkit.Controls
             DateMetadata.State = state;
         }
 
-        private void UIElement_OnMouseDown(object sender, MouseButtonEventArgs e)
+        private void AlbumName_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             var album = ((Album)((TextBox)sender).DataContext);
-
-            var albumModel = new AlbumModel()
-            {
-                Id = album.Id,
-                Name = album.Name,
-            };
-
-            CurrentImage.OpenAlbumCommand?.Execute(albumModel);
+            CurrentImage.OpenAlbumCommand?.Execute(album);
         }
 
         private void UIElement_OnGotFocus(object sender, RoutedEventArgs e)

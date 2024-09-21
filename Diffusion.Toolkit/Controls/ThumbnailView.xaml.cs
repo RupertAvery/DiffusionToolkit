@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -125,6 +126,7 @@ namespace Diffusion.Toolkit.Controls
             Model.RatingCommand = new RelayCommand<object>(o => RateSelected(int.Parse((string)o)));
             Model.RemoveEntryCommand = new RelayCommand<object>(o => RemoveEntry());
             Model.MoveCommand = new RelayCommand<object>(o => MoveSelected());
+            Model.RescanCommand = new RelayCommand<object>(o => RescanSelected());
 
             Model.NextPage = new RelayCommand<object>((o) => GoNextPage(null));
             Model.PrevPage = new RelayCommand<object>((o) => GoPrevPage(null));
@@ -143,6 +145,15 @@ namespace Diffusion.Toolkit.Controls
 
         private Action<double> _debounceRedrawThumbnails;
 
+        private void RescanSelected()
+        {
+            var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+            Task.Run(() =>
+            {
+                ServiceLocator.ScanningService.Scan(imageEntries.Select(s => s.Path).ToList(), true);
+                ServiceLocator.SearchService.ExecuteSearch();
+            });
+        }
 
         private void MoveSelected()
         {

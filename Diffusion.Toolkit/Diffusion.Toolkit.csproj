@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="DiffusionToolkit.log" />
     <None Remove="Icons\blue-heart-32.png" />
     <None Remove="Icons\copy-32.png" />
     <None Remove="Icons\Dark\copy-32.png" />
@@ -24,6 +25,7 @@
     <None Remove="Icons\Dark\settings-32.png" />
     <None Remove="Icons\Dark\trash-32.png" />
     <None Remove="Icons\Dark\gallery-32.png" />
+    <None Remove="Icons\error-32.png" />
     <None Remove="Icons\favorite-32.png" />
     <None Remove="Icons\filter-32.png" />
     <None Remove="Icons\grab.cur" />
@@ -66,6 +68,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Icons\error-32.png" />
     <EmbeddedResource Include="Localization\de-DE.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>

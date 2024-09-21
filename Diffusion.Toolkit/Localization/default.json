@@ -167,6 +167,7 @@
   "Thumbnail.ContextMenu.ExpandToFolder": "Expand to folder",
   "Thumbnail.ContextMenu.SendToTrash": "Send to _Trash",
   "Thumbnail.ContextMenu.Restore": "_Restore",
+  "Thumbnail.ContextMenu.Rescan": "Rescan",
   "Thumbnail.ContextMenu.Remove": "Remove",
   "Thumbnail.Deleted": "Deleted",
   "Thumbnail.Unavailable": "Unavailable",

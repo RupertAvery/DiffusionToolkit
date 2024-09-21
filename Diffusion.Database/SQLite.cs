@@ -3077,9 +3077,10 @@ namespace SQLite
 			}
 
 			throw SQLiteException.New (r, SQLite3.GetErrmsg (_conn.Handle));
-		}
 
-		public IEnumerable<T> ExecuteDeferredQuery<T> ()
+        }
+
+        public IEnumerable<T> ExecuteDeferredQuery<T> ()
 		{
 			return ExecuteDeferredQuery<T> (_conn.GetMapping (typeof (T)));
 		}

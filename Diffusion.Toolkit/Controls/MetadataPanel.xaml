@@ -6,13 +6,15 @@
              xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+             xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
              mc:Ignorable="d" 
              d:DesignHeight="776.386" d:DesignWidth="464.94">
     <UserControl.Resources>
         <converters:SizeConverter x:Key="SizeConverter"></converters:SizeConverter>
         <converters:ZeroConverter x:Key="ZeroConverter"></converters:ZeroConverter>
+        <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
     </UserControl.Resources>
-    <Grid Background="Transparent"
+    <Grid x:Name="Root" Background="Transparent"
         DataContext="{Binding CurrentImage, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}}">
         <Grid.ContextMenu>
             <ContextMenu>
@@ -188,13 +190,24 @@
                                                    HeaderBackground="#80000000" 
                                                    State="{Binding DataContext.MetadataSection.AlbumState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Albums}">
                             <ItemsControl ItemsSource="{Binding Albums}">
+                                <ItemsControl.Resources>
+                                    <common:BindingProxy x:Key="Proxy" Data="{Binding .}" />
+                                </ItemsControl.Resources>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderThickness="1" BorderBrush="{StaticResource SecondaryBrush}" CornerRadius="5" Margin="5">
-                                            <TextBox FontSize="14" BorderThickness="0"
-                                                     IsReadOnly="True" Padding="5" Background="Transparent" 
-                                                     TextWrapping="WrapWithOverflow" Text="{Binding Name}"
-                                                     PreviewMouseDown="UIElement_OnMouseDown" Cursor="Hand"/>
+                                        <Border BorderThickness="1" BorderBrush="{StaticResource SecondaryBrush}" CornerRadius="5" Margin="5"
+                                                Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl, AncestorLevel=1}}"
+                                                >
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBox FontSize="14" BorderThickness="0"
+                                                         IsReadOnly="True" Padding="5" Background="Transparent" 
+                                                         TextWrapping="WrapWithOverflow" Text="{Binding Name}"
+                                                         PreviewMouseDown="AlbumName_OnMouseDown" Cursor="Hand"/>
+                                                <Button Style="{StaticResource BorderlessButton}" 
+                                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveFromAlbumCommand}" 
+                                                        CommandParameter="{Binding .}" 
+                                                        Margin="0,5,5,5" Padding="0,5,5,5">X</Button>
+                                            </StackPanel>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
@@ -206,15 +219,6 @@
                             </ItemsControl>
                         </local:AccordionControl>
 
-                        <local:AccordionControl x:Name="WorkflowMetadata" 
-                                        Margin="0,0,0,5"
-                                        HeaderBackground="#80000000" 
-                                        State="{Binding DataContext.MetadataSection.WorkflowState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Workflow}">
-
-                        </local:AccordionControl>
-
-
-
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -222,6 +226,15 @@
                 <ScrollViewer Background="Transparent" VerticalScrollBarVisibility="Auto">
                     <local:ComfyNodeStack DataContext="{Binding Nodes}" Background="Transparent"></local:ComfyNodeStack>
                 </ScrollViewer>
+            </TabItem>
+            <TabItem Visibility="{Binding HasError, Converter={StaticResource boolToVis}}" Header="Errors" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
+                <Grid>
+                    <ScrollViewer Grid.Row="0" Background="Transparent" 
+                                  VerticalAlignment="Stretch"
+                                  VerticalScrollBarVisibility="Auto">
+                        <TextBox TextWrapping="Wrap"  Margin="5" Text="{Binding ErrorMessage}" Foreground="{StaticResource ForegroundBrush}"></TextBox>
+                    </ScrollViewer>
+                </Grid>
             </TabItem>
         </TabControl>
 

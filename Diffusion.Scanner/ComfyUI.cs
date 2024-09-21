@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -24,18 +25,22 @@ namespace Diffusion.IO
             {
                 hash = (hash * 397) ^ input.Name.GetHashCode();
             }
-            
+
             return hash;
         }
     }
 
     public class Input
     {
+        public string WorkflowId { get; set; }
+        public string Path { get; set; }
         public string Name { get; set; }
         public object Value { get; set; }
 
-        public Input(string name, object value)
+        public Input(string workflowId, string path, string name, object value)
         {
+            WorkflowId = workflowId;
+            Path = path;
             Name = name;
             Value = value;
         }
@@ -43,7 +48,7 @@ namespace Diffusion.IO
 
     public class ComfyUIParser
     {
-        public IReadOnlyCollection<Node> Parse(string workflow)
+        public IReadOnlyCollection<Node> Parse(string workflowId, string workflow)
         {
             if (workflow == null) return null;
             var root = System.Text.Json.JsonDocument.Parse(workflow);
@@ -58,12 +63,16 @@ namespace Diffusion.IO
 
                 foreach (var props in element.Value.EnumerateObject())
                 {
-     
                     if (props.Name == "inputs")
                     {
                         node.Inputs = new List<Input>();
+
+
                         foreach (var prop2 in props.Value.EnumerateObject())
                         {
+                            var name = prop2.Name.Replace("_", "__");
+                            string path = $"[{node.Id}].inputs[\"{prop2.Name}\"]";
+
                             switch (prop2.Value.ValueKind)
                             {
                                 case JsonValueKind.Undefined:
@@ -73,16 +82,16 @@ namespace Diffusion.IO
                                 case JsonValueKind.Array:
                                     break;
                                 case JsonValueKind.String:
-                                    node.Inputs.Add(new Input(prop2.Name.Replace("_", "__"), prop2.Value.GetString()));
+                                    node.Inputs.Add(new Input(workflowId, path, name, prop2.Value.GetString()));
                                     break;
                                 case JsonValueKind.Number:
-                                    node.Inputs.Add(new Input(prop2.Name.Replace("_", "__"), prop2.Value.GetDouble()));
+                                    node.Inputs.Add(new Input(workflowId, path, name, prop2.Value.GetDouble()));
                                     break;
                                 case JsonValueKind.True:
-                                    node.Inputs.Add(new Input(prop2.Name.Replace("_", "__"), prop2.Value.GetBoolean()));
+                                    node.Inputs.Add(new Input(workflowId, path, name, prop2.Value.GetBoolean()));
                                     break;
                                 case JsonValueKind.False:
-                                    node.Inputs.Add(new Input(prop2.Name.Replace("_", "__"), prop2.Value.GetBoolean()));
+                                    node.Inputs.Add(new Input(workflowId, path, name, prop2.Value.GetBoolean()));
                                     break;
                                 case JsonValueKind.Null:
                                     break;

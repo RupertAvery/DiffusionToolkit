@@ -234,6 +234,8 @@
                     <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.SendToTrash}" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
                     <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.Restore}" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Remove}" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
+                    <Separator />
+                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Rescan}" Command="{Binding RescanCommand}" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.Template>

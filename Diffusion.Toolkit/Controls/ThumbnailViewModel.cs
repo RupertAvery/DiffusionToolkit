@@ -390,4 +390,7 @@ public class ThumbnailViewModel : BaseNotify
         get => _pageSize;
         set => SetField(ref _pageSize, value);
     }
+
+    public ICommand RescanCommand { get; set; }
+
 }

@@ -46,9 +46,19 @@ namespace Diffusion.Toolkit.Controls
                     MaxHeight = 200,
                     Text = input.Value?.ToString()
                 };
+                var button = new Button()
+                {
+                    DataContext = input,
+                    FontSize = 12,
+                    Width = 16,
+                    Height = 16,
+                    Content = "...",
+                };
                 label.SetBinding(Label.ContentProperty, "Name");
                 textBox.SetValue(Grid.ColumnProperty, 1);
                 textBox.SetBinding(TextBox.TextProperty, "Value");
+                button.SetValue(Grid.ColumnProperty, 2);
+                button.Click += ButtonOnClick;
 
                 var grid = new Grid()
                 {
@@ -61,11 +71,16 @@ namespace Diffusion.Toolkit.Controls
                         {
                             Width = new GridLength(100)
                         },
+                        new ColumnDefinition(),
                         new ColumnDefinition()
+                        {
+                            Width = new GridLength(16)
+                        },
                     },
                     Children = {
                         label,
-                        textBox
+                        textBox,
+                        button
                     }
                 };
 
@@ -75,6 +90,11 @@ namespace Diffusion.Toolkit.Controls
             }
 
             Id = node.GetHashCode();
+        }
+
+        private void ButtonOnClick(object sender, RoutedEventArgs e)
+        {
+            //throw new System.NotImplementedException();
         }
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

@@ -18,6 +18,7 @@ public class ServiceLocator
     private static ThumbnailLoader? _thumbnailLoader;
     private static TaggingService? _taggingService;
     private static NotificationService? _notificationService;
+    private static ScanningService? _scanningService;
 
     public static DataStore? DataStore => _dataStore;
     public static ThumbnailCache? ThumbnailCache => _thumbnailCache;
@@ -55,11 +56,6 @@ public class ServiceLocator
         get { return _previewService ??= new PreviewService(); }
     }
 
-    //public static ScanService ScanService
-    //{
-    //    get { return _scanManager ??= new ScanService(); }
-    //}
-
     public static ThumbnailNavigationService ThumbnailNavigationService
     {
         get { return _thumbnailNavigationService ??= new ThumbnailNavigationService(); }
@@ -79,6 +75,11 @@ public class ServiceLocator
     public static NotificationService NotificationService
     {
         get { return _notificationService ??= new NotificationService(); }
+    }
+
+    public static ScanningService ScanningService
+    {
+        get { return _scanningService ??= new ScanningService(); }
     }
 
     public static MainModel MainModel { get; set; }

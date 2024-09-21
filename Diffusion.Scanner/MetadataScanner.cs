@@ -76,20 +76,15 @@ namespace Diffusion.IO
             return files;
         }
 
+
+
         public static IEnumerable<FileParameters> Scan(IEnumerable<string> files)
         {
             foreach (var file in files)
             {
                 FileParameters? fp = null;
 
-                try
-                {
-                    fp = Metadata.ReadFromFile(file);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
-                }
+                fp = Metadata.ReadFromFile(file);
 
                 if (fp != null)
                 {

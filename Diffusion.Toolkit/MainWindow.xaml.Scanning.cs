@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Diffusion.Database;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
 {
@@ -497,6 +498,68 @@ namespace Diffusion.Toolkit
 
         }
 
+        private void InitScanningEvents()
+        {
+            ServiceLocator.ScanningService.ScanProgress += (sender, args) =>
+            {
+                switch (args.Type)
+                {
+                    case ScanningEventType.Start:
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.TotalProgress = args.TotalCount;
+                            _model.CurrentProgress = 0;
+                        });
+
+                        break;
+                    case ScanningEventType.Progress:
+                        Dispatcher.Invoke(() =>
+                        {
+                            var scanning = GetLocalizedText("Actions.Scanning.Status");
+
+                            _model.CurrentProgress = args.ProgressCount;
+
+                            var text = scanning
+                                .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
+                                .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
+
+                            _model.Status = text;
+                        });
+
+                        break;
+                    case ScanningEventType.Complete:
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (_model.TotalProgress > 0)
+                            {
+                                var scanning = GetLocalizedText("Actions.Scanning.Status");
+
+                                var text = scanning
+                                    .Replace("{current}", $"{_model.TotalProgress:#,###,##0}")
+                                    .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
+
+                                _model.Status = text;
+                            }
+
+                            _model.TotalProgress = Int32.MaxValue;
+                            _model.CurrentProgress = 0;
+                        });
+
+                        break;
+                    case ScanningEventType.Error:
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.TotalProgress = Int32.MaxValue;
+                            _model.CurrentProgress = 0;
+                        });
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            };
+        }
+
 
         private (int, float) ScanFiles(IList<string> filesToScan, bool updateImages, CancellationToken cancellationToken)
         {
@@ -566,6 +629,7 @@ namespace Diffusion.Toolkit
                         NoMetadata = file.NoMetadata,
                         Workflow = file.Workflow,
                         WorkflowId = file.WorkflowId,
+                        HasError = file.HasError
                     };
 
                     if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)

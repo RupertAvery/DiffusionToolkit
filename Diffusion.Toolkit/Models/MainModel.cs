@@ -608,5 +608,5 @@ public class MainModel : BaseNotify
     public ICommand RenameFolderCommand { get; set; }
     public ICommand DeleteFolderCommand { get; set; }
     public ICommand ToggleNavigationPane { get; set; }
-
+    public ICommand ShowInExplorerCommand { get; set; }
 }

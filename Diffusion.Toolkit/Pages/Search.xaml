@@ -26,6 +26,7 @@
     </Page.InputBindings>
     <Page.Resources>
         <ResourceDictionary>
+            <common:BindingProxy x:Key="Proxy" Data="{Binding MainModel}" />
             <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
             <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
@@ -227,21 +228,10 @@
                                         </controls:AccordionControl.ButtonAreaContent>
 
                                         <ItemsControl ItemsSource="{Binding Path=MainModel.Folders}">
-                                            <ItemsControl.ContextMenu>
-                                                <ContextMenu>
-                                                    <MenuItem Header="New Folder" Command="{Binding MainModel.CreateFolderCommand}"></MenuItem>
-                                                    <Separator></Separator>
-                                                    <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Add to Album"></MenuItem>-->
-                                                    <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Send to Recycle Bin"></MenuItem>-->
-                                                    <MenuItem Command="{Binding MainModel.RenameFolderCommand}" IsEnabled="{Binding NavigationSection.FoldersSection.CanRename}" Header="Rename"></MenuItem>
-                                                    <Separator></Separator>
-                                                    <MenuItem Command="{Binding MainModel.DeleteFolderCommand}" IsEnabled="{Binding NavigationSection.FoldersSection.CanDelete}" Header="Delete"></MenuItem>
-                                                </ContextMenu>
-                                            </ItemsControl.ContextMenu>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Button Style="{StaticResource SmallButton}" 
-                                                                Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" 
+                                                                Tag="{Binding}" 
                                                                 PreviewMouseDoubleClick="Folder_OnDoubleClick"
                                                                 PreviewMouseDown="Folder_OnClick"
                                                                 Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
@@ -249,6 +239,29 @@
                                                                 behaviors:DTBehaviors.UseIsDraggedHandlers="True"
                                                                 behaviors:DTBehaviors.IsFocused="{Binding IsSelected}"
                                                                 Drop="DropImagesOnFolder">
+                                                        <Button.ContextMenu>
+                                                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                                <MenuItem Command="{Binding MainModel.CreateFolderCommand}"
+                                                                          CommandParameter="{Binding .}"
+                                                                          Header="New Folder"></MenuItem>
+                                                                <Separator></Separator>
+                                                                <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Add to Album"></MenuItem>-->
+                                                                <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Send to Recycle Bin"></MenuItem>-->
+                                                                <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameFolderCommand}" 
+                                                                          CommandParameter="{Binding .}"
+                                                                          IsEnabled="{Binding NavigationSection.FoldersSection.CanRename}" 
+                                                                          Header="Rename"></MenuItem>
+                                                                <Separator></Separator>
+                                                                <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.DeleteFolderCommand}" 
+                                                                          CommandParameter="{Binding .}"
+                                                                          IsEnabled="{Binding NavigationSection.FoldersSection.CanDelete}" 
+                                                                          Header="Delete"></MenuItem>
+                                                                <Separator></Separator>
+                                                                <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowInExplorerCommand}" 
+                                                                          CommandParameter="{Binding .}"
+                                                                          Header="Show in Explorer"></MenuItem>
+                                                            </ContextMenu>
+                                                        </Button.ContextMenu>
                                                         <Button.Template>
                                                             <ControlTemplate TargetType="{x:Type Button}">
                                                                 <Grid>
@@ -341,9 +354,6 @@
                                             </Grid>
                                         </controls:AccordionControl.ButtonAreaContent>
                                         <ItemsControl ItemsSource="{Binding Path=MainModel.Albums}">
-                                            <ItemsControl.Resources>
-                                                <common:BindingProxy x:Key="Proxy" Data="{Binding MainModel}" />
-                                            </ItemsControl.Resources>
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Grid Background="Transparent" HorizontalAlignment="Stretch" Margin="2,0,2,0">
@@ -503,7 +513,7 @@
                 </Grid>
 
                 <StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding CurrentImage}">
-       
+
 
                     <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
                         <Image.Effect>

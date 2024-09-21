@@ -38,6 +38,7 @@ public class ImageEntry : BaseNotify
     private int _albumCount;
     private IEnumerable<string> _albums;
     private bool _unavailable;
+    private bool _hasError;
 
     public ImageEntry(long requestId)
     {
@@ -176,5 +177,11 @@ public class ImageEntry : BaseNotify
     {
         get => _albums;
         set => SetField(ref _albums, value);
+    }
+
+    public bool HasError
+    {
+        get => _hasError;
+        set => SetField(ref _hasError, value);
     }
 }

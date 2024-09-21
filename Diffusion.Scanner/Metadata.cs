@@ -85,6 +85,36 @@ public class Metadata
     {
         FileParameters? fileParameters = null;
 
+        try
+        {
+            fileParameters = Metadata.ReadFromFileInternal(file);
+        }
+        catch (Exception e)
+        {
+            Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
+            fileParameters ??= new FileParameters();
+            fileParameters.HasError = true;
+            fileParameters.ErrorMessage = $"{e.Message}\r\n\r\n{e.StackTrace}";
+        }
+        finally
+        {
+            fileParameters ??= new FileParameters()
+            {
+                NoMetadata = true
+            };
+
+            FileInfo fileInfo = new FileInfo(file);
+            fileParameters.Path = file;
+            fileParameters.FileSize = fileInfo.Length;
+        }
+
+        return fileParameters;
+    }
+
+    public static FileParameters? ReadFromFileInternal(string file)
+    {
+        FileParameters? fileParameters = null;
+
         var ext = Path.GetExtension(file).ToLowerInvariant();
 
         using var stream = File.OpenRead(file);
@@ -124,9 +154,11 @@ public class Metadata
                                     }
                                     else if (tag.Description.StartsWith("Comment:"))
                                     {
+
                                         if (fileParameters == null)
                                         {
-                                            if (directory.Tags.Any(t => t.Description == "Software: NovelAI"))
+                                            //if (directory.Tags.Any(t => t.Description == "Software: NovelAI"))
+                                            if (directory.Tags.Any(t => t.Description == "Software: NovelAI") || directories.Any(d => d.Tags.Any(t => t.Description == "Software: NovelAI")))
                                             {
                                                 format = MetaFormat.NovelAI;
                                                 fileParameters = ReadNovelAIParameters(file, directories);
@@ -381,14 +413,6 @@ public class Metadata
             }
         }
 
-        fileParameters ??= new FileParameters()
-        {
-            NoMetadata = true
-        };
-
-        FileInfo fileInfo = new FileInfo(file);
-        fileParameters.Path = file;
-        fileParameters.FileSize = fileInfo.Length;
 
         return fileParameters;
     }

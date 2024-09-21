@@ -107,7 +107,10 @@ namespace Diffusion.Toolkit.Pages
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(MyContextMenu.Template, writer);
             //System.Diagnostics.Debug.Write(str);
-
+            ServiceLocator.SearchService.Search += (obj, args) =>
+            {
+                SearchImages(null);
+            };
         }
 
         private void ThumbnailNavigationServiceOnPreviousPage(object? sender, EventArgs e)
@@ -947,7 +950,8 @@ namespace Diffusion.Toolkit.Pages
                 var imageViewModel = new ImageViewModel();
                 imageViewModel.IsParametersVisible = old;
                 imageViewModel.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
-                imageViewModel.OpenAlbumCommand = new RelayCommand<AlbumModel>(OpenAlbum);
+                imageViewModel.OpenAlbumCommand = new RelayCommand<Album>(OpenAlbum);
+                imageViewModel.RemoveFromAlbumCommand = new RelayCommand<Album>(RemoveFromAlbum);
 
                 if (image != null)
                 {
@@ -983,6 +987,9 @@ namespace Diffusion.Toolkit.Pages
 
                 if (parameters != null)
                 {
+                    imageViewModel.HasError = parameters.HasError;
+                    imageViewModel.ErrorMessage = parameters.ErrorMessage;
+
                     imageViewModel.Path = parameters.Path;
                     imageViewModel.Prompt = parameters.Prompt?.Trim();
                     imageViewModel.NegativePrompt = parameters.NegativePrompt?.Trim();
@@ -1001,7 +1008,7 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.Workflow = parameters.Workflow;
 
                     var parser = new ComfyUIParser();
-                    imageViewModel.Nodes = parser.Parse(parameters.Workflow);
+                    imageViewModel.Nodes = parser.Parse(parameters.WorkflowId, parameters.Workflow);
 
 
                     var notFound = GetLocalizedText("Metadata.Modelname.NotFound");
@@ -1520,7 +1527,8 @@ namespace Diffusion.Toolkit.Pages
                     NSFW = file.NSFW,
                     EntryType = EntryType.File,
                     AlbumCount = file.AlbumCount,
-                    Dispatcher = Dispatcher
+                    Dispatcher = Dispatcher,
+                    HasError = file.HasError
                 };
 
                 images.Add(imageEntry);
@@ -1788,7 +1796,8 @@ namespace Diffusion.Toolkit.Pages
                     FileName = Path.GetFileName(file.Path),
                     NSFW = file.NSFW,
                     EntryType = EntryType.File,
-                    Dispatcher = Dispatcher
+                    Dispatcher = Dispatcher,
+                    HasError = file.HasError
                 };
 
                 images.Add(imageEntry);
@@ -2237,14 +2246,26 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void OpenAlbum(AlbumModel albumModel)
+        private void OpenAlbum(Album  album)
         {
+            var albumModel = new AlbumModel()
+            {
+                Id = album.Id,
+                Name = album.Name,
+            };
+
             _model.MainModel.CurrentAlbum = albumModel;
 
             SetMode("albums", _model.MainModel.CurrentAlbum.Name);
             SearchImages(null);
         }
 
+        private void RemoveFromAlbum(Album albumModel)
+        {
+            ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id,  new [] { _model.CurrentImage.Id });
+            SearchImages(null);
+        }
+        
         private void DropImagesOnFolder(object sender, DragEventArgs e)
         {
             var folder = (FolderViewModel)((FrameworkElement)sender).DataContext;

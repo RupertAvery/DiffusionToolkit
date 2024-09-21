@@ -11,6 +11,7 @@ public class ThumbnailIcons : FrameworkElement
 {
     private static BitmapImage? _starIcon;
     private static BitmapImage? _heartIcon;
+    private static BitmapImage? _errorIcon;
     private static BitmapImage? _darkAlbumIcon;
     private static BitmapImage? _lightAlbumIcon;
     private static BitmapImage? _darkTrashIcon;
@@ -57,24 +58,31 @@ public class ThumbnailIcons : FrameworkElement
         InitIcons();
     }
 
+    private static Uri GetUri(string path)
+    {
+        return new Uri($"pack://application:,,,{path}", UriKind.RelativeOrAbsolute);
+    }
+
     private static void InitIcons()
     {
-        Uri darkTrashIconUri = new Uri("pack://application:,,,/Icons/Dark/trash-32.png", UriKind.RelativeOrAbsolute);
+        Uri darkTrashIconUri = GetUri("/Icons/Dark/trash-32.png");
         _darkTrashIcon = new BitmapImage(darkTrashIconUri);
-        Uri lightTrashIconUri = new Uri("pack://application:,,,/Icons/Light/trash-32.png", UriKind.RelativeOrAbsolute);
+        Uri lightTrashIconUri = GetUri("/Icons/Light/trash-32.png");
         _lightTrashIcon = new BitmapImage(lightTrashIconUri);
-        Uri darkAlbumIconUri = new Uri("pack://application:,,,/Icons/Dark/gallery-32.png", UriKind.RelativeOrAbsolute);
+        Uri darkAlbumIconUri = GetUri("/Icons/Dark/gallery-32.png");
         _darkAlbumIcon = new BitmapImage(darkAlbumIconUri);
-        Uri lightAlbumIconUri = new Uri("pack://application:,,,/Icons/Light/gallery-32.png", UriKind.RelativeOrAbsolute);
+        Uri lightAlbumIconUri = GetUri("/Icons/Light/gallery-32.png");
         _lightAlbumIcon = new BitmapImage(lightAlbumIconUri);
-        Uri heartIconUri = new Uri("pack://application:,,,/Icons/blue-heart-32.png", UriKind.RelativeOrAbsolute);
+        Uri heartIconUri = GetUri("/Icons/blue-heart-32.png");
         _heartIcon = new BitmapImage(heartIconUri);
-        Uri starIconUri = new Uri("pack://application:,,,/Icons/star-32.png", UriKind.RelativeOrAbsolute);
+        Uri starIconUri = GetUri("/Icons/star-32.png");
         _starIcon = new BitmapImage(starIconUri);
-        Uri darkHideIconUri = new Uri("pack://application:,,,/Icons/Dark/hide-24.png", UriKind.RelativeOrAbsolute);
+        Uri darkHideIconUri = GetUri("/Icons/Dark/hide-24.png");
         _darkHideIcon = new BitmapImage(darkHideIconUri);
-        Uri lightHideIconUri = new Uri("pack://application:,,,/Icons/Light/hide-24.png", UriKind.RelativeOrAbsolute);
+        Uri lightHideIconUri = GetUri("/Icons/Light/hide-24.png");
         _lightHideIcon = new BitmapImage(lightHideIconUri);
+        Uri errorIconUri = GetUri("/Icons/error-32.png");
+        _errorIcon = new BitmapImage(errorIconUri);
     }
 
 
@@ -101,6 +109,12 @@ public class ThumbnailIcons : FrameworkElement
         //    }
         //    x += xOffset;
         //}
+        if (Data.HasError)
+        {
+            drawingContext.DrawImage(_errorIcon, new Rect(new Point(x, y), new Size(24, 24)));
+            x += xOffset;
+        }
+
 
         if (Data.NSFW)
         {

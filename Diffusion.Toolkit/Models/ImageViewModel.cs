@@ -48,8 +48,11 @@ public class ImageViewModel : BaseNotify
     private bool _isMessageVisible;
     private string _message;
     private ICommand _openAlbumCommand;
+    private ICommand _removeFromAlbumCommand;
     private string? _workflow;
     private IReadOnlyCollection<Node> _nodes;
+    private bool _hasError;
+    private string _errorMessage;
 
     public ImageViewModel()
     {
@@ -203,6 +206,12 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _nsfw, value);
     }
 
+    public bool HasError
+    {
+        get => _hasError;
+        set => SetField(ref _hasError, value);
+    }
+
     public ICommand ShowInThumbnails
     {
         get => _showInThumbnails;
@@ -275,6 +284,12 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref _openAlbumCommand, value);
     }
 
+    public ICommand RemoveFromAlbumCommand
+    {
+        get => _removeFromAlbumCommand;
+        set => SetField(ref _removeFromAlbumCommand, value);
+    }
+
     public string? Workflow
     {
         get => _workflow;
@@ -285,5 +300,11 @@ public class ImageViewModel : BaseNotify
     {
         get => _nodes;
         set => SetField(ref _nodes, value);
+    }
+
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        set => SetField(ref _errorMessage, value);
     }
 }
