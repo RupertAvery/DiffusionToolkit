@@ -145,12 +145,25 @@ public class Metadata
                                 {
                                     if (tag.Description.StartsWith("parameters:"))
                                     {
-                                        if (fileParameters == null)
+                                        var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
+                                        format = isJson ? MetaFormat.RuinedFooocus : MetaFormat.A1111;
+                                        var tempParameters = isJson ? ReadRuinedFooocusParameters(tag.Description) : ReadA111Parameters(tag.Description);
+
+
+                                        if (fileParameters != null)
                                         {
-                                            var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
-                                            format = isJson ? MetaFormat.RuinedFooocus : MetaFormat.A1111;
-                                            fileParameters = isJson ? ReadRuinedFooocusParameters(tag.Description) : ReadA111Parameters(tag.Description);
+                                            if (fileParameters.Workflow != null)
+                                            {
+                                                tempParameters.Workflow = fileParameters.Workflow;
+                                            }
                                         }
+                                        else
+                                        {
+                                            // tempParameters.Workflow = fileParameters.Workflow;
+                                        }
+                                        
+                                        fileParameters = tempParameters;
+
                                     }
                                     else if (tag.Description.StartsWith("Comment:"))
                                     {
@@ -195,11 +208,17 @@ public class Metadata
                                     }
                                     else if (tag.Description.StartsWith("prompt: "))
                                     {
+                                        var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
+                                        format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
+                                        var tempParameters = isJson ? ReadComfyUIParameters(file, tag.Description) : ReadEasyDiffusionParameters(file, directories);
+
                                         if (fileParameters == null)
                                         {
-                                            var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
-                                            format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
-                                            fileParameters = isJson ? ReadComfyUIParameters(file, tag.Description) : ReadEasyDiffusionParameters(file, directories);
+                                            fileParameters = tempParameters;
+                                        }
+                                        else
+                                        {
+                                            fileParameters.Workflow = tempParameters.Workflow;
                                         }
                                     }
                                     else if (tag.Description.StartsWith("Score:"))

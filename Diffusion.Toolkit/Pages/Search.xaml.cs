@@ -29,17 +29,13 @@ using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
 using Diffusion.Toolkit.Localization;
-using Diffusion.Toolkit.Themes;
-using static System.Net.WebRequestMethods;
 using WPFLocalizeExtension.Engine;
-using System.Windows.Documents;
 using System.Windows.Media;
 using Diffusion.Toolkit.Services;
+using System.Windows.Shapes;
 
 namespace Diffusion.Toolkit.Pages
 {
-
- 
     public class ReloadOptions
     {
         public bool Focus { get; set; }
@@ -99,7 +95,7 @@ namespace Diffusion.Toolkit.Pages
             });
 
             ServiceLocator.ThumbnailNavigationService.Next += ThumbnailNavigationServiceOnNext;
-            ServiceLocator.ThumbnailNavigationService.Previous +=  ThumbnailNavigationServiceOnPrevious;
+            ServiceLocator.ThumbnailNavigationService.Previous += ThumbnailNavigationServiceOnPrevious;
             ServiceLocator.ThumbnailNavigationService.NextPage += ThumbnailNavigationServiceOnNextPage;
             ServiceLocator.ThumbnailNavigationService.PreviousPage += ThumbnailNavigationServiceOnPreviousPage;
 
@@ -241,6 +237,9 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                 {
+                    _model.Timeline.ClearSelection();
+                    _model.Timeline.StartDay = null;
+                    _model.Timeline.EndDay = null;
                     SearchImages(null);
                 }
                 else
@@ -263,6 +262,9 @@ namespace Diffusion.Toolkit.Pages
             {
                 _model.IsFilterVisible = false;
                 UseFilter = true;
+                _model.Timeline.ClearSelection();
+                _model.Timeline.StartDay = null;
+                _model.Timeline.EndDay = null;
                 SearchImages(null);
             });
 
@@ -585,6 +587,10 @@ namespace Diffusion.Toolkit.Pages
         {
             _model.Filter.Clear();
             SearchTermTextBox.Text = "";
+            _model.Timeline.ClearSelection();
+            _model.Timeline.StartDay = null;
+            _model.Timeline.EndDay = null;
+
             SearchImages(null);
         }
 
@@ -675,7 +681,7 @@ namespace Diffusion.Toolkit.Pages
 
         public bool UseFilter { get; private set; }
 
-        public void SearchImages(object obj)
+        public void SearchImages(object obj, bool updateTimeline = true)
         {
             if (!_settings.ImagePaths.Any())
             {
@@ -684,56 +690,17 @@ namespace Diffusion.Toolkit.Pages
                 return;
             }
 
+            _model.View = new View(_model.SearchText, _model.Filter.AsFilter(), UseFilter, _currentModeSettings, _model.MainModel, _model.Timeline);
 
             try
             {
                 Dispatcher.Invoke(() =>
                 {
                     //_model.Images!.Clear();
-                    int count = 0;
-                    long size = 0;
 
-                    if (UseFilter)
-                    {
-                        var filter = _model.Filter.AsFilter();
+                    var (count, size) = _model.View.GetCountSize(DataStore);
 
-                        if (_currentModeSettings.IsFavorite)
-                        {
-                            filter.UseFavorite = true;
-                            filter.Favorite = true;
-                        }
-                        else if (_currentModeSettings.IsMarkedForDeletion)
-                        {
-                            filter.ForDeletion = true;
-                            filter.UseForDeletion = true;
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                        {
-                            if (_currentModeSettings.CurrentFolder != "$")
-                            {
-                                filter.Folder = _currentModeSettings.CurrentFolder;
-                            }
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                        {
-                            if (_model.MainModel.CurrentAlbum != null)
-                            {
-                                filter.Album = _model.MainModel.CurrentAlbum.Name;
-                            }
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                        {
-                            if (_model.MainModel.CurrentAlbum != null)
-                            {
-                                filter.ModelHash = _model.MainModel.CurrentModel.Hash;
-                                filter.ModelName = _model.MainModel.CurrentModel.Name;
-                            }
-                        }
-
-                        count = DataStore.Count(filter);
-                        size = DataStore.CountFileSize(filter);
-                    }
-                    else
+                    if (!UseFilter)
                     {
                         if (!IsNullOrEmpty(_model.SearchText))
                         {
@@ -750,46 +717,7 @@ namespace Diffusion.Toolkit.Pages
                         }
 
                         _currentModeSettings.LastQuery = _model.SearchText;
-
-                        // need a better way to do this... property?
-                        var query = _model.SearchText;
-
-                        if (_currentModeSettings.IsFavorite)
-                        {
-                            query = $"{query} favorite: true";
-                        }
-                        else if (_currentModeSettings.IsMarkedForDeletion)
-                        {
-                            query = $"{query} delete: true";
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                        {
-                            if (_currentModeSettings.CurrentFolder != "$")
-                            {
-                                query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
-                            }
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                        {
-                            if (_model.MainModel.CurrentAlbum != null)
-                            {
-                                query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
-                            }
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                        {
-                            if (_model.MainModel.CurrentModel != null)
-                            {
-                                query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
-                            }
-                        }
-
-                        count = DataStore.Count(query);
-                        size = DataStore.CountFileSize(query);
-
                     }
-
-                    //_model.FileSize = size;
 
                     _model.IsEmpty = count == 0;
 
@@ -856,14 +784,98 @@ namespace Diffusion.Toolkit.Pages
                 });
 
 
-
                 ReloadMatches(new ReloadOptions() { Focus = (string)obj != "ManualSearch" });
+
+                if (updateTimeline)
+                {
+                    _model.Timeline.ClearSelection();
+                    GetTimeline();
+                }
+
             }
             catch (Exception e)
             {
                 MessageBox.Show(_navigatorService.Host, e.Message, GetLocalizedText("Messages.Captions.Error"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
+            }
+        }
+
+        private void GetTimeline()
+        {
+            Task.Run(() =>
+            {
+                GetTimelineInternal();
+            });
+        }
+
+        private void GetTimelineInternal()
+        {
+            IEnumerable<TimeLineEntry>? entries = null;
+
+            if (UseFilter)
+            {
+                entries = DataStore.GetTimeLine(_model.View.GetFilter(false));
+            }
+            else
+            {
+                var query = _model.View.GetQuery(false);
+                _model.Timeline.Query = query;
+                entries = DataStore.GetTimeLine(query);
+            }
+
+            if (entries != null)
+            {
+                var months = entries
+                    .Select(d => new { Date = DateTime.Parse(d.Date), Count = d.Count })
+                    .GroupBy(d => new { Year = d.Date.Year, Month = d.Date.Month })
+                    .Select(d =>
+                    {
+                        var availableDays = d
+                            .Select(e => new DayEntry() { Day = e.Date.Day, Count = e.Count })
+                            .OrderBy(p => p.Day)
+                            .ToList();
+
+                        var daysInMonth = DateTime.DaysInMonth(d.Key.Year, d.Key.Month);
+
+                        var month = new MonthEntry()
+                        {
+                            Name = $"{CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(d.Key.Month)} {d.Key.Year}",
+                            Year = d.Key.Year,
+                            Month = d.Key.Month,
+                        };
+
+                        var days = new List<DayEntry>();
+
+                        var j = 0;
+
+                        for (var i = 1; i <= daysInMonth; i++)
+                        {
+                            DayEntry day;
+
+                            if (j < availableDays.Count && availableDays[j].Day == i)
+                            {
+                                day = availableDays[j];
+                                j++;
+                            }
+                            else
+                            {
+                                day = new DayEntry() { Day = i, Count = 0 };
+                            }
+
+                            day.Month = month;
+
+                            days.Add(day);
+                        }
+
+                        month.Days = new ObservableCollection<DayEntry>(days);
+
+                        return month;
+                    })
+                    .OrderBy(d => d.Year)
+                    .ThenBy(d => d.Month);
+
+                Dispatcher.Invoke(() => { _model.Timeline.Months = new ObservableCollection<MonthEntry>(months); });
             }
         }
 
@@ -1382,59 +1394,30 @@ namespace Diffusion.Toolkit.Pages
 
             IEnumerable<ImageView> matches = Enumerable.Empty<ImageView>();
 
+            bool showImages = true;
+
+            if (_currentModeSettings != null)
+            {
+                if (_currentModeSettings is { ViewMode: ViewMode.Folder, CurrentFolder: "$" })
+                {
+                    showImages = false;
+                }
+                else if (_currentModeSettings.ViewMode == ViewMode.Album && _model.MainModel.CurrentAlbum == null)
+                {
+                    showImages = false;
+                }
+                else if (_currentModeSettings.ViewMode == ViewMode.Model && _model.MainModel.CurrentModel == null)
+                {
+                    showImages = false;
+                }
+            }
+
             if (UseFilter)
             {
-                var filter = _model.Filter.AsFilter();
-                bool showImages = true;
-
-                if (_currentModeSettings.IsFavorite)
-                {
-                    filter.UseFavorite = true;
-                    filter.Favorite = true;
-                }
-                else if (_currentModeSettings.IsMarkedForDeletion)
-                {
-                    filter.ForDeletion = true;
-                    filter.UseForDeletion = true;
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                {
-                    if (_currentModeSettings.CurrentFolder != "$")
-                    {
-                        filter.Folder = _currentModeSettings.CurrentFolder;
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                {
-                    if (_model.MainModel.CurrentAlbum != null)
-                    {
-                        filter.Album = _model.MainModel.CurrentAlbum.Name;
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                {
-                    if (_model.MainModel.CurrentModel != null)
-                    {
-                        filter.ModelHash = _model.MainModel.CurrentModel.Hash;
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-
                 if (showImages)
                 {
                     matches = Time(() => DataStore
-                        .Search(filter, _settings.PageSize,
+                        .Search(_model.View.GetFilter(true), _settings.PageSize,
                             _settings.PageSize * (_model.Page - 1),
                             _model.SortBy,
                             _model.SortDirection));
@@ -1442,58 +1425,10 @@ namespace Diffusion.Toolkit.Pages
             }
             else
             {
-                var query = _model.SearchText;
-                bool showImages = true;
-
-                if (_currentModeSettings != null)
-                {
-                    if (_currentModeSettings.IsFavorite)
-                    {
-                        query = $"{query} favorite: true";
-                    }
-                    else if (_currentModeSettings.IsMarkedForDeletion)
-                    {
-                        query = $"{query} delete: true";
-                    }
-                    else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                    {
-                        if (_currentModeSettings.CurrentFolder != "$")
-                        {
-                            query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
-                        }
-                        else
-                        {
-                            showImages = false;
-                        }
-                    }
-                    else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                    {
-                        if (_model.MainModel.CurrentAlbum != null)
-                        {
-                            query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
-                        }
-                        else
-                        {
-                            showImages = false;
-                        }
-                    }
-                    else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                    {
-                        if (_model.MainModel.CurrentModel != null)
-                        {
-                            query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
-                        }
-                        else
-                        {
-                            showImages = false;
-                        }
-                    }
-                }
-
                 if (showImages)
                 {
                     matches = Time(() => DataStore
-                        .Search(query, _settings.PageSize,
+                        .Search(_model.View.GetQuery(true), _settings.PageSize,
                             _settings.PageSize * (_model.Page - 1),
                             _model.SortBy,
                             _model.SortDirection
@@ -2246,7 +2181,7 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void OpenAlbum(Album  album)
+        private void OpenAlbum(Album album)
         {
             var albumModel = new AlbumModel()
             {
@@ -2262,10 +2197,10 @@ namespace Diffusion.Toolkit.Pages
 
         private void RemoveFromAlbum(Album albumModel)
         {
-            ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id,  new [] { _model.CurrentImage.Id });
+            ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id, new[] { _model.CurrentImage.Id });
             SearchImages(null);
         }
-        
+
         private void DropImagesOnFolder(object sender, DragEventArgs e)
         {
             var folder = (FolderViewModel)((FrameworkElement)sender).DataContext;
@@ -2296,6 +2231,105 @@ namespace Diffusion.Toolkit.Pages
         private void PreviewPane_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             OnCurrentImageOpen?.Invoke(_model.CurrentImage);
+        }
+
+        private void TimelineDayEntry_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            //if (_model.Timeline.SelectedDay != null)
+            //{
+            //    _model.Timeline.SelectedDay.IsSelected = false;
+            //}
+
+            var entry = (DayEntry)(((Rectangle)sender).DataContext);
+
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+            {
+                if (_model.Timeline.StartDay == null)
+                {
+                    _model.Timeline.StartDay = entry;
+                }
+                else
+                {
+                    _model.Timeline.EndDay = entry;
+
+                    SearchImages(null, false);
+                }
+            }
+            else
+            {
+                _model.Timeline.ClearSelection();
+
+                _model.Timeline.StartDay = entry;
+                _model.Timeline.EndDay = entry;
+
+                entry.IsSelected = true;
+
+                SearchImages(null, false);
+            }
+
+
+        }
+
+        private void TimelineDayEntry_OnMouseMove(object sender, MouseEventArgs e)
+        {
+            var entry = (DayEntry)(((Rectangle)sender).DataContext);
+
+            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift) && _model.Timeline.StartDay != null)
+            {
+                foreach (var month in _model.Timeline.Months)
+                {
+                    foreach (var day in month.Days)
+                    {
+                        bool value = day >= _model.Timeline.StartDay && day <= entry;
+                        day.IsSelected = value;
+                    }
+                }
+            }
+        }
+
+        private void UIElement_OnPreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            // check if shift key was released
+            if (e.Key == Key.LeftShift || e.Key == Key.RightShift)
+            {
+                if (_model.Timeline.StartDay != null && _model.Timeline.EndDay == null)
+                {
+                    _model.Timeline.ClearSelection();
+                }
+            }
+        }
+
+        private void UIElement_OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                e.Handled = true;
+                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
+                eventArg.Source = sender;
+                var parent = NavigationScrollViewer;
+                parent.RaiseEvent(eventArg);
+            }
+        }
+
+        private void TimelineClear_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _model.Timeline.ClearSelection();
+
+            _model.Timeline.StartDay = null;
+            _model.Timeline.EndDay = null;
+
+            SearchImages(null, false);
+        }
+
+        private void TimelineClear_Click(object sender, RoutedEventArgs e)
+        {
+            _model.Timeline.ClearSelection();
+
+            _model.Timeline.StartDay = null;
+            _model.Timeline.EndDay = null;
+
+            SearchImages(null, false);
         }
     }
 }

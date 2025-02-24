@@ -105,4 +105,77 @@ public class Filter
     public bool InAlbum { get; set; }
     public bool UseUnavailable { get; set; }
     public bool Unavailable { get; set; }
+
+    public Filter Clone()
+    {
+        return new Filter
+        {
+            UsePrompt = this.UsePrompt,
+            Prompt = this.Prompt,
+            UsePromptEx = this.UsePromptEx,
+            PromptEx = this.PromptEx,
+            UseNegativePrompt = this.UseNegativePrompt,
+            NegativePrompt = this.NegativePrompt,
+            UseNegativePromptEx = this.UseNegativePromptEx,
+            NegativePromptEx = this.NegativePromptEx,
+            UseSteps = this.UseSteps,
+            Steps = this.Steps,
+            UseSampler = this.UseSampler,
+            Sampler = this.Sampler,
+            UseSeed = this.UseSeed,
+            SeedStart = this.SeedStart,
+            SeedEnd = this.SeedEnd,
+            UseCFGScale = this.UseCFGScale,
+            CFGScale = this.CFGScale,
+            UseSize = this.UseSize,
+            Width = this.Width,
+            Height = this.Height,
+            UseModelHash = this.UseModelHash,
+            ModelHash = this.ModelHash,
+            UseModelName = this.UseModelName,
+            ModelName = this.ModelName,
+            UseFavorite = this.UseFavorite,
+            Favorite = this.Favorite,
+            UseRating = this.UseRating,
+            RatingOp = this.RatingOp,
+            Rating = this.Rating,
+            Unrated = this.Unrated,
+            UseNSFW = this.UseNSFW,
+            NSFW = this.NSFW,
+            UseForDeletion = this.UseForDeletion,
+            ForDeletion = this.ForDeletion,
+            UseBatchSize = this.UseBatchSize,
+            BatchSize = this.BatchSize,
+            UseBatchPos = this.UseBatchPos,
+            BatchPos = this.BatchPos,
+            UseAestheticScore = this.UseAestheticScore,
+            NoAestheticScore = this.NoAestheticScore,
+            AestheticScoreOp = this.AestheticScoreOp,
+            AestheticScore = this.AestheticScore,
+            UsePath = this.UsePath,
+            Path = this.Path,
+            UseCreationDate = this.UseCreationDate,
+            Start = this.Start,
+            End = this.End,
+            UseHyperNet = this.UseHyperNet,
+            HyperNet = this.HyperNet,
+            UseHyperNetStr = this.UseHyperNetStr,
+            HyperNetStrOp = this.HyperNetStrOp,
+            HyperNetStr = this.HyperNetStr,
+            UseNoMetadata = this.UseNoMetadata,
+            NoMetadata = this.NoMetadata,
+            Folder = this.Folder,
+            Album = this.Album,
+            UseInAlbum = this.UseInAlbum,
+            InAlbum = this.InAlbum,
+            UseUnavailable = this.UseUnavailable,
+            Unavailable = this.Unavailable
+        };
+    }
+}
+
+public class TimeLineEntry
+{
+    public string Date { get; set; }
+    public int Count { get; set; }
 }

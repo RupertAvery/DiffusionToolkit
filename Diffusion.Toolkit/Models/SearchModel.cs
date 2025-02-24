@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 using Filter = Diffusion.Database.Filter;
 
 namespace Diffusion.Toolkit.Models;
@@ -20,11 +22,134 @@ public class OptionValue
     }
 }
 
+public class MonthEntry : BaseNotify
+{
+    private ObservableCollection<DayEntry> _days;
+    public string Name { get; set; }
+    public int Month { get; set; }
+    public int Year { get; set; }
+
+    public ObservableCollection<DayEntry> Days
+    {
+        get => _days;
+        set => SetField(ref _days, value);
+    }
+    public static bool operator >(MonthEntry left, MonthEntry right)
+    {
+        return left.Year > right.Year || (left.Year == right.Year && left.Month > right.Month);
+    }
+
+    public static bool operator <(MonthEntry left, MonthEntry right)
+    {
+        return left.Year < right.Year || (left.Year == right.Year && left.Month < right.Month);
+    }
+
+    public static bool operator >=(MonthEntry left, MonthEntry right)
+    {
+        return left.Year > right.Year || (left.Year == right.Year && left.Month > right.Month) || right == left;
+    }
+
+    public static bool operator <=(MonthEntry left, MonthEntry right)
+    {
+        return left.Year < right.Year || (left.Year == right.Year && left.Month < right.Month) || right == left;
+    }
+
+    public static bool operator ==(MonthEntry left, MonthEntry right)
+    {
+        return left.Year == right.Year && left.Month == right.Month;
+    }
+
+    public static bool operator !=(MonthEntry left, MonthEntry right)
+    {
+        return left.Year != right.Year || left.Month != right.Month;
+    }
+}
+
+public class DayEntry : BaseNotify
+{
+    private bool _isSelected;
+    public MonthEntry Month { get; set; }
+    public int Day { get; set; }
+    public int Count { get; set; }
+
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set => SetField(ref _isSelected, value);
+    }
+    public static bool operator >=(DayEntry? left, DayEntry? right)
+    {
+        return left.Month > right.Month || left.Month == right.Month && left.Day > right.Day || left == right;
+    }
+
+    public static bool operator <=(DayEntry? left, DayEntry? right)
+    {
+        return left.Month < right.Month || left.Month == right.Month && left.Day < right.Day || left == right;
+    }
+
+
+    public static bool operator >(DayEntry? left, DayEntry? right)
+    {
+        return left.Month > right.Month || left.Month == right.Month && left.Day > right.Day;
+    }
+
+    public static bool operator <(DayEntry? left, DayEntry? right)
+    {
+        return left.Month < right.Month || left.Month == right.Month && left.Day < right.Day;
+    }
+
+    public static bool operator ==(DayEntry? left, DayEntry? right)
+    {
+        if (left is null && right is not null || left is not null && right is null) return false;
+        return left is null && right is null || left.Month == right.Month && left.Day == right.Day;
+    }
+
+    public static bool operator !=(DayEntry? left, DayEntry? right)
+    {
+        if (left is null && right is not null || left is not null && right is null) return true;
+        if (left is null && right is null) return false;
+        return left.Month != right.Month || left.Day != right.Day;
+    }
+}
+
+public class TimelineModel : BaseNotify
+{
+    public string Query { get; set; }
+    public Filter Filter { get; set; }
+
+    private ObservableCollection<MonthEntry> _months;
+
+    public ObservableCollection<MonthEntry> Months
+    {
+        get => _months;
+        set => SetField(ref _months, value);
+    }
+
+    public DayEntry? StartDay { get; set; }
+    public DayEntry? EndDay { get; set; }
+
+    public void ClearSelection()
+    {
+        if (Months != null)
+        {
+            foreach (var month in Months)
+            {
+                foreach (var day in month.Days)
+                {
+                    day.IsSelected = false;
+                }
+            }
+        }
+    }
+}
+
 public class SearchModel : BaseNotify
 {
     private readonly MainModel _mainModel;
     private ObservableCollection<ImageEntry>? _images;
     private ImageEntry? _selectedImage;
+
+    private TimelineModel? _timeline;
     //public object _rowLock = new object();
     private int _totalFiles;
     private int _currentPosition;
@@ -79,6 +204,8 @@ public class SearchModel : BaseNotify
     private NavigationSection _navigationSection;
     private MetadataSection _metadataSection;
 
+    public View View { get; set; }
+
     public SearchModel()
     {
         _mainModel = new MainModel();
@@ -93,6 +220,7 @@ public class SearchModel : BaseNotify
         _sortBy = "Date Created";
         _sortDirection = "Z-A";
         _isFilterVisible = false;
+        _timeline = new TimelineModel();
         MetadataSection = new MetadataSection();
         NavigationSection = new NavigationSection();
     }
@@ -111,11 +239,18 @@ public class SearchModel : BaseNotify
         _sortBy = "Date Created";
         _sortDirection = "Z-A";
         _isFilterVisible = false;
+        _timeline = new TimelineModel();
         MetadataSection = new MetadataSection();
         NavigationSection = new NavigationSection();
     }
 
     public MainModel MainModel => _mainModel;
+
+    public TimelineModel? Timeline
+    {
+        get => _timeline;
+        set => SetField(ref _timeline, value);
+    }
 
     public ObservableCollection<ImageEntry>? Images
     {
@@ -564,7 +699,7 @@ public class MetadataSection : BaseNotify
 
     public AccordionState WorkflowState
     {
-        get => _workflowState; 
+        get => _workflowState;
         set => SetField(ref _workflowState, value);
     }
 }
@@ -609,7 +744,7 @@ public static class SearchControlModelExtensions
         filter.Unrated = model.Unrated;
         filter.UseNSFW = model.UseNSFW;
         filter.NSFW = model.NSFW;
-        
+
         filter.UseForDeletion = model.UseForDeletion;
         filter.ForDeletion = model.ForDeletion;
 

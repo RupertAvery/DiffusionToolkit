@@ -257,7 +257,6 @@
             </DockPanel>
         </Grid>
 
-
         <Grid Grid.Row="2" ColumnSpan="3">
             <DockPanel HorizontalAlignment="Stretch">
                 <Button DockPanel.Dock="Right"  Width="50" Visibility="{Binding IsBusy, Converter={StaticResource boolToVisCol}}" Command="{Binding CancelCommand}">Cancel</Button>

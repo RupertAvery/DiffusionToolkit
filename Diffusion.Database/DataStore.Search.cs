@@ -1,4 +1,5 @@
 ﻿using Diffusion.Common;
+using System.Text.RegularExpressions;
 
 namespace Diffusion.Database
 {
@@ -229,6 +230,82 @@ namespace Diffusion.Database
             db.Close();
 
             return albums;
+        }
+
+        public IEnumerable<TimeLineEntry> GetTimeLine(string prompt)
+        {
+            using var db = OpenConnection();
+
+            var query = $"SELECT datetime((CreatedDate/10000000 - 62135596800) / 86400 * 86400, 'unixepoch') AS Date, COUNT() AS Count FROM Image m1";
+
+            if (string.IsNullOrEmpty(prompt))
+            {
+                query += GetInitialWhereClause();
+
+                query += " GROUP BY datetime((CreatedDate/10000000 - 62135596800) / 86400 * 86400, 'unixepoch')";
+
+                var entries1 = db.Query<TimeLineEntry>(query);
+
+                foreach (var entry in entries1)
+                {
+                    yield return entry;
+                }
+
+                db.Close();
+
+                yield break;
+            }
+
+            var q = QueryBuilder.Parse(prompt);
+
+            query = $"{query} {string.Join(' ', q.Joins)} WHERE {q.WhereClause} GROUP BY (CreatedDate/ 10000000 - 62135596800) / 86400 * 86400";
+
+            var entries = db.Query<TimeLineEntry>(query, q.Bindings.ToArray());
+
+            foreach (var entry in entries)
+            {
+                yield return entry;
+            }
+
+            db.Close();
+        }
+
+
+        public IEnumerable<TimeLineEntry> GetTimeLine(Filter filter)
+        {
+            using var db = OpenConnection();
+
+            var query = $"SELECT datetime((CreatedDate/10000000 - 62135596800) / 86400 * 86400, 'unixepoch') AS Date, COUNT() AS Count FROM Image m1";
+
+            if (filter.IsEmpty)
+            {
+                query += GetInitialWhereClause();
+
+                query += " GROUP BY datetime((CreatedDate/10000000 - 62135596800) / 86400 * 86400, 'unixepoch')";
+
+                var entries1 = db.Query<TimeLineEntry>(query);
+
+                foreach (var entry in entries1)
+                {
+                    yield return entry;
+                }
+
+                db.Close();
+
+                yield break;
+            }
+
+            var q = QueryBuilder.Filter(filter);
+
+            query = $"{query} {string.Join(' ', q.Joins)} WHERE {q.WhereClause} GROUP BY (CreatedDate/ 10000000 - 62135596800) / 86400 * 86400";
+
+            var entries = db.Query<TimeLineEntry>(query, q.Bindings.ToArray());
+
+            foreach (var entry in entries)
+            {
+                yield return entry;
+            }
+
         }
 
 
