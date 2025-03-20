@@ -433,9 +433,16 @@ public class Metadata
             }
         }
 
+        // Try to read from Stealth Alpha channel if PNG
+        if (fileParameters == null && fileType == FileType.PNG)
+        {
+            var metadata = StealthPng.Read(file);
+            return ReadA111Parameters(metadata);
+        }
 
         return fileParameters;
     }
+
 
     private static FileParameters DetectAndReadMetaType(string parameters)
     {
