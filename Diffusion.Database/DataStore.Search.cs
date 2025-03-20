@@ -18,7 +18,7 @@ namespace Diffusion.Database
 
             return models;
         }
-        
+
         public int GetTotal()
         {
             using var db = OpenConnection();
@@ -46,9 +46,26 @@ namespace Diffusion.Database
                 return allcount;
             }
 
-            var q = QueryBuilder.Parse(prompt);
+            var options = new QueryOptions()
+            {
+                SearchNodes = true,
+                ComfyQueryOptions = new ComfyQueryOptions()
+                {
+                    SearchAllProperties = false,
+                    SearchProperties = new string[]
+                    {
+                        "text",
+                        "text__g",
+                        "text__l",
+                        "text__positive",
+                        "text__negative",
+                    }
+                }
+            };
 
-            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
+            var q = QueryCombiner.Parse(prompt, options);
+
+            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image WHERE Id IN ({q.Query})", q.Bindings.ToArray());
 
             db.Close();
 
@@ -126,9 +143,26 @@ namespace Diffusion.Database
                 return allcount;
             }
 
-            var q = QueryBuilder.Parse(prompt);
+            var options = new QueryOptions()
+            {
+                SearchNodes = true,
+                ComfyQueryOptions = new ComfyQueryOptions()
+                {
+                    SearchAllProperties = false,
+                    SearchProperties = new string[]
+                    {
+                        "text",
+                        "text__g",
+                        "text__l",
+                        "text__positive",
+                        "text__negative",
+                    }
+                }
+            };
 
-            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
+            var q = QueryCombiner.Parse(prompt, options);
+
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image WHERE Id IN ({q.Query})", q.Bindings.ToArray());
 
             db.Close();
 
@@ -211,7 +245,7 @@ namespace Diffusion.Database
         public Image GetImage(int id)
         {
             using var db = OpenConnection();
-            
+
 
             var image = db.FindWithQuery<Image>($"SELECT Image.* FROM Image WHERE Id = ?", id);
 
@@ -223,7 +257,7 @@ namespace Diffusion.Database
         public IEnumerable<Album> GetImageAlbums(int id)
         {
             using var db = OpenConnection();
-            
+
             var albums = db.Query<Album>($"SELECT Album.* FROM Image INNER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id INNER JOIN Album ON AlbumImage.AlbumId = Album.Id WHERE Image.Id = ?", id);
 
             db.Close();
@@ -235,11 +269,11 @@ namespace Diffusion.Database
         public IEnumerable<Image> QueryAll()
         {
             using var db = OpenConnection();
-            
+
             var query = $"SELECT Image.* FROM Image";
 
             var images = db.Query<Image>(query + GetInitialWhereClause());
-            
+
             foreach (var image in images)
             {
                 yield return image;
@@ -354,7 +388,7 @@ namespace Diffusion.Database
         public IEnumerable<ImageView> Search(string? prompt, int pageSize, int offset, string sortBy, string sortDirection)
         {
             using var db = OpenConnection();
-            
+
             var sortField = sortBy switch
             {
                 "Date Created" => nameof(Image.CreatedDate),
@@ -397,9 +431,26 @@ namespace Diffusion.Database
             //ORDER BY title ASC LIMIT 50 )
             //ORDER BY title ASC LIMIT 10
 
-            var q = QueryBuilder.Parse(prompt);
+            var options = new QueryOptions()
+            {
+                SearchNodes = true,
+                ComfyQueryOptions = new ComfyQueryOptions()
+                {
+                    SearchAllProperties = false,
+                    SearchProperties = new string[]
+                    {
+                        "text",
+                        "text__g",
+                        "text__l",
+                        "text__positive",
+                        "text__negative",
+                    }
+                }
+            };
 
-            var images = db.Query<ImageView>($"SELECT m1.Id, m1.Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) AS AlbumCount FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
+            var q = QueryCombiner.Parse(prompt, options);
+
+            var images = db.Query<ImageView>($"SELECT Id, Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Id) AS AlbumCount FROM Image WHERE Id IN ({q.Query}) ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {
@@ -409,7 +460,7 @@ namespace Diffusion.Database
             db.Close();
         }
 
- 
+
         const string columns = "FolderId, FileName, Prompt, NegativePrompt, Steps, Sampler, " +
                       "CFGScale, Seed, Width, Height, ModelHash, Model, BatchSize, BatchPos, CreatedDate, ModifiedDate, " +
                       "CustomTags, Rating, Favorite, ForDeletion, NSFW, " +

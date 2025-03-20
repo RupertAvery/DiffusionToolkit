@@ -6,8 +6,27 @@ using System.Text.RegularExpressions;
 
 namespace Diffusion.Database;
 
+public static class QueryCombiner
+{
+    public static (string Query, IEnumerable<object> Bindings) Parse(string prompt, QueryOptions options)
+    {
+        var q = QueryBuilder.Parse(prompt);
+        var query = $"SELECT m1.Id FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ";
+        var bindings = q.Bindings;
 
+        if (options.SearchNodes)
+        {
+            var p = ComfyUIQueryBuilder.Parse(prompt, options.ComfyQueryOptions);
 
+            query += "UNION ALL " +
+                         $"SELECT m2.Id FROM Image m2 WHERE m2.Id IN ({p.Query}) ";
+
+            bindings = bindings.Concat(p.Bindings);
+        }
+
+        return (query, bindings);
+    }
+}
 
 public static partial class QueryBuilder
 {
@@ -72,7 +91,7 @@ public static partial class QueryBuilder
         {
             conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ? OR ForDeletion IS NULL)", false));
         }
-        
+
         if (HideUnavailable)
         {
             conditions.Add(new KeyValuePair<string, object>("(Unavailable = ? OR Unavailable IS NULL)", false));
@@ -92,7 +111,7 @@ public static partial class QueryBuilder
     }
 
 
-    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) Parse(string prompt)
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) Parse(string prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
         var joins = new List<string>();
@@ -124,6 +143,7 @@ public static partial class QueryBuilder
         ParseNegativePrompt(ref prompt, conditions);
         ParsePrompt(ref prompt, conditions);
 
+
         // this should be here
         //if (HideNFSW)
         //{
@@ -139,7 +159,8 @@ public static partial class QueryBuilder
                     _ => new[] { c.Value }
                 };
             }).Where(o => o != null),
-            joins
+            joins,
+            prompt
             );
     }
 
