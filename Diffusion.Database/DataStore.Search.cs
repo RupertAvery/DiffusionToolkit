@@ -341,7 +341,7 @@ namespace Diffusion.Database
 
             var q = QueryBuilder.QueryPrompt(prompt);
 
-            var images = db.Query<ImageView>($"SELECT Image.* FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
+            var images = db.Query<ImageView>($"SELECT m1.* FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {
