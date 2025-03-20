@@ -8,20 +8,34 @@ namespace Diffusion.Database;
 
 public static class QueryCombiner
 {
-    public static (string Query, IEnumerable<object> Bindings) Parse(string prompt, QueryOptions options)
+    public static (string Query, IEnumerable<object> Bindings) Parse(QueryOptions options)
     {
-        var q = QueryBuilder.Parse(prompt);
-        var query = $"SELECT m1.Id FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause} ";
+        var q = QueryBuilder.Parse(options.Query);
+        var query = $"SELECT m1.Id FROM Image m1 {string.Join(' ', q.Joins)} " +
+                    (q.WhereClause.Length > 0 ? $" WHERE {q.WhereClause} " : "");
         var bindings = q.Bindings;
 
-        if (options.SearchNodes)
+        if (options is { SearchNodes: true, Query.Length: > 0 })
         {
-            var p = ComfyUIQueryBuilder.Parse(prompt, options.ComfyQueryOptions);
+            var p = ComfyUIQueryBuilder.Parse(q.TextPrompt, options.ComfyQueryOptions);
 
-            query += "UNION ALL " +
+            query += "UNION " +
                          $"SELECT m2.Id FROM Image m2 WHERE m2.Id IN ({p.Query}) ";
 
             bindings = bindings.Concat(p.Bindings);
+        }
+
+        if (options.AlbumIds is { Count: > 0 })
+        {
+            var albumIds = string.Join(",", options.AlbumIds.Select(a => "?"));
+
+            query = $"SELECT images.Id FROM ({query}) images " +
+                    "INNER JOIN " +
+                    "(" +
+                    $"SELECT m1.Id FROM Image m1 INNER JOIN AlbumImage ai ON ai.ImageId = m1.Id INNER JOIN Album a ON a.Id = ai.AlbumId WHERE a.Id IN ({albumIds})" +
+                    ") albums ON images.Id = albums.Id ";
+
+            bindings = bindings.Concat(options.AlbumIds.Cast<object>());
         }
 
         return (query, bindings);
@@ -111,37 +125,41 @@ public static partial class QueryBuilder
     }
 
 
-    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) Parse(string prompt)
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) Parse(string? prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
         var joins = new List<string>();
 
-        ParseAlbum(ref prompt, conditions, joins);
-        ParseFolder(ref prompt, conditions, joins);
-        ParsePath(ref prompt, conditions);
-        ParseDate(ref prompt, conditions);
-        ParseSeed(ref prompt, conditions);
-        ParseSteps(ref prompt, conditions);
-        ParseSampler(ref prompt, conditions);
-        ParseHash(ref prompt, conditions);
+        if (prompt is not null)
+        {
+            ParseAlbum(ref prompt, conditions, joins);
+            ParseFolder(ref prompt, conditions, joins);
+            ParsePath(ref prompt, conditions);
+            ParseDate(ref prompt, conditions);
+            ParseSeed(ref prompt, conditions);
+            ParseSteps(ref prompt, conditions);
+            ParseSampler(ref prompt, conditions);
+            ParseHash(ref prompt, conditions);
 
-        ParseModelName(ref prompt, conditions);
-        ParseModelNameOrHash(ref prompt, conditions);
+            ParseModelName(ref prompt, conditions);
+            ParseModelNameOrHash(ref prompt, conditions);
 
-        ParseCFG(ref prompt, conditions);
-        ParseSize(ref prompt, conditions);
-        ParseAestheticScore(ref prompt, conditions);
-        ParseRating(ref prompt, conditions);
-        ParseHypernet(ref prompt, conditions);
-        ParseHypernetStrength(ref prompt, conditions);
-        ParseFavorite(ref prompt, conditions);
-        ParseForDeletion(ref prompt, conditions);
-        ParseNSFW(ref prompt, conditions);
-        ParseInAlbum(ref prompt, conditions);
-        ParseNoMetadata(ref prompt, conditions);
+            ParseCFG(ref prompt, conditions);
+            ParseSize(ref prompt, conditions);
+            ParseAestheticScore(ref prompt, conditions);
+            ParseRating(ref prompt, conditions);
+            ParseHypernet(ref prompt, conditions);
+            ParseHypernetStrength(ref prompt, conditions);
+            ParseFavorite(ref prompt, conditions);
+            ParseForDeletion(ref prompt, conditions);
+            ParseNSFW(ref prompt, conditions);
+            ParseInAlbum(ref prompt, conditions);
+            ParseNoMetadata(ref prompt, conditions);
 
-        ParseNegativePrompt(ref prompt, conditions);
-        ParsePrompt(ref prompt, conditions);
+            ParseNegativePrompt(ref prompt, conditions);
+            ParsePrompt(ref prompt, conditions);
+        }
+
 
 
         // this should be here

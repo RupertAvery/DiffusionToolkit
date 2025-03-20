@@ -121,8 +121,12 @@ namespace Diffusion.Toolkit
                 LastUpdated = a.LastUpdated,
                 ImageCount = a.ImageCount,
                 Order = a.Order,
-            });
+            }).ToList();
 
+            foreach (var album in albums)
+            {
+                album.PropertyChanged += Album_PropertyChanged;
+            }
 
             switch (_settings.SortAlbumsBy)
             {
@@ -135,6 +139,14 @@ namespace Diffusion.Toolkit
                 case "Custom":
                     _model.Albums = new ObservableCollection<AlbumModel>(albums.OrderBy(a => a.Order));
                     break;
+            }
+        }
+
+        private void Album_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AlbumModel.IsTicked))
+            {
+                _search.SearchImages();
             }
         }
 

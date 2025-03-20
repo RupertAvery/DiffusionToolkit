@@ -39,7 +39,7 @@ using Diffusion.Toolkit.Services;
 namespace Diffusion.Toolkit.Pages
 {
 
- 
+
     public class ReloadOptions
     {
         public bool Focus { get; set; }
@@ -99,7 +99,7 @@ namespace Diffusion.Toolkit.Pages
             });
 
             ServiceLocator.ThumbnailNavigationService.Next += ThumbnailNavigationServiceOnNext;
-            ServiceLocator.ThumbnailNavigationService.Previous +=  ThumbnailNavigationServiceOnPrevious;
+            ServiceLocator.ThumbnailNavigationService.Previous += ThumbnailNavigationServiceOnPrevious;
             ServiceLocator.ThumbnailNavigationService.NextPage += ThumbnailNavigationServiceOnNextPage;
             ServiceLocator.ThumbnailNavigationService.PreviousPage += ThumbnailNavigationServiceOnPreviousPage;
 
@@ -649,7 +649,7 @@ namespace Diffusion.Toolkit.Pages
             set => ThumbnailListView.MoveFiles = value;
 
         }
-        
+
         //public Action<IList<ImageEntry>> CopyFiles
         //{
         //    get => ThumbnailListView.CopyFiles;
@@ -793,8 +793,75 @@ namespace Diffusion.Toolkit.Pages
                             }
                         }
 
-                        count = DataStore.Count(query);
-                        size = DataStore.CountFileSize(query);
+                        //var query = _model.SearchText;
+                        //bool showImages = true;
+
+                        //if (_currentModeSettings.IsFavorite)
+                        //{
+                        //    query = $"{query} favorite: true";
+                        //}
+                        //else if (_currentModeSettings.IsMarkedForDeletion)
+                        //{
+                        //    query = $"{query} delete: true";
+                        //}
+                        //else if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                        //{
+                        //    if (_currentModeSettings.CurrentFolder != "$")
+                        //    {
+                        //        query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                        //    }
+                        //    else
+                        //    {
+                        //        showImages = false;
+                        //    }
+                        //}
+                        //else if (_currentModeSettings.ViewMode == ViewMode.Album)
+                        //{
+                        //    if (_model.MainModel.CurrentAlbum != null)
+                        //    {
+                        //        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                        //    }
+                        //    else
+                        //    {
+                        //        showImages = false;
+                        //    }
+                        //}
+                        //else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                        //{
+                        //    if (_model.MainModel.CurrentModel != null)
+                        //    {
+                        //        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
+                        //    }
+                        //    else
+                        //    {
+                        //        showImages = false;
+                        //    }
+                        //}
+
+                        var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
+
+
+                        queryOptions = new QueryOptions()
+                        {
+                            Query = query,
+                            AlbumIds = albums,
+                            SearchNodes = true,
+                            ComfyQueryOptions = new ComfyQueryOptions()
+                            {
+                                SearchAllProperties = false,
+                                SearchProperties = new string[]
+                                {
+                                    "text",
+                                    "text__g",
+                                    "text__l",
+                                    "text__positive",
+                                    "text__negative",
+                                }
+                            }
+                        };
+
+                        count = DataStore.Count(queryOptions);
+                        size = DataStore.CountFileSize(queryOptions);
 
                     }
 
@@ -875,6 +942,8 @@ namespace Diffusion.Toolkit.Pages
                     MessageBoxImage.Error);
             }
         }
+
+        private QueryOptions queryOptions;
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -973,10 +1042,10 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
                     var albumLookup = imageViewModel.Albums.ToDictionary(x => x.Id);
 
-                    foreach (var album in _model.MainModel.Albums)
-                    {
-                        album.IsTicked = albumLookup.ContainsKey(album.Id);
-                    }
+                    //foreach (var album in _model.MainModel.Albums)
+                    //{
+                    //    album.IsTicked = albumLookup.ContainsKey(album.Id);
+                    //}
 
                 }
 
@@ -1502,7 +1571,7 @@ namespace Diffusion.Toolkit.Pages
                 if (showImages)
                 {
                     matches = Time(() => DataStore
-                        .Search(query, _settings.PageSize,
+                        .Search(queryOptions, _settings.PageSize,
                             _settings.PageSize * (_model.Page - 1),
                             _model.SortBy,
                             _model.SortDirection
@@ -1724,55 +1793,12 @@ namespace Diffusion.Toolkit.Pages
             }
             else
             {
-                var query = _model.SearchText;
-                bool showImages = true;
 
-                if (_currentModeSettings.IsFavorite)
-                {
-                    query = $"{query} favorite: true";
-                }
-                else if (_currentModeSettings.IsMarkedForDeletion)
-                {
-                    query = $"{query} delete: true";
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                {
-                    if (_currentModeSettings.CurrentFolder != "$")
-                    {
-                        query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                {
-                    if (_model.MainModel.CurrentAlbum != null)
-                    {
-                        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                {
-                    if (_model.MainModel.CurrentModel != null)
-                    {
-                        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-
-                if (showImages)
+                // showImages
+                if (true)
                 {
                     matches = Time(() => DataStore
-                        .Search(query, _settings.PageSize,
+                        .Search(queryOptions, _settings.PageSize,
                             _settings.PageSize * (_model.Page - 1),
                             _model.SortBy,
                             _model.SortDirection
@@ -2255,7 +2281,7 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void OpenAlbum(Album  album)
+        private void OpenAlbum(Album album)
         {
             var albumModel = new AlbumModel()
             {
@@ -2271,10 +2297,10 @@ namespace Diffusion.Toolkit.Pages
 
         private void RemoveFromAlbum(Album albumModel)
         {
-            ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id,  new [] { _model.CurrentImage.Id });
+            ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id, new[] { _model.CurrentImage.Id });
             SearchImages(null);
         }
-        
+
         private void DropImagesOnFolder(object sender, DragEventArgs e)
         {
             var folder = (FolderViewModel)((FrameworkElement)sender).DataContext;

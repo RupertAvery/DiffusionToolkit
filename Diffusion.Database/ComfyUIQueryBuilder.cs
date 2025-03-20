@@ -2,6 +2,9 @@
 
 public class QueryOptions
 {
+    public string Query { get; set; }
+    public IReadOnlyCollection<int> FolderIds { get; set; }
+    public IReadOnlyCollection<int> AlbumIds { get; set; }
     public bool SearchNodes { get; set; }
     public ComfyQueryOptions ComfyQueryOptions { get; set; }
 }
@@ -16,11 +19,14 @@ public static class ComfyUIQueryBuilder
 {
     
 
-    public static (string Query, IEnumerable<object> Bindings) Parse(string prompt, ComfyQueryOptions options)
+    public static (string Query, IEnumerable<object> Bindings) Parse(string? prompt, ComfyQueryOptions options)
     {
         var conditions = new List<KeyValuePair<string, object>>();
 
-        ParsePrompt(prompt, conditions);
+        if (prompt is not null)
+        {
+            ParsePrompt(prompt, conditions);
+        }
 
         var whereClause = string.Join(" AND ", conditions.Select(c => c.Key));
 
@@ -36,8 +42,8 @@ public static class ComfyUIQueryBuilder
         var properties = string.Join(" OR ", options.SearchProperties.Select(p => $"cmfyp.Name = '{p}'"));
         
         return (
-            "SELECT cmfyimg.Id from Image cmfyimg " +
-            "INNER JOIN Node cmfyn ON cmfyimg.Id = cmfyn.ImageId " +
+            "SELECT m1.Id from Image m1 " +
+            "INNER JOIN Node cmfyn ON m1.Id = cmfyn.ImageId " +
             "INNER JOIN NodeProperty cmfyp ON cmfyp.NodeId = cmfyn.Id " +
             "WHERE " +
             (options.SearchAllProperties ? "" : $"( {properties} ) AND ") +
