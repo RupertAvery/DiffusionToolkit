@@ -32,7 +32,7 @@
                                                    HeaderBackground="#80000000" 
                                                    Header="{lex:Loc Metadata.Prompt}"
                                                    Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.PromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}" 
+                                                   State="{Binding MetadataSection.PromptState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}" 
                                                    >
                             <local:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
@@ -52,7 +52,7 @@
 
                         <local:AccordionControl x:Name="NegativePromptMetadata" 
                                                    Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.NegativePromptState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.NegativePrompt}">
+                                                   State="{Binding MetadataSection.NegativePromptState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.NegativePrompt}">
                             <local:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -69,7 +69,7 @@
 
                         <local:AccordionControl x:Name="SeedMetadata" 
                                                    Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.SeedState, ElementName=PreviewPaneGrid, Mode=TwoWay}"   HeaderBackground="#80000000" Header="{lex:Loc Metadata.Seed}">
+                                                   State="{Binding MetadataSection.SeedState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"   HeaderBackground="#80000000" Header="{lex:Loc Metadata.Seed}">
                             <local:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -108,7 +108,7 @@
 
                         <local:AccordionControl x:Name="SamplerMetadata" 
                                                    Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.SamplerState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Sampler}">
+                                                   State="{Binding MetadataSection.SamplerState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Sampler}">
                             <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Sampler}"/>
@@ -116,7 +116,7 @@
 
                         <local:AccordionControl x:Name="OtherMetadata" 
                                                    Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.OthersState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Others}">
+                                                   State="{Binding MetadataSection.OthersState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Others}">
                             <local:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -133,7 +133,7 @@
 
                         <local:AccordionControl x:Name="ModelMetadata" 
                                                    Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.ModelState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.ModelName}">
+                                                   State="{Binding MetadataSection.ModelState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.ModelName}">
                             <local:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -159,7 +159,7 @@
 
                         <local:AccordionControl x:Name="PathMetadata" 
                                                    Margin="0,0,0,5"
-                                                   State="{Binding DataContext.MetadataSection.PathState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Path}">
+                                                   State="{Binding MetadataSection.PathState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.Path}">
                             <local:AccordionControl.ButtonAreaContent>
                                 <Grid Background="{x:Null}">
                                     <Grid.ColumnDefinitions>
@@ -179,7 +179,7 @@
                         <local:AccordionControl x:Name="DateMetadata" 
                                                    Margin="0,0,0,5"
                                                    HeaderBackground="#80000000" 
-                                                   State="{Binding DataContext.MetadataSection.DateState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Date}">
+                                                   State="{Binding MetadataSection.DateState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  Header="{lex:Loc Metadata.Date}">
                             <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding Date}"/>
@@ -188,7 +188,7 @@
                         <local:AccordionControl x:Name="AlbumMetadata" 
                                                    Margin="0,0,0,5"
                                                    HeaderBackground="#80000000" 
-                                                   State="{Binding DataContext.MetadataSection.AlbumState, ElementName=PreviewPaneGrid, Mode=TwoWay}"  Header="{lex:Loc Metadata.Albums}">
+                                                   State="{Binding MetadataSection.AlbumState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  Header="{lex:Loc Metadata.Albums}">
                             <ItemsControl ItemsSource="{Binding Albums}">
                                 <ItemsControl.Resources>
                                     <common:BindingProxy x:Key="Proxy" Data="{Binding .}" />
