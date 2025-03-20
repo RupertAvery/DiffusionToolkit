@@ -125,6 +125,7 @@ namespace Diffusion.Toolkit.Controls
             Model.NSFWCommand = new RelayCommand<object>(o => NSFWSelected());
             Model.RatingCommand = new RelayCommand<object>(o => RateSelected(int.Parse((string)o)));
             Model.RemoveEntryCommand = new RelayCommand<object>(o => RemoveEntry());
+            Model.CopyCommand = new RelayCommand<object>(o => CopySelected());
             Model.MoveCommand = new RelayCommand<object>(o => MoveSelected());
             Model.RescanCommand = new RelayCommand<object>(o => RescanSelected());
 
@@ -150,9 +151,24 @@ namespace Diffusion.Toolkit.Controls
             var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
             Task.Run(() =>
             {
-                ServiceLocator.ScanningService.Scan(imageEntries.Select(s => s.Path).ToList(), true);
-                ServiceLocator.SearchService.ExecuteSearch();
+                try
+                {
+                    ServiceLocator.ScanningService.Scan(imageEntries.Select(s => s.Path).ToList(), true);
+                    ServiceLocator.SearchService.ExecuteSearch();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
             });
+        }
+
+
+        private void CopySelected()
+        {
+            var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+            CopyFiles(imageEntries);
         }
 
         private void MoveSelected()
@@ -801,6 +817,8 @@ namespace Diffusion.Toolkit.Controls
                 e.Handled = true;
             }
         }
+
+        public Action<IList<ImageEntry>> CopyFiles;
 
         public Action<IList<ImageEntry>> MoveFiles;
 
