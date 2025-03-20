@@ -36,20 +36,9 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-
-            if (string.IsNullOrEmpty(queryOptions.Query))
-            {
-                var query = $"SELECT SUM(FileSize) FROM Image";
-
-
-                var allcount = db.ExecuteScalar<long>(query + GetInitialWhereClause());
-                return allcount;
-            }
-
-
             var q = QueryCombiner.Parse(queryOptions);
 
-            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image WHERE Id IN ({q.Query})", q.Bindings.ToArray());
+            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image main INNER JOIN ({q.Query}) sub on sub.Id = main.Id", q.Bindings.ToArray());
 
             db.Close();
 
@@ -114,23 +103,37 @@ namespace Diffusion.Database
             return whereClauses.Any() ? $" WHERE {whereExpression}" : "";
         }
 
-        public int Count(QueryOptions options)
+        public class CountSize
+        {
+            public int Total { get; set; }
+            public int Size { get; set; }
+
+            public void Deconstruct(out int total, out int size)
+            {
+                total = Total;
+                size = Size;
+            }
+        }
+
+        public CountSize CountAndSize(QueryOptions options)
         {
             using var db = OpenConnection();
 
-            if (string.IsNullOrEmpty(options.Query))
-            {
-                var query = "SELECT COUNT(*) FROM Image";
-
-                var allcount = db.ExecuteScalar<int>(query + GetInitialWhereClause());
-
-                return allcount;
-            }
-
-
             var q = QueryCombiner.Parse(options);
 
-            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image WHERE Id IN ({q.Query})", q.Bindings.ToArray());
+            var countSize = db.Query<CountSize>($"SELECT COUNT(*) AS Total, SUM(FileSize) AS Size FROM Image main INNER JOIN ({q.Query}) sub on sub.Id = main.Id", q.Bindings.ToArray());
+
+            db.Close();
+
+            return countSize[0];
+        }
+        public int Count(QueryOptions options)
+        {
+            using var db = OpenConnection();
+            
+            var q = QueryCombiner.Parse(options);
+
+            var count = db.ExecuteScalar<int>($"SELECT COUNT(*) FROM Image main INNER JOIN ({q.Query}) sub on sub.Id = main.Id", q.Bindings.ToArray());
 
             db.Close();
 

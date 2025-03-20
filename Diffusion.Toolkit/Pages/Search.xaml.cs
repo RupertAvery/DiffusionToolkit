@@ -860,8 +860,9 @@ namespace Diffusion.Toolkit.Pages
                             }
                         };
 
-                        count = DataStore.Count(queryOptions);
-                        size = DataStore.CountFileSize(queryOptions);
+                        (count,size) = DataStore.CountAndSize(queryOptions);
+                        //count = DataStore.Count(queryOptions);
+                        //size = DataStore.CountFileSize(queryOptions);
 
                     }
 
@@ -952,15 +953,10 @@ namespace Diffusion.Toolkit.Pages
                 if (_model.SelectedImageEntry != null)
                 {
                     LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
-
                 }
                 else
                 {
                     _model.CurrentImage = new ImageViewModel();
-                    foreach (var album in _model.MainModel.Albums)
-                    {
-                        album.IsTicked = false;
-                    }
                 }
             }
             else if (e.PropertyName == nameof(SearchModel.SortBy))
