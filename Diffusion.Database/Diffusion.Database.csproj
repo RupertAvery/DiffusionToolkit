@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
+    <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
   </ItemGroup>
 
   <ItemGroup>

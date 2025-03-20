@@ -105,6 +105,16 @@ public partial class DataStore
         db.CreateIndex<AlbumImage>(album => album.AlbumId);
         db.CreateIndex<AlbumImage>(album => album.ImageId);
 
+        db.CreateTable<Node>();
+        db.CreateIndex<Node>(node => node.ImageId);
+        db.CreateIndex<Node>(node => node.Name);
+        db.CreateIndex("Node", new[] { "ImageId", "NodeId" }, true);
+
+        db.CreateTable<NodeProperty>();
+        db.CreateIndex<NodeProperty>(property => property.NodeId);
+        db.CreateIndex<NodeProperty>(property => property.Name);
+        db.CreateIndex<NodeProperty>(property => property.Value);
+
         db.CreateTable<Folder>();
         db.CreateIndex<Folder>(folder => folder.ParentId);
 

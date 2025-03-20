@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using Diffusion.IO;
+using Node = Diffusion.IO.Node;
 
 namespace Diffusion.Toolkit.Models;
 

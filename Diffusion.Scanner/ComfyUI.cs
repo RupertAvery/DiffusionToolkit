@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿using System.Text.Json;
 
 namespace Diffusion.IO
 {
     public class Node
     {
+        public int RefId { get; set; }
         public string Id { get; set; }
         public string Name { get; set; }
         public List<Input> Inputs { get; set; }
+        public object ImageRef { get; set; }
 
         public override int GetHashCode()
         {
@@ -51,7 +46,7 @@ namespace Diffusion.IO
         public IReadOnlyCollection<Node> Parse(string workflowId, string workflow)
         {
             if (workflow == null) return null;
-            var root = System.Text.Json.JsonDocument.Parse(workflow);
+            var root = JsonDocument.Parse(workflow);
             var rootElements = root.RootElement.EnumerateObject().ToDictionary(n => n.Name, n => n.Value);
 
             var nodes = new List<Node>();
