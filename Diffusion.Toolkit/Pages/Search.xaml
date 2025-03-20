@@ -49,7 +49,7 @@
     <Grid Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
         <Grid.RowDefinitions>
             <RowDefinition />
-            <RowDefinition Height="140"/>
+            <RowDefinition Height="170"/>
         </Grid.RowDefinitions>
 
         <Grid x:Name="MainGrid">
@@ -619,33 +619,40 @@
 
         <Grid Grid.Row="1" ColumnSpan="3">
             <Border BorderBrush="{DynamicResource SecondaryBrush}" BorderThickness="1">
-                <ScrollViewer HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
-                    <StackPanel Orientation="Horizontal">
-                        <ItemsControl ItemsSource="{Binding Timeline.Months}"  HorizontalAlignment="Left" KeyUp="UIElement_OnPreviewKeyUp"
+                <TabControl Background="{x:Null}" Height="220">
+                    <TabItem Header="Timeline">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <ScrollViewer Grid.ColumnSpan="2" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
+                                <StackPanel Orientation="Horizontal">
+                                    <ItemsControl ItemsSource="{Binding Timeline.Months}"  HorizontalAlignment="Left" KeyUp="UIElement_OnPreviewKeyUp"
                                       Focusable="True">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid VerticalAlignment="Top" Margin="5" Width="120" Height="110">
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="24"/>
-                                            <RowDefinition />
-                                        </Grid.RowDefinitions>
-                                        <TextBlock VerticalAlignment="Top" Grid.Row="0" Foreground="{DynamicResource ForegroundBrush}" Text="{Binding Name}"></TextBlock>
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid VerticalAlignment="Top" Margin="5" Width="120" Height="110">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="24"/>
+                                                        <RowDefinition />
+                                                    </Grid.RowDefinitions>
+                                                    <TextBlock VerticalAlignment="Top" Grid.Row="0" Foreground="{DynamicResource ForegroundBrush}" Text="{Binding Name}"></TextBlock>
 
-                                        <ItemsControl ItemsSource="{Binding Days}" Grid.Row="1" HorizontalAlignment="Left" >
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <WrapPanel Orientation="Vertical" />
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Rectangle Fill="{Binding Count, Converter={StaticResource TimelineCountConverter}}" 
+                                                    <ItemsControl ItemsSource="{Binding Days}" Grid.Row="1" HorizontalAlignment="Left" >
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel Orientation="Vertical" />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Rectangle Fill="{Binding Count, Converter={StaticResource TimelineCountConverter}}" 
                                                                Stroke="{Binding IsSelected, Converter={StaticResource TimelineSelectedConverter}}" 
                                                                StrokeThickness="{Binding IsSelected, Converter={StaticResource TimelineSelectedStrokeConverter}}" 
                                                                Width="12" Height="12" Margin="2" 
@@ -653,16 +660,21 @@
                                                                MouseMove="TimelineDayEntry_OnMouseMove"
                                                                
                                                                ></Rectangle>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <Button Width="110" Height="100"  Click="TimelineClear_Click" Margin="10">Clear</Button>
-                    </StackPanel>
-                </ScrollViewer>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Grid Width="120"></Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                            <Button Background="Red" VerticalAlignment="Bottom" Grid.Column="1" Width="110" Height="30"  Click="TimelineClear_Click" Margin="0,0,5,15">Clear</Button>
+                        </Grid>
+
+                    </TabItem>
+                </TabControl>
             </Border>
         </Grid>
 
