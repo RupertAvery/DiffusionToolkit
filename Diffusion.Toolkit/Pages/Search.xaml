@@ -507,10 +507,10 @@
                     <RowDefinition Height="50"/>
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="1" Background="#A0000000" Margin="10" Visibility="{Binding CurrentImage.IsParametersVisible, Converter={StaticResource boolToVis}}">
-                    <controls:MetadataPanel CurrentImage="{Binding CurrentImage}">
-                    </controls:MetadataPanel>
-                </Grid>
+                    <Grid Grid.Row="1" Background="#A0000000" Margin="10" Visibility="{Binding CurrentImage.IsParametersVisible, Converter={StaticResource boolToVis}}">
+                        <controls:MetadataPanel CurrentImage="{Binding CurrentImage}" MetadataSection="{Binding MetadataSection}">
+                        </controls:MetadataPanel>
+                    </Grid>
 
                 <StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding CurrentImage}">
 

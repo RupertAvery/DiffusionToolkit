@@ -25,6 +25,19 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(CurrentImageProperty, value);
         }
 
+        public static readonly DependencyProperty MetadataSectionProperty = DependencyProperty.Register(
+            nameof(MetadataSection),
+            typeof(MetadataSection),
+            typeof(MetadataPanel),
+            new PropertyMetadata(default(ImageEntry))
+        );
+
+        public MetadataSection MetadataSection
+        {
+            get => (MetadataSection)GetValue(MetadataSectionProperty);
+            set => SetValue(MetadataSectionProperty, value);
+        }
+
         public MetadataPanel()
         {
             InitializeComponent();
