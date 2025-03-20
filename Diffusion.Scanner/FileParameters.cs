@@ -31,4 +31,6 @@ public class FileParameters
 
 
     public string ErrorMessage { get; set; }
+
+    public IReadOnlyCollection<Node>? Nodes { get; set; }
 }

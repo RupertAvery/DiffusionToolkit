@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Diffusion.Database;
 using Diffusion.Toolkit.Services;
+using Node = Diffusion.Database.Node;
 
 namespace Diffusion.Toolkit
 {
@@ -563,155 +564,193 @@ namespace Diffusion.Toolkit
 
         private (int, float) ScanFiles(IList<string> filesToScan, bool updateImages, CancellationToken cancellationToken)
         {
-            var added = 0;
-            var scanned = 0;
-
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            var max = filesToScan.Count;
-
-            Dispatcher.Invoke(() =>
+            try
             {
-                _model.TotalProgress = max;
-                _model.CurrentProgress = 0;
-            });
+                var added = 0;
+                var scanned = 0;
 
-            var folderIdCache = new Dictionary<string, int>();
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
 
-            var newImages = new List<Image>();
+                var max = filesToScan.Count;
 
-            var includeProperties = new List<string>();
-
-            if (_settings.AutoTagNSFW)
-            {
-                includeProperties.Add(nameof(Image.NSFW));
-            }
-
-            var scanning = GetLocalizedText("Actions.Scanning.Status");
-
-            foreach (var file in MetadataScanner.Scan(filesToScan))
-            {
-                if (cancellationToken.IsCancellationRequested)
+                Dispatcher.Invoke(() =>
                 {
-                    break;
+                    _model.TotalProgress = max;
+                    _model.CurrentProgress = 0;
+                });
+
+                var folderIdCache = new Dictionary<string, int>();
+
+                var newImages = new List<Image>();
+                var newNodes = new List<IO.Node>();
+
+                var includeProperties = new List<string>();
+
+                if (_settings.AutoTagNSFW)
+                {
+                    includeProperties.Add(nameof(Image.NSFW));
                 }
 
-                scanned++;
+                var scanning = GetLocalizedText("Actions.Scanning.Status");
 
-                if (file != null)
+                foreach (var file in MetadataScanner.Scan(filesToScan))
                 {
-                    var fileInfo = new FileInfo(file.Path);
-
-                    var image = new Image()
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        Prompt = file.Prompt,
-                        NegativePrompt = file.NegativePrompt,
-                        Path = file.Path,
-                        FileName = fileInfo.Name,
-                        Width = file.Width,
-                        Height = file.Height,
-                        ModelHash = file.ModelHash,
-                        Model = file.Model,
-                        Steps = file.Steps,
-                        Sampler = file.Sampler,
-                        CFGScale = file.CFGScale,
-                        Seed = file.Seed,
-                        BatchPos = file.BatchPos,
-                        BatchSize = file.BatchSize,
-                        CreatedDate = fileInfo.CreationTime,
-                        ModifiedDate = fileInfo.LastWriteTime,
-                        AestheticScore = file.AestheticScore,
-                        HyperNetwork = file.HyperNetwork,
-                        HyperNetworkStrength = file.HyperNetworkStrength,
-                        ClipSkip = file.ClipSkip,
-                        FileSize = file.FileSize,
-                        NoMetadata = file.NoMetadata,
-                        Workflow = file.Workflow,
-                        WorkflowId = file.WorkflowId,
-                        HasError = file.HasError
-                    };
-
-                    if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
-                    {
-                        file.HyperNetworkStrength = 1;
+                        break;
                     }
 
-                    if (_settings.AutoTagNSFW)
+                    scanned++;
+
+                    if (file != null)
                     {
-                        if (_settings.NSFWTags.Any(t => image.Prompt != null && image.Prompt.ToLower().Contains(t.Trim().ToLower())))
+                        var fileInfo = new FileInfo(file.Path);
+
+                        var image = new Image()
                         {
-                            image.NSFW = true;
+                            Prompt = file.Prompt,
+                            NegativePrompt = file.NegativePrompt,
+                            Path = file.Path,
+                            FileName = fileInfo.Name,
+                            Width = file.Width,
+                            Height = file.Height,
+                            ModelHash = file.ModelHash,
+                            Model = file.Model,
+                            Steps = file.Steps,
+                            Sampler = file.Sampler,
+                            CFGScale = file.CFGScale,
+                            Seed = file.Seed,
+                            BatchPos = file.BatchPos,
+                            BatchSize = file.BatchSize,
+                            CreatedDate = fileInfo.CreationTime,
+                            ModifiedDate = fileInfo.LastWriteTime,
+                            AestheticScore = file.AestheticScore,
+                            HyperNetwork = file.HyperNetwork,
+                            HyperNetworkStrength = file.HyperNetworkStrength,
+                            ClipSkip = file.ClipSkip,
+                            FileSize = file.FileSize,
+                            NoMetadata = file.NoMetadata,
+                            Workflow = file.Workflow,
+                            WorkflowId = file.WorkflowId,
+                            HasError = file.HasError
+                        };
+
+                        if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
+                        {
+                            file.HyperNetworkStrength = 1;
+                        }
+
+                        if (_settings.AutoTagNSFW)
+                        {
+                            if (_settings.NSFWTags.Any(t => image.Prompt != null && image.Prompt.ToLower().Contains(t.Trim().ToLower())))
+                            {
+                                image.NSFW = true;
+                            }
+                        }
+
+                        newImages.Add(image);
+
+                        if (file.Nodes is { Count: > 0 })
+                        {
+                            foreach (var fileNode in file.Nodes)
+                            {
+                                fileNode.ImageRef = image;
+                            }
+
+                            newNodes.AddRange(file.Nodes);
                         }
                     }
 
-                    newImages.Add(image);
+                    if (newImages.Count == 100)
+                    {
+                        if (updateImages)
+                        {
+
+                            added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
+                            if (newNodes.Any())
+                            {
+                                _dataStore.UpdateNodes(newNodes, cancellationToken);
+                            }
+                        }
+                        else
+                        {
+                            _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
+                            if (newNodes.Any())
+                            {
+                                _dataStore.AddNodes(newNodes, cancellationToken);
+                            }
+                            added += newImages.Count;
+                        }
+
+                        newNodes.Clear();
+                        newImages.Clear();
+                    }
+
+                    if (scanned % 33 == 0)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.CurrentProgress = scanned;
+
+                            var text = scanning
+                                .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
+                                .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
+
+                            _model.Status = text;
+                        });
+                    }
                 }
 
-                if (newImages.Count == 100)
+                if (newImages.Count > 0)
                 {
                     if (updateImages)
                     {
-
                         added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
+                        if (newNodes.Any())
+                        {
+                            _dataStore.UpdateNodes(newNodes, cancellationToken);
+                        }
                     }
                     else
                     {
                         _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
+                        if (newNodes.Any())
+                        {
+                            _dataStore.AddNodes(newNodes, cancellationToken);
+                        }
+
                         added += newImages.Count;
                     }
-
-                    newImages.Clear();
                 }
 
-                if (scanned % 33 == 0)
+                Dispatcher.Invoke(() =>
                 {
-                    Dispatcher.Invoke(() =>
+                    if (_model.TotalProgress > 0)
                     {
-                        _model.CurrentProgress = scanned;
-
                         var text = scanning
-                            .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
+                            .Replace("{current}", $"{_model.TotalProgress:#,###,##0}")
                             .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
 
                         _model.Status = text;
-                    });
-                }
+                    }
+                    _model.TotalProgress = Int32.MaxValue;
+                    _model.CurrentProgress = 0;
+                });
+
+                stopwatch.Stop();
+
+                var elapsedTime = stopwatch.ElapsedMilliseconds / 1000f;
+
+
+                return (added, elapsedTime);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
 
-            if (newImages.Count > 0)
-            {
-                if (updateImages)
-                {
-                    added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
-                }
-                else
-                {
-                    _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                    added += newImages.Count;
-                }
-            }
-
-            Dispatcher.Invoke(() =>
-            {
-                if (_model.TotalProgress > 0)
-                {
-                    var text = scanning
-                        .Replace("{current}", $"{_model.TotalProgress:#,###,##0}")
-                        .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                    _model.Status = text;
-                }
-                _model.TotalProgress = Int32.MaxValue;
-                _model.CurrentProgress = 0;
-            });
-
-            stopwatch.Stop();
-
-            var elapsedTime = stopwatch.ElapsedMilliseconds / 1000f;
-
-
-            return (added, elapsedTime);
         }
 
 

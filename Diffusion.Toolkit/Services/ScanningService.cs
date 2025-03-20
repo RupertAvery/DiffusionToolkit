@@ -8,6 +8,7 @@ using System.Threading;
 using Diffusion.Database;
 using Diffusion.IO;
 using Diffusion.Toolkit.Localization;
+using Node = Diffusion.IO.Node;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -53,6 +54,7 @@ public class ScanningService
         var folderIdCache = new Dictionary<string, int>();
 
         var newImages = new List<Image>();
+        var newNodes = new List<Node>();
 
         var includeProperties = new List<string>();
 
@@ -119,6 +121,16 @@ public class ScanningService
                 }
 
                 newImages.Add(image);
+
+                if (file.Nodes is { Count: > 0 })
+                {
+                    foreach (var fileNode in file.Nodes)
+                    {
+                        fileNode.ImageRef = image;
+                    }
+
+                    newNodes.AddRange(file.Nodes);
+                }
             }
 
             if (newImages.Count == 100)
@@ -127,10 +139,19 @@ public class ScanningService
                 {
 
                     added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, CancellationToken);
+                    if (newNodes.Any())
+                    {
+                        _dataStore.UpdateNodes(newNodes, CancellationToken);
+                    }
                 }
                 else
                 {
                     _dataStore.AddImages(newImages, includeProperties, folderIdCache, CancellationToken);
+                    if (newNodes.Any())
+                    {
+                        _dataStore.AddNodes(newNodes, CancellationToken);
+                    }
+
                     added += newImages.Count;
                 }
 
@@ -164,10 +185,19 @@ public class ScanningService
             if (updateImages)
             {
                 added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, CancellationToken);
+                if (newNodes.Any())
+                {
+                    _dataStore.UpdateNodes(newNodes, CancellationToken);
+                }
             }
             else
             {
                 _dataStore.AddImages(newImages, includeProperties, folderIdCache, CancellationToken);
+                if (newNodes.Any())
+                {
+                    _dataStore.AddNodes(newNodes, CancellationToken);
+                }
+
                 added += newImages.Count;
             }
         }
