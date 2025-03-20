@@ -58,6 +58,7 @@ public class ThumbnailViewModel : BaseNotify
     private ICommand _nsfwCommand;
     private ICommand _removeEntryCommand;
     private ICommand _moveCommand;
+    private ICommand _copyCommand;
     private int _thumbnailSize;
     private ObservableCollection<Control> _albumMenuItems;
     private ViewMode _viewMode;
@@ -359,6 +360,12 @@ public class ThumbnailViewModel : BaseNotify
     {
         get => _removeEntryCommand;
         set => SetField(ref _removeEntryCommand, value);
+    }
+
+    public ICommand CopyCommand
+    {
+        get => _copyCommand;
+        set => SetField(ref _copyCommand, value);
     }
 
     public ICommand MoveCommand

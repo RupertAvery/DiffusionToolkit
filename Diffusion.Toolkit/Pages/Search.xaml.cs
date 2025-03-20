@@ -249,7 +249,10 @@ namespace Diffusion.Toolkit.Pages
                 }
             });
             _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
-            _model.CopyFiles = new RelayCommand<object>((o) => CopyFiles());
+            _model.CopyFiles = new RelayCommand<object>((o) => CopyFiles(ThumbnailListView.SelectedImages));
+
+            ThumbnailListView.CopyFiles = CopyFiles;
+
 
             _model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
             _model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
@@ -589,10 +592,10 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        private void CopyFiles()
+        private void CopyFiles(IEnumerable<ImageEntry> images)
         {
             StringCollection paths = new StringCollection();
-            foreach (var path in ThumbnailListView.SelectedImages.Select(i => i.Path))
+            foreach (var path in images.Select(i => i.Path))
             {
                 paths.Add(path);
             }
@@ -646,6 +649,12 @@ namespace Diffusion.Toolkit.Pages
             set => ThumbnailListView.MoveFiles = value;
 
         }
+        
+        //public Action<IList<ImageEntry>> CopyFiles
+        //{
+        //    get => ThumbnailListView.CopyFiles;
+        //    set => ThumbnailListView.CopyFiles = value;
+        //}
 
         public Action<ImageViewModel> OnCurrentImageChange { get; set; }
 
