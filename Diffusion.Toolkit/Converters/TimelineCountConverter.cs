@@ -32,20 +32,41 @@ public class TimelineCountConverter : IValueConverter
     static SolidColorBrush high2 = new SolidColorBrush(FromHex("#d4ff46"));
     static SolidColorBrush high3 = new SolidColorBrush(FromHex("#fbff53"));
 
+    //private static SolidColorBrush[] colors = new[] { low1, low2, low3, mid1, mid2, mid3, high1, high2, high3 };
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        //var intValue = (int)value;
+        //int maxValue = 3000;
+        //var interval = maxValue / colors.Length ;
+
+
+        //if (intValue == 0)
+        //{
+        //    return none;
+        //}
+        //else if (intValue > maxValue)
+        //{
+        //    return over;
+        //}
+        //else
+        //{
+        //    var index = intValue / interval;
+        //    return  colors[index];
+        //}
+
+
         return (int)value switch
         {
             0 => none,
-            > 0 and <= 100 => low1,
-            > 100 and <= 200 => low2,
-            > 200 and <= 300 => low3,
-            > 300 and <= 400 => mid1,
-            > 400 and <= 500 => mid2,
-            > 500 and <= 600 => mid3,
-            > 600 and <= 700 => high1,
-            > 700 and <= 800 => high2,
-            > 800 and <= 900 => high3,
+            > 0 and <= 50 => low1,
+            > 50 and <= 100 => low2,
+            > 100 and <= 250 => low3,
+            > 250 and <= 500 => mid1,
+            > 500 and <= 1000 => mid2,
+            > 1000 and <= 1500 => mid3,
+            > 1500 and <= 2000 => high1,
+            > 2000 and <= 5000 => high2,
+            > 5000 and <= 10000 => high3,
             _ => over
         };
     }
