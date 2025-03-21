@@ -121,12 +121,20 @@ namespace Diffusion.Database
 
             var q = QueryCombiner.Parse(options);
 
-            var countSize = db.Query<CountSize>($"SELECT COUNT(*) AS Total, SUM(FileSize) AS Size FROM Image main INNER JOIN ({q.Query}) sub on sub.Id = main.Id", q.Bindings.ToArray());
+            var whereClause = QueryCombiner.GetInitialWhereClause("main", options);
+
+            var join = $"INNER JOIN ({q.Query}) sub ON main.Id = sub.Id";
+
+            var where = whereClause.Length > 0 ? $"WHERE {whereClause}" : "";
+
+            var countSize = db.Query<CountSize>($"SELECT COUNT(*) AS Total, SUM(FileSize) AS Size FROM Image main {join} {where}", q.Bindings.ToArray());
 
             db.Close();
 
             return countSize[0];
         }
+
+
         public int Count(QueryOptions options)
         {
             using var db = OpenConnection();
@@ -405,9 +413,13 @@ namespace Diffusion.Database
 
             var q = QueryCombiner.Parse(queryOptions);
 
+            var whereClause = QueryCombiner.GetInitialWhereClause("main", queryOptions);
+
             var join = $"INNER JOIN ({q.Query}) sub ON main.Id = sub.Id";
 
-            var images = db.Query<ImageView>($"SELECT main.Id, Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = main.Id) AS AlbumCount FROM Image main {join} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
+            var where = whereClause.Length > 0 ? $"WHERE {whereClause}" : "";
+
+            var images = db.Query<ImageView>($"SELECT main.Id, Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = main.Id) AS AlbumCount FROM Image main {join} {where} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
 
             foreach (var image in images)
             {

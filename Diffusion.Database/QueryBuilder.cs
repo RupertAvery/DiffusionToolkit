@@ -8,11 +8,53 @@ namespace Diffusion.Database;
 
 public static class QueryCombiner
 {
+    public static string GetInitialWhereClause(string imageAlias, QueryOptions options, bool forceDeleted = false)
+    {
+
+        var whereClauses = new List<string>();
+
+        if (options.HideNSFW)
+        {
+            whereClauses.Add($"({imageAlias}.NSFW = 0 OR {imageAlias}.NSFW IS NULL)");
+        }
+
+        if (forceDeleted)
+        {
+            whereClauses.Add($"({imageAlias}.ForDeletion = 1)");
+        }
+        else if (options.HideDeleted)
+        {
+            whereClauses.Add($"({imageAlias}.ForDeletion = 0)");
+        }
+
+        if (options.HideUnavailable)
+        {
+            whereClauses.Add($"({imageAlias}.Unavailable = 0)");
+        }
+
+        var whereExpression = string.Join(" AND ", whereClauses);
+
+        return whereClauses.Any() ? $"{whereExpression}" : "";
+    }
+
     public static (string Query, IEnumerable<object> Bindings) Parse(QueryOptions options)
     {
         var q = QueryBuilder.Parse(options.Query);
-        var query = $"SELECT m1.Id FROM Image m1 {string.Join(' ', q.Joins)} " +
-                    (q.WhereClause.Length > 0 ? $" WHERE {q.WhereClause} " : "");
+
+        var where1 = GetInitialWhereClause("m1", options);
+        var where2 = GetInitialWhereClause("m2", options);
+
+        var where1Clauses = (new string[] { q.WhereClause }).Where(d => d.Length > 0).Select(d => $"({d})");
+        var where2Clauses = (new string[] {  }).Where(d => d.Length > 0).Select(d => $"({d})");
+
+        var where1Expression = string.Join(" AND ", where1Clauses);
+        var where2Expression = string.Join(" AND ", where2Clauses);
+
+        var where1Clause = where1Clauses.Any() ? $" WHERE {where1Expression}" : "";
+        var where2Clause = where2Clauses.Any() ? $" WHERE {where2Expression}" : "";
+
+        var query = $"SELECT m1.Id FROM Image m1 {string.Join(' ', q.Joins)} {where1Clause}";
+
         var bindings = q.Bindings;
 
         if (options is { SearchNodes: true, Query.Length: > 0 })
@@ -20,7 +62,7 @@ public static class QueryCombiner
             var p = ComfyUIQueryBuilder.Parse(q.TextPrompt, options.ComfyQueryOptions);
 
             query += "UNION " +
-                         $"SELECT m2.Id FROM Image m2 WHERE m2.Id IN ({p.Query}) ";
+                     $"SELECT m2.Id FROM Image m2 INNER JOIN ({p.Query}) s2 ON s2.Id = m2.Id {where2Clause}";
 
             bindings = bindings.Concat(p.Bindings);
         }

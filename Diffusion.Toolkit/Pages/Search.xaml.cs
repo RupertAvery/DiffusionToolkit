@@ -846,6 +846,9 @@ namespace Diffusion.Toolkit.Pages
                             Query = query,
                             AlbumIds = albums,
                             SearchNodes = true,
+                            HideNSFW = _model.MainModel.HideNSFW,
+                            HideDeleted = _model.MainModel.HideDeleted,
+                            HideUnavailable = _model.MainModel.HideUnavailable,
                             ComfyQueryOptions = new ComfyQueryOptions()
                             {
                                 SearchAllProperties = false,
