@@ -54,7 +54,7 @@ public class Migrations
                 {
                     var name = methodInfo.Name;
 
-                    var migrate = methodInfo.GetCustomAttributes<MigrateAttribute>().FirstOrDefault();
+                    var migrate = methodInfo.GetCustomAttributes<MigrateAttribute>().First();
 
                     if (migrate is { Name: { } })
                     {
@@ -63,9 +63,14 @@ public class Migrations
 
                     var sql = (string)methodInfo.Invoke(this, null)!;
 
+                  
+
                     if (sql != null)
                     {
-                        _db.BeginTransaction();
+                        if (!migrate.NoTransaction)
+                        {
+                            _db.BeginTransaction();
+                        }
 
                         var statements = sql.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -77,12 +82,17 @@ public class Migrations
                                 command.ExecuteNonQuery();
                             }
                         }
+
+                        _db.Execute("INSERT INTO Migration (Name) VALUES (?)", name);
+
+                        if (!migrate.NoTransaction)
+                        {
+                            _db.Commit();
+                        }
                     }
 
 
-                    _db.Execute("INSERT INTO Migration (Name) VALUES (?)", name);
-
-                    _db.Commit();
+               
 
                     Logger.Log($"Executed Migration {name}");
                 }
@@ -180,4 +190,10 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
     {
         return "UPDATE Image SET Unavailable = 0";
     }
+
+    //[Migrate(MigrationType.Pre, true)]
+    //private string RupertAvery20250321_0001_EnableWAL()
+    //{
+    //    return "PRAGMA journal_mode=WAL";
+    //}
 }
