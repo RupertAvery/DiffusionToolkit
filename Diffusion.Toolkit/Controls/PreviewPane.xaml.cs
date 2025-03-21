@@ -229,8 +229,8 @@ namespace Diffusion.Toolkit.Controls
 
         private void UIElement_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            MainModel.FitToPreview = false;
-            MainModel.ActualSize = false;
+            //MainModel.FitToPreview = false;
+            //MainModel.ActualSize = false;
 
             var ctrlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 
