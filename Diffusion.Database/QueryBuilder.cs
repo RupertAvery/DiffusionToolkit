@@ -41,17 +41,7 @@ public static class QueryCombiner
     {
         var q = QueryBuilder.Parse(options.Query);
 
-        var where1 = GetInitialWhereClause("m1", options);
-        var where2 = GetInitialWhereClause("m2", options);
-
-        var where1Clauses = (new string[] { q.WhereClause }).Where(d => d.Length > 0).Select(d => $"({d})");
-        var where2Clauses = (new string[] {  }).Where(d => d.Length > 0).Select(d => $"({d})");
-
-        var where1Expression = string.Join(" AND ", where1Clauses);
-        var where2Expression = string.Join(" AND ", where2Clauses);
-
-        var where1Clause = where1Clauses.Any() ? $" WHERE {where1Expression}" : "";
-        var where2Clause = where2Clauses.Any() ? $" WHERE {where2Expression}" : "";
+        var where1Clause = q.WhereClause is { Length: > 0 } ? $" WHERE {q.WhereClause}" : "";
 
         var query = $"SELECT m1.Id FROM Image m1 {string.Join(' ', q.Joins)} {where1Clause}";
 
@@ -62,7 +52,7 @@ public static class QueryCombiner
             var p = ComfyUIQueryBuilder.Parse(q.TextPrompt, options.ComfyQueryOptions);
 
             query += "UNION " +
-                     $"SELECT m2.Id FROM Image m2 INNER JOIN ({p.Query}) s2 ON s2.Id = m2.Id {where2Clause}";
+                     $"SELECT m2.Id FROM Image m2 INNER JOIN ({p.Query}) s2 ON s2.Id = m2.Id";
 
             bindings = bindings.Concat(p.Bindings);
         }

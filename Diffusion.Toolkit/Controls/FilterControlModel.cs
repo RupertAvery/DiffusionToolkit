@@ -1,10 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Windows;
+using System.Windows.Input;
+using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls;
+
+public class NodeFilter : BaseNotify
+{
+    private string _node;
+    private string _property;
+    private string _value;
+    private bool _isActive;
+
+    public bool IsActive
+    {
+        get => _isActive;
+        set => SetField(ref _isActive, value);
+    }
+
+    public string Node
+    {
+        get => _node;
+        set => SetField(ref _node, value);
+    }
+
+    public string Property
+    {
+        get => _property;
+        set => SetField(ref _property, value);
+    }
+
+    public string Value
+    {
+        get => _value;
+        set => SetField(ref _value, value);
+    }
+
+    public ICommand RemoveCommand { get; set; }
+}
 
 public class FilterControlModel : BaseNotify
 {
@@ -66,10 +103,13 @@ public class FilterControlModel : BaseNotify
     private bool _inAlbum;
     private bool _useUnavailable;
     private bool _unavailable;
+    private ObservableCollection<NodeFilter> _nodeFilters;
 
     public FilterControlModel()
     {
         PropertyChanged += SearchControlModel_PropertyChanged;
+        NodeFilters = new ObservableCollection<NodeFilter>();
+        AddNodeFilter();
     }
 
     private void SearchControlModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -78,6 +118,20 @@ public class FilterControlModel : BaseNotify
         {
             OnPropertyChanged(nameof(IsActive));
         }
+    }
+
+    public void AddNodeFilter()
+    {
+        var filter = new NodeFilter
+        {
+            RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter)
+        };
+        NodeFilters.Add(filter);
+    }
+
+    public void RemoveNodeFilter(NodeFilter filter)
+    {
+        NodeFilters.Remove(filter);
     }
 
     public bool UsePrompt
@@ -455,6 +509,12 @@ public class FilterControlModel : BaseNotify
                              UseNoMetadata ||
                              UseInAlbum ||
                              UseUnavailable);
+
+    public ObservableCollection<NodeFilter> NodeFilters
+    {
+        get => _nodeFilters;
+        set => SetField(ref _nodeFilters, value);
+    }
 
     public void Clear()
     {

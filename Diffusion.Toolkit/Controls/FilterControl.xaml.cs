@@ -181,6 +181,11 @@ namespace Diffusion.Toolkit.Controls
         {
             Filter.UseModelName = true;
         }
+
+        private void AddFilter_OnClick(object sender, RoutedEventArgs e)
+        {
+            Filter.AddNodeFilter();
+        }
     }
 
 

@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
 using Filter = Diffusion.Database.Filter;
+using NodeFilter = Diffusion.Database.NodeFilter;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -653,6 +655,14 @@ public static class SearchControlModelExtensions
 
         filter.UseUnavailable = model.UseUnavailable;
         filter.Unavailable = model.Unavailable;
+
+        filter.NodeFilters = model.NodeFilters.Select(d => new NodeFilter()
+        {
+            IsActive = d.IsActive,
+            Node = d.Node,
+            Property = d.Property,
+            Value = d.Value,
+        }).ToList();
 
         return filter;
     }

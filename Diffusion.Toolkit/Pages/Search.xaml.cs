@@ -701,6 +701,31 @@ namespace Diffusion.Toolkit.Pages
                     int count = 0;
                     long size = 0;
 
+
+                    var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
+
+
+                    queryOptions = new QueryOptions()
+                    {
+                        AlbumIds = albums,
+                        SearchNodes = true,
+                        HideNSFW = _model.MainModel.HideNSFW,
+                        HideDeleted = _model.MainModel.HideDeleted,
+                        HideUnavailable = _model.MainModel.HideUnavailable,
+                        ComfyQueryOptions = new ComfyQueryOptions()
+                        {
+                            SearchAllProperties = false,
+                            SearchProperties = new string[]
+                            {
+                                "text",
+                                "text__g",
+                                "text__l",
+                                "text__positive",
+                                "text__negative",
+                            }
+                        }
+                    };
+
                     if (UseFilter)
                     {
                         var filter = _model.Filter.AsFilter();
@@ -738,8 +763,7 @@ namespace Diffusion.Toolkit.Pages
                             }
                         }
 
-                        count = DataStore.Count(filter);
-                        size = DataStore.CountFileSize(filter);
+                        (count, size) = DataStore.CountAndFileSize(filter, queryOptions);
                     }
                     else
                     {
@@ -836,36 +860,9 @@ namespace Diffusion.Toolkit.Pages
                         //        showImages = false;
                         //    }
                         //}
-
-                        var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
-
-
-                        queryOptions = new QueryOptions()
-                        {
-                            Query = query,
-                            AlbumIds = albums,
-                            SearchNodes = true,
-                            HideNSFW = _model.MainModel.HideNSFW,
-                            HideDeleted = _model.MainModel.HideDeleted,
-                            HideUnavailable = _model.MainModel.HideUnavailable,
-                            ComfyQueryOptions = new ComfyQueryOptions()
-                            {
-                                SearchAllProperties = false,
-                                SearchProperties = new string[]
-                                {
-                                    "text",
-                                    "text__g",
-                                    "text__l",
-                                    "text__positive",
-                                    "text__negative",
-                                }
-                            }
-                        };
+                        queryOptions.Query = query;
 
                         (count,size) = DataStore.CountAndSize(queryOptions);
-                        //count = DataStore.Count(queryOptions);
-                        //size = DataStore.CountFileSize(queryOptions);
-
                     }
 
                     //_model.FileSize = size;
@@ -1511,7 +1508,7 @@ namespace Diffusion.Toolkit.Pages
                 if (showImages)
                 {
                     matches = Time(() => DataStore
-                        .Search(filter, _settings.PageSize,
+                        .Search(filter, queryOptions, _settings.PageSize,
                             _settings.PageSize * (_model.Page - 1),
                             _model.SortBy,
                             _model.SortDirection));
@@ -1786,7 +1783,7 @@ namespace Diffusion.Toolkit.Pages
                 if (showImages)
                 {
                     matches = Time(() => DataStore
-                        .Search(filter, _settings.PageSize,
+                        .Search(filter, queryOptions, _settings.PageSize,
                             _settings.PageSize * (_model.Page - 1),
                             _model.SortBy,
                             _model.SortDirection));
@@ -2255,17 +2252,13 @@ namespace Diffusion.Toolkit.Pages
         {
             var model = ((AlbumModel)((Button)sender).DataContext);
 
-            if (_model.MainModel.CurrentAlbum != null)
+            foreach (var album in _model.MainModel.Albums)
             {
-                _model.MainModel.CurrentAlbum.IsSelected = false;
+                album.IsTicked = false;
             }
 
-            _model.MainModel.CurrentAlbum = model;
+            model.IsTicked = true;
 
-            _model.MainModel.CurrentAlbum.IsSelected = true;
-
-            _model.MainModel.ActiveView = "Albums";
-            SetMode("albums", _model.MainModel.CurrentAlbum.Name);
             SearchImages(null);
         }
 

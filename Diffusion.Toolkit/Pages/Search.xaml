@@ -382,7 +382,7 @@
                                                                             <Style TargetType="Grid">
                                                                                 <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
                                                                                 <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                                                                                    <DataTrigger Binding="{Binding IsTicked}" Value="true">
                                                                                         <Setter Property="Background" Value="{StaticResource HighlightBrush}"></Setter>
                                                                                     </DataTrigger>
                                                                                 </Style.Triggers>
@@ -633,17 +633,11 @@
                         <RowDefinition/>
                         <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
-                    <ScrollViewer  VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <controls:FilterControl  
-                                Models="{Binding MainModel.ImageModelNames}"
-                                Filter="{Binding Filter}" 
-                                SearchCommand="{Binding FilterCommand}" 
-                                                     
-                                VerticalAlignment="Stretch"/>
-
-                        </StackPanel>
-                    </ScrollViewer>
+                    <controls:FilterControl  
+                        Models="{Binding MainModel.ImageModelNames}"
+                        Filter="{Binding Filter}" 
+                        SearchCommand="{Binding FilterCommand}" 
+                        VerticalAlignment="Stretch"/>
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
