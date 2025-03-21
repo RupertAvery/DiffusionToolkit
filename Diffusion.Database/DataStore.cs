@@ -7,14 +7,16 @@ public partial class DataStore
     public string DatabasePath { get; }
     public bool RescanRequired { get; set; }
 
+    private SQLiteConnection? _readOnlyConnection;
+
+    public SQLiteConnection OpenReadonlyConnection()
+    {
+        return _readOnlyConnection ??= new SQLiteConnection(DatabasePath, SQLiteOpenFlags.ReadOnly);
+    }
+
     public SQLiteConnection OpenConnection()
     {
-        var db = new SQLiteConnection(DatabasePath);
-
-        //db.EnableLoadExtension(true);
-        //db.Execute("SELECT load_extension(?)", "dlls/path0");
-
-        return db;
+        return new SQLiteConnection(DatabasePath);
     }
 
     public DataStore(string databasePath)
@@ -134,6 +136,7 @@ public partial class DataStore
             }
         }
 
+
         db.Close();
     }
 
@@ -151,10 +154,9 @@ public partial class DataStore
         command.ExecuteNonQuery();
     }
 
-
-    public void Close(SQLiteConnection connection)
+    public void Close()
     {
-        connection.Close();
+        _readOnlyConnection?.Close();
     }
 
     public void RebuildIndexes()
@@ -206,7 +208,7 @@ public partial class DataStore
         File.Copy(DatabasePath, Path.Combine(path, backupFilename));
     }
 
-    public  bool TryRestoreBackup(string path)
+    public bool TryRestoreBackup(string path)
     {
         try
         {

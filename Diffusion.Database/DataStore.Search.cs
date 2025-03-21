@@ -394,7 +394,7 @@ namespace Diffusion.Database
 
         public IEnumerable<ImageView> Search(QueryOptions queryOptions, int pageSize, int offset, string sortBy, string sortDirection)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var sortField = sortBy switch
             {
@@ -454,7 +454,7 @@ namespace Diffusion.Database
                 yield return image;
             }
 
-            db.Close();
+            //db.Close();
         }
 
 
@@ -466,7 +466,7 @@ namespace Diffusion.Database
 
         public IEnumerable<ImageView> Search(Filter filter, QueryOptions options, int pageSize, int offset, string sortBy, string sortDirection)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var sortField = sortBy switch
             {
@@ -528,7 +528,7 @@ namespace Diffusion.Database
                 yield return image;
             }
 
-            db.Close();
+            //db.Close();
         }
 
         private string lastPrompt;
