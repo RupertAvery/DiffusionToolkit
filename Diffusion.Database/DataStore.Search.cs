@@ -106,9 +106,9 @@ namespace Diffusion.Database
         public class CountSize
         {
             public int Total { get; set; }
-            public int Size { get; set; }
+            public long Size { get; set; }
 
-            public void Deconstruct(out int total, out int size)
+            public void Deconstruct(out int total, out long size)
             {
                 total = Total;
                 size = Size;
@@ -127,7 +127,7 @@ namespace Diffusion.Database
 
             var where = whereClause.Length > 0 ? $"WHERE {whereClause}" : "";
 
-            var countSize = db.Query<CountSize>($"SELECT COUNT(*) AS Total, SUM(FileSize) AS Size FROM Image main {join} {where}", q.Bindings.ToArray());
+            var countSize = db.Query<CountSize>($"SELECT COUNT(*) AS Total, COALESCE(SUM(FileSize),0) AS Size FROM Image main {join} {where}", q.Bindings.ToArray());
 
             db.Close();
 
