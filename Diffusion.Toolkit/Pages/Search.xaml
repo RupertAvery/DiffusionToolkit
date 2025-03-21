@@ -452,6 +452,7 @@
                                         NSFWBlur="{Binding MainModel.NSFWBlur}"
                                         SelectedImages="{Binding MainModel.SelectedImages, Mode=TwoWay}"
                                         IsEmpty="{Binding IsEmpty}"
+                                        IsBusy="{Binding IsBusy}"
                                         Results="{Binding Results}"
                                         PageChangedCommand="{Binding PageChangedCommand}"
                                         SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
@@ -467,6 +468,7 @@
                                         CurrentImage="{Binding CurrentImage}">
                                     </controls:ThumbnailView>
                                 </DockPanel>
+
 
                             </Grid>
 

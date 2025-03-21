@@ -78,6 +78,7 @@ public class SearchModel : BaseNotify
 
     private NavigationSection _navigationSection;
     private MetadataSection _metadataSection;
+    private bool _isBusy;
 
     public SearchModel()
     {
@@ -392,6 +393,12 @@ public class SearchModel : BaseNotify
     {
         get => _metadataSection;
         set => SetField(ref _metadataSection, value);
+    }
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetField(ref _isBusy, value);
     }
 
     public string CurrentMode { get; set; }

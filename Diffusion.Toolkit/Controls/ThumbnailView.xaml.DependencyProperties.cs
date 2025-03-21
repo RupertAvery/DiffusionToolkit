@@ -109,6 +109,17 @@ namespace Diffusion.Toolkit.Controls
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
+        public static readonly DependencyProperty IsBusyProperty =
+            DependencyProperty.Register(
+                name: nameof(IsBusy),
+                propertyType: typeof(bool),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: false,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
         public static readonly DependencyProperty ResultsProperty =
             DependencyProperty.Register(
                 name: nameof(Results),
@@ -278,6 +289,9 @@ namespace Diffusion.Toolkit.Controls
                     case nameof(IsEmpty):
                         thumbnailView.Model.IsEmpty = (bool)e.NewValue;
                         break;
+                    case nameof(IsBusy):
+                        thumbnailView.Model.IsBusy = (bool)e.NewValue;
+                        break;
                     case nameof(Results):
                         thumbnailView.Model.Results = (string)e.NewValue;
                         break;
@@ -323,6 +337,13 @@ namespace Diffusion.Toolkit.Controls
         {
             get => (bool)GetValue(IsEmptyProperty);
             set => SetValue(IsEmptyProperty, value);
+        }
+
+
+        public bool IsBusy
+        {
+            get => (bool)GetValue(IsBusyProperty);
+            set => SetValue(IsBusyProperty, value);
         }
 
         public ICommand? AddAlbumCommand

@@ -693,7 +693,6 @@ namespace Diffusion.Toolkit.Pages
                 return;
             }
 
-
             try
             {
                 Dispatcher.Invoke(() =>
@@ -1372,10 +1371,11 @@ namespace Diffusion.Toolkit.Pages
 
         private void LoadMatches()
         {
-            //Dispatcher.Invoke(() =>
-            //{
-            //    _model.Images?.Clear();
-            //});
+            Dispatcher.Invoke(() =>
+            {
+                _model.IsBusy = true;
+//                _model.Images?.Clear();
+            });
 
             var images = new List<ImageEntry>();
 
@@ -1642,6 +1642,7 @@ namespace Diffusion.Toolkit.Pages
                 ThumbnailListView.ReloadThumbnailsView(0);
 
                 //RefreshThumbnails();
+                _model.IsBusy = false;
 
             });
 
@@ -1658,6 +1659,7 @@ namespace Diffusion.Toolkit.Pages
         {
             Dispatcher.Invoke(() =>
             {
+                _model.IsBusy = true;
                 _model.Images.Clear();
             });
 
@@ -1861,6 +1863,9 @@ namespace Diffusion.Toolkit.Pages
                     }
                 }
                 //RefreshThumbnails();
+
+                _model.IsBusy = false;
+
             });
 
 
