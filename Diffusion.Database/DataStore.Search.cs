@@ -174,18 +174,9 @@ namespace Diffusion.Database
 
         public CountSize CountAndFileSize(Filter filter, QueryOptions options)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
-            //if (filter.IsEmpty)
-            //{
-            //    var query = $"SELECT SUM(FileSize) FROM Image";
-
-            //    var allcount = db.ExecuteScalar<long>(query + GetInitialWhereClause(filter.UseForDeletion && filter.ForDeletion));
-
-            //    return allcount;
-            //}
-
-            var q = QueryBuilder.FilterEx(filter);
+            var q = QueryCombiner.Filter(filter, options);
 
             var whereClause = QueryCombiner.GetInitialWhereClause("main", options);
 
@@ -194,8 +185,6 @@ namespace Diffusion.Database
             var where = whereClause.Length > 0 ? $"WHERE {whereClause}" : "";
 
             var countSize = db.Query<CountSize>($"SELECT COUNT(*) AS Total, SUM(FileSize) AS Size FROM Image main {join} {where}", q.Bindings.ToArray());
-
-            db.Close();
 
             return countSize[0];
         }
@@ -412,31 +401,7 @@ namespace Diffusion.Database
                 "Z-A" => "DESC",
                 _ => "DESC",
             };
-
-            //if (string.IsNullOrEmpty(queryOptions.Query))
-            //{
-            //    var query = $"SELECT m1.Id, m1.Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) AS AlbumCount FROM Image m1 ";
-
-            //    query += GetInitialWhereClause();
-
-            //    var allimages = db.Query<ImageView>($"{query} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", pageSize, offset);
-
-            //    foreach (var image in allimages)
-            //    {
-            //        yield return image;
-            //    }
-
-            //    db.Close();
-
-            //    yield break;
-            //}
-
-            //SELECT foo, bar, baz, quux FROM table
-            //WHERE oid NOT IN(SELECT oid FROM table
-            //ORDER BY title ASC LIMIT 50 )
-            //ORDER BY title ASC LIMIT 10
-
-
+            
             var q = QueryCombiner.Parse(queryOptions);
 
             var whereClause = QueryCombiner.GetInitialWhereClause("main", queryOptions);
@@ -485,29 +450,7 @@ namespace Diffusion.Database
                 _ => "DESC",
             };
 
-            //if (filter.IsEmpty)
-            //{
-            //    //var query = "SELECT Image.*, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image ";
-            //    //var query = $"SELECT {columns} FROM Image ";
-            //    var where = GetInitialWhereClause(filter.UseForDeletion && filter.ForDeletion);
-
-            //    var query = $"SELECT Image.Id, Image.Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount FROM Image WHERE Image.rowid IN (SELECT m1.rowid FROM Image m1 {where} ORDER BY {sortField} {sortDir} limit ? offset ?) ORDER BY {sortField} {sortDir}";
-            //    //var query = $"SELECT {columns} FROM Image ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?";
-
-
-            //    var allimages = db.Query<ImageView>(query, pageSize, offset);
-
-            //    foreach (var image in allimages)
-            //    {
-            //        yield return image;
-            //    }
-
-            //    db.Close();
-
-            //    yield break;
-            //}
-
-            var q = QueryBuilder.FilterEx(filter);
+            var q = QueryCombiner.Filter(filter, options);
 
             var whereClause = QueryCombiner.GetInitialWhereClause("main", options);
 

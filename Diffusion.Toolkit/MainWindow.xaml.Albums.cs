@@ -146,6 +146,7 @@ namespace Diffusion.Toolkit
         {
             if (e.PropertyName == nameof(AlbumModel.IsTicked))
             {
+                _model.HasSelectedAlbums = _model.Albums.Any(d => d.IsTicked);
                 _search.SearchImages();
             }
         }
@@ -181,13 +182,13 @@ namespace Diffusion.Toolkit
                 await _messagePopupManager.Show($"Album {name} already exists!\r\n Please use another name.", "New Album", PopupButtons.OK);
             }
         }
-        
+
         private void AddSelectedImagesToAlbum(IAlbumInfo album)
         {
             if (_model.SelectedImages != null)
             {
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
-                if(_dataStore.AddImagesToAlbum(album.Id, images))
+                if (_dataStore.AddImagesToAlbum(album.Id, images))
                 {
                     Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
                     LoadAlbums();

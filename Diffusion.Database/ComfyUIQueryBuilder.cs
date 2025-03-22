@@ -2,24 +2,6 @@
 
 namespace Diffusion.Database;
 
-public class QueryOptions
-{
-    public string Query { get; set; }
-    public IReadOnlyCollection<int> FolderIds { get; set; }
-    public IReadOnlyCollection<int> AlbumIds { get; set; }
-    public bool HideDeleted { get; set; }
-    public bool HideUnavailable { get; set; }
-    public bool HideNSFW { get; set; }
-    public bool SearchNodes { get; set; }
-    public ComfyQueryOptions ComfyQueryOptions { get; set; }
-}
-
-public class ComfyQueryOptions
-{
-    public bool SearchAllProperties { get; set; }
-    public IEnumerable<string> SearchProperties { get; set; }
-}
-
 public static class ComfyUIQueryBuilder
 {
 
@@ -44,14 +26,14 @@ public static class ComfyUIQueryBuilder
             };
         }).Where(o => o != null);
 
-        var properties = string.Join(" OR ", options.SearchProperties.Select(p => $"cmfyp.Name = '{p}'"));
+        var properties = options.SearchProperties != null && options.SearchProperties.Any() ? string.Join(" OR ", options.SearchProperties.Select(p => $"(cmfyp.Name = '{p}')")) : "";
 
         return (
             "SELECT m1.Id from Image m1 " +
             "INNER JOIN Node cmfyn ON m1.Id = cmfyn.ImageId " +
             "INNER JOIN NodeProperty cmfyp ON cmfyp.NodeId = cmfyn.Id " +
             "WHERE " +
-            (options.SearchAllProperties ? "" : $"( {properties} ) AND ") +
+            (properties is { Length: > 0 } ? $"( {properties} ) AND " : "") +
             $"{whereClause}",
             bindings
         );

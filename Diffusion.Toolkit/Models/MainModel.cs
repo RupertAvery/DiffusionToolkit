@@ -58,6 +58,7 @@ public class MainModel : BaseNotify
     private ICommand _showAlbums;
     private ICommand _addMatchingToAlbum;
     private ICommand _sortAlbum;
+    private ICommand _clearAlbums;
     private ICommand _refresh;
     private ICommand _quickCopy;
     private int _thumbnailSize;
@@ -401,7 +402,19 @@ public class MainModel : BaseNotify
         get => _addMatchingToAlbum;
         set => SetField(ref _addMatchingToAlbum, value);
     }
-    
+
+    public ICommand ClearAlbumsCommand
+    {
+        get => _clearAlbums;
+        set => SetField(ref _clearAlbums, value);
+    }
+
+    public bool HasSelectedAlbums
+    {
+        get => _hasSelectedAlbums;
+        set => SetField(ref _hasSelectedAlbums, value);
+    }
+
     public ICommand SortAlbumCommand
     {
         get => _sortAlbum;
@@ -591,6 +604,7 @@ public class MainModel : BaseNotify
     private ICommand _toggleHideUnavailable;
     private bool _autoAdvance;
     private ICommand _toggleAutoAdvance;
+    private bool _hasSelectedAlbums;
 
     public FolderViewModel? CurrentFolder
     {

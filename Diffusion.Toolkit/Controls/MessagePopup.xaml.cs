@@ -156,7 +156,7 @@ namespace Diffusion.Toolkit.Controls
 
         public async Task WaitUntilReady()
         {
-            await _semaphore.WaitAsync(-1);
+            await _semaphore.WaitAsync();
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)

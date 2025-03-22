@@ -1012,5 +1012,15 @@ namespace Diffusion.Toolkit
             window.ShowDialog();
             LoadAlbums();
         }
+
+        private void ClearAlbums()
+        {
+            foreach (var album in _model.Albums)
+            {
+                album.IsTicked = false;
+            }
+
+            _model.HasSelectedAlbums = false;
+        }
     }
 }

@@ -113,6 +113,16 @@ public class Settings : SettingsContainer, IScanOptions
         PreviewGridHeight2 = "3*";
         SlideShowDelay = 5;
 
+        SearchNodes = true;
+        IncludeNodeProperties = new List<string>
+        {
+            "text",
+            "text__g",
+            "text__l",
+            "text__positive",
+            "text__negative",
+        };
+
         NavigationSection = new NavigationSectionSettings(initialize);
         NavigationSection.Attach(this);
 
@@ -120,6 +130,12 @@ public class Settings : SettingsContainer, IScanOptions
         {
             RecurseFolders = true;
         }
+    }
+
+    public List<string> IncludeNodeProperties
+    {
+        get => _includeNodeProperties;
+        set => UpdateList(ref _includeNodeProperties, value);
     }
 
     public List<string> ImagePaths
@@ -206,6 +222,8 @@ public class Settings : SettingsContainer, IScanOptions
     private double? _top;
     private double? _left;
     private bool _hideUnavailable;
+    private List<string> _includeNodeProperties;
+    private bool _searchNodes;
 
     public double? Top
     {
@@ -408,6 +426,12 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _hideUnavailable;
         set => UpdateValue(ref _hideUnavailable, value);
+    }
+
+    public bool SearchNodes
+    {
+        get => _searchNodes;
+        set => UpdateValue(ref _searchNodes, value);
     }
 }
 

@@ -11,43 +11,6 @@ namespace Diffusion.Database
             _models = models;
         }
 
-        public static (string Query, IEnumerable<object> Bindings, IEnumerable<string> Joins) FilterEx(Filter filter)
-        {
-            var q = Filter(filter);
-
-            var where1Clause = q.WhereClause is { Length: > 0 } ? $" WHERE {q.WhereClause}" : "";
-
-            var query = $"SELECT m1.Id FROM Image m1 {string.Join(' ', q.Joins)} {where1Clause}";
-
-            var bindings = q.Bindings;
-            var joins = q.Joins;
-
-            if (filter.NodeFilters != null && filter.NodeFilters.Any(d => d.IsActive))
-            {
-                var p = ComfyUIQueryBuilder.Filter(filter);
-
-                query = (where1Clause.Length > 0 ? query + " UNION " : "") +
-                         $"SELECT m2.Id FROM Image m2 INNER JOIN ({p.Query}) s2 ON s2.Id = m2.Id";
-
-                bindings = bindings.Concat(p.Bindings);
-            }
-
-            if (filter.AlbumIds is { Count: > 0 })
-            {
-                var albumIds = string.Join(",", filter.AlbumIds.Select(a => "?"));
-
-                query = $"SELECT images.Id FROM ({query}) images " +
-                        "INNER JOIN " +
-                        "(" +
-                        $"SELECT m1.Id FROM Image m1 INNER JOIN AlbumImage ai ON ai.ImageId = m1.Id INNER JOIN Album a ON a.Id = ai.AlbumId WHERE a.Id IN ({albumIds})" +
-                        ") albums ON images.Id = albums.Id ";
-
-                bindings = bindings.Concat(filter.AlbumIds.Cast<object>());
-            }
-
-            return (query, bindings, joins);
-        }
-
         public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<string> Joins) Filter(Filter filter)
         {
             var conditions = new List<KeyValuePair<string, object>>();

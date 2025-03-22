@@ -154,6 +154,7 @@ namespace Diffusion.Toolkit
                 _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
 
                 _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
+                _model.ClearAlbumsCommand = new RelayCommand<object>((o) => ClearAlbums());
 
                 _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
                 _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
