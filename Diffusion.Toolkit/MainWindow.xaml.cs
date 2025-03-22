@@ -37,6 +37,7 @@ using Diffusion.Toolkit.Controls;
 using System.Configuration;
 using System.Windows.Input;
 using Diffusion.Toolkit.Services;
+using System.Windows.Threading;
 
 namespace Diffusion.Toolkit
 {
@@ -204,7 +205,7 @@ namespace Diffusion.Toolkit
             {
                 Logger.Log(ex.Message);
             }
-         
+
         }
 
         private void ShowInExplorer(FolderViewModel folder)
@@ -553,16 +554,11 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Initializing pages");
 
-            MessagePopupHandle handle = null;
 
-            await dataStore.Create(() =>
-            {
-                handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
-            },
-            () =>
-            {
-                handle?.CloseAsync();
-            });
+            await dataStore.Create(
+                () => Dispatcher.Invoke(() => _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database")),
+                (handle) => { Dispatcher.Invoke(() => { ((MessagePopupHandle)handle).CloseAsync(); }); }
+            );
 
             _dataStoreOptions = new DataStoreOptions(dataStore);
 
@@ -1123,7 +1119,8 @@ namespace Diffusion.Toolkit
                 if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {
                     Scan();
-                };
+                }
+                ;
             }
             else
             {

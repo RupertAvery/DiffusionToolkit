@@ -101,7 +101,7 @@ namespace Diffusion.Toolkit.Controls
 
         public MessagePopup(MessagePopupManager manager, UIElement placementTarget, int timeout, bool showInput)
         {
-            _semaphore = new SemaphoreSlim(1);
+            _semaphore = new SemaphoreSlim(0);
 
             _manager = manager;
             _timeout = timeout;
@@ -156,7 +156,7 @@ namespace Diffusion.Toolkit.Controls
 
         public async Task WaitUntilReady()
         {
-            await _semaphore.WaitAsync(100);
+            await _semaphore.WaitAsync(-1);
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
