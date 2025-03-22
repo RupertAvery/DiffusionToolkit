@@ -11,7 +11,13 @@ public partial class DataStore
 
     public SQLiteConnection OpenReadonlyConnection()
     {
-        return _readOnlyConnection ??= new SQLiteConnection(DatabasePath, SQLiteOpenFlags.ReadOnly);
+        if (_readOnlyConnection == null)
+        {
+            _readOnlyConnection = new SQLiteConnection(DatabasePath, SQLiteOpenFlags.ReadOnly);
+            _readOnlyConnection.Execute("pragma cache_size=-1000000");
+        }
+
+        return _readOnlyConnection;
     }
 
     public SQLiteConnection OpenConnection()
@@ -97,6 +103,9 @@ public partial class DataStore
         db.CreateIndex("Image", new[] { "ForDeletion", "CreatedDate" });
         db.CreateIndex("Image", new[] { "NSFW", "CreatedDate" });
         db.CreateIndex("Image", new[] { "Unavailable", "CreatedDate" });
+        db.CreateIndex("Image", new[] { "ForDeletion", "Unavailable", "CreatedDate" });
+        db.CreateIndex("Image", new[] { "NSFW", "ForDeletion", "Unavailable", "CreatedDate" });
+
 
         db.CreateTable<Album>();
         db.CreateIndex<Album>(album => album.Name, true);
@@ -116,6 +125,7 @@ public partial class DataStore
         db.CreateIndex<NodeProperty>(property => property.NodeId);
         db.CreateIndex<NodeProperty>(property => property.Name);
         db.CreateIndex<NodeProperty>(property => property.Value);
+        db.CreateIndex("NodeProperty", new[] { "Name", "Value" });
 
         db.CreateTable<Folder>();
         db.CreateIndex<Folder>(folder => folder.ParentId);

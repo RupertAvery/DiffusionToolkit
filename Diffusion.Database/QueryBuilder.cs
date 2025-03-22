@@ -57,15 +57,25 @@ public static class QueryCombiner
             bindings = bindings.Concat(p.Bindings);
         }
 
+        var filters = new List<string>();
+
         if (options.AlbumIds is { Count: > 0 })
         {
             var albumIds = string.Join(",", options.AlbumIds.Select(a => "?"));
-
-            query = $"SELECT Id FROM ({query}) " +
-                    " INTERSECT " +
-                    $"SELECT DISTINCT m1.Id FROM Image m1 INNER JOIN AlbumImage ai ON ai.ImageId = m1.Id INNER JOIN Album a ON a.Id = ai.AlbumId WHERE a.Id IN ({albumIds})";
-
+            filters.Add($"SELECT DISTINCT m1.Id FROM Image m1 INNER JOIN AlbumImage ai ON ai.ImageId = m1.Id INNER JOIN Album a ON a.Id = ai.AlbumId WHERE a.Id IN ({albumIds})");
             bindings = bindings.Concat(options.AlbumIds.Cast<object>());
+        }
+
+        if (options.FolderIds is { Count: > 0 })
+        {
+            var folderIds = string.Join(",", options.FolderIds.Select(a => "?"));
+            filters.Add($"SELECT m1.Id FROM Image m1 INNER JOIN Folder f ON f.Id = m1.FolderId WHERE f.Id IN ({folderIds})");
+            bindings = bindings.Concat(options.AlbumIds.Cast<object>());
+        }
+
+        if (filters.Any())
+        {
+            query = $"SELECT Id FROM ({query}) INTERSECT " + string.Join(" INTERSECT ", filters);
         }
 
         return (query, bindings);

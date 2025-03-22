@@ -117,7 +117,7 @@ namespace Diffusion.Database
 
         public CountSize CountAndSize(QueryOptions options)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var q = QueryCombiner.Parse(options);
 
@@ -128,8 +128,6 @@ namespace Diffusion.Database
             var where = whereClause.Length > 0 ? $"WHERE {whereClause}" : "";
 
             var countSize = db.Query<CountSize>($"SELECT COUNT(*) AS Total, COALESCE(SUM(FileSize),0) AS Size FROM Image main {join} {where}", q.Bindings.ToArray());
-
-            db.Close();
 
             return countSize[0];
         }

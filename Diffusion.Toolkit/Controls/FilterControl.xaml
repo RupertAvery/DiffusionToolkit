@@ -304,33 +304,47 @@
                     </ScrollViewer>
                 </TabItem>
                 <TabItem Header="Workflow">
-                    <ScrollViewer>
-                        <StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="415"/>
+                            <RowDefinition Height="30"/>
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="200"/>
+                                <ColumnDefinition Width="20"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="1" Margin="5,0,5,0">Property</Label>
+                            <Label Grid.Column="2" Margin="5,0,5,0">Value</Label>
+                        </Grid>
+                        <ScrollViewer Grid.Row="1" Margin="0,0,0,5">
                             <ItemsControl ItemsSource="{Binding NodeFilters}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid  Width="720" Margin="5">
+                                        <Grid  Width="715" Margin="5">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="20"/>
-                                                <ColumnDefinition Width="70"/>
                                                 <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="50"/>
-                                                <ColumnDefinition/>
+                                                <ColumnDefinition Width="525"/>
                                                 <ColumnDefinition Width="20"/>
                                             </Grid.ColumnDefinitions>
                                             <CheckBox IsChecked="{Binding IsActive}" VerticalAlignment="Center"></CheckBox>
-                                            <Label Grid.Column="1">Property</Label>
                                             <TextBox 
                                                 Text="{Binding Property}"
-                                                Grid.Column="2"
+                                                Margin="5,0,5,0"
+                                                Grid.Column="1"
                                                 Height="20"
                                                 HorizontalScrollBarVisibility="Disabled"
                                                 VerticalScrollBarVisibility="Auto"
                                             ></TextBox>
-                                            <Label Grid.Column="3">Value</Label>
                                             <TextBox 
                                                 Text="{Binding Value}"
-                                                Grid.Column="4"
+                                                Margin="5,0,5,0"
+                                                Grid.Column="2"
                                                 Height="20"
                                                 HorizontalScrollBarVisibility="Disabled"
                                                 VerticalScrollBarVisibility="Auto"
@@ -340,9 +354,9 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button Width="565" Click="AddFilter_OnClick">Add Filter</Button>
-                        </StackPanel>
-                    </ScrollViewer>
+                        </ScrollViewer>
+                        <Button Grid.Row="2" Click="AddFilter_OnClick">Add Filter</Button>
+                    </Grid>
                 </TabItem>
             </TabControl>
 

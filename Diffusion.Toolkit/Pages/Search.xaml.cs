@@ -697,34 +697,41 @@ namespace Diffusion.Toolkit.Pages
             {
                 Dispatcher.Invoke(() =>
                 {
-                    //_model.Images!.Clear();
+                    _model.IsBusy = true;
+                });
+
+                //_model.Images!.Clear();
                     int count = 0;
-                    long size = 0;
+                long size = 0;
 
 
-                    var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
+                var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
+                var folders = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
 
 
-                    queryOptions = new QueryOptions()
+                queryOptions = new QueryOptions()
+                {
+                    AlbumIds = albums,
+                    SearchNodes = true,
+                    HideNSFW = _model.MainModel.HideNSFW,
+                    HideDeleted = _model.MainModel.HideDeleted,
+                    HideUnavailable = _model.MainModel.HideUnavailable,
+                    ComfyQueryOptions = new ComfyQueryOptions()
                     {
-                        AlbumIds = albums,
-                        SearchNodes = true,
-                        HideNSFW = _model.MainModel.HideNSFW,
-                        HideDeleted = _model.MainModel.HideDeleted,
-                        HideUnavailable = _model.MainModel.HideUnavailable,
-                        ComfyQueryOptions = new ComfyQueryOptions()
+                        SearchAllProperties = false,
+                        SearchProperties = new string[]
                         {
-                            SearchAllProperties = false,
-                            SearchProperties = new string[]
-                            {
                                 "text",
                                 "text__g",
                                 "text__l",
                                 "text__positive",
                                 "text__negative",
-                            }
                         }
-                    };
+                    }
+                };
+
+                Task.Run(() =>
+                {
 
                     if (UseFilter)
                     {
@@ -771,11 +778,16 @@ namespace Diffusion.Toolkit.Pages
                         {
                             if (_model.SearchHistory.Count == 0 || (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != _model.SearchText))
                             {
-                                if (_model.SearchHistory.Count + 1 > 25)
+
+                                Dispatcher.Invoke(() =>
                                 {
-                                    _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
-                                }
-                                _model.SearchHistory.Insert(0, _model.SearchText);
+                                    if (_model.SearchHistory.Count + 1 > 25)
+                                    {
+                                        _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
+                                    }
+
+                                    _model.SearchHistory.Insert(0, _model.SearchText);
+                                });
 
                                 _currentModeSettings.History = _model.SearchHistory.ToList();
                             }
@@ -816,124 +828,91 @@ namespace Diffusion.Toolkit.Pages
                             }
                         }
 
-                        //var query = _model.SearchText;
-                        //bool showImages = true;
-
-                        //if (_currentModeSettings.IsFavorite)
-                        //{
-                        //    query = $"{query} favorite: true";
-                        //}
-                        //else if (_currentModeSettings.IsMarkedForDeletion)
-                        //{
-                        //    query = $"{query} delete: true";
-                        //}
-                        //else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                        //{
-                        //    if (_currentModeSettings.CurrentFolder != "$")
-                        //    {
-                        //        query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
-                        //    }
-                        //    else
-                        //    {
-                        //        showImages = false;
-                        //    }
-                        //}
-                        //else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                        //{
-                        //    if (_model.MainModel.CurrentAlbum != null)
-                        //    {
-                        //        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
-                        //    }
-                        //    else
-                        //    {
-                        //        showImages = false;
-                        //    }
-                        //}
-                        //else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                        //{
-                        //    if (_model.MainModel.CurrentModel != null)
-                        //    {
-                        //        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
-                        //    }
-                        //    else
-                        //    {
-                        //        showImages = false;
-                        //    }
-                        //}
                         queryOptions.Query = query;
 
-                        (count,size) = DataStore.CountAndSize(queryOptions);
+                        (count, size) = DataStore.CountAndSize(queryOptions);
                     }
 
-                    //_model.FileSize = size;
-
-                    _model.IsEmpty = count == 0;
-
-                    if (_model.IsEmpty)
+                    Dispatcher.Invoke(() =>
                     {
-                        //_model.CurrentImage.;
-                    }
 
-                    _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
+                        //_model.FileSize = size;
 
-                    float fsize = size;
+                        _model.IsEmpty = count == 0;
 
-                    var ssize = $"{fsize:n} B";
-
-                    if (fsize > 1073741824)
-                    {
-                        fsize /= 1073741824;
-                        ssize = $"{fsize:n2} GiB";
-                    }
-                    else if (fsize > 1048576)
-                    {
-                        fsize /= 1048576;
-                        ssize = $"{fsize:n2} MiB";
-                    }
-                    else if (fsize > 1024)
-                    {
-                        fsize /= 1024;
-                        ssize = $"{fsize:n2} KiB";
-                    }
-
-                    var text = GetLocalizedText("Search.Results");
-
-                    text = text.Replace("{count}", $"{count:n0}")
-                        .Replace("{size}", $"{ssize}");
-
-                    _model.Results = text;
-
-                    if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                    {
-                        if (_model.Pages == 0)
-                        {
-                            _model.Pages = 1;
-                        }
-                    }
-                    else
-                    {
                         if (_model.IsEmpty)
                         {
-                            var noResults = GetLocalizedText("Search.NoResults");
-
-                            _model.Page = 0;
-                            _model.ResultStatus = noResults;
-                            //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
-                            //    MessageBoxButton.OK,
-                            //    MessageBoxImage.Information);
-                            return;
+                            //_model.CurrentImage.;
                         }
-                    }
-                    _model.Page = 1;
-                    ThumbnailListView.Model.Pages = _model.Pages;
-                    ThumbnailListView.Model.Page = _model.Page;
 
-                    ThumbnailListView.SetPagingEnabled();
+                        _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
+
+                        float fsize = size;
+
+                        var ssize = $"{fsize:n} B";
+
+                        if (fsize > 1073741824)
+                        {
+                            fsize /= 1073741824;
+                            ssize = $"{fsize:n2} GiB";
+                        }
+                        else if (fsize > 1048576)
+                        {
+                            fsize /= 1048576;
+                            ssize = $"{fsize:n2} MiB";
+                        }
+                        else if (fsize > 1024)
+                        {
+                            fsize /= 1024;
+                            ssize = $"{fsize:n2} KiB";
+                        }
+
+                        var text = GetLocalizedText("Search.Results");
+
+                        text = text.Replace("{count}", $"{count:n0}")
+                                .Replace("{size}", $"{ssize}");
+
+                        _model.Results = text;
+
+                        if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                        {
+                            if (_model.Pages == 0)
+                            {
+                                _model.Pages = 1;
+                            }
+                        }
+                        else
+                        {
+                            if (_model.IsEmpty)
+                            {
+                                var noResults = GetLocalizedText("Search.NoResults");
+
+                                _model.Page = 0;
+                                _model.ResultStatus = noResults;
+                                //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
+                                //    MessageBoxButton.OK,
+                                //    MessageBoxImage.Information);
+                                return;
+                            }
+                        }
+                        _model.Page = 1;
+                        ThumbnailListView.Model.Pages = _model.Pages;
+                        ThumbnailListView.Model.Page = _model.Page;
+
+                        ThumbnailListView.SetPagingEnabled();
+                    });
+
+
+
+                    ReloadMatches(new ReloadOptions() { Focus = (string)obj != "ManualSearch" });
+                }).ContinueWith(d =>
+                {
+                    if (d.IsFaulted)
+                    {
+                        Debug.WriteLine(d.Exception);
+                    }
                 });
 
-
-
-                ReloadMatches(new ReloadOptions() { Focus = (string)obj != "ManualSearch" });
             }
             catch (Exception e)
             {
@@ -1371,7 +1350,7 @@ namespace Diffusion.Toolkit.Pages
             Dispatcher.Invoke(() =>
             {
                 _model.IsBusy = true;
-//                _model.Images?.Clear();
+                //                _model.Images?.Clear();
             });
 
             var images = new List<ImageEntry>();
