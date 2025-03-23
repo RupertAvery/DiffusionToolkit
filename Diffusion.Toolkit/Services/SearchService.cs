@@ -1,4 +1,6 @@
 ﻿using System;
+using Diffusion.Database;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -6,7 +8,7 @@ public class SearchService
 {
     public event EventHandler<string> SortBy;
     public event EventHandler<string> SortOrder;
-    public event EventHandler<SearchFilter> Filter;
+    public event EventHandler<SearchFilter> SearchFilter;
     public event EventHandler Search;
     public event EventHandler<SearchView> View;
 
@@ -22,7 +24,18 @@ public class SearchService
 
     public void SetFilter(SearchFilter value)
     {
-        Filter?.Invoke(this, value);
+        SearchFilter?.Invoke(this, value);
+    }
+
+    public SearchService(FilterControlModel filter)
+    {
+        Filter = filter;
+    }
+
+    public FilterControlModel Filter
+    {
+        get;
+        set;
     }
 
     public void ExecuteSearch()
@@ -33,5 +46,10 @@ public class SearchService
     public void SetView(SearchView view)
     {
         View?.Invoke(this, view);
+    }
+
+    public void AddNodeFilter(string property, string value)
+    {
+        Filter.AddNodeFilter(property, value);
     }
 }

@@ -14,6 +14,7 @@ using System.Windows.Interop;
 using WPFLocalizeExtension.Providers;
 using System.Collections.ObjectModel;
 using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Services;
 using WPFLocalizeExtension.Engine;
 
 namespace Diffusion.Toolkit
@@ -104,7 +105,6 @@ namespace Diffusion.Toolkit
                 return;
             }
 
-            _progressCancellationTokenSource = new CancellationTokenSource();
 
             _messagePopupManager.Show("This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", PopupButtons.YesNo).ContinueWith(t =>
             {
@@ -112,7 +112,9 @@ namespace Diffusion.Toolkit
                 {
                     Task.Run(async () =>
                     {
-                        _model.IsBusy = true;
+                        ServiceLocator.ProgressService.StartTask();
+
+                        var token = ServiceLocator.ProgressService.CancellationToken;
 
                         var cancelled = false;
 
@@ -126,7 +128,7 @@ namespace Diffusion.Toolkit
 
                             foreach (var imagePath in files)
                             {
-                                if (_progressCancellationTokenSource.IsCancellationRequested)
+                                if (token.IsCancellationRequested)
                                 {
                                     break;
                                 }
@@ -183,7 +185,7 @@ namespace Diffusion.Toolkit
 
                                 LoadAlbums();
 
-                                if (cancelled || _progressCancellationTokenSource.IsCancellationRequested)
+                                if (cancelled || token.IsCancellationRequested)
                                 {
                                     await _messagePopupManager.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
                                 }
@@ -195,7 +197,7 @@ namespace Diffusion.Toolkit
                         }
                         finally
                         {
-                            _model.IsBusy = false;
+                            ServiceLocator.ProgressService.CompleteTask();
 
                             SetTotalFilesStatus();
 
@@ -228,16 +230,6 @@ namespace Diffusion.Toolkit
                 {
                     _tipsOpen = false;
                 };
-            }
-        }
-
-        private async Task CancelProgress(object o)
-        {
-            var dialogResult = await _messagePopupManager.Show(GetLocalizedText("Common.MessageBox.ConfirmCancelOperation"), GetLocalizedText("Common.MessageBox.Cancel"), PopupButtons.YesNo);
-
-            if (dialogResult == PopupResult.Yes)
-            {
-                _progressCancellationTokenSource.Cancel();
             }
         }
 

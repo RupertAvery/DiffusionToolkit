@@ -54,7 +54,7 @@ namespace Diffusion.Toolkit
 
         private Configuration<Settings> _configuration;
         private Settings? _settings;
-        private CancellationTokenSource _progressCancellationTokenSource;
+        
 
         private Search _search;
         private Pages.Models _models;
@@ -107,6 +107,9 @@ namespace Diffusion.Toolkit
 
 
                 _model = new MainModel();
+
+                ServiceLocator.MainModel = _model;
+
                 _model.Rescan = new AsyncCommand<object>(RescanTask);
                 _model.Rebuild = new AsyncCommand<object>(RebuildTask);
                 _model.ReloadHashes = new AsyncCommand<object>(async (o) =>
@@ -116,7 +119,7 @@ namespace Diffusion.Toolkit
                 });
                 _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
                 _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
-                _model.CancelCommand = new AsyncCommand<object>(CancelProgress);
+                _model.CancelCommand = new AsyncCommand<object>(async (o) => await CancelProgress());
                 _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
                 _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
                 _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
@@ -136,12 +139,14 @@ namespace Diffusion.Toolkit
                 _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
                 _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
                 _model.ResetLayout = new RelayCommand<object>((o) => ResetLayout());
+
+                _model.SaveQuery = new RelayCommand<object>((o) => SaveQuery());
+                _model.RescanResults = new RelayCommand<object>((o) => RescanResults());
                 _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
                 _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
                 _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
                 _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
                 _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
-                _model.AddMatchingToAlbum = new RelayCommand<object>((o) => AddMatchingToAlbum());
                 _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
 
                 _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
@@ -186,6 +191,9 @@ namespace Diffusion.Toolkit
 
 
                 _messagePopupManager = new MessagePopupManager(this, PopupHost, Frame, Dispatcher);
+
+                ServiceLocator.ProgressService = new ProgressService(Dispatcher);
+                ServiceLocator.MessageService = new MessageService(_messagePopupManager);
 
                 //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
                 //Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-PT");
@@ -773,11 +781,18 @@ namespace Diffusion.Toolkit
             {
                 Logger.Log($"Scanning for new images");
 
-                _progressCancellationTokenSource = new CancellationTokenSource();
 
                 _ = Task.Run(async () =>
                 {
-                    await ScanInternal(_settings, false, false, _progressCancellationTokenSource.Token);
+                    ServiceLocator.ProgressService.StartTask();
+                    try
+                    {
+                        await ScanInternal(_settings, false, false, ServiceLocator.ProgressService.CancellationToken);
+                    }
+                    finally
+                    {
+                        ServiceLocator.ProgressService.CompleteTask();
+                    }
                 });
             }
 
@@ -1121,7 +1136,6 @@ namespace Diffusion.Toolkit
                 {
                     Scan();
                 }
-                ;
             }
             else
             {

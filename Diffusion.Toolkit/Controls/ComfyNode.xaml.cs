@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Management;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Media;
 using Diffusion.IO;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -53,12 +56,36 @@ namespace Diffusion.Toolkit.Controls
                     Width = 16,
                     Height = 16,
                     Content = "...",
+                    ContextMenu = new ContextMenu()
+                    {
+                        
+                    }
                 };
                 label.SetBinding(Label.ContentProperty, "Name");
                 textBox.SetValue(Grid.ColumnProperty, 1);
                 textBox.SetBinding(TextBox.TextProperty, "Value");
                 button.SetValue(Grid.ColumnProperty, 2);
                 button.Click += ButtonOnClick;
+
+                var filterMenuItem = new MenuItem() { Header = "Add to Filters" };
+                filterMenuItem.DataContext = input;
+                filterMenuItem.Click += (sender, args) =>
+                {
+                    var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
+                    var value = bindingExpression.ResolvedSource;
+                    ServiceLocator.SearchService.AddNodeFilter(input.Name, (string)input.Value);
+                };
+
+                var searchMenuItem = new MenuItem() { Header = "Add to Default Search" };
+                searchMenuItem.DataContext = input;
+                searchMenuItem.Click += (sender, args) =>
+                {
+                    //ServiceLocator.SearchService.AddNodeFilter(input.Name, (string)value);
+                };
+
+                button.ContextMenu.Items.Add(filterMenuItem);
+                button.ContextMenu.Items.Add(searchMenuItem);
+
 
                 var grid = new Grid()
                 {
@@ -92,9 +119,11 @@ namespace Diffusion.Toolkit.Controls
             Id = node.GetHashCode();
         }
 
+
+
         private void ButtonOnClick(object sender, RoutedEventArgs e)
         {
-            //throw new System.NotImplementedException();
+            ((Button)sender).ContextMenu.IsOpen = true;
         }
 
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

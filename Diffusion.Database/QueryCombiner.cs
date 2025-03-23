@@ -75,8 +75,8 @@ public static class QueryCombiner
         {
             var p = ComfyUIQueryBuilder.Filter(filter);
 
-            query = (where1Clause.Length > 0 ? query + " UNION " : "") +
-                     $"SELECT m2.Id FROM Image m2 INNER JOIN ({p.Query}) s2 ON s2.Id = m2.Id";
+            query = (where1Clause.Length > 0 ? query + " INTERSECT " : "") +
+                     $"SELECT Id FROM ({p.Query})";
 
             bindings = bindings.Concat(p.Bindings);
         }

@@ -695,8 +695,10 @@ public static class SearchControlModelExtensions
         filter.NodeFilters = model.NodeFilters.Select(d => new NodeFilter()
         {
             IsActive = d.IsActive,
+            Operation = d.Operation,
             Node = d.Node,
             Property = d.Property,
+            Comparison = d.Comparison,
             Value = d.Value,
         }).ToList();
 

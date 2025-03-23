@@ -12,6 +12,7 @@ using Diffusion.Civitai.Models;
 using System.Diagnostics;
 using System.Threading;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
 {
@@ -64,16 +65,13 @@ namespace Diffusion.Toolkit
 
             if (result == PopupResult.Yes)
             {
-                _progressCancellationTokenSource = new CancellationTokenSource();
-
-                _model.IsBusy = true;
-
                 try
                 {
-                    var collection = await FetchCivitaiModels(_progressCancellationTokenSource.Token);
+                    ServiceLocator.ProgressService.StartTask();
 
-
-                    if (_progressCancellationTokenSource.Token.IsCancellationRequested)
+                    var collection = await FetchCivitaiModels(ServiceLocator.ProgressService.CancellationToken);
+                    
+                    if (ServiceLocator.ProgressService.CancellationToken.IsCancellationRequested)
                     {
                         return;
                     }
@@ -109,7 +107,8 @@ namespace Diffusion.Toolkit
                         _model.Status = "Download Complete";
                     });
 
-                    _model.IsBusy = false;
+                    ServiceLocator.ProgressService.CompleteTask();
+
                 }
 
             }

@@ -173,11 +173,12 @@ namespace Diffusion.Toolkit.Pages
 
             var images = new List<ImageEntry>();
 
-            var rId = r.NextInt64();
-            ThumbnailLoader.Instance.SetCurrentRequestId(rId);
+            ThumbnailLoader.Instance.StopCurrentBatch();
+
+            var rId = ThumbnailLoader.Instance.StartBatch();
 
 
-            IEnumerable<Image> matches = Enumerable.Empty<Image>();
+            IEnumerable<ImageView> matches = Enumerable.Empty<ImageView>();
 
 
             var query = _model.SelectedPrompt.Prompt;
@@ -274,7 +275,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 foreach (var image in _model.PromptsResults.Images)
                 {
-                    image.LoadThumbnail();
+                    image.QueueLoadThumbnail();
                 }
             }
         }

@@ -110,7 +110,7 @@ namespace Diffusion.Toolkit.Controls
                 {
                     if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
                     {
-                        imageEntry.LoadThumbnail();
+                        imageEntry.QueueLoadThumbnail();
                     }
                 }
 

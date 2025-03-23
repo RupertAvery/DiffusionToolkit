@@ -27,19 +27,14 @@ namespace Diffusion.Toolkit
                 }
             }
 
-            _progressCancellationTokenSource = new CancellationTokenSource();
-
-            var token = _progressCancellationTokenSource.Token;
+            ServiceLocator.ProgressService.StartTask();
+            var token = ServiceLocator.ProgressService.CancellationToken;
 
             await Task.Run(() =>
             {
                 var candidateImages = new List<int>();
                 var restoredImages = new List<int>();
 
-                Dispatcher.Invoke(() =>
-                {
-                    _model.IsBusy = true;
-                });
                 try
                 {
 
@@ -227,10 +222,8 @@ namespace Diffusion.Toolkit
                 }
                 finally
                 {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _model.IsBusy = false;
-                    });
+
+                    ServiceLocator.ProgressService.CompleteTask();
                 }
 
 
@@ -281,30 +274,47 @@ namespace Diffusion.Toolkit
             }
         }
 
+        private async Task CancelProgress()
+        {
+            await ServiceLocator.ProgressService.CancelTask();
+        }
+
         private Task Scan()
         {
-            _progressCancellationTokenSource = new CancellationTokenSource();
-
             return Task.Run(async () =>
             {
-                var result = await ScanInternal(_settings!, false, true, _progressCancellationTokenSource.Token);
-                if (result && _search != null)
+                ServiceLocator.ProgressService.StartTask();
+                try
                 {
-                    _search.SearchImages();
+                    var result = await ScanInternal(_settings!, false, true, ServiceLocator.ProgressService.CancellationToken);
+                    if (result && _search != null)
+                    {
+                        _search.SearchImages();
+                    }
+                }
+                finally
+                {
+                    ServiceLocator.ProgressService.CompleteTask();
                 }
             });
         }
 
         private async Task Rebuild()
         {
-            _progressCancellationTokenSource = new CancellationTokenSource();
-
             await Task.Run(async () =>
             {
-                var result = await ScanInternal(_settings!, true, true, _progressCancellationTokenSource.Token);
-                if (result)
+                ServiceLocator.ProgressService.StartTask();
+                try
                 {
-                    _search.SearchImages();
+                    var result = await ScanInternal(_settings!, true, true, ServiceLocator.ProgressService.CancellationToken);
+                    if (result)
+                    {
+                        _search.SearchImages();
+                    }
+                }
+                finally
+                {
+                    ServiceLocator.ProgressService.CompleteTask();
                 }
             });
         }
@@ -440,7 +450,8 @@ namespace Diffusion.Toolkit
 
                     newPath = Path.Join(targetPath, fileName);
                     newTxtPath = Path.Join(targetPath, txtFileName);
-                };
+                }
+                ;
 
 
                 if (image.Path != newPath)
@@ -756,6 +767,8 @@ namespace Diffusion.Toolkit
 
         private async Task<bool> ScanInternal(IScanOptions settings, bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
         {
+            ServiceLocator.ProgressService.StartTask();
+
             bool foldersUnavailable = false;
             bool foldersRestored = false;
 
@@ -781,7 +794,7 @@ namespace Diffusion.Toolkit
 
                 foreach (var path in settings.ImagePaths)
                 {
-                    if (_progressCancellationTokenSource.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         break;
                     }

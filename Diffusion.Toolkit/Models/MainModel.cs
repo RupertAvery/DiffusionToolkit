@@ -56,7 +56,6 @@ public class MainModel : BaseNotify
     private ICommand _reloadHashes;
     private ICommand _showFolders;
     private ICommand _showAlbums;
-    private ICommand _addMatchingToAlbum;
     private ICommand _sortAlbum;
     private ICommand _clearAlbums;
     private ICommand _refresh;
@@ -367,6 +366,18 @@ public class MainModel : BaseNotify
         set => SetField(ref _isPreviewVisible, value);
     }
 
+    public ICommand SaveQuery
+    {
+        get;
+        set;
+    }
+
+    public ICommand RescanResults
+    {
+        get;
+        set;
+    }
+
     public ICommand AddAllToAlbum
     {
         get => _addAllToAlbum;
@@ -395,12 +406,6 @@ public class MainModel : BaseNotify
     {
         get => _autoTagNsfw;
         set => SetField(ref _autoTagNsfw, value);
-    }
-
-    public ICommand AddMatchingToAlbum
-    {
-        get => _addMatchingToAlbum;
-        set => SetField(ref _addMatchingToAlbum, value);
     }
 
     public ICommand ClearAlbumsCommand

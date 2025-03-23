@@ -186,6 +186,22 @@ namespace Diffusion.Toolkit.Controls
         {
             Filter.AddNodeFilter();
         }
+
+        private void Property_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (((TextBox)sender).DataContext is NodeFilter filter)
+            {
+                filter.IsActive = true;
+            }
+        }
+
+        private void Value_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (((TextBox)sender).DataContext is NodeFilter filter)
+            {
+                filter.IsActive = true;
+            }
+        }
     }
 
 

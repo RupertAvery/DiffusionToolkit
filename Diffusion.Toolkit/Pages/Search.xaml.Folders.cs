@@ -84,9 +84,12 @@ namespace Diffusion.Toolkit.Pages
 
         private void Folder_OnClick(object sender, MouseButtonEventArgs e)
         {
-            var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
-            OpenFolder(folder);
+                OpenFolder(folder);
+            }
         }
 
         public void OpenFolder(FolderViewModel folder)

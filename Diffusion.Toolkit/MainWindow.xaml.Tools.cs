@@ -4,19 +4,40 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Diffusion.Database;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
-        private async void AddMatchingToAlbum()
+        private async void RescanResults()
         {
             if (_search.IsQueryEmpty())
             {
-                await _messagePopupManager.Show("Query cannot be empty", "Unmark images for deletion", PopupButtons.OK);
+                await _messagePopupManager.Show("Query cannot be empty", "Rescan results", PopupButtons.OK);
                 return;
             }
 
+            await Task.Run(() =>
+            {
+                var paths = GetSearchResults().Select(m => m.Path).ToList();
+
+                try
+                {
+                    ServiceLocator.ScanningService.Scan(paths, true);
+                    ServiceLocator.SearchService.ExecuteSearch();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            });
+        }
+
+        private IEnumerable<ImageView> GetSearchResults()
+        {
+            return _search.UseFilter ? _dataStore.Search(_search.Filter, _search.QueryOptions, _search.Sorting) : _dataStore.Search(_search.QueryOptions, _search.Sorting);
         }
 
         private async void RemoveFromDatabase()
@@ -35,13 +56,11 @@ namespace Diffusion.Toolkit
 
             if (result == PopupResult.Yes)
             {
-                var matches = _search.UseFilter ? _dataStore.Query(_search.Filter) : _dataStore.Query(_search.Prompt);
-
-                var ids = matches.Select(m => m.Id).ToList();
+                var ids = GetSearchResults().Select(m => m.Id).ToList();
 
                 await Task.Run(() =>
                 {
-                    UpdateByBatch(ids, 50, subset => _dataStore.RemoveImages(subset));
+                    UpdateByBatch(ids, 100, subset => _dataStore.RemoveImages(subset));
                 });
 
                 message = $"{ids.Count} images were removed";
@@ -69,9 +88,7 @@ namespace Diffusion.Toolkit
 
             if (result == PopupResult.Yes)
             {
-                var matches = _search.UseFilter ? _dataStore.Query(_search.Filter) : _dataStore.Query(_search.Prompt);
-
-                var ids = matches.Select(m => m.Id).ToList();
+                var ids = GetSearchResults().Select(m => m.Id).ToList();
 
                 await Task.Run(() =>
                 {
@@ -98,9 +115,7 @@ namespace Diffusion.Toolkit
 
             if (result == PopupResult.Yes)
             {
-                var matches = _search.UseFilter ? _dataStore.Query(_search.Filter) : _dataStore.Query(_search.Prompt);
-
-                var ids = matches.Select(m => m.Id).ToList();
+                var ids = GetSearchResults().Select(m => m.Id).ToList();
 
                 await Task.Run(() =>
                 {
@@ -173,6 +188,15 @@ namespace Diffusion.Toolkit
             });
         }
 
+        private async void SaveQuery()
+        {
+            if (_search.IsQueryEmpty())
+            {
+                await _messagePopupManager.Show("Query cannot be empty", "Add images to album", PopupButtons.OK);
+                return;
+            }
+        }
+
         private async void AddAllToAlbum()
         {
             if (_search.IsQueryEmpty())
@@ -191,9 +215,7 @@ namespace Diffusion.Toolkit
 
             if (result.HasValue && result.Value)
             {
-                var matches = _search.UseFilter ? _dataStore.Query(_search.Filter) : _dataStore.Query(_search.Prompt);
-
-                var ids = matches.Select(m => m.Id).ToList();
+                var ids = GetSearchResults().Select(m => m.Id).ToList();
 
                 string albumName = "";
 

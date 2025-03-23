@@ -21,7 +21,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <Grid Margin="10" DataContext="{Binding Filter, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}">
+        <Grid x:Name="MainGrid" Margin="0,0,0,10" DataContext="{Binding Filter, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}">
             <TabControl Background="{x:Null}">
                 <TabItem Header="Metadata">
                     <ScrollViewer>
@@ -304,52 +304,77 @@
                     </ScrollViewer>
                 </TabItem>
                 <TabItem Header="Workflow">
-                    <Grid>
+                    <Grid Width="765">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="30"/>
-                            <RowDefinition Height="415"/>
+                            <RowDefinition Height="430"/>
                             <RowDefinition Height="30"/>
                         </Grid.RowDefinitions>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="50"/>
                                 <ColumnDefinition Width="150"/>
-                                <ColumnDefinition Width="200"/>
-                                <ColumnDefinition Width="20"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
 
-                            <Label Grid.Column="1" Margin="5,0,5,0">Property</Label>
-                            <Label Grid.Column="2" Margin="5,0,5,0">Value</Label>
+                            <Label Grid.Column="2" Margin="0,0,0,0">Property</Label>
+                            <Label Grid.Column="4" Margin="0,0,0,0">Value</Label>
                         </Grid>
-                        <ScrollViewer Grid.Row="1" Margin="0,0,0,5">
+                        <ScrollViewer Grid.Row="1">
                             <ItemsControl ItemsSource="{Binding NodeFilters}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid  Width="715" Margin="5">
+                                        <Grid Margin="0,0,0,10">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="20"/>
+                                                <ColumnDefinition Width="50"/>
                                                 <ColumnDefinition Width="150"/>
-                                                <ColumnDefinition Width="525"/>
+                                                <ColumnDefinition Width="90"/>
+                                                <ColumnDefinition/>
                                                 <ColumnDefinition Width="20"/>
                                             </Grid.ColumnDefinitions>
                                             <CheckBox IsChecked="{Binding IsActive}" VerticalAlignment="Center"></CheckBox>
+                                            <ComboBox ItemsSource="{Binding DataContext.NodeOperations, ElementName=MainGrid}" 
+                                                      Grid.Column="1" 
+                                                      DisplayMemberPath="Name" 
+                                                      SelectedValuePath="Value" 
+                                                      SelectedValue="{Binding Operation}">
+                                                <ComboBox.Style>
+                                                    <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
+                                                        <Setter Property="SelectedIndex" Value="0"/>
+                                                    </Style>
+                                                </ComboBox.Style>
+                                            </ComboBox>
                                             <TextBox 
                                                 Text="{Binding Property}"
                                                 Margin="5,0,5,0"
-                                                Grid.Column="1"
-                                                Height="20"
+                                                Grid.Column="2"
+                                                KeyDown="Property_OnKeyDown"
                                                 HorizontalScrollBarVisibility="Disabled"
                                                 VerticalScrollBarVisibility="Auto"
                                             ></TextBox>
+                                            <ComboBox ItemsSource="{Binding DataContext.NodePropertyComparisons, ElementName=MainGrid}" 
+                                                      Grid.Column="3" 
+                                                      DisplayMemberPath="Name" 
+                                                      SelectedValuePath="Value" 
+                                                      SelectedValue="{Binding Comparison}">
+                                                <ComboBox.Style>
+                                                    <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
+                                                        <Setter Property="SelectedIndex" Value="0"/>
+                                                    </Style>
+                                                </ComboBox.Style>
+                                            </ComboBox>
                                             <TextBox 
                                                 Text="{Binding Value}"
+                                                KeyDown="Value_OnKeyDown"
                                                 Margin="5,0,5,0"
-                                                Grid.Column="2"
-                                                Height="20"
+                                                Grid.Column="4"
                                                 HorizontalScrollBarVisibility="Disabled"
                                                 VerticalScrollBarVisibility="Auto"
                                             ></TextBox>
-                                            <Button  Grid.Column="5" Command="{Binding RemoveCommand}" CommandParameter="{Binding .}" >X</Button>
+                                            <Button Grid.Column="5" Command="{Binding RemoveCommand}" CommandParameter="{Binding .}" >X</Button>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

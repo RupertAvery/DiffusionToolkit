@@ -120,23 +120,22 @@
                         </TextBlock.Style>
                     </TextBlock>
                 </Grid>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowSearchSettings.ToolTip}" Grid.Column="4" Command="{Binding ShowSearchSettings}">
-                    <fa:ImageAwesome Icon="Sliders" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    </fa:ImageAwesome>
-                </Button>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowFilter.ToolTip}" Grid.Column="3" Command="{Binding ShowFilter}" Background="{Binding Filter.IsActive, Converter={StaticResource FilterActiveConverter}}">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowFilter.ToolTip}" Grid.Column="4" Command="{Binding ShowFilter}" Background="{Binding Filter.IsActive, Converter={StaticResource FilterActiveConverter}}">
                     <fa:ImageAwesome Icon="Filter" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Clear.ToolTip}" Grid.Column="2" Width="28" Command="{Binding ClearSearch}" >
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Clear.ToolTip}" Grid.Column="3" Width="28" Command="{Binding ClearSearch}" >
                     <fa:ImageAwesome Icon="Close" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Refresh.ToolTip}" Grid.Column="1" Width="28" Command="{Binding Refresh}" >
-                    <fa:ImageAwesome Icon="Search" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Refresh.ToolTip}" Grid.Column="2" Width="28" Command="{Binding Refresh}" >
+                    <fa:ImageAwesome Icon="Refresh" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowSearchSettings.ToolTip}" Grid.Column="1" Command="{Binding ShowSearchSettings}">
+                    <fa:ImageAwesome Icon="Sliders" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    </fa:ImageAwesome>
+                </Button>
             </Grid>
             <Grid Grid.Row="2"  Margin="2">
                 <DockPanel>
@@ -628,7 +627,7 @@
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
                 </Border.Effect>
-                <Grid >
+                <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition Height="30"/>

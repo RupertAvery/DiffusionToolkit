@@ -1,7 +1,48 @@
 ﻿using Diffusion.Common;
+using System;
 
 namespace Diffusion.Database
 {
+    public class Paging
+    {
+        public int PageSize { get; set; }
+        public int Offset { get; set; }
+    }
+
+    public class Sorting
+    {
+        public string SortBy { get; set; }
+        public string SortDirection { get; set; }
+
+        public Sorting(string sortBy, string sortDirection)
+        {
+            SortBy = sortBy switch
+            {
+                "Date Created" => nameof(Image.CreatedDate),
+                "Date Modified" => nameof(Image.ModifiedDate),
+                "Rating" => nameof(Image.Rating),
+                "Aesthetic Score" => nameof(Image.AestheticScore),
+                "Prompt" => nameof(Image.Prompt),
+                "Random" => "RANDOM()",
+                "Name" => nameof(Image.FileName),
+                _ => nameof(Image.CreatedDate),
+            };
+
+            SortDirection = sortDirection switch
+            {
+                "A-Z" => "ASC",
+                "Z-A" => "DESC",
+                _ => "DESC",
+            };
+        }
+
+        public void Deconstruct(out string sortBy, out string sortDir)
+        {
+            sortBy = SortBy;
+            sortDir = SortDirection;
+        }
+    }
+
     public partial class DataStore
     {
         public IEnumerable<ModelView> GetImageModels()
@@ -277,49 +318,6 @@ namespace Diffusion.Database
         }
 
 
-        public IEnumerable<Image> Query(string? prompt)
-        {
-            using var db = OpenConnection();
-
-            if (string.IsNullOrEmpty(prompt))
-            {
-                throw new Exception("Query prompt cannot be empty!");
-            }
-
-            var q = QueryBuilder.Parse(prompt);
-
-            var images = db.Query<Image>($"SELECT Image.* FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
-
-            foreach (var image in images)
-            {
-                yield return image;
-            }
-
-            db.Close();
-        }
-
-        public IEnumerable<Image> Query(Filter filter)
-        {
-            using var db = OpenConnection();
-
-            if (filter.IsEmpty)
-            {
-                throw new Exception("Query prompt cannot be empty!");
-            }
-
-            var q = QueryBuilder.Filter(filter);
-
-            string query_raw = $"SELECT m1.* FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.Item1}";
-            var images = db.Query<Image>(query_raw, q.Item2.ToArray());
-
-            foreach (var image in images)
-            {
-                yield return image;
-            }
-
-            db.Close();
-        }
-
         public IEnumerable<ImageView> SearchPrompt(string? prompt, int pageSize, int offset, string sortBy, string sortDirection)
         {
             using var db = OpenConnection();
@@ -379,29 +377,10 @@ namespace Diffusion.Database
             db.Close();
         }
 
-        public IEnumerable<ImageView> Search(QueryOptions queryOptions, int pageSize, int offset, string sortBy, string sortDirection)
+        public IEnumerable<ImageView> Search(QueryOptions queryOptions, Sorting sorting, Paging? paging = null)
         {
             var db = OpenReadonlyConnection();
 
-            var sortField = sortBy switch
-            {
-                "Date Created" => nameof(Image.CreatedDate),
-                "Date Modified" => nameof(Image.ModifiedDate),
-                "Rating" => nameof(Image.Rating),
-                "Aesthetic Score" => nameof(Image.AestheticScore),
-                "Prompt" => nameof(Image.Prompt),
-                "Random" => "RANDOM()",
-                "Name" => nameof(Image.FileName),
-                _ => nameof(Image.CreatedDate),
-            };
-
-            var sortDir = sortDirection switch
-            {
-                "A-Z" => "ASC",
-                "Z-A" => "DESC",
-                _ => "DESC",
-            };
-            
             var q = QueryCombiner.Parse(queryOptions);
 
             var whereClause = QueryCombiner.GetInitialWhereClause("main", queryOptions);
@@ -410,7 +389,19 @@ namespace Diffusion.Database
 
             var where = whereClause.Length > 0 ? $"WHERE {whereClause}" : "";
 
-            var images = db.Query<ImageView>($"SELECT main.Id, Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = main.Id) AS AlbumCount FROM Image main {join} {where} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
+            var bindings = q.Bindings;
+
+            var page = "";
+
+            if (paging != null)
+            {
+                page = " LIMIT ? OFFSET ?";
+                bindings = bindings.Concat(new object[] { paging.PageSize, paging.Offset });
+            }
+
+            var (sortField, sortDir) = sorting;
+
+            var images = db.Query<ImageView>($"SELECT main.Id, Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = main.Id) AS AlbumCount FROM Image main {join} {where} ORDER BY {sortField} {sortDir} {page}", bindings.ToArray());
 
             foreach (var image in images)
             {
@@ -421,34 +412,17 @@ namespace Diffusion.Database
         }
 
 
-        const string columns = "FolderId, FileName, Prompt, NegativePrompt, Steps, Sampler, " +
+        const string allColumns = "FolderId, FileName, Prompt, NegativePrompt, Steps, Sampler, " +
                       "CFGScale, Seed, Width, Height, ModelHash, Model, BatchSize, BatchPos, CreatedDate, ModifiedDate, " +
                       "CustomTags, Rating, Favorite, ForDeletion, NSFW, " +
                       "AestheticScore, HyperNetwork, HyperNetworkStrength, ClipSkip, ENSD, FileSize, NoMetadata, HasError";
 
+        const string columns = "Favorite, ForDeletion, Rating, AestheticScore, CreatedDate, NSFW, HasError";
 
-        public IEnumerable<ImageView> Search(Filter filter, QueryOptions options, int pageSize, int offset, string sortBy, string sortDirection)
+
+        public IEnumerable<ImageView> Search(Filter filter, QueryOptions options, Sorting sorting, Paging? paging = null)
         {
             var db = OpenReadonlyConnection();
-
-            var sortField = sortBy switch
-            {
-                "Date Created" => nameof(Image.CreatedDate),
-                "Date Modified" => nameof(Image.ModifiedDate),
-                "Rating" => nameof(Image.Rating),
-                "Aesthetic Score" => nameof(Image.AestheticScore),
-                "Name" => nameof(Image.FileName),
-                "Prompt" => nameof(Image.Prompt),
-                "Random" => "RANDOM()",
-                _ => nameof(Image.CreatedDate),
-            };
-
-            var sortDir = sortDirection switch
-            {
-                "A-Z" => "ASC",
-                "Z-A" => "DESC",
-                _ => "DESC",
-            };
 
             var q = QueryCombiner.Filter(filter, options);
 
@@ -458,11 +432,19 @@ namespace Diffusion.Database
 
             var where = whereClause.Length > 0 ? $"WHERE {whereClause}" : "";
 
-            var images = db.Query<ImageView>($"SELECT main.Id, Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = main.Id) AS AlbumCount FROM Image main {join} {where} ORDER BY {sortField} {sortDir} LIMIT ? OFFSET ?", q.Bindings.Concat(new object[] { pageSize, offset }).ToArray());
+            var bindings = q.Bindings;
 
-            //var query2 = $"SELECT Image.Id, Image.Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = Image.Id) AS AlbumCount  FROM Image WHERE Image.rowid IN (SELECT m1.rowid FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.Item1} ORDER BY {sortField} {sortDir} limit ? offset ?) ORDER BY {sortField} {sortDir}";
+            var page = "";
 
-            //var images = db.Query<ImageView>(query2, q.Item2.Concat(new object[] { pageSize, offset }).ToArray());
+            if (paging != null)
+            {
+                page = " LIMIT ? OFFSET ?";
+                bindings = bindings.Concat(new object[] { paging.PageSize, paging.Offset });
+            }
+
+            var (sortField, sortDir) = sorting;
+
+            var images = db.Query<ImageView>($"SELECT main.Id, Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = main.Id) AS AlbumCount FROM Image main {join} {where} ORDER BY {sortField} {sortDir} {page}", bindings.ToArray());
 
             foreach (var image in images)
             {

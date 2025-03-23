@@ -29,8 +29,7 @@ public static class ComfyUIQueryBuilder
         var properties = options.SearchProperties != null && options.SearchProperties.Any() ? string.Join(" OR ", options.SearchProperties.Select(p => $"(cmfyp.Name = '{p}')")) : "";
 
         return (
-            "SELECT m1.Id from Image m1 " +
-            "INNER JOIN Node cmfyn ON m1.Id = cmfyn.ImageId " +
+            "SELECT cmfyn.ImageId AS Id FROM Node cmfyn " +
             "INNER JOIN NodeProperty cmfyp ON cmfyp.NodeId = cmfyn.Id " +
             "WHERE " +
             (properties is { Length: > 0 } ? $"( {properties} ) AND " : "") +
@@ -64,28 +63,64 @@ public static class ComfyUIQueryBuilder
         var queries = new List<string>();
         var bindings = new List<object>();
 
+        var index = 0;
+
         foreach (var node in filter.NodeFilters.Where(d => d is { IsActive: true, Property.Length: > 0, Value.Length: > 0 }))
         {
             var parsedNode = ParseNode(node);
-            queries.Add(parsedNode.Query);
+            var operation = index == 0 ? "" : parsedNode.Operation;
+            queries.Add($"{operation} {parsedNode.Query}");
             bindings.AddRange(parsedNode.Bindings);
+            index++;
         }
 
-        var query = string.Join(" UNION ", queries);
+        var query = string.Join("", queries);
 
         return (query, bindings);
     }
 
-    private static (string Query, IEnumerable<object> Bindings) ParseNode(NodeFilter node)
+    private static (string Operation, string Query, IEnumerable<object> Bindings) ParseNode(NodeFilter node)
     {
         var conditions = new List<KeyValuePair<string, object>>();
 
-        var tokens = CSVParser.Parse(node.Value);
+        //var tokens = CSVParser.Parse(node.Value);
+        var operation = node.Operation;
 
-        foreach (var token in tokens)
+        var comparison = node.Comparison.ToLower();
+
+        var value = node.Value;
+        var escape = "";
+
+        if (value.Contains("%"))
         {
-            conditions.Add(new KeyValuePair<string, object>("(cmfyp.Value LIKE ?)", $"%{token.Trim()}%"));
+            value = value.Replace("%", "`%");
+            escape = "ESCAPE '`'";
         }
+
+        var toper = "=";
+
+        switch (comparison)
+        {
+            case "contains":
+                value = $"%{value}%";
+                toper = "LIKE";
+                break;
+            case "startswith":
+                value = $"{value}%";
+                toper = "LIKE";
+                break;
+            case "endswith":
+                value = $"%{value}";
+                toper = "LIKE";
+                break;
+            case "equals":
+                value = $"{value}";
+                toper = "=";
+                break;
+        }
+
+        conditions.Add(new KeyValuePair<string, object>($"(cmfyp.Value {toper} ? {escape})", value));
+
 
         var whereClause = string.Join(" AND ", conditions.Select(c => c.Key));
 
@@ -98,13 +133,17 @@ public static class ComfyUIQueryBuilder
             };
         }).Where(o => o != null);
 
+        var oper = node.Property.Contains("*") ? "LIKE" : "=";
+
+        var prop = node.Property.Replace("*", "%").Trim();
+
         return (
-            "SELECT m1.Id from Image m1 " +
-            "INNER JOIN Node cmfyn ON m1.Id = cmfyn.ImageId " +
+            operation,
+            "SELECT DISTINCT cmfyn.ImageId AS Id FROM Node cmfyn  " +
             "INNER JOIN NodeProperty cmfyp ON cmfyp.NodeId = cmfyn.Id " +
             "WHERE " +
-            $"cmfyp.Name = '{node.Property}' " +
-            $"AND {whereClause}",
+            $"cmfyp.Name {oper} '{prop}' " +
+            $"AND ({whereClause})",
             bindings
         );
     }
