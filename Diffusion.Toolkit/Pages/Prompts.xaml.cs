@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
@@ -38,7 +39,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.PromptsResults.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
             {
-                ReloadMatches(true, o.GotoEnd);
+                ReloadMatches(new ReloadOptions() { Focus = true, CursorPosition = o.CursorPosition });
             });
 
             DataContext = _model;
@@ -153,12 +154,12 @@ namespace Diffusion.Toolkit.Pages
             ReloadMatches();
         }
 
-        public void ReloadMatches(bool focus = true, bool gotoEnd = false)
+        public void ReloadMatches(ReloadOptions? reloadOptions = null)
         {
             Task.Run(() =>
             {
                 LoadMatches();
-                ThumbnailListView.ResetView(focus, gotoEnd);
+                ThumbnailListView.ResetView(reloadOptions);
             });
         }
 

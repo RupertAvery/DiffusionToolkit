@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
@@ -9,6 +10,7 @@ using Diffusion.Toolkit.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -469,6 +471,35 @@ namespace Diffusion.Toolkit.Controls
         private void ThumbnailListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedImages = new ObservableCollection<ImageEntry>(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
+
+            _debounceUpdateSelection();
+        }
+
+        private Action _debounceUpdateSelection;
+
+        private void Init()
+        {
+            _debounceUpdateSelection = Utility.Debounce(() =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    Model.SelectionAlbumMenuItems = new ObservableCollection<Control>();
+
+                    var ids = SelectedImages.Select(d => d.Id).ToList();
+
+                    if (ids.Any())
+                    {
+                        var albums = ServiceLocator.DataStore.GetImageAlbums(ids);
+
+                        foreach (var album in albums)
+                        {
+                            var menuItem = new MenuItem() { Header = album.Name, Tag = album };
+                            menuItem.Click += RemoveFromAlbum_OnClick;
+                            Model.SelectionAlbumMenuItems.Add(menuItem);
+                        }
+                    }
+                });
+            });
         }
     }
 }

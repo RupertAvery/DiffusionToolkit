@@ -102,15 +102,15 @@ namespace Diffusion.Toolkit.Controls
             Model.SearchHint = $"Search for {randomHint}";
         }
 
-        public void SetPagingEnabled()
-        {
-            ThumbnailListView.SetPagingEnabled();
-        }
+        //public void SetPagingEnabled()
+        //{
+        //    ThumbnailListView.SetPagingEnabled();
+        //}
 
-        public void ResetView(bool focus)
-        {
-            ThumbnailListView.ResetView(focus);
-        }
+        //public void ResetView(bool focus)
+        //{
+        //    ThumbnailListView.ResetView(focus);
+        //}
 
 
         private void SearchTermTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e)

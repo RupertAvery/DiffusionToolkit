@@ -52,10 +52,10 @@ namespace Diffusion.Toolkit
 
             _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
             {
-                var album = _model.CurrentAlbum;
+                var album = ((MenuItem)o).Tag as Album;
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
-                _dataStore.RemoveImagesFromAlbum(album.Id, images);
-                Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
+                var count = _dataStore.RemoveImagesFromAlbum(album.Id, images);
+                Toast($"{count} image{(count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
                 //_search.SearchImages(null);
                 LoadAlbums();
                 _search.ReloadMatches(null);

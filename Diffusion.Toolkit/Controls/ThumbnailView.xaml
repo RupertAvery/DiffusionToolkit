@@ -193,11 +193,11 @@
             </ListView.InputBindings>
             <ListView.ContextMenu>
                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                    <MenuItem IsEnabled="{Binding IsImage}"  ItemsSource="{Binding AlbumMenuItems}" x:Name="AlbumMenu" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
+                    <MenuItem x:Name="AlbumMenu" IsEnabled="{Binding IsImage}" ItemsSource="{Binding AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
                         <!--<MenuItem Header="_New Album" Click="CreateAlbum_OnClick"></MenuItem>
                                                 <Separator></Separator>-->
                     </MenuItem>
-                    <MenuItem Visibility="{Binding ViewMode, Converter={StaticResource albumModeVis}}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}" Click="RemoveFromAlbum_OnClick"></MenuItem>
+                    <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
                     <Separator />
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Favorite}" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Rate}">

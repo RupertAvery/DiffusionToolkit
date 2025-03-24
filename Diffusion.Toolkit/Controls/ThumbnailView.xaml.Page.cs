@@ -3,13 +3,14 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using Diffusion.Toolkit.Pages;
 
 namespace Diffusion.Toolkit.Controls
 {
     public class PageChangedEventArgs
     {
         public int Page { get; set; }
-        public bool GotoEnd { get; set; }
+        public CursorPosition CursorPosition { get; set; }
         public Action? OnCompleted { get; set; }
     }
 
@@ -52,7 +53,7 @@ namespace Diffusion.Toolkit.Controls
                 var args = new PageChangedEventArgs()
                 {
                     Page = Model.Page,
-                    GotoEnd = gotoEnd,
+                    CursorPosition = gotoEnd ? CursorPosition.End : CursorPosition.Start,
                     OnCompleted = onCompleted
                 };
 
@@ -71,6 +72,7 @@ namespace Diffusion.Toolkit.Controls
                 var args = new PageChangedEventArgs()
                 {
                     Page = Model.Page,
+                    CursorPosition = CursorPosition.Start,
                     OnCompleted = onCompleted
                 };
 

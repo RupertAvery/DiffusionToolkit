@@ -17,6 +17,7 @@ using Diffusion.Toolkit.Models;
 using Microsoft.Extensions.Options;
 using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Services;
+using Diffusion.Toolkit.Pages;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -142,6 +143,7 @@ namespace Diffusion.Toolkit.Controls
             //_model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
             _debounceRedrawThumbnails = Utility.Debounce<double>((offset) => Dispatcher.Invoke(ReloadThumbnailsView, offset));
+            Init();
         }
 
         private Action<double> _debounceRedrawThumbnails;
@@ -748,15 +750,21 @@ namespace Diffusion.Toolkit.Controls
             UnrateSelected();
         }
 
-        public void ResetView(bool focus, bool gotoEnd = false)
+        public void ResetView(ReloadOptions? reloadOptions)
         {
             Dispatcher.Invoke(() =>
             {
-                if (Model.Images is { Count: > 0 })
+                if (reloadOptions is not null &&  Model.Images is { Count: > 0 })
                 {
-                    var index = gotoEnd ? Model.Images.Count - 1 : 0;
-
-                    ShowItem(index, focus);
+                    switch (reloadOptions.CursorPosition)
+                    {
+                        case CursorPosition.Start:
+                            ShowItem(0, reloadOptions.Focus);
+                            break;
+                        case CursorPosition.End:
+                            ShowItem(Model.Images.Count - 1, reloadOptions.Focus);
+                            break;
+                    }
                 }
             });
         }
@@ -849,7 +857,7 @@ namespace Diffusion.Toolkit.Controls
 
         private void RemoveFromAlbum_OnClick(object sender, RoutedEventArgs e)
         {
-            RemoveFromAlbumCommand?.Execute(null);
+            RemoveFromAlbumCommand?.Execute(sender);
         }
 
         private void RenameAlbum_OnClick(object sender, RoutedEventArgs e)

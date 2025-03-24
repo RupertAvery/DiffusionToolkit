@@ -205,24 +205,23 @@ namespace Diffusion.Database
             return true;
         }
 
-        public void RemoveImagesFromAlbum(int albumId, IEnumerable<int> imageId)
+        public int RemoveImagesFromAlbum(int albumId, IEnumerable<int> imageIds)
         {
             using var db = OpenConnection();
 
             db.BeginTransaction();
 
-            var query = $"DELETE FROM {nameof(AlbumImage)}  WHERE AlbumId = @AlbumId AND ImageId = @ImageId";
+            InsertIds(db, "SelectedIds", imageIds);
+
+            var query = $"DELETE FROM {nameof(AlbumImage)}  WHERE AlbumId = @AlbumId AND ImageId IN (SELECT Id FROM SelectedIds)";
 
             var command = db.CreateCommand(query);
-
-            foreach (var id in imageId)
-            {
-                command.Bind("@AlbumId", albumId);
-                command.Bind("@ImageId", id);
-                command.ExecuteNonQuery();
-            }
+            command.Bind("@AlbumId", albumId);
+            var affected = command.ExecuteNonQuery();
 
             db.Commit();
+
+            return affected;
         }
 
         public IEnumerable<Image> GetAlbumImages(int albumId, int pageSize, int offset)

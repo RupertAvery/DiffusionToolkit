@@ -39,13 +39,19 @@ using SearchView = Diffusion.Database.SearchView;
 
 namespace Diffusion.Toolkit.Pages
 {
+    public enum CursorPosition
+    {
+        Unspecified,
+        Start,
+        End
+    }
 
 
     public class ReloadOptions
     {
         public bool Focus { get; set; }
         public Action? OnCompleted { get; set; }
-        public bool GotoEnd { get; set; }
+        public CursorPosition CursorPosition { get; set; }
     }
 
     public class ModeSettings
@@ -355,7 +361,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
             {
-                ReloadMatches(new ReloadOptions() { Focus = true, GotoEnd = o.GotoEnd, OnCompleted = o.OnCompleted });
+                ReloadMatches(new ReloadOptions() { Focus = true, CursorPosition = o.CursorPosition, OnCompleted = o.OnCompleted });
             });
 
             void PopulateSortOptions()
@@ -1165,21 +1171,19 @@ namespace Diffusion.Toolkit.Pages
             Task.Run(() =>
             {
                 LoadMatches();
-                ThumbnailListView.ResetView(options?.Focus ?? true, options?.GotoEnd ?? false);
+                ThumbnailListView.ResetView(options);
                 Dispatcher.Invoke(() =>
                 {
                     options?.OnCompleted?.Invoke();
 
-                    if (_model.Images is { Count: > 0 })
+                    if (options is not null && _model.Images is { Count: > 0 })
                     {
-                        if (options?.GotoEnd ?? false)
+                        _model.SelectedImageEntry = options.CursorPosition switch
                         {
-                            _model.SelectedImageEntry = _model.Images[^1];
-                        }
-                        else
-                        {
-                            _model.SelectedImageEntry = _model.Images[0];
-                        }
+                            CursorPosition.Start => _model.Images[0],
+                            CursorPosition.End => _model.Images[^1],
+                            _ => _model.SelectedImageEntry
+                        };
                     }
                     else
                     {
@@ -1193,23 +1197,23 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        public Task ReloadMatchesAsync(bool focus = true, bool gotoEnd = false)
-        {
-            //await LoadMatchesAsync();
+        //public Task ReloadMatchesAsync(bool focus = true, bool gotoEnd = false)
+        //{
+        //    //await LoadMatchesAsync();
 
-            //ThumbnailListView.ResetView(focus);
-            return Task.Run(LoadMatchesAsync)
-                .ContinueWith(t =>
-                {
-                    if (t.IsCompletedSuccessfully)
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            ThumbnailListView.ResetView(focus, gotoEnd);
-                        });
-                    }
-                });
-        }
+        //    //ThumbnailListView.ResetView(focus);
+        //    return Task.Run(LoadMatchesAsync)
+        //        .ContinueWith(t =>
+        //        {
+        //            if (t.IsCompletedSuccessfully)
+        //            {
+        //                Dispatcher.Invoke(() =>
+        //                {
+        //                    ThumbnailListView.ResetView(focus, gotoEnd);
+        //                });
+        //            }
+        //        });
+        //}
 
         private int _startIndex = -1;
 
@@ -2357,7 +2361,7 @@ namespace Diffusion.Toolkit.Pages
         private void RemoveFromAlbum(Album albumModel)
         {
             ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id, new[] { _model.CurrentImage.Id });
-            SearchImages(null);
+            ReloadMatches(null);
         }
 
         private void DropImagesOnFolder(object sender, DragEventArgs e)
