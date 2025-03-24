@@ -229,9 +229,6 @@ namespace Diffusion.Toolkit.Controls
 
         private void UIElement_OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            //MainModel.FitToPreview = false;
-            //MainModel.ActualSize = false;
-
             var ctrlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 
             var active = true;
@@ -244,6 +241,9 @@ namespace Diffusion.Toolkit.Controls
             {
                 if (scrollNavigation)
                 {
+                    MainModel.FitToPreview = false;
+                    MainModel.ActualSize = false;
+
                     Zoom(e);
                     e.Handled = true;
                 }
@@ -446,7 +446,9 @@ namespace Diffusion.Toolkit.Controls
         {
             Window window = Window.GetWindow(this);
 
-            if (e.LeftButton == MouseButtonState.Pressed)
+            var ctrlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
+
+            if (e.LeftButton == MouseButtonState.Pressed && !ctrlPressed)
             {
                 if (ScrollViewer.ScrollableHeight == 0 && ScrollViewer.ScrollableWidth == 0)
                 {

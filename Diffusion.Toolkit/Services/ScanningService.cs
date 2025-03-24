@@ -8,13 +8,12 @@ using System.Threading;
 using Diffusion.Database;
 using Diffusion.IO;
 using Diffusion.Toolkit.Localization;
+using Node = Diffusion.IO.Node;
 
 namespace Diffusion.Toolkit.Services;
 
 public class ScanningService
 {
-    private CancellationTokenSource _progressCancellationTokenSource;
-
     public event EventHandler<ScanningEventArgs> ScanProgress;
 
     private string GetLocalizedText(string key)
@@ -22,22 +21,10 @@ public class ScanningService
         return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
     }
 
-    public void StartTask()
-    {
-        _progressCancellationTokenSource = new CancellationTokenSource();
-    }
-
-    public CancellationToken CancellationToken => _progressCancellationTokenSource.Token;
-
-    public void EndTask()
-    {
-        _progressCancellationTokenSource.Cancel();
-    }
+    private CancellationToken CancellationToken => ServiceLocator.ProgressService.CancellationToken;
 
     public void Scan(ICollection<string> filesToScan, bool updateImages)
     {
-        StartTask();
-
         var _settings = ServiceLocator.Settings;
         var _dataStore = ServiceLocator.DataStore;
         var added = 0;
@@ -53,6 +40,7 @@ public class ScanningService
         var folderIdCache = new Dictionary<string, int>();
 
         var newImages = new List<Image>();
+        var newNodes = new List<Node>();
 
         var includeProperties = new List<string>();
 
@@ -119,6 +107,16 @@ public class ScanningService
                 }
 
                 newImages.Add(image);
+
+                if (file.Nodes is { Count: > 0 })
+                {
+                    foreach (var fileNode in file.Nodes)
+                    {
+                        fileNode.ImageRef = image;
+                    }
+
+                    newNodes.AddRange(file.Nodes);
+                }
             }
 
             if (newImages.Count == 100)
@@ -127,10 +125,19 @@ public class ScanningService
                 {
 
                     added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, CancellationToken);
+                    if (newNodes.Any())
+                    {
+                        _dataStore.UpdateNodes(newNodes, CancellationToken);
+                    }
                 }
                 else
                 {
                     _dataStore.AddImages(newImages, includeProperties, folderIdCache, CancellationToken);
+                    if (newNodes.Any())
+                    {
+                        _dataStore.AddNodes(newNodes, CancellationToken);
+                    }
+
                     added += newImages.Count;
                 }
 
@@ -141,8 +148,8 @@ public class ScanningService
             {
                 ScanProgress?.Invoke(this, new ScanningEventArgs()
                 {
-                    Type = ScanningEventType.Progress, 
-                    TotalCount = max, 
+                    Type = ScanningEventType.Progress,
+                    TotalCount = max,
                     ProgressCount = scanned
                 });
 
@@ -164,10 +171,19 @@ public class ScanningService
             if (updateImages)
             {
                 added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, CancellationToken);
+                if (newNodes.Any())
+                {
+                    _dataStore.UpdateNodes(newNodes, CancellationToken);
+                }
             }
             else
             {
                 _dataStore.AddImages(newImages, includeProperties, folderIdCache, CancellationToken);
+                if (newNodes.Any())
+                {
+                    _dataStore.AddNodes(newNodes, CancellationToken);
+                }
+
                 added += newImages.Count;
             }
         }
@@ -199,5 +215,7 @@ public class ScanningService
 
 
         //return (added, elapsedTime);
+
+
     }
 }

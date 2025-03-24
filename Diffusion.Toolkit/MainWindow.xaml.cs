@@ -37,6 +37,7 @@ using Diffusion.Toolkit.Controls;
 using System.Configuration;
 using System.Windows.Input;
 using Diffusion.Toolkit.Services;
+using System.Windows.Threading;
 
 namespace Diffusion.Toolkit
 {
@@ -53,7 +54,7 @@ namespace Diffusion.Toolkit
 
         private Configuration<Settings> _configuration;
         private Settings? _settings;
-        private CancellationTokenSource _progressCancellationTokenSource;
+        
 
         private Search _search;
         private Pages.Models _models;
@@ -66,137 +67,154 @@ namespace Diffusion.Toolkit
 
         public MainWindow()
         {
-            Logger.Log("===========================================");
-            Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
-
-
-            var settingsPath = Path.Combine(AppInfo.AppDir, "config.json");
-            _dbPath = Path.Combine(AppInfo.AppDir, "diffusion-toolkit.db");
-
-            var isPortable = true;
-
-            if (!File.Exists(settingsPath))
+            try
             {
-                isPortable = false;
-                settingsPath = Path.Combine(AppInfo.AppDataPath, "config.json");
-                _dbPath = Path.Combine(AppInfo.AppDataPath, "diffusion-toolkit.db");
+                Logger.Log("===========================================");
+                Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
+
+
+                var settingsPath = Path.Combine(AppInfo.AppDir, "config.json");
+                _dbPath = Path.Combine(AppInfo.AppDir, "diffusion-toolkit.db");
+
+                var isPortable = true;
+
+                if (!File.Exists(settingsPath))
+                {
+                    isPortable = false;
+                    settingsPath = Path.Combine(AppInfo.AppDataPath, "config.json");
+                    _dbPath = Path.Combine(AppInfo.AppDataPath, "diffusion-toolkit.db");
+                }
+
+                _configuration = new Configuration<Settings>(settingsPath, isPortable);
+
+                InitializeComponent();
+
+                AppDomain currentDomain = AppDomain.CurrentDomain;
+                currentDomain.UnhandledException += new UnhandledExceptionEventHandler(GlobalExceptionHandler);
+
+                QueryBuilder.Samplers = File.ReadAllLines("samplers.txt").ToList();
+
+                Logger.Log($"Creating Thumbnail loader");
+
+                ThumbnailLoader.CreateInstance();
+
+                _navigatorService = new NavigatorService(this)
+                {
+                    OnNavigate = OnNavigate
+                };
+
+                SystemEvents.UserPreferenceChanged += SystemEventsOnUserPreferenceChanged;
+
+
+                _model = new MainModel();
+
+                ServiceLocator.MainModel = _model;
+
+                _model.Rescan = new AsyncCommand<object>(RescanTask);
+                _model.Rebuild = new AsyncCommand<object>(RebuildTask);
+                _model.ReloadHashes = new AsyncCommand<object>(async (o) =>
+                {
+                    LoadModels();
+                    await _messagePopupManager.Show("Models have been reloaded", "Diffusion Toolkit", PopupButtons.OK);
+                });
+                _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
+                _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
+                _model.CancelCommand = new AsyncCommand<object>(async (o) => await CancelProgress());
+                _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
+                _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
+                _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
+
+                _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
+
+                _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
+                _model.ToggleHideDeleted = new RelayCommand<object>((o) => ToggleHideDeleted());
+                _model.ToggleHideUnavailable = new RelayCommand<object>((o) => ToggleHideUnavailable());
+
+                _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
+                _model.ToggleActualSize = new RelayCommand<object>((o) => ToggleActualSize());
+
+                _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
+
+                _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
+                _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
+                _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
+                _model.ResetLayout = new RelayCommand<object>((o) => ResetLayout());
+
+                _model.SaveQuery = new RelayCommand<object>((o) => SaveQuery());
+                _model.RescanResults = new RelayCommand<object>((o) => RescanResults());
+                _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
+                _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
+                _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
+                _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
+                _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
+                _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
+
+                _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
+                _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
+                _model.CleanRemovedFoldersCommand = new AsyncCommand<object>(CleanRemovedFolders);
+
+                _model.UnavailableFilesCommand = new AsyncCommand<object>(UnavailableFiles);
+
+                _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
+                _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
+
+                _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
+                _model.ClearAlbumsCommand = new RelayCommand<object>((o) => ClearAlbums());
+
+                _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
+                _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
+                _model.ShowInExplorerCommand = new RelayCommand<FolderViewModel>((p) => ShowInExplorer(p));
+
+                InitAlbums();
+
+                _model.Refresh = new RelayCommand<object>((o) => Refresh());
+                _model.QuickCopy = new RelayCommand<object>((o) =>
+                {
+                    var win = new QuickCopy(_settings);
+                    win.Owner = this;
+                    win.ShowDialog();
+                });
+
+                _model.Escape = new RelayCommand<object>((o) => Escape());
+
+                _model.PropertyChanged += ModelOnPropertyChanged;
+
+
+                this.Loaded += OnLoaded;
+                this.Closing += OnClosing;
+                _model.CloseCommand = new RelayCommand<object>(o =>
+                {
+                    this.Close();
+                });
+
+                DataContext = _model;
+
+
+                _messagePopupManager = new MessagePopupManager(this, PopupHost, Frame, Dispatcher);
+
+                ServiceLocator.ProgressService = new ProgressService(Dispatcher);
+                ServiceLocator.MessageService = new MessageService(_messagePopupManager);
+
+                //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
+                //Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-PT");
+                //FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(
+                //    XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
+
+                //var str = new System.Text.StringBuilder();
+                //using (var writer = new System.IO.StringWriter(str))
+                //    System.Windows.Markup.XamlWriter.Save(EditMenu.Template, writer);
+                //System.Diagnostics.Debug.Write(str);
+
+                //var str = new System.Text.StringBuilder();
+                //using (var writer = new System.IO.StringWriter(str))
+                //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
+                //System.Diagnostics.Debug.Write(str);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message);
             }
 
-            _configuration = new Configuration<Settings>(settingsPath, isPortable);
-
-            InitializeComponent();
-
-            AppDomain currentDomain = AppDomain.CurrentDomain;
-            currentDomain.UnhandledException += new UnhandledExceptionEventHandler(GlobalExceptionHandler);
-
-            QueryBuilder.Samplers = File.ReadAllLines("samplers.txt").ToList();
-
-            Logger.Log($"Creating Thumbnail loader");
-
-            ThumbnailLoader.CreateInstance();
-
-            _navigatorService = new NavigatorService(this)
-            {
-                OnNavigate = OnNavigate
-            };
-
-            SystemEvents.UserPreferenceChanged += SystemEventsOnUserPreferenceChanged;
-
-
-            _model = new MainModel();
-            _model.Rescan = new AsyncCommand<object>(RescanTask);
-            _model.Rebuild = new AsyncCommand<object>(RebuildTask);
-            _model.ReloadHashes = new AsyncCommand<object>(async (o) =>
-            {
-                LoadModels();
-                await _messagePopupManager.Show("Models have been reloaded", "Diffusion Toolkit", PopupButtons.OK);
-            });
-            _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
-            _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
-            _model.CancelCommand = new AsyncCommand<object>(CancelProgress);
-            _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
-            _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
-            _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
-
-            _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
-
-            _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
-            _model.ToggleHideDeleted = new RelayCommand<object>((o) => ToggleHideDeleted());
-            _model.ToggleHideUnavailable = new RelayCommand<object>((o) => ToggleHideUnavailable());
-
-            _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
-            _model.ToggleActualSize = new RelayCommand<object>((o) => ToggleActualSize());
-
-            _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
-
-            _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
-            _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
-            _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
-            _model.ResetLayout = new RelayCommand<object>((o) => ResetLayout());
-            _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
-            _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
-            _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
-            _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
-            _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
-            _model.AddMatchingToAlbum = new RelayCommand<object>((o) => AddMatchingToAlbum());
-            _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
-
-            _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
-            _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
-            _model.CleanRemovedFoldersCommand = new AsyncCommand<object>(CleanRemovedFolders);
-
-            _model.UnavailableFilesCommand = new AsyncCommand<object>(UnavailableFiles);
-
-            _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
-            _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
-
-            _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
-
-            _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
-            _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
-            _model.ShowInExplorerCommand = new RelayCommand<FolderViewModel>((p) => ShowInExplorer(p));
-
-            InitAlbums();
-
-            _model.Refresh = new RelayCommand<object>((o) => Refresh());
-            _model.QuickCopy = new RelayCommand<object>((o) =>
-            {
-                var win = new QuickCopy(_settings);
-                win.Owner = this;
-                win.ShowDialog();
-            });
-
-            _model.Escape = new RelayCommand<object>((o) => Escape());
-
-            _model.PropertyChanged += ModelOnPropertyChanged;
-
-
-            this.Loaded += OnLoaded;
-            this.Closing += OnClosing;
-            _model.CloseCommand = new RelayCommand<object>(o =>
-            {
-                this.Close();
-            });
-
-            DataContext = _model;
-
-
-            _messagePopupManager = new MessagePopupManager(this, PopupHost, Frame, Dispatcher);
-
-            //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
-            //Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-PT");
-            //FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(
-            //    XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
-
-            //var str = new System.Text.StringBuilder();
-            //using (var writer = new System.IO.StringWriter(str))
-            //    System.Windows.Markup.XamlWriter.Save(EditMenu.Template, writer);
-            //System.Diagnostics.Debug.Write(str);
-
-            //var str = new System.Text.StringBuilder();
-            //using (var writer = new System.IO.StringWriter(str))
-            //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
-            //System.Diagnostics.Debug.Write(str);
         }
 
         private void ShowInExplorer(FolderViewModel folder)
@@ -545,16 +563,11 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Initializing pages");
 
-            MessagePopupHandle handle = null;
 
-            await dataStore.Create(() =>
-            {
-                handle = _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database");
-            },
-            () =>
-            {
-                handle?.CloseAsync();
-            });
+            await dataStore.Create(
+                () => Dispatcher.Invoke(() => _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database")),
+                (handle) => { Dispatcher.Invoke(() => { ((MessagePopupHandle)handle).CloseAsync(); }); }
+            );
 
             _dataStoreOptions = new DataStoreOptions(dataStore);
 
@@ -768,11 +781,20 @@ namespace Diffusion.Toolkit
             {
                 Logger.Log($"Scanning for new images");
 
-                _progressCancellationTokenSource = new CancellationTokenSource();
 
                 _ = Task.Run(async () =>
                 {
-                    await ScanInternal(_settings, false, false, _progressCancellationTokenSource.Token);
+                    if (await ServiceLocator.ProgressService.TryStartTask())
+                    {
+                        try
+                        {
+                            await ScanInternal(_settings, false, false, ServiceLocator.ProgressService.CancellationToken);
+                        }
+                        finally
+                        {
+                            ServiceLocator.ProgressService.CompleteTask();
+                        }
+                    }
                 });
             }
 
@@ -1115,7 +1137,7 @@ namespace Diffusion.Toolkit
                 if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {
                     Scan();
-                };
+                }
             }
             else
             {

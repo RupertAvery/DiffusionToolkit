@@ -123,14 +123,25 @@ public class ThumbnailLoader
         return Task.WhenAll(consumers);
     }
 
-    private long _requestId;
     private int _size = 128;
     private bool _enableCache;
 
-    public void SetCurrentRequestId(long requestId)
+
+    private Random r = new Random();
+
+    private long _currentBatchId;
+
+    public long StartBatch()
     {
-        _requestId = requestId;
+        return _currentBatchId = r.NextInt64(long.MaxValue);
     }
+
+
+    public void StopCurrentBatch()
+    {
+
+    }
+
 
     private async Task ProcessTaskAsync(CancellationToken token)
     {
@@ -141,7 +152,8 @@ public class ThumbnailLoader
             {
                 var job = await _channel.Reader.ReadAsync(token);
 
-                if (job.Data.RequestId != _requestId)
+                // Exit early if the batch has changed
+                if (job.Data.BatchId != _currentBatchId)
                 {
                     continue;
                 }

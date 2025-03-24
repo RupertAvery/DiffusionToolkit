@@ -6,9 +6,6 @@ using System.Text.RegularExpressions;
 
 namespace Diffusion.Database;
 
-
-
-
 public static partial class QueryBuilder
 {
     public static readonly Regex DayRegex = new Regex("\\d+ day(?:s)? ago", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -72,7 +69,7 @@ public static partial class QueryBuilder
         {
             conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ? OR ForDeletion IS NULL)", false));
         }
-        
+
         if (HideUnavailable)
         {
             conditions.Add(new KeyValuePair<string, object>("(Unavailable = ? OR Unavailable IS NULL)", false));
@@ -92,37 +89,42 @@ public static partial class QueryBuilder
     }
 
 
-    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) Parse(string prompt)
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) Parse(string? prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
         var joins = new List<string>();
 
-        ParseAlbum(ref prompt, conditions, joins);
-        ParseFolder(ref prompt, conditions, joins);
-        ParsePath(ref prompt, conditions);
-        ParseDate(ref prompt, conditions);
-        ParseSeed(ref prompt, conditions);
-        ParseSteps(ref prompt, conditions);
-        ParseSampler(ref prompt, conditions);
-        ParseHash(ref prompt, conditions);
+        if (prompt is not null)
+        {
+            ParseAlbum(ref prompt, conditions, joins);
+            ParseFolder(ref prompt, conditions, joins);
+            ParsePath(ref prompt, conditions);
+            ParseDate(ref prompt, conditions);
+            ParseSeed(ref prompt, conditions);
+            ParseSteps(ref prompt, conditions);
+            ParseSampler(ref prompt, conditions);
+            ParseHash(ref prompt, conditions);
 
-        ParseModelName(ref prompt, conditions);
-        ParseModelNameOrHash(ref prompt, conditions);
+            ParseModelName(ref prompt, conditions);
+            ParseModelNameOrHash(ref prompt, conditions);
 
-        ParseCFG(ref prompt, conditions);
-        ParseSize(ref prompt, conditions);
-        ParseAestheticScore(ref prompt, conditions);
-        ParseRating(ref prompt, conditions);
-        ParseHypernet(ref prompt, conditions);
-        ParseHypernetStrength(ref prompt, conditions);
-        ParseFavorite(ref prompt, conditions);
-        ParseForDeletion(ref prompt, conditions);
-        ParseNSFW(ref prompt, conditions);
-        ParseInAlbum(ref prompt, conditions);
-        ParseNoMetadata(ref prompt, conditions);
+            ParseCFG(ref prompt, conditions);
+            ParseSize(ref prompt, conditions);
+            ParseAestheticScore(ref prompt, conditions);
+            ParseRating(ref prompt, conditions);
+            ParseHypernet(ref prompt, conditions);
+            ParseHypernetStrength(ref prompt, conditions);
+            ParseFavorite(ref prompt, conditions);
+            ParseForDeletion(ref prompt, conditions);
+            ParseNSFW(ref prompt, conditions);
+            ParseInAlbum(ref prompt, conditions);
+            ParseNoMetadata(ref prompt, conditions);
 
-        ParseNegativePrompt(ref prompt, conditions);
-        ParsePrompt(ref prompt, conditions);
+            ParseNegativePrompt(ref prompt, conditions);
+            ParsePrompt(ref prompt, conditions);
+        }
+
+
 
         // this should be here
         //if (HideNFSW)
@@ -139,7 +141,8 @@ public static partial class QueryBuilder
                     _ => new[] { c.Value }
                 };
             }).Where(o => o != null),
-            joins
+            joins,
+            prompt
             );
     }
 

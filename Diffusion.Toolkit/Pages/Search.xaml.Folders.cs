@@ -84,14 +84,17 @@ namespace Diffusion.Toolkit.Pages
 
         private void Folder_OnClick(object sender, MouseButtonEventArgs e)
         {
-            var model = ((FolderViewModel)((Button)sender).DataContext);
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
-            OpenFolder(model);
+                OpenFolder(folder);
+            }
         }
 
         public void OpenFolder(FolderViewModel folder)
         {
-            if (_currentModeSettings.CurrentFolder == folder.Path)
+            if (_currentModeSettings.CurrentFolderPath == folder.Path)
                 return;
 
             var subFolders = folder.Children;
@@ -117,9 +120,11 @@ namespace Diffusion.Toolkit.Pages
             _model.NavigationSection.FoldersSection.CanRename = folder.Depth > 0;
 
             _model.MainModel.ActiveView = "Folders";
+
             SetMode("folders");
+
             _model.FolderPath = folder.Path;
-            _currentModeSettings.CurrentFolder = folder.Path;
+            _currentModeSettings.CurrentFolderPath= folder.Path;
 
             SearchImages(null);
         }
@@ -167,19 +172,26 @@ namespace Diffusion.Toolkit.Pages
 
                 if (subFolders == null)
                 {
-                    subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
-                    folder.HasChildren = subFolders.Any();
-                    folder.Children = subFolders;
-
-                    if (subFolders.Any())
+                    Task.Run(() =>
                     {
-                        var insertPoint = _model.MainModel.Folders.IndexOf(folder) + 1;
-
-                        foreach (var subFolder in subFolders.Reverse())
+                        Dispatcher.Invoke(() =>
                         {
-                            _model.MainModel.Folders.Insert(insertPoint, subFolder);
-                        }
-                    }
+                            subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
+                            folder.HasChildren = subFolders.Any();
+                            folder.Children = subFolders;
+
+                            if (subFolders.Any())
+                            {
+                                var insertPoint = _model.MainModel.Folders.IndexOf(folder) + 1;
+
+                                foreach (var subFolder in subFolders.Reverse())
+                                {
+                                    _model.MainModel.Folders.Insert(insertPoint, subFolder);
+                                }
+                            }
+                        });
+                    });
+                   
                 }
                 else
                 {

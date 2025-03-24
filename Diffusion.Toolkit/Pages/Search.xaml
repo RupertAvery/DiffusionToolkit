@@ -80,6 +80,7 @@
                     <ColumnDefinition Width="28"/>
                     <ColumnDefinition Width="28"/>
                     <ColumnDefinition Width="28"/>
+                    <ColumnDefinition Width="28"/>
                 </Grid.ColumnDefinitions>
 
                 <!--<Button DockPanel.Dock="Left" Width="28" Command="{Binding ClearFilter}" >
@@ -119,19 +120,22 @@
                         </TextBlock.Style>
                     </TextBlock>
                 </Grid>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowFilter.ToolTip}" Grid.Column="3" Command="{Binding ShowFilter}" Background="{Binding Filter.IsActive, Converter={StaticResource FilterActiveConverter}}">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowFilter.ToolTip}" Grid.Column="4" Command="{Binding ShowFilter}" Background="{Binding Filter.IsActive, Converter={StaticResource FilterActiveConverter}}">
                     <fa:ImageAwesome Icon="Filter" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Clear.ToolTip}" Grid.Column="2" Width="28" Command="{Binding ClearSearch}" >
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Clear.ToolTip}" Grid.Column="3" Width="28" Command="{Binding ClearSearch}" >
                     <fa:ImageAwesome Icon="Close" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Refresh.ToolTip}" Grid.Column="1" Width="28" Command="{Binding Refresh}" >
-                    <fa:ImageAwesome Icon="Search" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Refresh.ToolTip}" Grid.Column="2" Width="28" Command="{Binding Refresh}" >
+                    <fa:ImageAwesome Icon="Refresh" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowSearchSettings.ToolTip}" Grid.Column="1" Command="{Binding ShowSearchSettings}">
+                    <fa:ImageAwesome Icon="Sliders" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    </fa:ImageAwesome>
+                </Button>
             </Grid>
             <Grid Grid.Row="2"  Margin="2">
                 <DockPanel>
@@ -230,16 +234,14 @@
                                         <ItemsControl ItemsSource="{Binding Path=MainModel.Folders}" PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Button Style="{StaticResource SmallButton}" 
-                                                                Tag="{Binding}" 
-                                                                PreviewMouseDoubleClick="Folder_OnDoubleClick"
-                                                                PreviewMouseDown="Folder_OnClick"
-                                                                Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
-                                                                AllowDrop="True" 
-                                                                behaviors:DTBehaviors.UseIsDraggedHandlers="True"
-                                                                behaviors:DTBehaviors.IsFocused="{Binding IsSelected}"
-                                                                Drop="DropImagesOnFolder">
-                                                        <Button.ContextMenu>
+                                                    <Grid
+                                                        Tag="{Binding}" 
+                                                        MouseDown="Folder_OnClick"
+                                                        Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
+                                                        AllowDrop="True" 
+                                                        behaviors:DTBehaviors.UseIsDraggedHandlers="True"
+                                                        Drop="DropImagesOnFolder">
+                                                        <Grid.ContextMenu>
                                                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
                                                                 <MenuItem Command="{Binding MainModel.CreateFolderCommand}"
                                                                           CommandParameter="{Binding .}"
@@ -261,35 +263,29 @@
                                                                           CommandParameter="{Binding .}"
                                                                           Header="Show in Explorer"></MenuItem>
                                                             </ContextMenu>
-                                                        </Button.ContextMenu>
-                                                        <Button.Template>
-                                                            <ControlTemplate TargetType="{x:Type Button}">
-                                                                <Grid>
-                                                                    <Grid.Style>
-                                                                        <Style TargetType="Grid">
-                                                                            <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
-                                                                            <Style.Triggers>
-                                                                                <DataTrigger Binding="{Binding IsSelected}" Value="true">
-                                                                                    <Setter Property="Background" Value="{StaticResource HighlightBrush}"></Setter>
-                                                                                </DataTrigger>
-                                                                            </Style.Triggers>
-                                                                        </Style>
-                                                                    </Grid.Style>
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="0"></ColumnDefinition>
-                                                                        <ColumnDefinition Width="{Binding Depth, Converter={StaticResource FolderDepthConverter}}"/>
-                                                                        <ColumnDefinition Width="15"/>
-                                                                        <ColumnDefinition Width="*"/>
-                                                                    </Grid.ColumnDefinitions>
-                                                                    <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
-                                                                    <Button Grid.Column="2" Background="{x:Null}" Style="{StaticResource SmallButton}" Width="15" PreviewMouseDown="Expander_OnMouseDown" >
-                                                                        <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"/>
-                                                                    </Button>
-                                                                    <TextBlock FontFamily="Calibri" TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="3"  Text="{Binding Name}"  TextWrapping="WrapWithOverflow" TextAlignment="Left"></TextBlock>
-                                                                </Grid>
-                                                            </ControlTemplate>
-                                                        </Button.Template>
-                                                    </Button>
+                                                        </Grid.ContextMenu>
+                                                        <Grid.Resources>
+                                                            <Style TargetType="Grid">
+                                                                <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                                                                        <Setter Property="Background" Value="{DynamicResource HighlightBrush}"></Setter>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Grid.Resources>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="0"></ColumnDefinition>
+                                                            <ColumnDefinition Width="{Binding Depth, Converter={StaticResource FolderDepthConverter}}"/>
+                                                            <ColumnDefinition Width="15"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
+                                                        <Grid Grid.Column="2" MouseDown="Expander_OnMouseDown">
+                                                            <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"  />
+                                                        </Grid>
+                                                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Grid.Column="3" HorizontalAlignment="Left" FontFamily="Calibri" TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left" PreviewMouseDown="Folder_OnClick"></TextBlock>
+                                                    </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
@@ -341,14 +337,18 @@
                                         <controls:AccordionControl.ButtonAreaContent>
                                             <Grid Background="{x:Null}">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition/>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="26"/>
                                                     <ColumnDefinition Width="26"/>
                                                     <ColumnDefinition Width="26"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.SortAlbums.ToolTip}" Command="{Binding MainModel.SortAlbumCommand}">
-                                                    <fa:FontAwesome Icon="Gear"></fa:FontAwesome>
+                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" Visibility="{Binding MainModel.HasSelectedAlbums, Converter={StaticResource boolToVis}}" ToolTip="{lex:Loc Search.Albums.Buttons.ClearAlbums.ToolTip}" Command="{Binding MainModel.ClearAlbumsCommand}">
+                                                    <fa:FontAwesome Icon="SquareOutline"></fa:FontAwesome>
                                                 </Button>
-                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.CreateAlbum.ToolTip}" Command="{Binding MainModel.CreateAlbumCommand}">
+                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.SortAlbums.ToolTip}" Command="{Binding MainModel.SortAlbumCommand}">
+                                                    <fa:FontAwesome Icon="Sort"></fa:FontAwesome>
+                                                </Button>
+                                                <Button Grid.Column="3" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.CreateAlbum.ToolTip}" Command="{Binding MainModel.CreateAlbumCommand}">
                                                     <fa:FontAwesome Icon="Plus"></fa:FontAwesome>
                                                 </Button>
                                             </Grid>
@@ -358,12 +358,17 @@
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
                                                     <Grid Background="Transparent" HorizontalAlignment="Stretch" Margin="2,0,2,0">
-                                                        <Button Style="{StaticResource SmallButton}" 
-                                                               Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" 
-                                                             AllowDrop="True" 
-                                                             Drop="DropImagesOnAlbum" 
-                                                             behaviors:DTBehaviors.UseIsDraggedHandlers="True"
-                                                             Click="Album_OnClick">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="20"/>
+                                                            <ColumnDefinition/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsTicked}"></CheckBox>
+                                                        <Button Grid.Column="1" Style="{StaticResource SmallButton}" 
+                                                                Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" 
+                                                                AllowDrop="True" 
+                                                                Drop="DropImagesOnAlbum" 
+                                                                behaviors:DTBehaviors.UseIsDraggedHandlers="True"
+                                                                Click="Album_OnClick" RenderTransformOrigin="0.179,0.476">
                                                             <Button.ContextMenu>
                                                                 <ContextMenu>
                                                                     <MenuItem Header="Rename Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameAlbumCommand}" CommandParameter="{Binding Path=.}"></MenuItem>
@@ -377,7 +382,7 @@
                                                                             <Style TargetType="Grid">
                                                                                 <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
                                                                                 <Style.Triggers>
-                                                                                    <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                                                                                    <DataTrigger Binding="{Binding IsTicked}" Value="true">
                                                                                         <Setter Property="Background" Value="{StaticResource HighlightBrush}"></Setter>
                                                                                     </DataTrigger>
                                                                                 </Style.Triggers>
@@ -447,6 +452,7 @@
                                         NSFWBlur="{Binding MainModel.NSFWBlur}"
                                         SelectedImages="{Binding MainModel.SelectedImages, Mode=TwoWay}"
                                         IsEmpty="{Binding IsEmpty}"
+                                        IsBusy="{Binding IsBusy}"
                                         Results="{Binding Results}"
                                         PageChangedCommand="{Binding PageChangedCommand}"
                                         SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
@@ -462,6 +468,7 @@
                                         CurrentImage="{Binding CurrentImage}">
                                     </controls:ThumbnailView>
                                 </DockPanel>
+
 
                             </Grid>
 
@@ -508,10 +515,10 @@
                     <RowDefinition Height="50"/>
                 </Grid.RowDefinitions>
 
-                    <Grid Grid.Row="1" Background="#A0000000" Margin="10" Visibility="{Binding CurrentImage.IsParametersVisible, Converter={StaticResource boolToVis}}">
-                        <controls:MetadataPanel CurrentImage="{Binding CurrentImage}" MetadataSection="{Binding MetadataSection}">
-                        </controls:MetadataPanel>
-                    </Grid>
+                <Grid Grid.Row="1" Background="#A0000000" Margin="10" Visibility="{Binding CurrentImage.IsParametersVisible, Converter={StaticResource boolToVis}}">
+                    <controls:MetadataPanel CurrentImage="{Binding CurrentImage}" MetadataSection="{Binding MetadataSection}">
+                    </controls:MetadataPanel>
+                </Grid>
 
                 <StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding CurrentImage}">
 
@@ -616,27 +623,20 @@
                 Background="{DynamicResource PrimaryBrush}"
                 BorderThickness="2"
                 CornerRadius="10"
-                Margin="15"
                 Padding="2">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
                 </Border.Effect>
-                <Grid >
+                <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
-                    <ScrollViewer  VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <controls:FilterControl  
-                                Models="{Binding MainModel.ImageModelNames}"
-                                Filter="{Binding Filter}" 
-                                SearchCommand="{Binding FilterCommand}" 
-                                                     
-                                VerticalAlignment="Stretch"/>
-
-                        </StackPanel>
-                    </ScrollViewer>
+                    <controls:FilterControl  
+                        Models="{Binding MainModel.ImageModelNames}"
+                        Filter="{Binding Filter}" 
+                        SearchCommand="{Binding FilterCommand}" 
+                        VerticalAlignment="Stretch"/>
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
@@ -646,6 +646,46 @@
                         <Button Grid.Column="0" Height="30" Command="{Binding ClearCommand}">Clear</Button>
                         <Button Grid.Column="1" Height="30" Command="{Binding FilterCommand}">Apply (CTRL+Enter)</Button>
                         <Button Grid.Column="2" Height="30" Command="{Binding HideFilter}">Close</Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="SearchSettingsPopup" Placement="Center" Width="800" Height="600"
+               IsOpen="{Binding IsSearchSettingsVisible}"
+               KeyDown="SearchSettingsPopup_OnKeyDown"
+               AllowsTransparency="True" PopupAnimation="Fade">
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+                <Grid Margin="10" DataContext="{Binding DataContext.SearchSettings, ElementName=MainGrid}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <Grid Margin="0,0,0,10">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="24"/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <CheckBox IsChecked="{Binding SearchNodes}">Search in ComfyUI Properties (one property per line)</CheckBox>
+                            <TextBox FontFamily="Consolas" Grid.Row="1" Text="{Binding IncludeNodeProperties}" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"></TextBox>
+                        </Grid>
+                    </Grid>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="1" Height="30" Click="HideSearchSettings_OnClick">Close</Button>
                     </Grid>
                 </Grid>
             </Border>

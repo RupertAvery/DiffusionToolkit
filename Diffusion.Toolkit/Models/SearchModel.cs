@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
 using Filter = Diffusion.Database.Filter;
+using NodeFilter = Diffusion.Database.NodeFilter;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -78,6 +81,9 @@ public class SearchModel : BaseNotify
 
     private NavigationSection _navigationSection;
     private MetadataSection _metadataSection;
+    private bool _isBusy;
+    private ICommand _showSearchSettings;
+    private bool _isSearchSettingsVisible;
 
     public SearchModel()
     {
@@ -95,6 +101,7 @@ public class SearchModel : BaseNotify
         _isFilterVisible = false;
         MetadataSection = new MetadataSection();
         NavigationSection = new NavigationSection();
+        SearchSettings = new SearchSettings();
     }
 
     public SearchModel(MainModel mainModel)
@@ -113,6 +120,7 @@ public class SearchModel : BaseNotify
         _isFilterVisible = false;
         MetadataSection = new MetadataSection();
         NavigationSection = new NavigationSection();
+        SearchSettings = new SearchSettings();
     }
 
     public MainModel MainModel => _mainModel;
@@ -272,6 +280,12 @@ public class SearchModel : BaseNotify
         set => SetField(ref _copyFiles, value);
     }
 
+    public ICommand ShowSearchSettings
+    {
+        get => _showSearchSettings;
+        set => SetField(ref _showSearchSettings, value);
+    }
+
     public ICommand ShowFilter
     {
         get => _showFilter;
@@ -394,7 +408,54 @@ public class SearchModel : BaseNotify
         set => SetField(ref _metadataSection, value);
     }
 
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetField(ref _isBusy, value);
+    }
+
     public string CurrentMode { get; set; }
+
+    public bool IsSearchSettingsVisible
+    {
+        get => _isSearchSettingsVisible;
+        set => SetField(ref _isSearchSettingsVisible, value);
+    }
+
+    public SearchSettings SearchSettings { get; set; }
+}
+
+public class SearchSettings : BaseNotify
+{
+    private string _includeNodeProperties;
+    private bool _searchNodes;
+
+    public string IncludeNodeProperties
+    {
+        get => _includeNodeProperties;
+        set => SetField(ref _includeNodeProperties, value);
+    }
+
+    public IEnumerable<string> GetNodePropertiesList()
+    {
+        return IncludeNodeProperties.Split(new[] { "\n", "\r\n", "," }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    public void AddDefaultSearchProperty(string property)
+    {
+        var properties = IncludeNodeProperties.Split(new[] { "\n", "\r\n", "," }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (!properties.Contains(property.Trim().ToLower()))
+        {
+            IncludeNodeProperties = string.Join("\n",properties.Append(property));
+        }
+    }
+
+
+    public bool SearchNodes
+    {
+        get => _searchNodes;
+        set => SetField(ref _searchNodes, value);
+    }
 }
 
 public class NavigationSection : BaseNotify
@@ -646,6 +707,16 @@ public static class SearchControlModelExtensions
 
         filter.UseUnavailable = model.UseUnavailable;
         filter.Unavailable = model.Unavailable;
+
+        filter.NodeFilters = model.NodeFilters.Select(d => new NodeFilter()
+        {
+            IsActive = d.IsActive,
+            Operation = d.Operation,
+            Node = d.Node,
+            Property = d.Property,
+            Comparison = d.Comparison,
+            Value = d.Value,
+        }).ToList();
 
         return filter;
     }

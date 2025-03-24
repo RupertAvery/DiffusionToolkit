@@ -17,6 +17,7 @@ public class ThumbnailViewModel : BaseNotify
     private int _imageCount;
     private int _page;
     private bool _isEmpty;
+    private bool _isBusy;
     private int _pages;
     private string _results;
     private string _resultStatus;
@@ -175,6 +176,13 @@ public class ThumbnailViewModel : BaseNotify
         get => _isEmpty;
         set => SetField(ref _isEmpty, value);
     }
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetField(ref _isBusy, value);
+    }
+
 
     public int Pages
     {

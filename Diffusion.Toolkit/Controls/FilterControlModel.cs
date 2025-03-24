@@ -1,10 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using System.Windows;
-using Diffusion.Toolkit.Models;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Windows.Input;
+using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Controls;
+
+public class NodeFilter : BaseNotify
+{
+    private string _node;
+    private string _property;
+    private string _value;
+    private bool _isActive;
+    private string _operation;
+    private string _comparison;
+
+    public bool IsActive
+    {
+        get => _isActive;
+        set => SetField(ref _isActive, value);
+    }
+
+    public string Operation
+    {
+        get => _operation;
+        set => SetField(ref _operation, value);
+    }
+
+    public string Node
+    {
+        get => _node;
+        set => SetField(ref _node, value);
+    }
+
+    public string Property
+    {
+        get => _property;
+        set => SetField(ref _property, value);
+    }
+
+
+    public string Comparison
+    {
+        get => _comparison;
+        set => SetField(ref _comparison, value);
+    }
+
+    public string Value
+    {
+        get => _value;
+        set => SetField(ref _value, value);
+    }
+
+    public ICommand RemoveCommand { get; set; }
+}
 
 public class FilterControlModel : BaseNotify
 {
@@ -66,18 +116,127 @@ public class FilterControlModel : BaseNotify
     private bool _inAlbum;
     private bool _useUnavailable;
     private bool _unavailable;
+    private ObservableCollection<NodeFilter> _nodeFilters;
 
     public FilterControlModel()
     {
-        PropertyChanged += SearchControlModel_PropertyChanged;
+        PropertyChanged += FilterControlModel_PropertyChanged;
+        NodeFilters = new ObservableCollection<NodeFilter>();
+
+        var nops = new List<NameValue>()
+        {
+            new() { Name = "or", Value = "UNION" },
+            new() { Name = "and", Value = "INTERSECT" },
+            new() { Name = "not", Value = "EXCEPT" },
+        };
+
+        var comps = new List<NameValue>()
+        {
+            new() { Name = "contains", Value = "contains" },
+            new() { Name = "equals", Value = "equals" },
+            new() { Name = "starts with", Value = "startswith" },
+            new() { Name = "ends with", Value = "endswith" },
+        };
+
+        NodeOperations = nops;
+        NodePropertyComparisons = comps;
+
+        AddNodeFilter();
     }
 
-    private void SearchControlModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void FilterControlModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName != nameof(IsActive))
         {
             OnPropertyChanged(nameof(IsActive));
         }
+    }
+
+    public void AddNodeFilter()
+    {
+        var filter = new NodeFilter
+        {
+            RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
+            Operation = "Contains"
+        };
+
+        filter.PropertyChanged += (sender, args) =>
+        {
+            if (args.PropertyName == nameof(NodeFilter.IsActive))
+            {
+                OnPropertyChanged(nameof(IsActive));
+            }
+        };
+
+        NodeFilters.Add(filter);
+    }
+
+    public void AddNodeFilter(string node, string property, string value)
+    {
+        var filter = new NodeFilter
+        {
+            Node = node,
+            Property = property,
+            Value = value,
+            RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
+            Operation = "Contains"
+        };
+
+        filter.PropertyChanged += (sender, args) =>
+        {
+            if (args.PropertyName == nameof(NodeFilter.IsActive))
+            {
+                OnPropertyChanged(nameof(IsActive));
+            }
+        };
+
+        NodeFilters.Add(filter);
+    }
+
+    public void AddNodeFilter(string property)
+    {
+        var filter = new NodeFilter
+        {
+            Property = property,
+            RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
+            Operation = "Contains"
+        };
+
+        filter.PropertyChanged += (sender, args) =>
+        {
+            if (args.PropertyName == nameof(NodeFilter.IsActive))
+            {
+                OnPropertyChanged(nameof(IsActive));
+            }
+        };
+
+        NodeFilters.Add(filter);
+    }
+
+    public void AddNodeFilter(string property, string value)
+    {
+        var filter = new NodeFilter
+        {
+            Property = property,
+            Value = value,
+            RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
+            Operation = "equals"
+        };
+
+        filter.PropertyChanged += (sender, args) =>
+        {
+            if (args.PropertyName == nameof(NodeFilter.IsActive))
+            {
+                OnPropertyChanged(nameof(IsActive));
+            }
+        };
+
+        NodeFilters.Add(filter);
+    }
+
+    public void RemoveNodeFilter(NodeFilter filter)
+    {
+        NodeFilters.Remove(filter);
     }
 
     public bool UsePrompt
@@ -454,7 +613,14 @@ public class FilterControlModel : BaseNotify
                              UseHyperNetStr ||
                              UseNoMetadata ||
                              UseInAlbum ||
-                             UseUnavailable);
+                             UseUnavailable ||
+                             NodeFilters.Any(d => d.IsActive));
+
+    public ObservableCollection<NodeFilter> NodeFilters
+    {
+        get => _nodeFilters;
+        set => SetField(ref _nodeFilters, value);
+    }
 
     public void Clear()
     {
@@ -515,5 +681,20 @@ public class FilterControlModel : BaseNotify
         UseNoMetadata = false;
         UseInAlbum = false;
         UseUnavailable = false;
+        foreach (var nodeFilter in NodeFilters)
+        {
+            nodeFilter.IsActive = false;
+        }
     }
+
+
+    public IEnumerable<NameValue>? NodeOperations { get; set; }
+    public IEnumerable<NameValue>? NodePropertyComparisons { get; set; }
+
+}
+
+public class NameValue
+{
+    public string Name { get; set; }
+    public string Value { get; set; }
 }

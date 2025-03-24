@@ -49,7 +49,16 @@ public class Image
 }
 
 
-public class ImageView : Image
+public class ImageView 
 {
-    public int AlbumCount { get; set; }
+    public int Id { get; set; }
+    public bool Favorite { get; set; }
+    public bool ForDeletion { get; set; }
+    public int? Rating { get; set; }
+    public float AestheticScore { get; set; }
+    public string Path { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public bool NSFW { get; set; }
+    public int  AlbumCount { get; set; }
+    public bool HasError { get; set; }
 }

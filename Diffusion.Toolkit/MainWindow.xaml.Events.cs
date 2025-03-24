@@ -14,6 +14,7 @@ using System.Windows.Interop;
 using WPFLocalizeExtension.Providers;
 using System.Collections.ObjectModel;
 using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Services;
 using WPFLocalizeExtension.Engine;
 
 namespace Diffusion.Toolkit
@@ -98,13 +99,13 @@ namespace Diffusion.Toolkit
             var files = _dataStore.GetMarkedImagePaths().ToList();
             var count = 0;
 
+            // TODO: Localize
+
             if (files.Count == 0)
             {
                 _messagePopupManager.Show("There are no files to delete", "Empty recycle bin");
                 return;
             }
-
-            _progressCancellationTokenSource = new CancellationTokenSource();
 
             _messagePopupManager.Show("This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", PopupButtons.YesNo).ContinueWith(t =>
             {
@@ -112,98 +113,100 @@ namespace Diffusion.Toolkit
                 {
                     Task.Run(async () =>
                     {
-                        _model.IsBusy = true;
-
-                        var cancelled = false;
-
-                        try
+                        if (await ServiceLocator.ProgressService.TryStartTask())
                         {
-                            Dispatcher.Invoke(() =>
+
+                            var token = ServiceLocator.ProgressService.CancellationToken;
+
+                            var cancelled = false;
+
+                            try
                             {
-                                _model.TotalProgress = files.Count;
-                                _model.CurrentProgress = 0;
-                            });
-
-                            foreach (var imagePath in files)
-                            {
-                                if (_progressCancellationTokenSource.IsCancellationRequested)
+                                Dispatcher.Invoke(() =>
                                 {
-                                    break;
-                                }
+                                    _model.TotalProgress = files.Count;
+                                    _model.CurrentProgress = 0;
+                                });
 
-                                try
+                                foreach (var imagePath in files)
                                 {
-                                    count++;
-
-                                    var filename = Path.GetFileName(imagePath.Path);
-
-                                    Dispatcher.Invoke(() =>
+                                    if (token.IsCancellationRequested)
                                     {
-                                        _model.Status = $"Deleting {filename}...";
-                                        _model.CurrentProgress = count;
-                                    });
-
-                                    _dataStore.DeleteImage(imagePath.Id);
-
-                                    File.Delete(imagePath.Path);
-                                    var dir = Path.GetDirectoryName(imagePath.Path);
-                                    var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
-                                    var textFilePath = Path.Join(dir, $"{fileName}.txt");
-
-                                    File.Delete(imagePath.Path);
-                                    if (File.Exists(textFilePath))
-                                    {
-                                        File.Delete(textFilePath);
-                                    }
-
-                                }
-                                catch (Exception e)
-                                {
-                                    Logger.Log($"Failed to delete {imagePath.Path}. \n\n {e.Message}");
-
-                                    var result = await Dispatcher.Invoke(async () =>
-                                    {
-                                        return await _messagePopupManager.Show($"Failed to delete {imagePath.Path}. \n\n {e.Message}", "Error", PopupButtons.OkCancel);
-                                    });
-
-                                    if (result == PopupResult.Cancel)
-                                    {
-                                        cancelled = true;
                                         break;
                                     }
 
+                                    try
+                                    {
+                                        count++;
+
+                                        var filename = Path.GetFileName(imagePath.Path);
+
+                                        Dispatcher.Invoke(() =>
+                                        {
+                                            _model.Status = $"Deleting {filename}...";
+                                            _model.CurrentProgress = count;
+                                        });
+
+                                        _dataStore.DeleteImage(imagePath.Id);
+
+                                        File.Delete(imagePath.Path);
+                                        var dir = Path.GetDirectoryName(imagePath.Path);
+                                        var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
+                                        var textFilePath = Path.Join(dir, $"{fileName}.txt");
+
+                                        File.Delete(imagePath.Path);
+                                        if (File.Exists(textFilePath))
+                                        {
+                                            File.Delete(textFilePath);
+                                        }
+
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Logger.Log($"Failed to delete {imagePath.Path}. \n\n {e.Message}");
+
+                                        var result = await Dispatcher.Invoke(async () =>
+                                        {
+                                            return await _messagePopupManager.Show($"Failed to delete {imagePath.Path}. \n\n {e.Message}", "Error", PopupButtons.OkCancel);
+                                        });
+
+                                        if (result == PopupResult.Cancel)
+                                        {
+                                            cancelled = true;
+                                            break;
+                                        }
+
+                                    }
                                 }
-                            }
 
 
-                            await Dispatcher.Invoke(async () =>
-                            {
-                                _model.TotalProgress = 100;
-                                _model.CurrentProgress = 0;
-
-                                LoadAlbums();
-
-                                if (cancelled || _progressCancellationTokenSource.IsCancellationRequested)
+                                await Dispatcher.Invoke(async () =>
                                 {
-                                    await _messagePopupManager.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
-                                }
+                                    _model.TotalProgress = 100;
+                                    _model.CurrentProgress = 0;
 
-                                Toast($"{count} images were deleted", "Empty recycle bin");
+                                    LoadAlbums();
 
-                            });
+                                    if (cancelled || token.IsCancellationRequested)
+                                    {
+                                        await _messagePopupManager.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
+                                    }
 
+                                    Toast($"{count} images were deleted", "Empty recycle bin");
+
+                                });
+
+                            }
+                            finally
+                            {
+                                ServiceLocator.ProgressService.CompleteTask();
+
+                                SetTotalFilesStatus();
+
+                                _search.ReloadMatches(null);
+                            }
                         }
-                        finally
-                        {
-                            _model.IsBusy = false;
 
-                            SetTotalFilesStatus();
-
-                            _search.ReloadMatches(null);
-
-                            //await _search.ReloadMatches();
-
-                        }
                     });
                 }
             });
@@ -228,16 +231,6 @@ namespace Diffusion.Toolkit
                 {
                     _tipsOpen = false;
                 };
-            }
-        }
-
-        private async Task CancelProgress(object o)
-        {
-            var dialogResult = await _messagePopupManager.Show(GetLocalizedText("Common.MessageBox.ConfirmCancelOperation"), GetLocalizedText("Common.MessageBox.Cancel"), PopupButtons.YesNo);
-
-            if (dialogResult == PopupResult.Yes)
-            {
-                _progressCancellationTokenSource.Cancel();
             }
         }
 

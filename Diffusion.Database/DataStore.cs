@@ -7,14 +7,22 @@ public partial class DataStore
     public string DatabasePath { get; }
     public bool RescanRequired { get; set; }
 
+    private SQLiteConnection? _readOnlyConnection;
+
+    public SQLiteConnection OpenReadonlyConnection()
+    {
+        if (_readOnlyConnection == null)
+        {
+            _readOnlyConnection = new SQLiteConnection(DatabasePath, SQLiteOpenFlags.ReadOnly);
+            _readOnlyConnection.Execute("pragma cache_size=-1000000");
+        }
+
+        return _readOnlyConnection;
+    }
+
     public SQLiteConnection OpenConnection()
     {
-        var db = new SQLiteConnection(DatabasePath);
-
-        //db.EnableLoadExtension(true);
-        //db.Execute("SELECT load_extension(?)", "dlls/path0");
-
-        return db;
+        return new SQLiteConnection(DatabasePath);
     }
 
     public DataStore(string databasePath)
@@ -22,7 +30,7 @@ public partial class DataStore
         DatabasePath = databasePath;
     }
 
-    public async Task Create(Action notify, Action complete)
+    public async Task Create(Func<object> notify, Action<object> complete)
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
 
@@ -47,7 +55,7 @@ public partial class DataStore
 
         if (migrations.RequiresMigration(MigrationType.Pre))
         {
-            notify?.Invoke();
+            var handle = notify?.Invoke();
             try
             {
                 await Task.Run(() =>
@@ -57,60 +65,86 @@ public partial class DataStore
             }
             finally
             {
-                complete?.Invoke();
+                complete?.Invoke(handle);
             }
         }
 
-        db.CreateTable<Image>();
-        db.CreateIndex<Image>(image => image.FolderId);
-        db.CreateIndex<Image>(image => image.Path, true);
-        db.CreateIndex<Image>(image => image.FileName);
-        db.CreateIndex<Image>(image => image.ModelHash);
-        db.CreateIndex<Image>(image => image.Model);
-        db.CreateIndex<Image>(image => image.Seed);
-        db.CreateIndex<Image>(image => image.Sampler);
-        db.CreateIndex<Image>(image => image.Height);
-        db.CreateIndex<Image>(image => image.Width);
-        db.CreateIndex<Image>(image => image.CFGScale);
-        db.CreateIndex<Image>(image => image.Steps);
-        db.CreateIndex<Image>(image => image.AestheticScore);
-        db.CreateIndex<Image>(image => image.Favorite);
-        db.CreateIndex<Image>(image => image.Rating);
-        db.CreateIndex<Image>(image => image.ForDeletion);
-        db.CreateIndex<Image>(image => image.NSFW);
-        db.CreateIndex<Image>(image => image.Unavailable);
-        db.CreateIndex<Image>(image => image.CreatedDate);
-        db.CreateIndex<Image>(image => image.HyperNetwork);
-        db.CreateIndex<Image>(image => image.HyperNetworkStrength);
-        db.CreateIndex<Image>(image => image.FileSize);
-        db.CreateIndex<Image>(image => image.ModifiedDate);
+        await Task.Run(() =>
+        {
+            var handle = notify?.Invoke();
+            try
+            {
+                db.CreateTable<Image>();
+                db.CreateIndex<Image>(image => image.FolderId);
+                db.CreateIndex<Image>(image => image.Path, true);
+                db.CreateIndex<Image>(image => image.FileName);
+                db.CreateIndex<Image>(image => image.ModelHash);
+                db.CreateIndex<Image>(image => image.Model);
+                db.CreateIndex<Image>(image => image.Seed);
+                db.CreateIndex<Image>(image => image.Sampler);
+                db.CreateIndex<Image>(image => image.Height);
+                db.CreateIndex<Image>(image => image.Width);
+                db.CreateIndex<Image>(image => image.CFGScale);
+                db.CreateIndex<Image>(image => image.Steps);
+                db.CreateIndex<Image>(image => image.AestheticScore);
+                db.CreateIndex<Image>(image => image.Favorite);
+                db.CreateIndex<Image>(image => image.Rating);
+                db.CreateIndex<Image>(image => image.ForDeletion);
+                db.CreateIndex<Image>(image => image.NSFW);
+                db.CreateIndex<Image>(image => image.Unavailable);
+                db.CreateIndex<Image>(image => image.CreatedDate);
+                db.CreateIndex<Image>(image => image.HyperNetwork);
+                db.CreateIndex<Image>(image => image.HyperNetworkStrength);
+                db.CreateIndex<Image>(image => image.FileSize);
+                db.CreateIndex<Image>(image => image.ModifiedDate);
 
-        db.CreateIndex<Image>(image => image.Prompt);
-        db.CreateIndex<Image>(image => image.NegativePrompt);
-        db.CreateIndex<Image>(image => image.Workflow);
-        db.CreateIndex<Image>(image => image.WorkflowId);
-        db.CreateIndex<Image>(image => image.HasError);
+                db.CreateIndex<Image>(image => image.Prompt);
+                db.CreateIndex<Image>(image => image.NegativePrompt);
+                db.CreateIndex<Image>(image => image.Workflow);
+                db.CreateIndex<Image>(image => image.WorkflowId);
+                db.CreateIndex<Image>(image => image.HasError);
 
-        db.CreateIndex("Image", new[] { "HasError", "CreatedDate" });
-        db.CreateIndex("Image", new[] { "ForDeletion", "CreatedDate" });
-        db.CreateIndex("Image", new[] { "NSFW", "CreatedDate" });
-        db.CreateIndex("Image", new[] { "Unavailable", "CreatedDate" });
+                db.CreateIndex("Image", new[] { "HasError", "CreatedDate" });
+                db.CreateIndex("Image", new[] { "ForDeletion", "CreatedDate" });
+                db.CreateIndex("Image", new[] { "NSFW", "CreatedDate" });
+                db.CreateIndex("Image", new[] { "Unavailable", "CreatedDate" });
+                db.CreateIndex("Image", new[] { "ForDeletion", "Unavailable", "CreatedDate" });
+                db.CreateIndex("Image", new[] { "NSFW", "ForDeletion", "Unavailable", "CreatedDate" });
 
-        db.CreateTable<Album>();
-        db.CreateIndex<Album>(album => album.Name, true);
-        db.CreateIndex<Album>(album => album.LastUpdated);
 
-        CreateAlbumImageTable(db);
-        db.CreateTable<AlbumImage>();
-        db.CreateIndex<AlbumImage>(album => album.AlbumId);
-        db.CreateIndex<AlbumImage>(album => album.ImageId);
+                db.CreateTable<Album>();
+                db.CreateIndex<Album>(album => album.Name, true);
+                db.CreateIndex<Album>(album => album.LastUpdated);
 
-        db.CreateTable<Folder>();
-        db.CreateIndex<Folder>(folder => folder.ParentId);
+                CreateAlbumImageTable(db);
+                db.CreateTable<AlbumImage>();
+                db.CreateIndex<AlbumImage>(album => album.AlbumId);
+                db.CreateIndex<AlbumImage>(album => album.ImageId);
+
+                db.CreateTable<Node>();
+                db.CreateIndex<Node>(node => node.ImageId);
+                db.CreateIndex<Node>(node => node.Name);
+                db.CreateIndex("Node", new[] { "ImageId", "NodeId" }, true);
+
+                db.CreateTable<NodeProperty>();
+                db.CreateIndex<NodeProperty>(property => property.NodeId);
+                db.CreateIndex<NodeProperty>(property => property.Name);
+                db.CreateIndex<NodeProperty>(property => property.Value);
+                db.CreateIndex("NodeProperty", new[] { "Name", "Value" });
+
+                db.CreateTable<Folder>();
+                db.CreateIndex<Folder>(folder => folder.ParentId);
+            }
+            finally
+            {
+                complete?.Invoke(handle);
+            }
+        });
+
 
         if (migrations.RequiresMigration(MigrationType.Post))
         {
-            notify?.Invoke();
+            var handle = notify?.Invoke();
             try
             {
                 await Task.Run(() =>
@@ -120,9 +154,10 @@ public partial class DataStore
             }
             finally
             {
-                complete?.Invoke();
+                complete?.Invoke(handle);
             }
         }
+
 
         db.Close();
     }
@@ -141,10 +176,9 @@ public partial class DataStore
         command.ExecuteNonQuery();
     }
 
-
-    public void Close(SQLiteConnection connection)
+    public void Close()
     {
-        connection.Close();
+        _readOnlyConnection?.Close();
     }
 
     public void RebuildIndexes()
@@ -196,7 +230,7 @@ public partial class DataStore
         File.Copy(DatabasePath, Path.Combine(path, backupFilename));
     }
 
-    public  bool TryRestoreBackup(string path)
+    public bool TryRestoreBackup(string path)
     {
         try
         {

@@ -35,11 +35,12 @@ using WPFLocalizeExtension.Engine;
 using System.Windows.Documents;
 using System.Windows.Media;
 using Diffusion.Toolkit.Services;
+using SearchView = Diffusion.Database.SearchView;
 
 namespace Diffusion.Toolkit.Pages
 {
 
- 
+
     public class ReloadOptions
     {
         public bool Focus { get; set; }
@@ -63,7 +64,7 @@ namespace Diffusion.Toolkit.Pages
         public bool IsMarkedForDeletion { get; set; }
         public bool IsFavorite { get; set; }
         public ViewMode ViewMode { get; set; }
-        public string CurrentFolder { get; set; }
+        public string? CurrentFolderPath { get; set; }
         //public Album CurrentAlbum { get; set; }
     }
 
@@ -99,7 +100,7 @@ namespace Diffusion.Toolkit.Pages
             });
 
             ServiceLocator.ThumbnailNavigationService.Next += ThumbnailNavigationServiceOnNext;
-            ServiceLocator.ThumbnailNavigationService.Previous +=  ThumbnailNavigationServiceOnPrevious;
+            ServiceLocator.ThumbnailNavigationService.Previous += ThumbnailNavigationServiceOnPrevious;
             ServiceLocator.ThumbnailNavigationService.NextPage += ThumbnailNavigationServiceOnNextPage;
             ServiceLocator.ThumbnailNavigationService.PreviousPage += ThumbnailNavigationServiceOnPreviousPage;
 
@@ -107,10 +108,7 @@ namespace Diffusion.Toolkit.Pages
             //using (var writer = new System.IO.StringWriter(str))
             //    System.Windows.Markup.XamlWriter.Save(MyContextMenu.Template, writer);
             //System.Diagnostics.Debug.Write(str);
-            ServiceLocator.SearchService.Search += (obj, args) =>
-            {
-                SearchImages(null);
-            };
+
         }
 
         private void ThumbnailNavigationServiceOnPreviousPage(object? sender, EventArgs e)
@@ -223,6 +221,13 @@ namespace Diffusion.Toolkit.Pages
 
             _model = new SearchModel(mainModel);
             //_model.DataStore = _dataStoreOptions;
+
+            ServiceLocator.SearchService = new SearchService(_model.Filter, _model.SearchSettings);
+            ServiceLocator.SearchService.Search += (obj, args) =>
+            {
+                SearchImages(null);
+            };
+
             _model.Page = 0;
             _model.Pages = 0;
             _model.TotalFiles = 100;
@@ -259,8 +264,24 @@ namespace Diffusion.Toolkit.Pages
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
             _model.ShowFilter = new RelayCommand<object>((o) => ShowFilter());
+            _model.ShowSearchSettings = new RelayCommand<object>((o) => OpenSearchSettings());
             _model.HideFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = false);
             _model.ClearSearch = new RelayCommand<object>((o) => ClearQueryFilter());
+
+            _model.SearchSettings.SearchNodes = settings.SearchNodes;
+            _model.SearchSettings.IncludeNodeProperties = string.Join("\n", settings.IncludeNodeProperties);
+            _model.SearchSettings.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(SearchSettings.SearchNodes))
+                {
+                    settings.SearchNodes = _model.SearchSettings.SearchNodes;
+                }
+
+                if (args.PropertyName == nameof(SearchSettings.IncludeNodeProperties))
+                {
+                    settings.IncludeNodeProperties = _model.SearchSettings.GetNodePropertiesList().ToList();
+                }
+            };
 
             _model.FilterCommand = new RelayCommand<object>((o) =>
             {
@@ -279,9 +300,9 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.SelectedImageEntry.EntryType == EntryType.Folder)
                 {
-                    _currentModeSettings.CurrentFolder = Path.GetFullPath(_model.SelectedImageEntry.Path);
+                    _currentModeSettings.CurrentFolderPath = _model.SelectedImageEntry.Path;
 
-                    _model.FolderPath = _currentModeSettings.CurrentFolder;
+                    _model.FolderPath = _currentModeSettings.CurrentFolderPath;
 
                     ExpandToPath(_model.FolderPath);
 
@@ -310,7 +331,7 @@ namespace Diffusion.Toolkit.Pages
                 if (_currentModeSettings.ViewMode == ViewMode.Folder)
                 {
                     _model.FolderPath = "Watched Folders";
-                    _currentModeSettings.CurrentFolder = "$";
+                    _currentModeSettings.CurrentFolderPath = null;
                     SearchImages(null);
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Album)
@@ -326,8 +347,9 @@ namespace Diffusion.Toolkit.Pages
 
             _model.GoUp = new RelayCommand<object>((o) =>
             {
-                _currentModeSettings.CurrentFolder = Path.GetFullPath(Path.Combine(_currentModeSettings.CurrentFolder, ".."));
-                _model.FolderPath = _currentModeSettings.CurrentFolder;
+                _currentModeSettings.CurrentFolderPath = Path.Combine(_currentModeSettings.CurrentFolderPath.Split(Path.DirectorySeparatorChar)[0..^1]);
+                _model.FolderPath = _currentModeSettings.CurrentFolderPath;
+
                 SearchImages(null);
             });
 
@@ -342,7 +364,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     { "search", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
                     { "models", new ModeSettings() { Name = GetLocalizedText("Search.Models"), ViewMode = ViewMode.Model } },
-                    { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolder = "$" } },
+                    { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolderPath = null } },
                     { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
                     { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
                     { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.RecycleBin"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
@@ -584,6 +606,7 @@ namespace Diffusion.Toolkit.Pages
             _model.IsFilterVisible = true;
         }
 
+
         private void ClearQueryFilter()
         {
             _model.Filter.Clear();
@@ -649,7 +672,7 @@ namespace Diffusion.Toolkit.Pages
             set => ThumbnailListView.MoveFiles = value;
 
         }
-        
+
         //public Action<IList<ImageEntry>> CopyFiles
         //{
         //    get => ThumbnailListView.CopyFiles;
@@ -693,14 +716,51 @@ namespace Diffusion.Toolkit.Pages
                 return;
             }
 
-
             try
             {
                 Dispatcher.Invoke(() =>
                 {
-                    //_model.Images!.Clear();
-                    int count = 0;
-                    long size = 0;
+                    _model.IsBusy = true;
+                });
+
+                //_model.Images!.Clear();
+                int count = 0;
+                long size = 0;
+
+
+                var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
+                //var folders = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
+
+                QueryOptions = new QueryOptions()
+                {
+                    AlbumIds = albums,
+                    Folder = _currentModeSettings.CurrentFolderPath,
+                    SearchNodes = _model.SearchSettings.SearchNodes,
+                    HideNSFW = _model.MainModel.HideNSFW,
+                    HideDeleted = _model.MainModel.HideDeleted,
+                    HideUnavailable = _model.MainModel.HideUnavailable,
+                    ComfyQueryOptions = new ComfyQueryOptions()
+                    {
+                        SearchProperties = _model.SearchSettings.GetNodePropertiesList()
+                    }
+                };
+
+                if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                {
+                    QueryOptions.SearchView = SearchView.Folder;
+                }
+
+                if (_currentModeSettings.IsFavorite)
+                {
+                    QueryOptions.SearchView = SearchView.Favorites;
+                }
+                else if (_currentModeSettings.IsMarkedForDeletion)
+                {
+                    QueryOptions.SearchView = SearchView.Deleted;
+                }
+
+                Task.Run(() =>
+                {
 
                     if (UseFilter)
                     {
@@ -718,9 +778,9 @@ namespace Diffusion.Toolkit.Pages
                         }
                         else if (_currentModeSettings.ViewMode == ViewMode.Folder)
                         {
-                            if (_currentModeSettings.CurrentFolder != "$")
+                            if (_currentModeSettings.CurrentFolderPath != null)
                             {
-                                filter.Folder = _currentModeSettings.CurrentFolder;
+                                filter.Folder = _currentModeSettings.CurrentFolderPath;
                             }
                         }
                         else if (_currentModeSettings.ViewMode == ViewMode.Album)
@@ -739,8 +799,7 @@ namespace Diffusion.Toolkit.Pages
                             }
                         }
 
-                        count = DataStore.Count(filter);
-                        size = DataStore.CountFileSize(filter);
+                        (count, size) = DataStore.CountAndFileSize(filter, QueryOptions);
                     }
                     else
                     {
@@ -748,11 +807,16 @@ namespace Diffusion.Toolkit.Pages
                         {
                             if (_model.SearchHistory.Count == 0 || (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != _model.SearchText))
                             {
-                                if (_model.SearchHistory.Count + 1 > 25)
+
+                                Dispatcher.Invoke(() =>
                                 {
-                                    _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
-                                }
-                                _model.SearchHistory.Insert(0, _model.SearchText);
+                                    if (_model.SearchHistory.Count + 1 > 25)
+                                    {
+                                        _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
+                                    }
+
+                                    _model.SearchHistory.Insert(0, _model.SearchText);
+                                });
 
                                 _currentModeSettings.History = _model.SearchHistory.ToList();
                             }
@@ -763,110 +827,113 @@ namespace Diffusion.Toolkit.Pages
                         // need a better way to do this... property?
                         var query = _model.SearchText;
 
-                        if (_currentModeSettings.IsFavorite)
-                        {
-                            query = $"{query} favorite: true";
-                        }
-                        else if (_currentModeSettings.IsMarkedForDeletion)
-                        {
-                            query = $"{query} delete: true";
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                        {
-                            if (_currentModeSettings.CurrentFolder != "$")
-                            {
-                                query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
-                            }
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                        {
-                            if (_model.MainModel.CurrentAlbum != null)
-                            {
-                                query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
-                            }
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                        {
-                            if (_model.MainModel.CurrentModel != null)
-                            {
-                                query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
-                            }
-                        }
+                        //else if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                        //{
+                        //    if (_currentModeSettings.CurrentFolder != "$")
+                        //    {
+                        //        query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                        //    }
+                        //}
+                        //else if (_currentModeSettings.ViewMode == ViewMode.Album)
+                        //{
+                        //    if (_model.MainModel.CurrentAlbum != null)
+                        //    {
+                        //        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
+                        //    }
+                        //}
+                        //else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                        //{
+                        //    if (_model.MainModel.CurrentModel != null)
+                        //    {
+                        //        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
+                        //    }
+                        //}
 
-                        count = DataStore.Count(query);
-                        size = DataStore.CountFileSize(query);
+                        QueryOptions.Query = query;
 
+                        (count, size) = DataStore.CountAndSize(QueryOptions);
                     }
 
-                    //_model.FileSize = size;
-
-                    _model.IsEmpty = count == 0;
-
-                    if (_model.IsEmpty)
+                    Dispatcher.Invoke(() =>
                     {
-                        //_model.CurrentImage.;
-                    }
 
-                    _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
+                        //_model.FileSize = size;
 
-                    float fsize = size;
+                        _model.IsEmpty = count == 0;
 
-                    var ssize = $"{fsize:n} B";
-
-                    if (fsize > 1073741824)
-                    {
-                        fsize /= 1073741824;
-                        ssize = $"{fsize:n2} GiB";
-                    }
-                    else if (fsize > 1048576)
-                    {
-                        fsize /= 1048576;
-                        ssize = $"{fsize:n2} MiB";
-                    }
-                    else if (fsize > 1024)
-                    {
-                        fsize /= 1024;
-                        ssize = $"{fsize:n2} KiB";
-                    }
-
-                    var text = GetLocalizedText("Search.Results");
-
-                    text = text.Replace("{count}", $"{count:n0}")
-                        .Replace("{size}", $"{ssize}");
-
-                    _model.Results = text;
-
-                    if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                    {
-                        if (_model.Pages == 0)
-                        {
-                            _model.Pages = 1;
-                        }
-                    }
-                    else
-                    {
                         if (_model.IsEmpty)
                         {
-                            var noResults = GetLocalizedText("Search.NoResults");
-
-                            _model.Page = 0;
-                            _model.ResultStatus = noResults;
-                            //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
-                            //    MessageBoxButton.OK,
-                            //    MessageBoxImage.Information);
-                            return;
+                            //_model.CurrentImage.;
                         }
-                    }
-                    _model.Page = 1;
-                    ThumbnailListView.Model.Pages = _model.Pages;
-                    ThumbnailListView.Model.Page = _model.Page;
 
-                    ThumbnailListView.SetPagingEnabled();
+                        _model.Pages = count / _settings.PageSize + (count % _settings.PageSize > 1 ? 1 : 0);
+
+                        float fsize = size;
+
+                        var ssize = $"{fsize:n} B";
+
+                        if (fsize > 1073741824)
+                        {
+                            fsize /= 1073741824;
+                            ssize = $"{fsize:n2} GiB";
+                        }
+                        else if (fsize > 1048576)
+                        {
+                            fsize /= 1048576;
+                            ssize = $"{fsize:n2} MiB";
+                        }
+                        else if (fsize > 1024)
+                        {
+                            fsize /= 1024;
+                            ssize = $"{fsize:n2} KiB";
+                        }
+
+                        var text = GetLocalizedText("Search.Results");
+
+                        text = text.Replace("{count}", $"{count:n0}")
+                                .Replace("{size}", $"{ssize}");
+
+                        _model.Results = text;
+
+                        if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                        {
+                            if (_model.Pages == 0)
+                            {
+                                _model.Pages = 1;
+                            }
+                        }
+                        else
+                        {
+                            if (_model.IsEmpty)
+                            {
+                                var noResults = GetLocalizedText("Search.NoResults");
+
+                                _model.Page = 0;
+                                _model.ResultStatus = noResults;
+                                //MessageBox.Show(_navigatorService.Host, "The search term yielded no results", "No results found",
+                                //    MessageBoxButton.OK,
+                                //    MessageBoxImage.Information);
+                                return;
+                            }
+                        }
+                        _model.Page = 1;
+                        ThumbnailListView.Model.Pages = _model.Pages;
+                        ThumbnailListView.Model.Page = _model.Page;
+
+                        ThumbnailListView.SetPagingEnabled();
+                    });
+
+
+
+                    ReloadMatches(new ReloadOptions() { Focus = (string)obj != "ManualSearch" });
+                }).ContinueWith(d =>
+                {
+                    if (d.IsFaulted)
+                    {
+                        Debug.WriteLine(d.Exception);
+                    }
                 });
 
-
-
-                ReloadMatches(new ReloadOptions() { Focus = (string)obj != "ManualSearch" });
             }
             catch (Exception e)
             {
@@ -876,6 +943,9 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
+        public QueryOptions QueryOptions { get; private set; }
+        public Sorting Sorting { get; private set; }
+
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(SearchModel.SelectedImageEntry))
@@ -883,15 +953,10 @@ namespace Diffusion.Toolkit.Pages
                 if (_model.SelectedImageEntry != null)
                 {
                     LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
-
                 }
                 else
                 {
                     _model.CurrentImage = new ImageViewModel();
-                    foreach (var album in _model.MainModel.Albums)
-                    {
-                        album.IsTicked = false;
-                    }
                 }
             }
             else if (e.PropertyName == nameof(SearchModel.SortBy))
@@ -973,10 +1038,10 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.Albums = _dataStoreOptions.Value.GetImageAlbums(image.Id);
                     var albumLookup = imageViewModel.Albums.ToDictionary(x => x.Id);
 
-                    foreach (var album in _model.MainModel.Albums)
-                    {
-                        album.IsTicked = albumLookup.ContainsKey(album.Id);
-                    }
+                    //foreach (var album in _model.MainModel.Albums)
+                    //{
+                    //    album.IsTicked = albumLookup.ContainsKey(album.Id);
+                    //}
 
                 }
 
@@ -1304,38 +1369,42 @@ namespace Diffusion.Toolkit.Pages
 
         private void LoadMatches()
         {
-            //Dispatcher.Invoke(() =>
-            //{
-            //    _model.Images?.Clear();
-            //});
+            Dispatcher.Invoke(() =>
+            {
+                _model.IsBusy = true;
+                //                _model.Images?.Clear();
+            });
 
             var images = new List<ImageEntry>();
 
-            var rId = r.NextInt64();
-            ThumbnailLoader.Instance.SetCurrentRequestId(rId);
+            ThumbnailLoader.Instance.StopCurrentBatch();
+
+            var rId = ThumbnailLoader.Instance.StartBatch();
 
             if (_currentModeSettings != null && _currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
             {
                 IEnumerable<string> folders = Enumerable.Empty<string>();
 
-                if (_currentModeSettings.CurrentFolder == "$")
+                if (_currentModeSettings.CurrentFolderPath == null)
                 {
                     folders = _settings.ImagePaths;
                 }
                 else
                 {
-                    if (!Directory.Exists(_currentModeSettings.CurrentFolder))
+                    var currentFolderPath = _currentModeSettings.CurrentFolderPath;
+
+                    if (!Directory.Exists(currentFolderPath))
                     {
                         MessageBox.Show(GetLocalizedText("Search.Folders.Unavailable"), GetLocalizedText("Search.Folders.Unavailable.TItle"), MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
 
-                    if (!_settings.ImagePaths.Contains(_currentModeSettings.CurrentFolder))
+                    if (!_settings.ImagePaths.Contains(_currentModeSettings.CurrentFolderPath))
                     {
-                        folders = folders.Concat(new[] { Path.Combine(_currentModeSettings.CurrentFolder, "..") });
+                        folders = folders.Concat(new[] { ".." });
                     }
 
-                    folders = folders.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolder));
+                    folders = folders.Concat(Directory.GetDirectories(currentFolderPath));
                 }
 
                 foreach (var folder in folders)
@@ -1343,7 +1412,7 @@ namespace Diffusion.Toolkit.Pages
                     var imageEntry = new ImageEntry(rId)
                     {
                         Id = 0,
-                        Path = folder,
+                        Path = folder == ".." ? Path.Combine(_currentModeSettings.CurrentFolderPath.Split(Path.DirectorySeparatorChar)[0..^1]) : folder,
                         FileName = Path.GetFileName(folder),
                         Name = Path.GetFileName(folder),
                         EntryType = EntryType.Folder
@@ -1388,6 +1457,13 @@ namespace Diffusion.Toolkit.Pages
 
             }
 
+            var paging = new Paging()
+            {
+                PageSize = _settings.PageSize,
+                Offset = _settings.PageSize * (_model.Page - 1)
+            };
+
+            Sorting = new Sorting(_model.SortBy, _model.SortDirection);
 
             IEnumerable<ImageView> matches = Enumerable.Empty<ImageView>();
 
@@ -1408,9 +1484,9 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Folder)
                 {
-                    if (_currentModeSettings.CurrentFolder != "$")
+                    if (_currentModeSettings.CurrentFolderPath != null)
                     {
-                        filter.Folder = _currentModeSettings.CurrentFolder;
+                        filter.Folder = _currentModeSettings.CurrentFolderPath;
                     }
                     else
                     {
@@ -1443,10 +1519,10 @@ namespace Diffusion.Toolkit.Pages
                 if (showImages)
                 {
                     matches = Time(() => DataStore
-                        .Search(filter, _settings.PageSize,
-                            _settings.PageSize * (_model.Page - 1),
-                            _model.SortBy,
-                            _model.SortDirection));
+                        .Search(filter,
+                            QueryOptions,
+                            Sorting,
+                            paging));
                 }
             }
             else
@@ -1466,9 +1542,9 @@ namespace Diffusion.Toolkit.Pages
                     }
                     else if (_currentModeSettings.ViewMode == ViewMode.Folder)
                     {
-                        if (_currentModeSettings.CurrentFolder != "$")
+                        if (_currentModeSettings.CurrentFolderPath != null)
                         {
-                            query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
+                            query = $"{query} folder: \"{_currentModeSettings.CurrentFolderPath}\"";
                         }
                         else
                         {
@@ -1499,13 +1575,14 @@ namespace Diffusion.Toolkit.Pages
                     }
                 }
 
+                Sorting = new Sorting(_model.SortBy, _model.SortDirection);
+
                 if (showImages)
                 {
                     matches = Time(() => DataStore
-                        .Search(query, _settings.PageSize,
-                            _settings.PageSize * (_model.Page - 1),
-                            _model.SortBy,
-                            _model.SortDirection
+                        .Search(QueryOptions,
+                            Sorting,
+                            paging
                         ));
                 }
 
@@ -1567,14 +1644,43 @@ namespace Diffusion.Toolkit.Pages
                 {
                     for (var i = 0; i < images.Count; i++)
                     {
-                        _model.Images[i] = images[i];
+                        var dest = _model.Images[i];
+                        var src = images[i];
+
+                        dest.BatchId = src.BatchId;
+                        dest.Id = src.Id;
+                        dest.EntryType = src.EntryType;
+                        dest.Name = src.Name;
+                        dest.ForDeletion = src.ForDeletion;
+                        dest.Favorite = src.Favorite;
+                        dest.Rating = src.Rating;
+                        dest.Score = src.Score;
+                        dest.NSFW = src.NSFW;
+                        dest.FileName = src.FileName;
+                        dest.LoadState = src.LoadState;
+                        dest.Dispatcher = src.Dispatcher;
+                        dest.Unavailable = src.Unavailable;
+                        dest.Height = src.Height;
+                        dest.Width = src.Width;
+                        dest.Path = src.Path;
+                        dest.CreatedDate = src.CreatedDate;
+                        dest.AlbumCount = src.AlbumCount;
+                        dest.Albums = src.Albums;
+                        dest.HasError = src.HasError;
+                        dest.Thumbnail = null;
+                        //dest.QueueLoadThumbnail();
                     }
                 }
 
                 ThumbnailListView.ReloadThumbnailsView(0);
 
                 //RefreshThumbnails();
+                _model.IsBusy = false;
 
+                if (_model.SelectedImageEntry != null)
+                {
+                    LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
+                }
             });
 
             sw.Stop();
@@ -1590,25 +1696,29 @@ namespace Diffusion.Toolkit.Pages
         {
             Dispatcher.Invoke(() =>
             {
+                _model.IsBusy = true;
                 _model.Images.Clear();
             });
 
             var images = new List<ImageEntry>();
 
-            var rId = r.NextInt64();
-            ThumbnailLoader.Instance.SetCurrentRequestId(rId);
+            ThumbnailLoader.Instance.StopCurrentBatch();
+            var rId = ThumbnailLoader.Instance.StartBatch();
 
             if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
             {
                 IEnumerable<string> folders = Enumerable.Empty<string>();
 
-                if (_currentModeSettings.CurrentFolder == "$")
+                if (_currentModeSettings.CurrentFolderPath == null)
                 {
                     folders = _settings.ImagePaths;
                 }
                 else
                 {
-                    folders = new[] { Path.Combine(_currentModeSettings.CurrentFolder, "..") }.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolder));
+                    folders = new[]
+                    {
+                        Path.Combine(_currentModeSettings.CurrentFolderPath.Split(Path.DirectorySeparatorChar)[0..^1])
+                    }.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolderPath));
                 }
 
                 foreach (var folder in folders)
@@ -1661,8 +1771,15 @@ namespace Diffusion.Toolkit.Pages
 
             }
 
+            var paging = new Paging()
+            {
+                PageSize = _settings.PageSize,
+                Offset = _settings.PageSize * (_model.Page - 1)
+            };
 
-            IEnumerable<Image> matches = Enumerable.Empty<Image>();
+            Sorting = new Sorting(_model.SortBy, _model.SortDirection);
+
+            IEnumerable<ImageView> matches = Enumerable.Empty<ImageView>();
 
             if (UseFilter)
             {
@@ -1681,9 +1798,9 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else if (_currentModeSettings.ViewMode == ViewMode.Folder)
                 {
-                    if (_currentModeSettings.CurrentFolder != "$")
+                    if (_currentModeSettings.CurrentFolderPath != null)
                     {
-                        filter.Folder = _currentModeSettings.CurrentFolder;
+                        filter.Folder = _currentModeSettings.CurrentFolderPath;
                     }
                     else
                     {
@@ -1716,66 +1833,22 @@ namespace Diffusion.Toolkit.Pages
                 if (showImages)
                 {
                     matches = Time(() => DataStore
-                        .Search(filter, _settings.PageSize,
-                            _settings.PageSize * (_model.Page - 1),
-                            _model.SortBy,
-                            _model.SortDirection));
+                        .Search(filter,
+                            QueryOptions,
+                            Sorting,
+                            paging));
                 }
             }
             else
             {
-                var query = _model.SearchText;
-                bool showImages = true;
 
-                if (_currentModeSettings.IsFavorite)
-                {
-                    query = $"{query} favorite: true";
-                }
-                else if (_currentModeSettings.IsMarkedForDeletion)
-                {
-                    query = $"{query} delete: true";
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                {
-                    if (_currentModeSettings.CurrentFolder != "$")
-                    {
-                        query = $"{query} folder: \"{_currentModeSettings.CurrentFolder}\"";
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                {
-                    if (_model.MainModel.CurrentAlbum != null)
-                    {
-                        query = $"{query} album: \"{_model.MainModel.CurrentAlbum.Name}\"";
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                {
-                    if (_model.MainModel.CurrentModel != null)
-                    {
-                        query = $"{query} model_or_hash: \"{_model.MainModel.CurrentModel.Name}\"|{_model.MainModel.CurrentModel.Hash}";
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-
-                if (showImages)
+                // showImages
+                if (true)
                 {
                     matches = Time(() => DataStore
-                        .Search(query, _settings.PageSize,
-                            _settings.PageSize * (_model.Page - 1),
-                            _model.SortBy,
-                            _model.SortDirection
+                        .Search(QueryOptions,
+                            Sorting,
+                            paging
                         ));
                 }
 
@@ -1836,6 +1909,9 @@ namespace Diffusion.Toolkit.Pages
                     }
                 }
                 //RefreshThumbnails();
+
+                _model.IsBusy = false;
+
             });
 
 
@@ -1854,7 +1930,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 foreach (var image in _model.Images)
                 {
-                    image.LoadThumbnail();
+                    image.QueueLoadThumbnail();
                 }
             }
         }
@@ -2106,14 +2182,14 @@ namespace Diffusion.Toolkit.Pages
 
         public bool IsQueryEmpty()
         {
-            if (UseFilter)
-            {
-                return _model.Filter.AsFilter().IsEmpty;
-            }
-            else
-            {
-                return _model.SearchText == null || _model.SearchText.Trim().Length == 0;
-            }
+            return QueryOptions.SearchView == SearchView.Search &&
+                   (
+                       QueryOptions.AlbumIds.Count == 0 &&
+                       (
+                           (UseFilter && Filter.IsEmpty) ||
+                           (!UseFilter && (_model.SearchText == null || _model.SearchText.Trim().Length == 0))
+                        )
+                   );
         }
 
         private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
@@ -2122,7 +2198,8 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (_model.FolderPath != null && Directory.Exists(_model.FolderPath))
                 {
-                    _currentModeSettings.CurrentFolder = _model.FolderPath;
+                    throw new NotImplementedException();
+                    //_currentModeSettings.CurrentFolder = _model.FolderPath;
 
                     SearchImages(null);
                 }
@@ -2225,17 +2302,13 @@ namespace Diffusion.Toolkit.Pages
         {
             var model = ((AlbumModel)((Button)sender).DataContext);
 
-            if (_model.MainModel.CurrentAlbum != null)
+            foreach (var album in _model.MainModel.Albums)
             {
-                _model.MainModel.CurrentAlbum.IsSelected = false;
+                album.IsTicked = false;
             }
 
-            _model.MainModel.CurrentAlbum = model;
+            model.IsTicked = true;
 
-            _model.MainModel.CurrentAlbum.IsSelected = true;
-
-            _model.MainModel.ActiveView = "Albums";
-            SetMode("albums", _model.MainModel.CurrentAlbum.Name);
             SearchImages(null);
         }
 
@@ -2255,7 +2328,7 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void OpenAlbum(Album  album)
+        private void OpenAlbum(Album album)
         {
             var albumModel = new AlbumModel()
             {
@@ -2271,10 +2344,10 @@ namespace Diffusion.Toolkit.Pages
 
         private void RemoveFromAlbum(Album albumModel)
         {
-            ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id,  new [] { _model.CurrentImage.Id });
+            ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id, new[] { _model.CurrentImage.Id });
             SearchImages(null);
         }
-        
+
         private void DropImagesOnFolder(object sender, DragEventArgs e)
         {
             var folder = (FolderViewModel)((FrameworkElement)sender).DataContext;
@@ -2317,6 +2390,29 @@ namespace Diffusion.Toolkit.Pages
                 eventArg.Source = sender;
                 var parent = NavigationScrollViewer;
                 parent.RaiseEvent(eventArg);
+            }
+        }
+
+        private void HideSearchSettings_OnClick(object sender, RoutedEventArgs e)
+        {
+            CloseSearchSettings();
+        }
+
+        private void OpenSearchSettings()
+        {
+            _model.IsSearchSettingsVisible = true;
+        }
+
+        private void CloseSearchSettings()
+        {
+            _model.IsSearchSettingsVisible = false;
+        }
+
+        private void SearchSettingsPopup_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                CloseSearchSettings();
             }
         }
     }

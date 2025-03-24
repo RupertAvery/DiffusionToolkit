@@ -1,4 +1,7 @@
-﻿using System.Windows.Navigation;
+﻿using System.Windows.Controls.Primitives;
+using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Navigation;
 using Diffusion.Database;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Thumbnails;
@@ -7,6 +10,8 @@ namespace Diffusion.Toolkit.Services;
 
 public class ServiceLocator
 {
+    private static MessageService _messageServuce;
+    private static ProgressService _progressService;
     private static DataStore? _dataStore;
     private static NavigationService? _navigationService;
     //private static ScanService? _scanManager;
@@ -63,9 +68,9 @@ public class ServiceLocator
 
     public static SearchService SearchService
     {
-        get { return _searchService ??= new SearchService(); }
+        get;
+        set;
     }
-
 
     public static TaggingService TaggingService
     {
@@ -83,4 +88,17 @@ public class ServiceLocator
     }
 
     public static MainModel MainModel { get; set; }
+
+    public static ProgressService ProgressService
+    {
+        get;
+        set;
+    }
+
+    public static MessageService MessageService
+    {
+        get;
+        set;
+    }
 }
+

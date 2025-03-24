@@ -121,8 +121,12 @@ namespace Diffusion.Toolkit
                 LastUpdated = a.LastUpdated,
                 ImageCount = a.ImageCount,
                 Order = a.Order,
-            });
+            }).ToList();
 
+            foreach (var album in albums)
+            {
+                album.PropertyChanged += Album_PropertyChanged;
+            }
 
             switch (_settings.SortAlbumsBy)
             {
@@ -135,6 +139,15 @@ namespace Diffusion.Toolkit
                 case "Custom":
                     _model.Albums = new ObservableCollection<AlbumModel>(albums.OrderBy(a => a.Order));
                     break;
+            }
+        }
+
+        private void Album_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AlbumModel.IsTicked))
+            {
+                _model.HasSelectedAlbums = _model.Albums.Any(d => d.IsTicked);
+                _search.SearchImages();
             }
         }
 
@@ -169,13 +182,13 @@ namespace Diffusion.Toolkit
                 await _messagePopupManager.Show($"Album {name} already exists!\r\n Please use another name.", "New Album", PopupButtons.OK);
             }
         }
-        
+
         private void AddSelectedImagesToAlbum(IAlbumInfo album)
         {
             if (_model.SelectedImages != null)
             {
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
-                if(_dataStore.AddImagesToAlbum(album.Id, images))
+                if (_dataStore.AddImagesToAlbum(album.Id, images))
                 {
                     Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
                     LoadAlbums();

@@ -149,17 +149,21 @@ namespace Diffusion.Toolkit.Controls
         private void RescanSelected()
         {
             var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
-            Task.Run(() =>
+
+            Task.Run(async () =>
             {
-                try
+                if (await ServiceLocator.ProgressService.TryStartTask())
                 {
-                    ServiceLocator.ScanningService.Scan(imageEntries.Select(s => s.Path).ToList(), true);
-                    ServiceLocator.SearchService.ExecuteSearch();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
+
+                    try
+                    {
+                        ServiceLocator.ScanningService.Scan(imageEntries.Select(s => s.Path).ToList(), true);
+                        ServiceLocator.SearchService.ExecuteSearch();
+                    }
+                    finally
+                    {
+                        ServiceLocator.ProgressService.CompleteTask();
+                    }
                 }
             });
         }

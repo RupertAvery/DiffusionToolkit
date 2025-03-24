@@ -133,7 +133,6 @@
 
         </ListView>-->
 
-
         <ListView Grid.Row="0" x:Name="ThumbnailListView"   Margin="2" Padding="10" ItemsSource="{Binding Images}"
                   SelectionMode="Extended"
                   SelectedItem="{Binding SelectedImageEntry}"
@@ -268,6 +267,12 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <Grid  Background="#80000000" Visibility="{Binding IsBusy, Converter={StaticResource boolToVis}}">
+            <fa:ImageAwesome Opacity="0.5" Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{StaticResource ForegroundBrush}" />
+        </Grid>
+
+
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>

@@ -110,17 +110,17 @@
                 <MenuItem Header="{lex:Loc Menu.Albums.AlbumPane}" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
                 <MenuItem Header="{lex:Loc Menu.Albums.Sort}" Click="SortAlbums_OnClick"/>
             </MenuItem>-->
-            <MenuItem Header="{lex:Loc Menu.Tools}">
-                <MenuItem Header="{lex:Loc Menu.Tools.SearchResults}">
-                    <!--<MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
-                    <Separator></Separator>-->
-                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.AddAllToAlbum}" Command="{Binding AddAllToAlbum}"/>
-                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.MarkAllForDeletion}" Command="{Binding MarkAllForDeletion}"/>
-                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.UnmarkAllForDeletion}" Command="{Binding UnmarkAllForDeletion}"/>
-                    <Separator></Separator>
-                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.RemoveMatching}" Command="{Binding RemoveMatching}"/>
-                </MenuItem>
+            <MenuItem Header="{lex:Loc Menu.Search}">
+                <MenuItem Header="{lex:Loc Menu.Search.Save}" Command="{Binding SaveQuery}"/>
                 <Separator></Separator>
+                <MenuItem Header="{lex:Loc Menu.Search.AddAllToAlbum}" Command="{Binding AddAllToAlbum}"/>
+                <MenuItem Header="{lex:Loc Menu.Search.MarkAllForDeletion}" Command="{Binding MarkAllForDeletion}"/>
+                <MenuItem Header="{lex:Loc Menu.Search.UnmarkAllForDeletion}" Command="{Binding UnmarkAllForDeletion}"/>
+                <MenuItem Header="{lex:Loc Menu.Search.Rescan}" Command="{Binding RescanResults}"/>
+                <Separator></Separator>
+                <MenuItem Header="{lex:Loc Menu.Search.RemoveMatching}" Command="{Binding RemoveMatching}"/>
+            </MenuItem>
+            <MenuItem Header="{lex:Loc Menu.Tools}">
                 <MenuItem Header="{lex:Loc Menu.Tools.AutoTagNSFW}" Command="{Binding AutoTagNSFW}"/>
                 <Separator></Separator>
                 <MenuItem Header="{lex:Loc Menu.Tools.Folders}">
@@ -205,12 +205,6 @@
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Folders}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFolders}">
                             <fa:ImageAwesome ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
-                        <Button Margin="0,5,0,10" Height="16" Width="24" 
-                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Albums}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowAlbums}">
-                            <fa:ImageAwesome ToolTip="Albums (Ctrl+2)" Icon="FilePhotoOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 

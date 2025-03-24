@@ -105,4 +105,18 @@ public class Filter
     public bool InAlbum { get; set; }
     public bool UseUnavailable { get; set; }
     public bool Unavailable { get; set; }
+
+    public IEnumerable<NodeFilter>? NodeFilters { get; set; }
+    public IReadOnlyCollection<int>? AlbumIds { get; set; }
+}
+
+public class NodeFilter
+{
+    public bool IsActive { get; set; }
+    public string Operation { get; set; }
+    public string Node { get; set; }
+    public string Property { get; set; }
+    public string Comparison { get; set; }
+    public string Value { get; set; }
+
 }

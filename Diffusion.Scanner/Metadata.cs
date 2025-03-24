@@ -195,11 +195,18 @@ public class Metadata
                                     }
                                     else if (tag.Description.StartsWith("prompt: "))
                                     {
+                                        var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
+                                        format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
+                                        var tempParameters = isJson ? ReadComfyUIParameters(file, tag.Description) : ReadEasyDiffusionParameters(file, directories);
+
                                         if (fileParameters == null)
                                         {
-                                            var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
-                                            format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
-                                            fileParameters = isJson ? ReadComfyUIParameters(file, tag.Description) : ReadEasyDiffusionParameters(file, directories);
+                                            fileParameters = tempParameters;
+                                        }
+                                        else
+                                        {
+                                            fileParameters.Workflow = tempParameters.Workflow;
+                                            fileParameters.Nodes = tempParameters.Nodes;
                                         }
                                     }
                                     else if (tag.Description.StartsWith("Score:"))
@@ -604,186 +611,37 @@ public class Metadata
 
             var root = JsonDocument.Parse(json);
 
-            var nodes = root.RootElement.EnumerateObject().ToDictionary(o => o.Name, o => o.Value);
+            //var nodes = root.RootElement.EnumerateObject().ToDictionary(o => o.Name, o => o.Value);
 
             fp.WorkflowId = GetHashCode(root.RootElement).ToString("X");
 
-            var clipTextEncoders = nodes.Values.Where(o =>
-            {
-                if (o.TryGetProperty("class_type", out var element))
-                {
-                    return element.GetString() == "CLIPTextEncode";
-                }
+            var parser = new ComfyUIParser();
+            var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
+            fp.Nodes = pnodes;
 
-                return false;
-            }).ToList();
-
-            if (clipTextEncoders.Count > 0)
-            {
-                var inputs = clipTextEncoders[0].GetProperty("inputs");
-                fp.Prompt = inputs.GetProperty("text").GetString();
-            }
-
-
-            //var isSDXL = false;
-            //var isEfficient = false;
-            //var isEfficientSDXL = false;
-
-
-
-            //var ksampler = nodes.Values.SingleOrDefault(o =>
+            //var clipTextEncoders = nodes.Values.Where(o =>
             //{
             //    if (o.TryGetProperty("class_type", out var element))
             //    {
-            //        return element.GetString() == "KSampler";
+            //        return element.GetString() == "CLIPTextEncode";
             //    }
 
             //    return false;
-            //});
+            //}).ToList();
 
-            //if (ksampler.ValueKind == JsonValueKind.Undefined)
+            //if (clipTextEncoders.Count > 0)
             //{
-            //    ksampler = nodes.Values.FirstOrDefault(o =>
+            //    var inputs = clipTextEncoders[0].GetProperty("inputs");
+            //    if (inputs.TryGetProperty("text", out var value))
             //    {
-            //        if (o.TryGetProperty("class_type", out var element))
+            //        if (value.ValueKind == JsonValueKind.String)
             //        {
-            //            return element.GetString() == "KSampler (Efficient)";
+            //            fp.Prompt = value.GetString();
             //        }
-
-            //        return false;
-            //    });
-
-            //    if (ksampler.ValueKind != JsonValueKind.Undefined)
-            //    {
-            //        isEfficient = true;
-            //    }
-            //}
-
-            //if (ksampler.ValueKind == JsonValueKind.Undefined)
-            //{
-            //    ksampler = nodes.Values.FirstOrDefault(o =>
-            //    {
-            //        if (o.TryGetProperty("class_type", out var element))
-            //        {
-            //            return element.GetString() == "KSamplerAdvanced";
-            //        }
-
-            //        return false;
-            //    });
-
-            //    if (ksampler.ValueKind != JsonValueKind.Undefined)
-            //    {
-            //        isSDXL = true;
-            //    }
-            //}
-
-            //if (ksampler.ValueKind == JsonValueKind.Undefined)
-            //{
-            //    ksampler = nodes.Values.FirstOrDefault(o =>
-            //    {
-            //        if (o.TryGetProperty("class_type", out var element))
-            //        {
-            //            return element.GetString() == "Eff. Loader SDXL";
-            //        }
-
-            //        return false;
-            //    });
-
-            //    if (ksampler.ValueKind != JsonValueKind.Undefined)
-            //    {
-            //        isEfficientSDXL = true;
             //    }
             //}
 
 
-            //if (ksampler.ValueKind != JsonValueKind.Undefined)
-            //{
-
-            //    var image = ksampler.GetProperty("inputs");
-
-            //    if (image.TryGetProperty("positive", out var positive))
-            //    {
-            //        var promptIndex = positive.EnumerateArray().First().GetString();
-            //        var promptObject = nodes[promptIndex].GetProperty("inputs");
-            //        if (isSDXL)
-            //        {
-            //            fp.Prompt = promptObject.GetProperty("text_g").GetString();
-            //        }
-            //        else if (isEfficient)
-            //        {
-            //            fp.Prompt = promptObject.GetProperty("positive").GetString();
-            //        }
-            //        else if (isEfficientSDXL)
-            //        {
-            //            fp.Prompt = promptObject.GetProperty("text").GetString();
-            //        }
-            //        else
-            //        {
-            //            fp.Prompt = promptObject.GetProperty("text").GetString();
-            //        }
-            //    }
-
-            //    if (image.TryGetProperty("negative", out var negative))
-            //    {
-            //        if (negative.ValueKind == JsonValueKind.Array)
-            //        {
-            //            var promptIndex = negative.EnumerateArray().First().GetString();
-            //            var promptObject = nodes[promptIndex].GetProperty("inputs");
-            //            if (isSDXL)
-            //            {
-            //                fp.NegativePrompt = promptObject.GetProperty("text_g").GetString();
-            //            }
-            //            else if (isEfficient)
-            //            {
-            //                fp.NegativePrompt = promptObject.GetProperty("negative").GetString();
-            //            }
-            //            else
-            //            {
-            //                fp.NegativePrompt = promptObject.GetProperty("text").GetString();
-            //            }
-            //        }
-            //        else if (negative.ValueKind == JsonValueKind.String)
-            //        {
-            //            fp.NegativePrompt = negative.GetString();
-            //        }
-
-            //    }
-
-            //    if (image.TryGetProperty("latent_image", out var latent_image))
-            //    {
-            //        var index = latent_image.EnumerateArray().First().GetString();
-            //        var promptObject = nodes[index].GetProperty("inputs");
-            //        var hasWidth = promptObject.TryGetProperty("width", out var widthObject);
-            //        var hasHeight = promptObject.TryGetProperty("height", out var heightObject);
-
-            //        if (hasWidth && hasHeight)
-            //        {
-            //            fp.Width = widthObject.GetInt32();
-            //            fp.Height = heightObject.GetInt32();
-            //        }
-            //    }
-
-            //    fp.Steps = image.GetProperty("steps").GetInt32();
-            //    fp.CFGScale = image.GetProperty("cfg").GetDecimal();
-
-            //    if (isSDXL)
-            //    {
-            //        fp.Seed = image.GetProperty("noise_seed").GetInt64();
-            //    }
-            //    else
-            //    {
-            //        var seed = image.GetProperty("seed");
-
-            //        if (seed.ValueKind == JsonValueKind.Number)
-            //        {
-            //            fp.Seed = seed.GetInt64();
-            //        }
-            //    }
-
-            //    fp.Sampler = image.GetProperty("sampler_name").GetString();
-
-            //    fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
-            //}
 
             return fp;
         }

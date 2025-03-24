@@ -56,8 +56,8 @@ public class MainModel : BaseNotify
     private ICommand _reloadHashes;
     private ICommand _showFolders;
     private ICommand _showAlbums;
-    private ICommand _addMatchingToAlbum;
     private ICommand _sortAlbum;
+    private ICommand _clearAlbums;
     private ICommand _refresh;
     private ICommand _quickCopy;
     private int _thumbnailSize;
@@ -366,6 +366,18 @@ public class MainModel : BaseNotify
         set => SetField(ref _isPreviewVisible, value);
     }
 
+    public ICommand SaveQuery
+    {
+        get;
+        set;
+    }
+
+    public ICommand RescanResults
+    {
+        get;
+        set;
+    }
+
     public ICommand AddAllToAlbum
     {
         get => _addAllToAlbum;
@@ -396,12 +408,18 @@ public class MainModel : BaseNotify
         set => SetField(ref _autoTagNsfw, value);
     }
 
-    public ICommand AddMatchingToAlbum
+    public ICommand ClearAlbumsCommand
     {
-        get => _addMatchingToAlbum;
-        set => SetField(ref _addMatchingToAlbum, value);
+        get => _clearAlbums;
+        set => SetField(ref _clearAlbums, value);
     }
-    
+
+    public bool HasSelectedAlbums
+    {
+        get => _hasSelectedAlbums;
+        set => SetField(ref _hasSelectedAlbums, value);
+    }
+
     public ICommand SortAlbumCommand
     {
         get => _sortAlbum;
@@ -591,6 +609,7 @@ public class MainModel : BaseNotify
     private ICommand _toggleHideUnavailable;
     private bool _autoAdvance;
     private ICommand _toggleAutoAdvance;
+    private bool _hasSelectedAlbums;
 
     public FolderViewModel? CurrentFolder
     {

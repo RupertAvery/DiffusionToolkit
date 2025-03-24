@@ -28,7 +28,6 @@ public class ImageEntry : BaseNotify
     private bool _forDeletion;
     private bool _favorite;
     private int? _rating;
-    private long _requestId;
     private bool _nsfw;
     private string _name;
     private bool _isAlbum;
@@ -40,11 +39,13 @@ public class ImageEntry : BaseNotify
     private bool _unavailable;
     private bool _hasError;
 
-    public ImageEntry(long requestId)
+    public ImageEntry(long batchId)
     {
-        _requestId = requestId;
+        BatchId = batchId;
         LoadState = LoadState.Unloaded;
     }
+
+    public long BatchId { get; set; }
 
     public int Id
 
@@ -111,13 +112,13 @@ public class ImageEntry : BaseNotify
 
     public Dispatcher? Dispatcher { get; set; }
 
-    public void LoadThumbnail()
+    public void QueueLoadThumbnail()
     {
         LoadState = LoadState.Loading;
 
         var job = new ThumbnailJob()
         {
-            RequestId = _requestId,
+            BatchId = BatchId,
             EntryType = _entryType,
             Path = Path,
             Height = Height,
