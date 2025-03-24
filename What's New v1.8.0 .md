@@ -4,8 +4,6 @@ Are you tired of dragging your images into PNG-Info to see the metadata?  Annoye
 
 Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image metadata-indexer and viewer for AI-generated images. It aims to help you organize, search and sort your ever-growing collection.
 
-[![Organize your AI Images](https://img.youtube.com/vi/r7J3n1LjojE/hqdefault.jpg)](https://www.youtube.com/watch?v=r7J3n1LjojE&ab_channel=BillMeeks)
-
 # Installation
 
 * Currently runs on Windows only 
@@ -14,6 +12,7 @@ Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image 
     * Look for **> Assets** under the latest release, expand it, then grab the zip file **Diffusion.Toolkit.v1.8.0.zip**.
 * Unzip all the files to a folder
 * You may need to install the [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) if you haven't already
+* An experimental Linux version is available on the AvaloniaUI branch, but features are currently behind. No official build is available.
 
 # Features
 
@@ -41,26 +40,27 @@ Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image 
     * Albums
     * Folder View
 * Drag and Drop from Diffusion Toolkit to another app
-* Translations - Diffusion Toolkit is localized
+* Localization (feel free to contribute and fix the AI-generated translations!)
 
-# ComfyUI Workflow Search
+# What's New in v1.8.0
+
+## ComfyUI Workflow Search
 
 ComfyUI Workflow Search is now implemented! Here's what you need to do to be able to search on ComfyUI workflows. 
 
-You will need to Rescan your ComfyUI images. You can do this in a couple of ways:
+You will need to rescan your ComfyUI images. You can do this in a couple of ways:
 
 * **Edit > Rebuild Metadata** - This will rescan all the images currently in your database
-* **Tools > Search Results > Rescan** - This will rescan all the images in current search results
-* **Select Folder > Right-click > Rescan** - This will rescan all the images in the selected folder and sub-folders
+* **Search > Rescan Metadata** - This will rescan all the images in current search results
+* **Select Folder > Right-click > Rescan** - This will rescan all the images in the selected folder
 * **Select images > Right-click > Rescan** - This will rescan the selected images
 
-## How it works
+### How it works
 
-When Diffusion Toolkit scans your images, it parses the workflow JSON and extracts the nodes and node properties and saves them to the database.
-This should make searching much more efficient and specific than searching the entire workflow JSON. That said, it generates a LOT of data, so we don't
+When Diffusion Toolkit scans your images, it parses the workflow and extracts the nodes and node properties and saves them to the database. This should make searching much more efficient and specific than searching the entire workflow. That said, it generates a LOT of data, so we don't
 want to always search _every_ property.
 
-## Quick Search
+### Quick Search
 
 Quick search is done by typing something into the search bar and pressing enter. ComfyUI Workflow Search is now enabled in Quick search by default.
 
@@ -74,13 +74,15 @@ By default, the following properties are used in Quick search:
 
 Note that property names seem to use double underscore by convention.
 
-You can edit the properties in the Search Settings (click the icon next to the Filter button). You can also disable ComfyUI Search if you so wish.
+You can edit the properties in the Search Settings (Slider icon in the search bar). You can also disable ComfyUI Search if you so wish.
 
 To find property names, look in the Workflow tab in the Metadata Pane (below the Preview Pane if not hidden) or the Metadata Overlay (Press I to show or hide the Metadata Overlay)
 
-You can also add properties into the filter by clicking on the ... button to the left of each node property in the Workflow Pane.
+You can also add properties to the list by clicking on the ... button to the left of each node property in the Workflow Pane, and selecting **Add to Default Search**
 
-## Filter
+### Filter
+
+The Filter allows you to customize your searches on node properties.
 
 Open the Filter popup (Click the Filter icon in the search bar, or press CTRL+F) and go the the Workflow tab.
 
@@ -98,21 +100,23 @@ For example, the property name `text*` will match
 
 and any other property that starts with `text`.
 
-NOTE: wildcard searches will be a bit slower than non-wildcard searches
+NOTE: wildcard searches may be a bit slower than non-wildcard searches
 
-Values are always matched using Contains
+You can set the property value comparison to **contains**, **equals**, **starts with** and **ends with**. This determines how the value will be evaluated when searching.
 
-# What's New in v1.8.0
+You can combine filters with the operators OR, AND, and NOT.
+
+You can also add properties to the list by clicking on the ... button to the left of each node property in the Workflow Pane, and selecting **Add to Filters**
+
+# Updates
 
 * ComfyUI Search support!
 * Performance improvements:
+   * Massive improvements in results loading and paging 
    * Query improvements
    * Added indexes
-   * Using a persistent SQLite connection for searches 
-   * Increased `pragma cache_size` to 1GB. Memory usage will be increased
+   * Increased SQLite `cache_size` to 1GB. Memory usage will be increased
    * Added a spinner to indicate progress on some slow queries
-   * Combined count and size into one query
-   * Massive page loading improvements
 * Filtering on multiple albums
 * Scroll wheel now works over albums / models / folders
 * Fixed Fit to Preview and Actual Size being reset when moving between images in the Preview

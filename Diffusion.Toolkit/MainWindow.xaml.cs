@@ -784,14 +784,16 @@ namespace Diffusion.Toolkit
 
                 _ = Task.Run(async () =>
                 {
-                    ServiceLocator.ProgressService.StartTask();
-                    try
+                    if (await ServiceLocator.ProgressService.TryStartTask())
                     {
-                        await ScanInternal(_settings, false, false, ServiceLocator.ProgressService.CancellationToken);
-                    }
-                    finally
-                    {
-                        ServiceLocator.ProgressService.CompleteTask();
+                        try
+                        {
+                            await ScanInternal(_settings, false, false, ServiceLocator.ProgressService.CancellationToken);
+                        }
+                        finally
+                        {
+                            ServiceLocator.ProgressService.CompleteTask();
+                        }
                     }
                 });
             }

@@ -59,57 +59,65 @@ namespace Diffusion.Toolkit
                 return;
             }
 
+            // TODO: Fix    
+            // TODO: Localize
+
             var message = "This will download Civitai model info.\r\n\r\n" + "Are you sure you want to continue?";
 
             var result = await _messagePopupManager.ShowCustom(message, "Download Civitai models", PopupButtons.YesNo, 500, 250);
 
             if (result == PopupResult.Yes)
             {
-                try
+                if (await ServiceLocator.ProgressService.TryStartTask())
                 {
-                    ServiceLocator.ProgressService.StartTask();
-
-                    var collection = await FetchCivitaiModels(ServiceLocator.ProgressService.CancellationToken);
-                    
-                    if (ServiceLocator.ProgressService.CancellationToken.IsCancellationRequested)
+                    try
                     {
-                        return;
+
+
+                        var collection = await FetchCivitaiModels(ServiceLocator.ProgressService.CancellationToken);
+
+                        if (ServiceLocator.ProgressService.CancellationToken.IsCancellationRequested)
+                        {
+                            return;
+                        }
+
+                        var options = new JsonSerializerOptions()
+                        {
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                            Converters = { new JsonStringEnumConverter() }
+                        };
+
+                        var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
+
+                        var mTime = DateTime.Now - baseTime;
+
+                        collection.Date = mTime.TotalSeconds;
+
+                        var json = JsonSerializer.Serialize(collection, options);
+
+                        File.WriteAllText(Path.Combine(AppDir, "models.json"), json);
+
+                        message = $"{collection.Models.Count} models were retrieved";
+
+                        await _messagePopupManager.Show(message, "Download Civitai models", PopupButtons.OK);
+
+                        LoadModels();
                     }
-
-                    var options = new JsonSerializerOptions()
+                    finally
                     {
-                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                        Converters = { new JsonStringEnumConverter() }
-                    };
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.TotalProgress = 100;
+                            _model.CurrentProgress = 0;
+                            _model.Status = "Download Complete";
+                        });
 
-                    var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
+                        ServiceLocator.ProgressService.CompleteTask();
 
-                    var mTime = DateTime.Now - baseTime;
-
-                    collection.Date = mTime.TotalSeconds;
-
-                    var json = JsonSerializer.Serialize(collection, options);
-
-                    File.WriteAllText(Path.Combine(AppDir, "models.json"), json);
-
-                    message = $"{collection.Models.Count} models were retrieved";
-
-                    await _messagePopupManager.Show(message, "Download Civitai models", PopupButtons.OK);
-
-                    LoadModels();
+                    }
                 }
-                finally
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        _model.TotalProgress = 100;
-                        _model.CurrentProgress = 0;
-                        _model.Status = "Download Complete";
-                    });
 
-                    ServiceLocator.ProgressService.CompleteTask();
-
-                }
+               
 
             }
         }

@@ -44,26 +44,40 @@ namespace Diffusion.Database
             command.ExecuteNonQuery();
         }
 
+        private void InsertIds(SQLiteConnection db, string table, IEnumerable<int> ids)
+        {
+            var dropTableQuery = $"DROP TABLE IF EXISTS {table}";
+            var dropCommand = db.CreateCommand(dropTableQuery);
+            dropCommand.ExecuteNonQuery();
+
+            var tempTableQuery = $"CREATE TEMP TABLE {table} (Id INT)";
+            var tempCommand = db.CreateCommand(tempTableQuery);
+            tempCommand.ExecuteNonQuery();
+
+            var insertQuery = new StringBuilder();
+            insertQuery.Append($"INSERT INTO {table} (Id) VALUES ");
+
+            insertQuery.Append(string.Join(",", ids.Select(d => $"({d})")));
+
+            var insertCommand = db.CreateCommand(insertQuery.ToString());
+            insertCommand.ExecuteNonQuery();
+        }
+
         public void RemoveImages(IEnumerable<int> ids)
         {
             using var db = OpenConnection();
 
             db.BeginTransaction();
 
-            var albumQuery = "DELETE FROM AlbumImage WHERE ImageId = @Id";
+            InsertIds(db, "DeletedIds", ids);
+
+            var albumQuery = "DELETE FROM AlbumImage WHERE ImageId IN (SELECT Id FROM DeletedIds)";
             var albumCommand = db.CreateCommand(albumQuery);
+            albumCommand.ExecuteNonQuery();
 
-            var query = "DELETE FROM Image WHERE Id = @Id";
+            var query = "DELETE FROM Image WHERE Id IN (SELECT Id FROM DeletedIds)";
             var command = db.CreateCommand(query);
-
-            foreach (var id in ids)
-            {
-                albumCommand.Bind("@Id", id);
-                albumCommand.ExecuteNonQuery();
-
-                command.Bind("@Id", id);
-                command.ExecuteNonQuery();
-            }
+            command.ExecuteNonQuery();
 
             db.Commit();
         }

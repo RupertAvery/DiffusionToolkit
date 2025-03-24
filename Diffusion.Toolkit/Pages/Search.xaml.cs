@@ -222,7 +222,7 @@ namespace Diffusion.Toolkit.Pages
             _model = new SearchModel(mainModel);
             //_model.DataStore = _dataStoreOptions;
 
-            ServiceLocator.SearchService = new SearchService(_model.Filter);
+            ServiceLocator.SearchService = new SearchService(_model.Filter, _model.SearchSettings);
             ServiceLocator.SearchService.Search += (obj, args) =>
             {
                 SearchImages(null);
@@ -279,7 +279,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (args.PropertyName == nameof(SearchSettings.IncludeNodeProperties))
                 {
-                    settings.IncludeNodeProperties = _model.SearchSettings.IncludeNodeProperties.Split(new[] { "\n", "\r\n", ",", "" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                    settings.IncludeNodeProperties = _model.SearchSettings.GetNodePropertiesList().ToList();
                 }
             };
 
@@ -741,7 +741,7 @@ namespace Diffusion.Toolkit.Pages
                     HideUnavailable = _model.MainModel.HideUnavailable,
                     ComfyQueryOptions = new ComfyQueryOptions()
                     {
-                        SearchProperties = _model.SearchSettings.IncludeNodeProperties.Split(new[] { "\n", "\r\n", "," }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        SearchProperties = _model.SearchSettings.GetNodePropertiesList()
                     }
                 };
 
@@ -1677,6 +1677,10 @@ namespace Diffusion.Toolkit.Pages
                 //RefreshThumbnails();
                 _model.IsBusy = false;
 
+                if (_model.SelectedImageEntry != null)
+                {
+                    LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
+                }
             });
 
             sw.Stop();
@@ -2183,8 +2187,8 @@ namespace Diffusion.Toolkit.Pages
                        QueryOptions.AlbumIds.Count == 0 &&
                        (
                            (UseFilter && Filter.IsEmpty) ||
-                           (_model.SearchText == null || _model.SearchText.Trim().Length == 0)
-                           )
+                           (!UseFilter && (_model.SearchText == null || _model.SearchText.Trim().Length == 0))
+                        )
                    );
         }
 

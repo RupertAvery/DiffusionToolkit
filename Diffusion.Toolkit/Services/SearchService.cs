@@ -1,6 +1,7 @@
 ﻿using System;
 using Diffusion.Database;
 using Diffusion.Toolkit.Controls;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -27,16 +28,15 @@ public class SearchService
         SearchFilter?.Invoke(this, value);
     }
 
-    public SearchService(FilterControlModel filter)
+    public SearchService(FilterControlModel filter, SearchSettings searchSettings)
     {
         Filter = filter;
+        SearchSettings = searchSettings;
     }
 
-    public FilterControlModel Filter
-    {
-        get;
-        set;
-    }
+    public FilterControlModel Filter { get; }
+
+    public SearchSettings SearchSettings { get; }
 
     public void ExecuteSearch()
     {
@@ -51,5 +51,10 @@ public class SearchService
     public void AddNodeFilter(string property, string value)
     {
         Filter.AddNodeFilter(property, value);
+    }
+
+    public void AddDefaultSearchProperty(string property)
+    {
+        SearchSettings.AddDefaultSearchProperty(property);
     }
 }

@@ -56,6 +56,8 @@
   "Common.Buttons.Close": "Close",
   "Common.Buttons.Start": "Start",
   "Common.MessageBox.Cancel": "Confirm Cancel",
+  "Common.MessageBox.Title": "Diffusion Toolkit",
+  "Common.MessageBox.OperationInProgress": "An operation is currently in progress.",
   "Common.MessageBox.ConfirmCancelOperation": "Are you sure you want to cancel the operation?",
   "Common.MessageBox.OperationCancelled": "The operation was cancelled.",
   "Settings": "Settings",

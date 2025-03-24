@@ -71,7 +71,7 @@ public static class QueryCombiner
         var bindings = q.Bindings;
         var joins = q.Joins;
 
-        if (filter.NodeFilters != null && filter.NodeFilters.Any(d => d.IsActive))
+        if (filter.NodeFilters != null && filter.NodeFilters.Any(d => d is { IsActive: true, Property.Length: > 0, Value.Length: > 0 }))
         {
             var p = ComfyUIQueryBuilder.Filter(filter);
 

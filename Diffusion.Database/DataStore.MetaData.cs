@@ -27,18 +27,14 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
+            InsertIds(db, "MarkedIds", ids);
+
             db.BeginTransaction();
 
-            var query = "UPDATE Image SET ForDeletion = @ForDeletion WHERE Id = @Id";
-
+            var query = "UPDATE Image SET ForDeletion = @ForDeletion WHERE Id IN (SELECT Id FROM MarkedIds)";
             var command = db.CreateCommand(query);
-
-            foreach (var id in ids)
-            {
-                command.Bind("@ForDeletion", forDeletion);
-                command.Bind("@Id", id);
-                command.ExecuteNonQuery();
-            }
+            command.Bind("@ForDeletion", forDeletion);
+            command.ExecuteNonQuery();
 
             db.Commit();
         }
@@ -100,15 +96,12 @@ namespace Diffusion.Database
 
             var update = preserve ? "NSFW = NSFW OR @NSFW" : "NSFW = @NSFW";
 
-            var query = $"UPDATE Image SET {update} WHERE Id = @Id";
-            var command = db.CreateCommand(query);
+            InsertIds(db, "MarkedIds", ids);
 
-            foreach (var id in ids)
-            {
-                command.Bind("@NSFW", nsfw);
-                command.Bind("@Id", id);
-                command.ExecuteNonQuery();
-            }
+            var query = $"UPDATE Image SET {update} WHERE Id IN (SELECT Id FROM MarkedIds)";
+            var command = db.CreateCommand(query);
+            command.Bind("@NSFW", nsfw);
+            command.ExecuteNonQuery();
 
             db.Commit();
         }
@@ -271,50 +264,31 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            // var version = db.LibVersionNumber;
-
             db.BeginTransaction();
-
-            var delNodeQuery = $"DELETE FROM {nameof(Node)} WHERE ImageId = @ImageId";
-
-            var delNodeCommand = db.CreateCommand(delNodeQuery);
-
-            var delNodePropQuery = $"DELETE FROM {nameof(NodeProperty)} WHERE NodeId IN (SELECT Id FROM {nameof(Node)} WHERE ImageId = @ImageId)";
-
-            var delNodePropCommand = db.CreateCommand(delNodePropQuery);
-
-
-            var query = $"INSERT INTO {nameof(Node)} (ImageId, NodeId, Name) VALUES (@ImageId, @NodeId, @Name)";
-
-            var command = db.CreateCommand(query);
-
-            var pquery = $"INSERT INTO {nameof(NodeProperty)} (NodeId, Name, Value) VALUES (@NodeId, @Name, @Value)";
-            //var pcommand = db.CreateCommand(pquery);
 
             var imageIds = nodes.Select(d => (Image)d.ImageRef).Select(d => d.Id).Distinct();
 
-            //foreach (var imageId in imageIds)
-            //{
-            //    delNodePropCommand.Bind("@ImageId", imageId);
-            //    delNodePropCommand.ExecuteNonQuery();
+            InsertIds(db, "DeletedIds", imageIds);
 
-            //    delNodeCommand.Bind("@ImageId", imageId);
-            //    delNodeCommand.ExecuteNonQuery();
-            //}
+            var delNodePropQuery = $"DELETE FROM {nameof(NodeProperty)} WHERE NodeId IN (SELECT Id FROM {nameof(Node)} WHERE ImageId IN (SELECT Id FROM DeletedIds))";
+            var delNodePropCommand = db.CreateCommand(delNodePropQuery);
+            delNodePropCommand.ExecuteNonQuery();
+
+            var delNodeQuery = $"DELETE FROM {nameof(Node)} WHERE ImageId IN (SELECT Id FROM DeletedIds)";
+            var delNodeCommand = db.CreateCommand(delNodeQuery);
+            delNodeCommand.ExecuteNonQuery();
 
             var nodeQuery = new StringBuilder($"INSERT INTO {nameof(Node)} (ImageId, NodeId, Name) VALUES ");
+
+            var values = new List<string>();
 
             foreach (var node in nodes)
             {
                 var image = (Image)node.ImageRef;
-                //command.Bind("@ImageId", image.Id);
-                nodeQuery.Append($"({image.Id}, '{node.Id}', '{node.Name}'),");
-                //command.Bind("@NodeId", node.Id);
-                //command.Bind("@Name", node.Name);
-                //command.ExecuteNonQuery();
+                values.Add($"({image.Id}, '{node.Id}', '{node.Name}')");
             }
 
-            nodeQuery.Remove(nodeQuery.Length -1, 1);
+            nodeQuery.Append(string.Join(",", values));
 
             nodeQuery.Append(" RETURNING Id;");
 
@@ -329,6 +303,7 @@ namespace Diffusion.Database
 
             var propertyQuery = new StringBuilder($"INSERT INTO {nameof(NodeProperty)} (NodeId, Name, Value) VALUES ");
 
+            values.Clear();
 
             foreach (var property in nodes.SelectMany(n => n.Inputs.Select(p => new NodeProperty()
             {
@@ -337,14 +312,10 @@ namespace Diffusion.Database
                 Value = p.Value.ToString()
             })))
             {
-                propertyQuery.Append($"({property.NodeId}, '{property.Name}', '{SqlEscape(property.Value)}'),");
-                //pcommand.Bind("@NodeId", property.NodeId);
-                //pcommand.Bind("@Name", property.Name);
-                //pcommand.Bind("@Value", property.Value);
-                //pcommand.ExecuteNonQuery();
+                values.Add($"({property.NodeId}, '{property.Name}', '{SqlEscape(property.Value)}')");
             }
 
-            propertyQuery.Remove(propertyQuery.Length - 1, 1);
+            propertyQuery.Append(string.Join(",", values));
 
             var propertyCommand = db.CreateCommand(propertyQuery.ToString());
             propertyCommand.ExecuteNonQuery();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
@@ -434,6 +435,21 @@ public class SearchSettings : BaseNotify
         get => _includeNodeProperties;
         set => SetField(ref _includeNodeProperties, value);
     }
+
+    public IEnumerable<string> GetNodePropertiesList()
+    {
+        return IncludeNodeProperties.Split(new[] { "\n", "\r\n", "," }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    public void AddDefaultSearchProperty(string property)
+    {
+        var properties = IncludeNodeProperties.Split(new[] { "\n", "\r\n", "," }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (!properties.Contains(property.Trim().ToLower()))
+        {
+            IncludeNodeProperties = string.Join("\n",properties.Append(property));
+        }
+    }
+
 
     public bool SearchNodes
     {

@@ -25,14 +25,22 @@ public class ProgressService
         //_dispatcher = Dispatcher.CurrentDispatcher;
     }
 
-    public CancellationToken StartTask()
+    public async Task<bool> TryStartTask()
     {
+        if (ServiceLocator.MainModel.IsBusy)
+        {
+            await _dispatcher.InvokeAsync(async () => { await ServiceLocator.MessageService.Show(GetLocalizedText("Common.MessageBox.OperationInProgress"), GetLocalizedText("Common.MessageBox.Title"), PopupButtons.YesNo); });
+            return false;
+        }
+
         _progressCancellationTokenSource = new CancellationTokenSource();
+
         _dispatcher.Invoke(() =>
         {
             ServiceLocator.MainModel.IsBusy = true;
         });
-        return _progressCancellationTokenSource.Token;
+
+        return true;
     }
 
     public void CompleteTask()

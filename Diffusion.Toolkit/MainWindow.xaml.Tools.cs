@@ -10,27 +10,39 @@ namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
-        private async void RescanResults()
+        private async Task<bool> CheckIfQueryEmpty(string title)
         {
             if (_search.IsQueryEmpty())
             {
-                await _messagePopupManager.Show("Query cannot be empty", "Rescan results", PopupButtons.OK);
+                await _messagePopupManager.Show("Query cannot be empty", title, PopupButtons.OK);
+                return false;
+            }
+
+            return true;
+        }
+
+        private async void RescanResults()
+        {
+            if (!await CheckIfQueryEmpty("Rescan results"))
+            {
                 return;
             }
 
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-                var paths = GetSearchResults().Select(m => m.Path).ToList();
+                if (await ServiceLocator.ProgressService.TryStartTask())
+                {
+                    var paths = GetSearchResults().Select(m => m.Path).ToList();
 
-                try
-                {
-                    ServiceLocator.ScanningService.Scan(paths, true);
-                    ServiceLocator.SearchService.ExecuteSearch();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
+                    try
+                    {
+                        ServiceLocator.ScanningService.Scan(paths, true);
+                        ServiceLocator.SearchService.ExecuteSearch();
+                    }
+                    finally
+                    {
+                        ServiceLocator.ProgressService.CompleteTask();
+                    }
                 }
             });
         }
@@ -42,9 +54,8 @@ namespace Diffusion.Toolkit
 
         private async void RemoveFromDatabase()
         {
-            if (_search.IsQueryEmpty())
+            if (!await CheckIfQueryEmpty("Remove images from Database"))
             {
-                await _messagePopupManager.Show("Query cannot be empty", "Remove images from Database", PopupButtons.OK);
                 return;
             }
 
@@ -58,10 +69,7 @@ namespace Diffusion.Toolkit
             {
                 var ids = GetSearchResults().Select(m => m.Id).ToList();
 
-                await Task.Run(() =>
-                {
-                    UpdateByBatch(ids, 100, subset => _dataStore.RemoveImages(subset));
-                });
+                _dataStore.RemoveImages(ids);
 
                 message = $"{ids.Count} images were removed";
 
@@ -75,10 +83,8 @@ namespace Diffusion.Toolkit
 
         private async void MarkAllForDeletion()
         {
-
-            if (_search.IsQueryEmpty())
+            if (!await CheckIfQueryEmpty("Mark images for deletion"))
             {
-                await _messagePopupManager.Show("Query cannot be empty", "Mark images for deletion", PopupButtons.OK);
                 return;
             }
 
@@ -90,10 +96,7 @@ namespace Diffusion.Toolkit
             {
                 var ids = GetSearchResults().Select(m => m.Id).ToList();
 
-                await Task.Run(() =>
-                {
-                    UpdateByBatch(ids, 50, subset => _dataStore.SetDeleted(subset, true));
-                });
+                _dataStore.SetDeleted(ids, true);
 
                 _search.ReloadMatches(null);
 
@@ -103,9 +106,8 @@ namespace Diffusion.Toolkit
 
         private async void UnmarkAllForDeletion()
         {
-            if (_search.IsQueryEmpty())
+            if (!await CheckIfQueryEmpty("Unmark images for deletion"))
             {
-                await _messagePopupManager.Show("Query cannot be empty", "Unmark images for deletion", PopupButtons.OK);
                 return;
             }
 
@@ -117,10 +119,7 @@ namespace Diffusion.Toolkit
             {
                 var ids = GetSearchResults().Select(m => m.Id).ToList();
 
-                await Task.Run(() =>
-                {
-                    UpdateByBatch(ids, 50, subset => _dataStore.SetDeleted(subset, false));
-                });
+                _dataStore.SetDeleted(ids, false);
 
                 _search.ReloadMatches(null);
 
@@ -130,6 +129,12 @@ namespace Diffusion.Toolkit
 
         private async void AutoTagNSFW()
         {
+            if (!await CheckIfQueryEmpty("Auto Tag NSFW"))
+            {
+                return;
+            }
+
+
             var message = "This will tag ALL images in the database that contain the NSFW Tags in Settings as NSFW.\r\n\r\n" + "Are you sure you want to continue?";
 
             var result = await _messagePopupManager.ShowMedium(message, "Auto Tag NSFW", PopupButtons.YesNo);
@@ -140,10 +145,7 @@ namespace Diffusion.Toolkit
 
                 var ids = matches.Where(m => _settings.NSFWTags.Any(t => m.Prompt != null && m.Prompt.ToLower().Contains(t.Trim().ToLower()))).Select(m => m.Id).ToList();
 
-                await Task.Run(() =>
-                {
-                    UpdateByBatch(ids, 50, subset => _dataStore.SetNSFW(subset, true, true));
-                });
+                _dataStore.SetNSFW(ids, true, true);
 
                 message = $"{ids.Count} images were tagged as NSFW";
 
@@ -190,18 +192,16 @@ namespace Diffusion.Toolkit
 
         private async void SaveQuery()
         {
-            if (_search.IsQueryEmpty())
+            if (!await CheckIfQueryEmpty("Save Query/Filter"))
             {
-                await _messagePopupManager.Show("Query cannot be empty", "Add images to album", PopupButtons.OK);
                 return;
             }
         }
 
         private async void AddAllToAlbum()
         {
-            if (_search.IsQueryEmpty())
+            if (!await CheckIfQueryEmpty("Add images to album"))
             {
-                await _messagePopupManager.Show("Query cannot be empty", "Add images to album", PopupButtons.OK);
                 return;
             }
 
@@ -246,10 +246,6 @@ namespace Diffusion.Toolkit
 
                 Toast($"{ids.Count} images added to album {albumName}.", "Add to Album");
             }
-
-            //_search.ReloadMatches();
-
-            //await _search.ReloadMatches();
         }
     }
 }

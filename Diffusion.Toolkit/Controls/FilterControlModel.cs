@@ -220,7 +220,7 @@ public class FilterControlModel : BaseNotify
             Property = property,
             Value = value,
             RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
-            Operation = "Contains"
+            Operation = "equals"
         };
 
         filter.PropertyChanged += (sender, args) =>

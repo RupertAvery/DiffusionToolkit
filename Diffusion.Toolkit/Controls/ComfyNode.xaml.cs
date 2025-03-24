@@ -72,15 +72,17 @@ namespace Diffusion.Toolkit.Controls
                 filterMenuItem.Click += (sender, args) =>
                 {
                     var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
-                    var value = bindingExpression.ResolvedSource;
-                    ServiceLocator.SearchService.AddNodeFilter(input.Name, (string)input.Value);
+                    var boundInput = (Input)bindingExpression.ResolvedSource;
+                    ServiceLocator.SearchService.AddNodeFilter(boundInput.Name, (string)boundInput.Value);
                 };
 
                 var searchMenuItem = new MenuItem() { Header = "Add to Default Search" };
                 searchMenuItem.DataContext = input;
                 searchMenuItem.Click += (sender, args) =>
                 {
-                    //ServiceLocator.SearchService.AddNodeFilter(input.Name, (string)value);
+                    var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
+                    var boundInput = (Input)bindingExpression.ResolvedSource;
+                    ServiceLocator.SearchService.AddDefaultSearchProperty(boundInput.Name);
                 };
 
                 button.ContextMenu.Items.Add(filterMenuItem);
