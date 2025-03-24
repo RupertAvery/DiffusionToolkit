@@ -729,6 +729,7 @@ namespace Diffusion.Toolkit.Pages
 
 
                 var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
+                var models = _model.MainModel.ImageModels.Where(d => d.IsTicked).Select(d => new { d.Name, d.Hash, d.Hashv2 }).ToList();
                 //var folders = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
 
                 QueryOptions = new QueryOptions()
@@ -2300,14 +2301,16 @@ namespace Diffusion.Toolkit.Pages
 
         private void Album_OnClick(object sender, RoutedEventArgs e)
         {
-            var model = ((AlbumModel)((Button)sender).DataContext);
+            var albumModel = ((AlbumModel)((Button)sender).DataContext);
+
+            _model.MainModel.CurrentAlbum = albumModel;
 
             foreach (var album in _model.MainModel.Albums)
             {
                 album.IsTicked = false;
             }
 
-            model.IsTicked = true;
+            albumModel.IsTicked = true;
 
             SearchImages(null);
         }
@@ -2315,8 +2318,17 @@ namespace Diffusion.Toolkit.Pages
 
         private void Model_OnClick(object sender, RoutedEventArgs e)
         {
-            _model.MainModel.CurrentModel = ((Toolkit.Models.ModelViewModel)((Button)sender).DataContext);
-            SetMode("models", _model.MainModel.CurrentModel.Name);
+            var modelModel = ((Toolkit.Models.ModelViewModel)((Button)sender).DataContext);
+
+            _model.MainModel.CurrentModel = modelModel;
+
+            foreach (var model in _model.MainModel.ImageModels)
+            {
+                model.IsTicked = false;
+            }
+
+            modelModel.IsTicked = true;
+
             SearchImages(null);
         }
 

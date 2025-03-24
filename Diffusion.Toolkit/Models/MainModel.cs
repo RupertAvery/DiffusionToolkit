@@ -576,6 +576,7 @@ public class MainModel : BaseNotify
         get => _folders;
         set => SetField(ref _folders, value);
     }
+
     public IEnumerable<ModelViewModel> ImageModels
     {
         get => _imageModels;

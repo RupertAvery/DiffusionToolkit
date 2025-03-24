@@ -1136,7 +1136,7 @@ namespace Diffusion.Toolkit
             {
                 if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {
-                    Scan();
+                    await Scan();
                 }
             }
             else

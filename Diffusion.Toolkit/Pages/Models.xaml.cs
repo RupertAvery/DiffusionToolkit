@@ -12,6 +12,7 @@ using Model = Diffusion.Common.Model;
 using Path = System.IO.Path;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -73,7 +74,21 @@ namespace Diffusion.Toolkit.Pages
                 SHA256 = m.SHA256,
             }).ToList();
 
+            foreach (var model in _model.Models)
+            {
+                model.PropertyChanged += Model2OnPropertyChanged;
+            }
+
             UpdateFilteredModels();
+        }
+
+        private void Model2OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AlbumModel.IsTicked))
+            {
+                //_model.HasSelectedAlbums = _model.Albums.Any(d => d.IsTicked);
+                //_search.SearchImages();
+            }
         }
 
 
