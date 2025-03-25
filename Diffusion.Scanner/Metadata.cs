@@ -205,6 +205,7 @@ public class Metadata
                                         }
                                         else
                                         {
+                                            fileParameters.WorkflowId = tempParameters.WorkflowId;
                                             fileParameters.Workflow = tempParameters.Workflow;
                                             fileParameters.Nodes = tempParameters.Nodes;
                                         }
@@ -610,38 +611,13 @@ public class Metadata
             fp.Workflow = json;
 
             var root = JsonDocument.Parse(json);
-
-            //var nodes = root.RootElement.EnumerateObject().ToDictionary(o => o.Name, o => o.Value);
-
+            
             fp.WorkflowId = GetHashCode(root.RootElement).ToString("X");
 
             var parser = new ComfyUIParser();
             var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
+            
             fp.Nodes = pnodes;
-
-            //var clipTextEncoders = nodes.Values.Where(o =>
-            //{
-            //    if (o.TryGetProperty("class_type", out var element))
-            //    {
-            //        return element.GetString() == "CLIPTextEncode";
-            //    }
-
-            //    return false;
-            //}).ToList();
-
-            //if (clipTextEncoders.Count > 0)
-            //{
-            //    var inputs = clipTextEncoders[0].GetProperty("inputs");
-            //    if (inputs.TryGetProperty("text", out var value))
-            //    {
-            //        if (value.ValueKind == JsonValueKind.String)
-            //        {
-            //            fp.Prompt = value.GetString();
-            //        }
-            //    }
-            //}
-
-
 
             return fp;
         }
