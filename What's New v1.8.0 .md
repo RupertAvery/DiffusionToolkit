@@ -1,18 +1,18 @@
 # Diffusion Toolkit
 
-Are you tired of dragging your images into PNG-Info to see the metadata?  Annoyed at how slow navigating through Explorer is to view your images? Want to organize your images into albums? Wish you could search for your images by prompt? 
+Are you tired of dragging your images into PNG-Info to see the metadata?  Annoyed at how slow navigating through Explorer is to view your images? Want to organize your images without having to move them around to different folders? Wish you could easily search your images metadata? 
 
-Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image metadata-indexer and viewer for AI-generated images. It aims to help you organize, search and sort your ever-growing collection.
+Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image metadata-indexer and viewer for AI-generated images. It aims to help you organize, search and sort your ever-growing collection of AI-generated high-quality masterpieces.
 
 # Installation
 
-* Currently runs on Windows only 
-* [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/latest
-) the latest release 
-    * Look for **> Assets** under the latest release, expand it, then grab the zip file **Diffusion.Toolkit.v1.8.0.zip**.
-* Unzip all the files to a folder
-* You may need to install the [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) if you haven't already
-* An experimental Linux version is available on the AvaloniaUI branch, but features are currently behind. No official build is available.
+* Currently available for Windows only.
+* [Download the latest release](https://github.com/RupertAvery/DiffusionToolkit/releases/latest
+) 
+    * Under the latest release, expand Assets and download **Diffusion.Toolkit.v1.8.0.zip**.
+* Extract all files into a folder.
+* Prerequisite: If you haven’t installed it yet, download and install the [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+* Linux Support: An experimental version is available on the AvaloniaUI branch, but it lacks some features. No official build is available.
 
 # Features
 
@@ -46,67 +46,43 @@ Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image 
 
 ## ComfyUI Workflow Search
 
-ComfyUI Workflow Search is now implemented! Here's what you need to do to be able to search on ComfyUI workflows. 
+ComfyUI Workflow Search is now implemented! Here's what you need to do to be able to search on ComfyUI workflows:
 
-You will need to rescan your ComfyUI images. You can do this in a couple of ways:
+To search workflows effectively, you need to rescan your ComfyUI images. Choose one of the following methods:
 
-* **Edit > Rebuild Metadata** - This will rescan all the images currently in your database
-* **Search > Rescan Metadata** - This will rescan all the images in current search results
-* **Select Folder > Right-click > Rescan** - This will rescan all the images in the selected folder
-* **Select images > Right-click > Rescan** - This will rescan the selected images
+* **Edit > Rebuild Metadata** – Rescans all images in your database.
+* **Search > Rescan Metadata** – Rescans images in current search results.
+* **Right-click a Folder > Rescan** – Rescans all images in a selected folder.
+* **Right-click Selected Images > Rescan** – Rescans only selected images.
 
 ### How it works
 
-When Diffusion Toolkit scans your images, it parses the workflow and extracts the nodes and node properties and saves them to the database. This should make searching much more efficient and specific than searching the entire workflow. That said, it generates a LOT of data, so we don't
-want to always search _every_ property.
+Diffusion Toolkit scans images, extracts workflow nodes and properties, and saves them to the database. This makes searches more efficient and precise. However, since it generates a lot of data, not all properties are searched by default.
 
 ### Quick Search
 
-Quick search is done by typing something into the search bar and pressing enter. ComfyUI Workflow Search is now enabled in Quick search by default.
-
-By default, the following properties are used in Quick search:
+Quick Search now includes searching through workflow properties. Simply type in the search bar and press Enter. By default, it searches the following properties:
 
 * `text`
-* `text__g`
-* `text__l`
-* `text__positive`
-* `text__negative`
+* `text_g`
+* `text_l`
+* `text_positive`
+* `text_negative`
 
-Note that property names seem to use double underscore by convention.
+You can modify these settings in **Search Settings** (the Slider icon in the search bar). 
 
-You can edit the properties in the Search Settings (Slider icon in the search bar). You can also disable ComfyUI Search if you so wish.
-
-To find property names, look in the Workflow tab in the Metadata Pane (below the Preview Pane if not hidden) or the Metadata Overlay (Press I to show or hide the Metadata Overlay)
-
-You can also add properties to the list by clicking on the ... button to the left of each node property in the Workflow Pane, and selecting **Add to Default Search**
+To find property names, check the **Workflow** tab in the **Metadata Pane** or in the **Metadata Overlay** (press I to toggle). To add properties directly to the list, click `...` next to a node property in the Workflow Pane and select **Add to Default Search**.
 
 ### Filter
 
-The Filter allows you to customize your searches on node properties.
+The Filter now allows you to refine searches based on node properties. Open it by clicking the Filter icon in the search bar or pressing CTRL+F, then go to the Workflow tab.
 
-Open the Filter popup (Click the Filter icon in the search bar, or press CTRL+F) and go the the Workflow tab.
+* Include properties to filter by checking the box next to them.
+* Use wildcards (\*) to match multiple properties (e.g., `text*` matches `text`, `text_g`, etc.).
+* Choose property value comparisons: `contains`, `equals`, `starts with`, or `ends with`.
+* Combine filters with `OR`, `AND`, and `NOT` operators.
 
-Here you can add properties you want to include in the filter. To include the property in the filter, the checkbox on the left must be checked.
-
-Properties can have wildcards (*).
-
-For example, the property name `text*` will match
-
-* `text`
-* `text__g`
-* `text__l`
-* `text__positive`
-* `text__negative`
-
-and any other property that starts with `text`.
-
-NOTE: wildcard searches may be a bit slower than non-wildcard searches
-
-You can set the property value comparison to **contains**, **equals**, **starts with** and **ends with**. This determines how the value will be evaluated when searching.
-
-You can combine filters with the operators OR, AND, and NOT.
-
-You can also add properties to the list by clicking on the ... button to the left of each node property in the Workflow Pane, and selecting **Add to Filters**
+To add properties, click `...` next to a node property in the Workflow Pane and select **Add to Filters**.
 
 # Updates
 
@@ -123,3 +99,5 @@ You can also add properties to the list by clicking on the ... button to the lef
 * Fixed Prompt Search error
 * Fixed some errors scanning NovelAI metadata
 * Fixed some issues with Unicode text prompts
+* Page no longer resets position when removing an image from an album or deleting
+* Fixed Metadata not loaded for first image
