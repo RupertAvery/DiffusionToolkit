@@ -247,7 +247,7 @@ namespace Diffusion.Toolkit
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        _search.ThumbnailListView.ReloadThumbnailsView(0);
+                        _search.ThumbnailListView.ReloadThumbnailsView();
                     });
                 });
             }

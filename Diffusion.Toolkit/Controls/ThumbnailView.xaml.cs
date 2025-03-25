@@ -142,11 +142,11 @@ namespace Diffusion.Toolkit.Controls
             //_model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             //_model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
-            _debounceRedrawThumbnails = Utility.Debounce<double>((offset) => Dispatcher.Invoke(ReloadThumbnailsView, offset));
+            _debounceRedrawThumbnails = Utility.Debounce(() => Dispatcher.Invoke(() => ReloadThumbnailsView()));
             Init();
         }
 
-        private Action<double> _debounceRedrawThumbnails;
+        private readonly Action _debounceRedrawThumbnails;
 
         private void RescanSelected()
         {

@@ -35,6 +35,7 @@ using WPFLocalizeExtension.Engine;
 using System.Windows.Documents;
 using System.Windows.Media;
 using Diffusion.Toolkit.Services;
+using Node = Diffusion.IO.Node;
 using SearchView = Diffusion.Database.SearchView;
 
 namespace Diffusion.Toolkit.Pages
@@ -1089,7 +1090,8 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.Workflow = parameters.Workflow;
 
                     var parser = new ComfyUIParser();
-                    imageViewModel.Nodes = parser.Parse(parameters.WorkflowId, parameters.Workflow);
+
+                    imageViewModel.Nodes = parser.Parse(parameters.WorkflowId, parameters.Workflow); 
 
 
                     var notFound = GetLocalizedText("Metadata.Modelname.NotFound");
@@ -1677,7 +1679,7 @@ namespace Diffusion.Toolkit.Pages
                     }
                 }
 
-                ThumbnailListView.ReloadThumbnailsView(0);
+                ThumbnailListView.ReloadThumbnailsView();
 
                 //RefreshThumbnails();
                 _model.IsBusy = false;

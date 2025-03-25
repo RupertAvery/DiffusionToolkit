@@ -85,7 +85,7 @@ namespace Diffusion.Toolkit.Controls
             Model.SetPagingEnabled(Model.Page);
         }
 
-        public void ReloadThumbnailsView(double offset)
+        public void ReloadThumbnailsView()
         {
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;
 
@@ -93,6 +93,8 @@ namespace Diffusion.Toolkit.Controls
                 return;
 
             var scrollViewer = GetChildOfType<ScrollViewer>(this)!;
+
+            var offset = scrollViewer.VerticalOffset;
 
             var height = scrollViewer.ViewportHeight;
 
@@ -149,7 +151,7 @@ namespace Diffusion.Toolkit.Controls
 
         private void ScrollViewer_OnScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            _debounceRedrawThumbnails(e.VerticalOffset);
+            _debounceRedrawThumbnails();
             //ReloadThumbnailsView(e.VerticalOffset);
         }
 
