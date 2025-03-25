@@ -160,6 +160,7 @@ namespace Diffusion.Toolkit
 
                 _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
                 _model.ClearAlbumsCommand = new RelayCommand<object>((o) => ClearAlbums());
+                _model.ClearModelsCommand = new RelayCommand<object>((o) => ClearModels());
 
                 _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
                 _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));

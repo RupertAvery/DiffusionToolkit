@@ -50,7 +50,7 @@ public static class QueryCombiner
         }
 
         ApplyFilters(ref query, ref bindings, options);
-        
+
         return (query, bindings);
     }
 
@@ -102,22 +102,47 @@ public static class QueryCombiner
 
         if (options.AlbumIds is { Count: > 0 })
         {
-            var albumIds = string.Join(",", options.AlbumIds.Select(a => "?"));
-            filters.Add($"SELECT DISTINCT m1.Id FROM Image m1 INNER JOIN AlbumImage ai ON ai.ImageId = m1.Id INNER JOIN Album a ON a.Id = ai.AlbumId WHERE a.Id IN ({albumIds})");
+            var placeholders = string.Join(",", options.AlbumIds.Select(a => "?"));
+            filters.Add($"SELECT DISTINCT m1.Id FROM Image m1 INNER JOIN AlbumImage ai ON ai.ImageId = m1.Id INNER JOIN Album a ON a.Id = ai.AlbumId WHERE a.Id IN ({placeholders})");
             bindings = bindings.Concat(options.AlbumIds.Cast<object>());
         }
 
-        if (options.FolderIds is { Count: > 0 })
+
+        if (options.Models is { Count: > 0 })
         {
-            var folderIds = string.Join(",", options.FolderIds.Select(a => "?"));
-            filters.Add($"SELECT m1.Id FROM Image m1 INNER JOIN Folder f ON f.Id = m1.FolderId WHERE f.Id IN ({folderIds})");
-            bindings = bindings.Concat(options.AlbumIds.Cast<object>());
+            var orFilters = new List<string>();
+
+            var hashes = options.Models.Where(d => !string.IsNullOrEmpty(d.Hash)).Select(d => d.Hash).ToList();
+            var hashPlaceholders = string.Join(",", hashes.Select(a => "?"));
+
+            orFilters.Add($"SELECT m1.Id FROM Image m1 WHERE m1.ModelHash IN ({hashPlaceholders})");
+            bindings = bindings.Concat(hashes);
+
+            var names = options.Models.Where(d => !string.IsNullOrEmpty(d.Name)).Select(d => d.Name)
+                .Except(hashes)
+                .ToList();
+
+            var namePlaceholders = string.Join(",", names.Select(a => "?"));
+
+            orFilters.Add($"SELECT m1.Id FROM Image m1 WHERE m1.Model IN ({namePlaceholders})");
+            bindings = bindings.Concat(names);
+
+            var modelUnion = string.Join(" UNION ", orFilters.Select(d => $"{d}"));
+
+            filters.Add($"SELECT Id FROM ({modelUnion})");
         }
-        
+
+        //if (options.FolderIds is { Count: > 0 })
+        //{
+        //    var folderIds = string.Join(",", options.FolderIds.Select(a => "?"));
+        //    filters.Add($"SELECT m1.Id FROM Image m1 INNER JOIN Folder f ON f.Id = m1.FolderId WHERE f.Id IN ({folderIds})");
+        //    bindings = bindings.Concat(options.AlbumIds.Cast<object>());
+        //}
+
         if (options.SearchView == SearchView.Folder)
         {
             filters.Add($"SELECT m1.Id FROM Image m1 INNER JOIN Folder f ON f.Id = m1.FolderId WHERE f.Path = ?");
-            bindings = bindings.Concat(new[]{ (object)options.Folder! });
+            bindings = bindings.Concat(new[] { (object)options.Folder! });
         }
 
         if (filters.Any())

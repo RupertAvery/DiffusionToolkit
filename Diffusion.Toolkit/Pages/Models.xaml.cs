@@ -74,23 +74,8 @@ namespace Diffusion.Toolkit.Pages
                 SHA256 = m.SHA256,
             }).ToList();
 
-            foreach (var model in _model.Models)
-            {
-                model.PropertyChanged += Model2OnPropertyChanged;
-            }
-
             UpdateFilteredModels();
         }
-
-        private void Model2OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(AlbumModel.IsTicked))
-            {
-                //_model.HasSelectedAlbums = _model.Albums.Any(d => d.IsTicked);
-                //_search.SearchImages();
-            }
-        }
-
 
         private void ComputeSHA256_Click(object sender, RoutedEventArgs e)
         {

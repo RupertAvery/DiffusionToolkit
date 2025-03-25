@@ -93,7 +93,7 @@ To add properties, click `...` next to a node property in the Workflow Pane and 
    * Added indexes
    * Increased SQLite `cache_size` to 1GB. Memory usage will be increased
    * Added a spinner to indicate progress on some slow queries
-* Filtering on multiple albums
+* Filtering on multiple albums and models
 * Scroll wheel now works over albums / models / folders
 * Fixed Fit to Preview and Actual Size being reset when moving between images in the Preview
 * Fixed Prompt Search error
@@ -101,3 +101,5 @@ To add properties, click `...` next to a node property in the Workflow Pane and 
 * Fixed some issues with Unicode text prompts
 * Page no longer resets position when removing an image from an album or deleting
 * Fixed Metadata not loaded for first image
+* Fixed Model name not showing for some local models
+

@@ -736,12 +736,12 @@ namespace Diffusion.Toolkit.Pages
 
 
                 var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
-                var models = _model.MainModel.ImageModels.Where(d => d.IsTicked).Select(d => new { d.Name, d.Hash, d.Hashv2 }).ToList();
-                //var folders = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
+                var models = _model.MainModel.ImageModels.Where(d => d.IsTicked).Select(d => new ModelInfo { Name = d.Name, Hash = d.Hash, HashV2 = d.Hashv2  }).ToList();
 
                 QueryOptions = new QueryOptions()
                 {
                     AlbumIds = albums,
+                    Models = models,
                     Folder = _currentModeSettings.CurrentFolderPath,
                     SearchNodes = _model.SearchSettings.SearchNodes,
                     HideNSFW = _model.MainModel.HideNSFW,
@@ -791,21 +791,21 @@ namespace Diffusion.Toolkit.Pages
                                 filter.Folder = _currentModeSettings.CurrentFolderPath;
                             }
                         }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                        {
-                            if (_model.MainModel.CurrentAlbum != null)
-                            {
-                                filter.Album = _model.MainModel.CurrentAlbum.Name;
-                            }
-                        }
-                        else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                        {
-                            if (_model.MainModel.CurrentAlbum != null)
-                            {
-                                filter.ModelHash = _model.MainModel.CurrentModel.Hash;
-                                filter.ModelName = _model.MainModel.CurrentModel.Name;
-                            }
-                        }
+                        //else if (_currentModeSettings.ViewMode == ViewMode.Album)
+                        //{
+                        //    if (_model.MainModel.CurrentAlbum != null)
+                        //    {
+                        //        filter.Album = _model.MainModel.CurrentAlbum.Name;
+                        //    }
+                        //}
+                        //else if (_currentModeSettings.ViewMode == ViewMode.Model)
+                        //{
+                        //    if (_model.MainModel.CurrentAlbum != null)
+                        //    {
+                        //        filter.ModelHash = _model.MainModel.CurrentModel.Hash;
+                        //        filter.ModelName = _model.MainModel.CurrentModel.Name;
+                        //    }
+                        //}
 
                         (count, size) = DataStore.CountAndFileSize(filter, QueryOptions);
                     }
@@ -1103,6 +1103,8 @@ namespace Diffusion.Toolkit.Pages
                             (String.Equals(m.Hash, parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase)
                              ||
                              (m.SHA256 != null && string.Equals(m.SHA256.Substring(0, parameters.ModelHash.Length), parameters.ModelHash, StringComparison.CurrentCultureIgnoreCase))
+                             ||
+                             parameters.Model == m.Filename
                             ));
 
                         if (models.Any())
@@ -1664,8 +1666,6 @@ namespace Diffusion.Toolkit.Pages
                         dest.Score = src.Score;
                         dest.NSFW = src.NSFW;
                         dest.FileName = src.FileName;
-                        dest.LoadState = src.LoadState;
-                        dest.Dispatcher = src.Dispatcher;
                         dest.Unavailable = src.Unavailable;
                         dest.Height = src.Height;
                         dest.Width = src.Width;
@@ -1674,14 +1674,15 @@ namespace Diffusion.Toolkit.Pages
                         dest.AlbumCount = src.AlbumCount;
                         dest.Albums = src.Albums;
                         dest.HasError = src.HasError;
+
+                        dest.LoadState = LoadState.Unloaded;
+                        dest.Dispatcher = Dispatcher;
                         dest.Thumbnail = null;
-                        //dest.QueueLoadThumbnail();
                     }
                 }
 
                 ThumbnailListView.ReloadThumbnailsView();
 
-                //RefreshThumbnails();
                 _model.IsBusy = false;
 
                 if (_model.SelectedImageEntry != null)
@@ -2434,4 +2435,5 @@ namespace Diffusion.Toolkit.Pages
             }
         }
     }
+
 }

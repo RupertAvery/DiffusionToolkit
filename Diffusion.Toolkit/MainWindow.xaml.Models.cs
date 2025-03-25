@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -20,17 +21,36 @@ namespace Diffusion.Toolkit
     {
         public void LoadImageModels()
         {
+            var existingModels = _model.ImageModels == null ? Enumerable.Empty<ModelViewModel>() : _model.ImageModels.ToList();
+
             var imageModels = _dataStore.GetImageModels();
 
             _model.ImageModels = imageModels.Select(m => new ModelViewModel()
             {
+                IsTicked = existingModels.FirstOrDefault(d => d.Name == m.Name || d.Hash == m.Hash)?.IsTicked ?? false,
                 Name = m.Name ?? ResolveModelName(m.Hash),
                 Hash = m.Hash,
                 ImageCount = m.ImageCount
-            }).Where(m=> !string.IsNullOrEmpty(m.Name) && !string.IsNullOrEmpty(m.Hash)).OrderBy(x => x.Name);
+            }).Where(m => !string.IsNullOrEmpty(m.Name) && !string.IsNullOrEmpty(m.Hash)).OrderBy(x => x.Name).ToList();
 
-            _model.ImageModelNames = imageModels.Where(m => !string.IsNullOrEmpty(m.Name)).Select(m=>m.Name).OrderBy(x => x);
+            foreach (var model in _model.ImageModels)
+            {
+                model.PropertyChanged += ImageModelOnPropertyChanged;
+            }
 
+            _model.ImageModelNames = imageModels.Where(m => !string.IsNullOrEmpty(m.Name)).Select(m => m.Name).OrderBy(x => x);
+
+        }
+
+        private void ImageModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ModelViewModel.IsTicked))
+            {
+                var selectedModels = _model.ImageModels.Where(d => d.IsTicked).ToList();
+                _model.SelectedModelsCount = selectedModels.Count;
+                _model.HasSelectedModels = selectedModels.Any();
+                _search.SearchImages();
+            }
         }
 
         private string ResolveModelName(string hash)
@@ -117,7 +137,7 @@ namespace Diffusion.Toolkit
                     }
                 }
 
-               
+
 
             }
         }

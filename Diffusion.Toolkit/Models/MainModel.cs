@@ -78,7 +78,7 @@ public class MainModel : BaseNotify
     private ICommand _showFilterCommand;
     private ICommand _toggleAutoRefresh;
     private bool _autoRefresh;
-    private IEnumerable<ModelViewModel> _imageModels;
+    private IEnumerable<ModelViewModel>? _imageModels;
     private IEnumerable<string> _imageModelNames;
     private ObservableCollection<FolderViewModel> _folders;
     public MainModel()
@@ -408,6 +408,18 @@ public class MainModel : BaseNotify
         set => SetField(ref _autoTagNsfw, value);
     }
 
+    public ICommand ClearModelsCommand
+    {
+        get => _clearModelsCommand;
+        set => SetField(ref _clearModelsCommand, value);
+    }
+
+    public bool HasSelectedModels
+    {
+        get => _hasSelectedModels;
+        set => SetField(ref _hasSelectedModels, value);
+    }
+
     public ICommand ClearAlbumsCommand
     {
         get => _clearAlbums;
@@ -461,7 +473,19 @@ public class MainModel : BaseNotify
         get => _albums;
         set => SetField(ref _albums, value);
     }
-    
+
+    public int SelectedAlbumsCount
+    {
+        get => _selectedAlbumsCount;
+        set => SetField(ref _selectedAlbumsCount, value);
+    }
+
+    public int SelectedModelsCount
+    {
+        get => _selectedModelsCount;
+        set => SetField(ref _selectedModelsCount, value);
+    }
+
     public ICommand AddAlbumCommand
     {
         get => _addAlbumCommand;
@@ -577,7 +601,7 @@ public class MainModel : BaseNotify
         set => SetField(ref _folders, value);
     }
 
-    public IEnumerable<ModelViewModel> ImageModels
+    public IEnumerable<ModelViewModel>? ImageModels
     {
         get => _imageModels;
         set => SetField(ref _imageModels, value);
@@ -611,6 +635,10 @@ public class MainModel : BaseNotify
     private bool _autoAdvance;
     private ICommand _toggleAutoAdvance;
     private bool _hasSelectedAlbums;
+    private ICommand _clearModelsCommand;
+    private bool _hasSelectedModels;
+    private int _selectedAlbumsCount;
+    private int _selectedModelsCount;
 
     public FolderViewModel? CurrentFolder
     {

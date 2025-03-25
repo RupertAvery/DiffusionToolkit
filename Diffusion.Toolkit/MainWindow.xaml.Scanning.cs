@@ -1044,5 +1044,15 @@ namespace Diffusion.Toolkit
 
             _model.HasSelectedAlbums = false;
         }
+
+        private void ClearModels()
+        {
+            foreach (var model in _model.ImageModels)
+            {
+                model.IsTicked = false;
+            }
+
+            _model.HasSelectedModels = false;
+        }
     }
 }

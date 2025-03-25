@@ -163,7 +163,10 @@ namespace Diffusion.Toolkit
         {
             if (e.PropertyName == nameof(AlbumModel.IsTicked))
             {
-                _model.HasSelectedAlbums = _model.Albums.Any(d => d.IsTicked);
+                var selectedAlbums = _model.Albums.Where(d => d.IsTicked).ToList();
+                _model.SelectedAlbumsCount = selectedAlbums.Count;
+                _model.HasSelectedAlbums = selectedAlbums.Any();
+
                 _search.SearchImages();
             }
         }
