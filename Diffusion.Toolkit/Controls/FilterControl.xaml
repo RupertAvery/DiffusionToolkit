@@ -18,6 +18,7 @@
             <converters:IsValueBoolConverter x:Key="isValueBool"></converters:IsValueBoolConverter>
             <converters:IsStrValueBoolConverter x:Key="isStrValueBool"></converters:IsStrValueBoolConverter>
             <converters:NotBoolConverter x:Key="notBool"></converters:NotBoolConverter>
+            <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityCollapsedConverter>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -337,6 +338,7 @@
                                             </Grid.ColumnDefinitions>
                                             <CheckBox IsChecked="{Binding IsActive}" VerticalAlignment="Center"></CheckBox>
                                             <ComboBox ItemsSource="{Binding DataContext.NodeOperations, ElementName=MainGrid}" 
+                                                      Visibility="{Binding IsFirst, Converter={StaticResource invBoolToVis}}"
                                                       Grid.Column="1" 
                                                       DisplayMemberPath="Name" 
                                                       SelectedValuePath="Value" 

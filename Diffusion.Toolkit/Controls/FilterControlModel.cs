@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Windows.Input;
+using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Controls;
@@ -15,6 +17,7 @@ public class NodeFilter : BaseNotify
     private bool _isActive;
     private string _operation;
     private string _comparison;
+    private bool _isFirst;
 
     public bool IsActive
     {
@@ -54,6 +57,12 @@ public class NodeFilter : BaseNotify
     }
 
     public ICommand RemoveCommand { get; set; }
+
+    public bool IsFirst
+    {
+        get => _isFirst;
+        set => SetField(ref _isFirst, value);
+    }
 }
 
 public class FilterControlModel : BaseNotify
@@ -122,6 +131,7 @@ public class FilterControlModel : BaseNotify
     {
         PropertyChanged += FilterControlModel_PropertyChanged;
         NodeFilters = new ObservableCollection<NodeFilter>();
+        NodeFilters.CollectionChanged += NodeFiltersOnCollectionChanged;
 
         var nops = new List<NameValue>()
         {
@@ -142,6 +152,14 @@ public class FilterControlModel : BaseNotify
         NodePropertyComparisons = comps;
 
         AddNodeFilter();
+    }
+
+    private void NodeFiltersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        foreach (var nodeFilter in NodeFilters)
+        {
+            nodeFilter.IsFirst = NodeFilters.IndexOf(nodeFilter) == 0;
+        }
     }
 
     private void FilterControlModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
