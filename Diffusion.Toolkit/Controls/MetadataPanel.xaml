@@ -224,7 +224,7 @@
             </TabItem>
             <TabItem Header="Workflow" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
                 <ScrollViewer Background="Transparent" VerticalScrollBarVisibility="Auto">
-                    <local:ComfyNodeStack DataContext="{Binding Nodes}" Background="Transparent"></local:ComfyNodeStack>
+                    <local:ComfyNodeStack Nodes="{Binding Nodes}" Background="Transparent"></local:ComfyNodeStack>
                 </ScrollViewer>
             </TabItem>
             <TabItem Visibility="{Binding HasError, Converter={StaticResource boolToVis}}" Header="Errors" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
