@@ -117,10 +117,10 @@ public class Settings : SettingsContainer, IScanOptions
         IncludeNodeProperties = new List<string>
         {
             "text",
-            "text__g",
-            "text__l",
-            "text__positive",
-            "text__negative",
+            "text_g",
+            "text_l",
+            "text_positive",
+            "text_negative",
         };
 
         NavigationSection = new NavigationSectionSettings(initialize);

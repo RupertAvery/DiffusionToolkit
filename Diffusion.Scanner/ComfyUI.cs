@@ -43,7 +43,7 @@ namespace Diffusion.IO
 
     public class ComfyUIParser
     {
-        public IReadOnlyCollection<Node> Parse(string workflowId, string workflow)
+        public IReadOnlyCollection<Node>? Parse(string workflowId, string? workflow)
         {
             if (workflow == null) return null;
             var root = JsonDocument.Parse(workflow);
@@ -62,10 +62,10 @@ namespace Diffusion.IO
                     {
                         node.Inputs = new List<Input>();
 
-
                         foreach (var prop2 in props.Value.EnumerateObject())
                         {
-                            var name = prop2.Name.Replace("_", "__");
+                            var name = prop2.Name;
+
                             string path = $"[{node.Id}].inputs[\"{prop2.Name}\"]";
 
                             switch (prop2.Value.ValueKind)
@@ -97,7 +97,7 @@ namespace Diffusion.IO
                     }
                     else if (props.Name == "class_type")
                     {
-                        node.Name = props.Value.GetString().Replace("_", "__");
+                        node.Name = props.Value.GetString();
                     }
                 }
                 nodes.Add(node);
