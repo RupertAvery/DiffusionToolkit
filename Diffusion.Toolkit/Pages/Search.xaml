@@ -371,15 +371,15 @@
                                                         </Grid.ColumnDefinitions>
                                                         <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsTicked}"></CheckBox>
                                                         <Button Grid.Column="1" Style="{StaticResource SmallButton}" 
-                                                                Tag="{Binding Path=DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox, AncestorLevel=1}}" 
+                                                                Tag="{Binding .}"
                                                                 AllowDrop="True" 
                                                                 Drop="DropImagesOnAlbum" 
                                                                 behaviors:DTBehaviors.UseIsDraggedHandlers="True"
                                                                 Click="Album_OnClick" RenderTransformOrigin="0.179,0.476">
                                                             <Button.ContextMenu>
-                                                                <ContextMenu>
-                                                                    <MenuItem Header="Rename Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameAlbumCommand}" CommandParameter="{Binding Path=.}"></MenuItem>
-                                                                    <MenuItem Header="Remove Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveAlbumCommand}" CommandParameter="{Binding Path=.}"></MenuItem>
+                                                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                                    <MenuItem Header="Rename Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameAlbumCommand}" CommandParameter="{Binding .}"></MenuItem>
+                                                                    <MenuItem Header="Remove Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveAlbumCommand}" CommandParameter="{Binding .}"></MenuItem>
                                                                 </ContextMenu>
                                                             </Button.ContextMenu>
                                                             <Button.Template>
