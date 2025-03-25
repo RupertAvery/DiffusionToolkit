@@ -1,13 +1,11 @@
 using Diffusion.Database;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows;
 using SQLite;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using ICSharpCode.AvalonEdit.Editing;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 
@@ -69,6 +67,14 @@ namespace Diffusion.Toolkit
                 {
                     _dataStore.RemoveAlbum(album.Id);
 
+                    if (_search.QueryOptions.AlbumIds is { Count: > 0 })
+                    {
+                        if (_search.QueryOptions.AlbumIds.Contains(album.Id))
+                        {
+                            _search.QueryOptions.AlbumIds = _search.QueryOptions.AlbumIds.Except(new[] { album.Id }).ToList();
+                        }
+                    }
+
                     LoadAlbums();
 
                     _search.ReloadMatches(null);
@@ -114,6 +120,8 @@ namespace Diffusion.Toolkit
 
         private void LoadAlbums()
         {
+            var currentAlbums = _model.Albums is {} ? _model.Albums.ToList() : Enumerable.Empty<AlbumModel>();
+
             var albums = _dataStore.GetAlbumsView().Select(a => new AlbumModel()
             {
                 Id = a.Id,
@@ -125,6 +133,13 @@ namespace Diffusion.Toolkit
 
             foreach (var album in albums)
             {
+                var prevAlbum = currentAlbums.FirstOrDefault(d => d.Id == album.Id);
+
+                if (prevAlbum != null)
+                {
+                    album.IsTicked = prevAlbum.IsTicked;
+                }
+
                 album.PropertyChanged += Album_PropertyChanged;
             }
 
@@ -140,6 +155,8 @@ namespace Diffusion.Toolkit
                     _model.Albums = new ObservableCollection<AlbumModel>(albums.OrderBy(a => a.Order));
                     break;
             }
+
+            
         }
 
         private void Album_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
