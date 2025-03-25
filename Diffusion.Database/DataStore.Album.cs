@@ -153,6 +153,8 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
+            db.BeginTransaction();
+
             var query = $"DELETE FROM {nameof(AlbumImage)} WHERE AlbumId = @Id";
 
             var command = db.CreateCommand(query);
@@ -168,6 +170,8 @@ namespace Diffusion.Database
             command.Bind("@Id", id);
 
             command.ExecuteNonQuery();
+
+            db.Commit();
         }
 
         public bool AddImagesToAlbum(int albumId, IEnumerable<int> imageId)
