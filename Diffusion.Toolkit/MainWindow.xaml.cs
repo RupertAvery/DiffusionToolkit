@@ -38,6 +38,7 @@ using System.Configuration;
 using System.Windows.Input;
 using Diffusion.Toolkit.Services;
 using System.Windows.Threading;
+using Diffusion.Toolkit.Common;
 
 namespace Diffusion.Toolkit
 {
@@ -98,10 +99,8 @@ namespace Diffusion.Toolkit
 
                 ThumbnailLoader.CreateInstance();
 
-                _navigatorService = new NavigatorService(this)
-                {
-                    OnNavigate = OnNavigate
-                };
+                _navigatorService = new NavigatorService(this);
+                _navigatorService.OnNavigate += OnNavigate;
 
                 SystemEvents.UserPreferenceChanged += SystemEventsOnUserPreferenceChanged;
 
@@ -658,7 +657,7 @@ namespace Diffusion.Toolkit
                 }
             };
 
-            _prompts = new Prompts(_dataStoreOptions, _messagePopupManager, _model, _settings);
+            _prompts = new Prompts(_navigatorService, _dataStoreOptions, _messagePopupManager, _model, _settings);
 
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
 
@@ -1014,7 +1013,7 @@ namespace Diffusion.Toolkit
         }
 
 
-        private void OnNavigate(Page page)
+        private void OnNavigate(object sender, Page page)
         {
             _model.Page = page;
         }

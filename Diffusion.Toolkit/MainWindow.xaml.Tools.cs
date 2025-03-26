@@ -36,7 +36,7 @@ namespace Diffusion.Toolkit
 
                     try
                     {
-                        ServiceLocator.ScanningService.Scan(paths, true);
+                        ServiceLocator.ScanningService.Scan(paths, true, ServiceLocator.Settings.StoreMetadata, ServiceLocator.Settings.StoreWorkflow);
                         ServiceLocator.SearchService.ExecuteSearch();
                     }
                     finally

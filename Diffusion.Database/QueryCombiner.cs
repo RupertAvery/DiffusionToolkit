@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Net.Sockets;
 
 namespace Diffusion.Database;
 
@@ -29,6 +30,54 @@ public static class QueryCombiner
         return whereClauses.Any() ? $"{whereExpression}" : "";
     }
 
+
+    public static (string Query, IEnumerable<object> Bindings) ParseEx(QueryOptions options)
+    {
+        if (options.UseFilter)
+        {
+            return Filter(options.Filter, options);
+        }
+        else
+        {
+            return Parse(options);
+        }
+    }
+
+    public static (string Query, IEnumerable<object> Bindings) SearchRawData(string prompt, string query, IEnumerable<object> bindings, QueryOptions options)
+    {
+        if (prompt is { Length: > 0 } && options.SearchRawData)
+        {
+            var conditions = new List<KeyValuePair<string, object>>();
+
+            var tokens = CSVParser.Parse(prompt);
+
+            foreach (var token in tokens)
+            {
+                conditions.Add(new KeyValuePair<string, object>("(Workflow LIKE ?)", $"%{token.Trim()}%"));
+            }
+
+            var whereClause = string.Join(" AND ", conditions.Select(c => c.Key));
+            var pbindings = conditions.SelectMany(c =>
+            {
+                return c.Value switch
+                {
+                    IEnumerable<object> orConditions => orConditions.Select(o => o),
+                    _ => new[] { c.Value }
+                };
+            }).Where(o => o != null);
+
+            var q = $"SELECT m1.Id FROM Image m1 WHERE {whereClause}";
+
+            query = $"{query} UNION {q}";
+
+            bindings = bindings.Concat(pbindings);
+
+            return (query, bindings);
+        }
+
+        return (query, bindings);
+    }
+
     public static (string Query, IEnumerable<object> Bindings) Parse(QueryOptions options)
     {
         var q = QueryBuilder.Parse(options.Query);
@@ -39,9 +88,11 @@ public static class QueryCombiner
 
         var bindings = q.Bindings;
 
-        if (options is { SearchNodes: true, Query.Length: > 0 })
+        (query, bindings) = SearchRawData(q.TextPrompt, query, bindings, options);
+
+        if (q.TextPrompt is { Length: > 0 } && (options.SearchAllProperties || options.SearchNodes))
         {
-            var p = ComfyUIQueryBuilder.Parse(q.TextPrompt, options.ComfyQueryOptions);
+            var p = ComfyUIQueryBuilder.Parse(q.TextPrompt, options);
 
             query += " UNION " +
                      $"{p.Query}";
@@ -55,7 +106,7 @@ public static class QueryCombiner
     }
 
 
-    public static (string Query, IEnumerable<object> Bindings, IEnumerable<string> Joins) Filter(Filter filter, QueryOptions options)
+    public static (string Query, IEnumerable<object> Bindings) Filter(Filter filter, QueryOptions options)
     {
         if (options.SearchView == SearchView.Deleted)
         {
@@ -69,7 +120,6 @@ public static class QueryCombiner
         var query = $"SELECT m1.Id FROM Image m1 {string.Join(' ', q.Joins)} {where1Clause}";
 
         var bindings = q.Bindings;
-        var joins = q.Joins;
 
         if (filter.NodeFilters != null && filter.NodeFilters.Any(d => d is { IsActive: true, Property.Length: > 0, Value.Length: > 0 }))
         {
@@ -83,7 +133,7 @@ public static class QueryCombiner
 
         ApplyFilters(ref query, ref bindings, options);
 
-        return (query, bindings, joins);
+        return (query, bindings);
     }
 
     private static void ApplyFilters(ref string query, ref IEnumerable<object> bindings, QueryOptions options)

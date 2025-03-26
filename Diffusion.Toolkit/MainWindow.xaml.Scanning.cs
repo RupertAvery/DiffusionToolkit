@@ -585,7 +585,7 @@ namespace Diffusion.Toolkit
         }
 
 
-        private (int, float) ScanFiles(IList<string> filesToScan, bool updateImages, CancellationToken cancellationToken)
+        private (int, float) ScanFiles(IList<string> filesToScan, bool updateImages, bool storeMetadata, bool storeWorkflow, CancellationToken cancellationToken)
         {
             try
             {
@@ -614,7 +614,11 @@ namespace Diffusion.Toolkit
                 {
                     includeProperties.Add(nameof(Image.NSFW));
                 }
-
+ 
+                if (storeMetadata)
+                {
+                    includeProperties.Add(nameof(Image.Workflow));
+                }
                 var scanning = GetLocalizedText("Actions.Scanning.Status");
 
                 foreach (var file in MetadataScanner.Scan(filesToScan))
@@ -654,10 +658,14 @@ namespace Diffusion.Toolkit
                             ClipSkip = file.ClipSkip,
                             FileSize = file.FileSize,
                             NoMetadata = file.NoMetadata,
-                            Workflow = file.Workflow,
                             WorkflowId = file.WorkflowId,
                             HasError = file.HasError
                         };
+
+                        if (storeMetadata)
+                        {
+                            image.Workflow = file.Workflow;
+                        }
 
                         if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
                         {
@@ -674,7 +682,7 @@ namespace Diffusion.Toolkit
 
                         newImages.Add(image);
 
-                        if (file.Nodes is { Count: > 0 })
+                        if (storeWorkflow && file.Nodes is { Count: > 0 })
                         {
                             foreach (var fileNode in file.Nodes)
                             {
@@ -691,7 +699,7 @@ namespace Diffusion.Toolkit
                         {
 
                             added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
-                            if (newNodes.Any())
+                            if (storeWorkflow && newNodes.Any())
                             {
                                 _dataStore.UpdateNodes(newNodes, cancellationToken);
                             }
@@ -699,7 +707,7 @@ namespace Diffusion.Toolkit
                         else
                         {
                             _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                            if (newNodes.Any())
+                            if (storeWorkflow && newNodes.Any())
                             {
                                 _dataStore.AddNodes(newNodes, cancellationToken);
                             }
@@ -730,7 +738,7 @@ namespace Diffusion.Toolkit
                     if (updateImages)
                     {
                         added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
-                        if (newNodes.Any())
+                        if (storeWorkflow && newNodes.Any())
                         {
                             _dataStore.UpdateNodes(newNodes, cancellationToken);
                         }
@@ -738,7 +746,7 @@ namespace Diffusion.Toolkit
                     else
                     {
                         _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                        if (newNodes.Any())
+                        if (storeWorkflow && newNodes.Any())
                         {
                             _dataStore.AddNodes(newNodes, cancellationToken);
                         }
@@ -879,7 +887,7 @@ namespace Diffusion.Toolkit
                     }
                 }
 
-                var (_added, elapsedTime) = ScanFiles(filesToScan, updateImages, cancellationToken);
+                var (_added, elapsedTime) = ScanFiles(filesToScan, updateImages, settings.StoreMetadata, settings.StoreWorkflow, cancellationToken);
 
                 added = _added;
 

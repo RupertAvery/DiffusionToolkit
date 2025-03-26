@@ -159,7 +159,7 @@ namespace Diffusion.Toolkit.Controls
 
                     try
                     {
-                        ServiceLocator.ScanningService.Scan(imageEntries.Select(s => s.Path).ToList(), true);
+                        ServiceLocator.ScanningService.Scan(imageEntries.Select(s => s.Path).ToList(), true, ServiceLocator.Settings.StoreMetadata, ServiceLocator.Settings.StoreWorkflow);
                         ServiceLocator.SearchService.ExecuteSearch();
                     }
                     finally

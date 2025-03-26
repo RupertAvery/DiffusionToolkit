@@ -114,7 +114,7 @@ namespace Diffusion.Toolkit
 
                 var filteredFiles = _detectedFiles.Where(f => !_settings.ExcludePaths.Any(p => f.StartsWith(p))).ToList();
 
-                (added, elapsed) = ScanFiles(filteredFiles, false, CancellationToken.None);
+                (added, elapsed) = ScanFiles(filteredFiles, false, _settings.StoreMetadata, _settings.StoreWorkflow, CancellationToken.None);
             }
 
             if (added > 0)

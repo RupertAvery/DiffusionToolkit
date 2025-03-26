@@ -23,7 +23,7 @@ public class ScanningService
 
     private CancellationToken CancellationToken => ServiceLocator.ProgressService.CancellationToken;
 
-    public void Scan(ICollection<string> filesToScan, bool updateImages)
+    public void Scan(ICollection<string> filesToScan, bool updateImages, bool storeMetadata, bool storeWorkflow)
     {
         var _settings = ServiceLocator.Settings;
         var _dataStore = ServiceLocator.DataStore;
@@ -47,6 +47,11 @@ public class ScanningService
         if (_settings.AutoTagNSFW)
         {
             includeProperties.Add(nameof(Image.NSFW));
+        }
+
+        if (storeMetadata)
+        {
+            includeProperties.Add(nameof(Image.Workflow));
         }
 
         var scanning = GetLocalizedText("Actions.Scanning.Status");
@@ -88,10 +93,14 @@ public class ScanningService
                     ClipSkip = file.ClipSkip,
                     FileSize = file.FileSize,
                     NoMetadata = file.NoMetadata,
-                    Workflow = file.Workflow,
                     WorkflowId = file.WorkflowId,
                     HasError = file.HasError
                 };
+
+                if (storeMetadata)
+                {
+                    image.Workflow = file.Workflow;
+                }
 
                 if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
                 {
@@ -108,7 +117,7 @@ public class ScanningService
 
                 newImages.Add(image);
 
-                if (file.Nodes is { Count: > 0 })
+                if (storeWorkflow && file.Nodes is { Count: > 0 })
                 {
                     foreach (var fileNode in file.Nodes)
                     {
@@ -125,7 +134,7 @@ public class ScanningService
                 {
 
                     added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, CancellationToken);
-                    if (newNodes.Any())
+                    if (storeWorkflow && newNodes.Any())
                     {
                         _dataStore.UpdateNodes(newNodes, CancellationToken);
                     }
@@ -133,7 +142,7 @@ public class ScanningService
                 else
                 {
                     _dataStore.AddImages(newImages, includeProperties, folderIdCache, CancellationToken);
-                    if (newNodes.Any())
+                    if (storeWorkflow && newNodes.Any())
                     {
                         _dataStore.AddNodes(newNodes, CancellationToken);
                     }
@@ -171,7 +180,7 @@ public class ScanningService
             if (updateImages)
             {
                 added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, CancellationToken);
-                if (newNodes.Any())
+                if (storeWorkflow && newNodes.Any())
                 {
                     _dataStore.UpdateNodes(newNodes, CancellationToken);
                 }
@@ -179,7 +188,7 @@ public class ScanningService
             else
             {
                 _dataStore.AddImages(newImages, includeProperties, folderIdCache, CancellationToken);
-                if (newNodes.Any())
+                if (storeWorkflow && newNodes.Any())
                 {
                     _dataStore.AddNodes(newNodes, CancellationToken);
                 }

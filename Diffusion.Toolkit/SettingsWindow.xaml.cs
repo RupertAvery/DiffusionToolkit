@@ -75,6 +75,9 @@ namespace Diffusion.Toolkit
             _model.ScrollNavigation = settings.ScrollNavigation;
             _model.AdvanceOnTag = settings.AutoAdvance;
 
+            _model.StoreMetadata = settings.StoreMetadata;
+            _model.StoreWorkflow = settings.StoreWorkflow;
+
             _model.Culture = settings.Culture;
 
             _model.Escape = new RelayCommand<object>(o => Close());
@@ -344,6 +347,9 @@ namespace Diffusion.Toolkit
             _settings.SlideShowDelay = _model.SlideShowDelay;
             _settings.ScrollNavigation = _model.ScrollNavigation;
             _settings.AutoAdvance = _model.AdvanceOnTag;
+
+            _settings.StoreMetadata = _model.StoreMetadata;
+            _settings.StoreWorkflow = _model.StoreWorkflow;
 
             _settings.Culture = _model.Culture;
         }

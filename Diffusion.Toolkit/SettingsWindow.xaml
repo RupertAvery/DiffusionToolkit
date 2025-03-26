@@ -149,7 +149,7 @@
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="120"/>
                             </Grid.ColumnDefinitions>
-                            <Slider x:Name="Slider" Minimum="100" Maximum="500" Value="{Binding PageSize}" TickFrequency="50" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Orientation="Horizontal" Margin="0,0,10,0"></Slider>
+                            <Slider x:Name="Slider" Minimum="100" Maximum="1000" Value="{Binding PageSize}" TickFrequency="50" IsSnapToTickEnabled="True" TickPlacement="BottomRight" Orientation="Horizontal" Margin="0,0,10,0"></Slider>
                             <Label Grid.Column="1" Height="26" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Content="{Binding PageSize}" Margin="0,0,10,0"></Label>
                         </Grid>
                         <Label Content="{lex:Loc Settings.Images.OpenImagesUsing}"/>
@@ -159,7 +159,7 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <RadioButton GroupName="Viewer" IsChecked="{Binding UseBuiltInViewer}" Content="{lex:Loc Settings.Images.OpenImagesUsing.BuiltInViewer}"></RadioButton>
-                            <CheckBox  IsEnabled="{Binding UseBuiltInViewer}" Grid.Column="1" IsChecked="{Binding OpenInFullScreen}" Content="{lex:Loc Settings.Images.OpenImagesUsing.BuiltInViewer.OpenInFullscreen}"></CheckBox>
+                            <CheckBox IsEnabled="{Binding UseBuiltInViewer}" Grid.Column="1" IsChecked="{Binding OpenInFullScreen}" Content="{lex:Loc Settings.Images.OpenImagesUsing.BuiltInViewer.OpenInFullscreen}"></CheckBox>
                         </Grid>
                         <RadioButton GroupName="Viewer" IsChecked="{Binding UseSystemDefault}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.OpenImagesUsing.SystemDefault}"></RadioButton>
                         <Grid Margin="0,10,0,0">
@@ -169,8 +169,8 @@
                                 <ColumnDefinition Width="30"/>
                             </Grid.ColumnDefinitions>
                             <RadioButton GroupName="Viewer" IsChecked="{Binding UseCustomViewer}" Content="{lex:Loc Settings.Images.OpenImagesUsing.Custom}"></RadioButton>
-                            <TextBox  IsEnabled="{Binding UseCustomViewer}" Grid.Column="1" Text="{Binding CustomCommandLine}"></TextBox>
-                            <Button  IsEnabled="{Binding UseCustomViewer}" Grid.Column="2" Click="BrowseCustomViewer_OnClick">...</Button>
+                            <TextBox IsEnabled="{Binding UseCustomViewer}" Grid.Column="1" Text="{Binding CustomCommandLine}"></TextBox>
+                            <Button IsEnabled="{Binding UseCustomViewer}" Grid.Column="2" Click="BrowseCustomViewer_OnClick">...</Button>
                         </Grid>
                         <Grid Margin="0,10,0,0" IsEnabled="{Binding UseCustomViewer}">
                             <Grid.ColumnDefinitions>
@@ -188,6 +188,13 @@
                         <CheckBox IsChecked="{Binding AdvanceOnTag}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.AdvanceOnTag}"></CheckBox>
                         <CheckBox IsChecked="{Binding ScrollNavigation}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ScrollNavigation}"></CheckBox>
                         <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="{lex:Loc Settings.Metadata}">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding StoreMetadata}" Margin="0,10,0,0" Content="{lex:Loc Settings.Metadata.StoreMetadata}"></CheckBox>
+                        <CheckBox IsChecked="{Binding StoreWorkflow}" Margin="0,10,0,0" Content="{lex:Loc Settings.Metadata.StoreWorkflow}"></CheckBox>
+                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="0,10,0,0" TextWrapping="Wrap" Text="{lex:Loc Settings.Metadata.Warning}"></TextBlock>
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="{lex:Loc Settings.NSFW}">

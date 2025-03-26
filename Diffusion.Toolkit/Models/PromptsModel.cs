@@ -35,6 +35,8 @@ public class ResultsView : BaseNotify
         set => SetField(ref _images, value);
     }
 
+    public bool IsBusy { get; set; }
+
     public MainModel MainModel => _mainModel;
 
     public int Page
@@ -130,6 +132,7 @@ public class PromptsModel : BaseNotify
     private ResultsView _negativePromptsResults;
     private UsedPrompt? _selectedPrompt;
     private MainModel _mainModel;
+    private bool _isBusy;
 
     public PromptsModel()
     {
@@ -207,5 +210,11 @@ public class PromptsModel : BaseNotify
     {
         get => _selectedPrompt;
         set => SetField(ref _selectedPrompt, value);
+    }
+
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetField(ref _isBusy, value);
     }
 }

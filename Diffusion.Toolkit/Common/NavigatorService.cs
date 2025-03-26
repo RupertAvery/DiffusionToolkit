@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using Diffusion.Toolkit.Classes;
 
-namespace Diffusion.Toolkit.Classes;
+namespace Diffusion.Toolkit.Common;
 
 public class NavigatorService : INavigatorService
 {
@@ -12,7 +13,8 @@ public class NavigatorService : INavigatorService
     private Dictionary<string, Page> _pages;
     private readonly Stack<string> _history;
     private string _currentUrl;
-    public Action<Page> OnNavigate { get; set; }
+
+    public event EventHandler<Page> OnNavigate;
 
     public NavigatorService(Window host)
     {
@@ -43,6 +45,6 @@ public class NavigatorService : INavigatorService
 
     private void Navigate()
     {
-        OnNavigate?.Invoke(_pages[_currentUrl]);
+        OnNavigate?.Invoke(this, _pages[_currentUrl]);
     }
 }

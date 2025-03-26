@@ -20,6 +20,9 @@ public interface IScanOptions
 
     string FileExtensions { get; set; }
 
+    bool StoreMetadata { get; set; }
+
+    bool StoreWorkflow { get; set; }
 }
 
 public class SettingChangedEventArgs
@@ -79,6 +82,16 @@ public class Settings : SettingsContainer, IScanOptions
     private int _slideShowDelay;
     private bool _scrollNavigation;
     private bool _autoAdvance;
+
+    private double? _top;
+    private double? _left;
+    private bool _hideUnavailable;
+    private List<string> _includeNodeProperties;
+    private bool _searchNodes;
+    private bool _searchAllProperties;
+    private bool _searchRawData;
+    private bool _storeMetadata;
+    private bool _storeWorkflow;
 
     public Settings() : this(false)
     {
@@ -218,13 +231,7 @@ public class Settings : SettingsContainer, IScanOptions
         get => _previewGridHeight2;
         set => UpdateValue(ref _previewGridHeight2, value);
     }
-
-    private double? _top;
-    private double? _left;
-    private bool _hideUnavailable;
-    private List<string> _includeNodeProperties;
-    private bool _searchNodes;
-
+    
     public double? Top
     {
         get => _top;
@@ -432,6 +439,30 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _searchNodes;
         set => UpdateValue(ref _searchNodes, value);
+    }
+
+    public bool SearchAllProperties
+    {
+        get => _searchAllProperties;
+        set => UpdateValue(ref _searchAllProperties, value);
+    }
+
+    public bool SearchRawData
+    {
+        get => _searchRawData;
+        set => UpdateValue(ref _searchRawData, value);
+    }
+
+    public bool StoreMetadata
+    {
+        get => _storeMetadata;
+        set => UpdateValue(ref _storeMetadata, value);
+    }
+
+    public bool StoreWorkflow
+    {
+        get => _storeWorkflow;
+        set => UpdateValue(ref _storeWorkflow, value);
     }
 }
 

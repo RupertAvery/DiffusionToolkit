@@ -6,7 +6,7 @@ public static class ComfyUIQueryBuilder
 {
 
 
-    public static (string Query, IEnumerable<object> Bindings) Parse(string? prompt, ComfyQueryOptions options)
+    public static (string Query, IEnumerable<object> Bindings) Parse(string? prompt, QueryOptions options)
     {
         var conditions = new List<KeyValuePair<string, object>>();
 
@@ -26,7 +26,13 @@ public static class ComfyUIQueryBuilder
             };
         }).Where(o => o != null);
 
-        var properties = options.SearchProperties != null && options.SearchProperties.Any() ? string.Join(" OR ", options.SearchProperties.Select(p => $"(cmfyp.Name = '{p}')")) : "";
+        string? properties = null;
+
+        if (options.SearchNodes)
+        {
+            var searchProperties = options.ComfyQueryOptions.SearchProperties;
+            properties = searchProperties != null && searchProperties.Any() ? string.Join(" OR ", searchProperties.Select(p => $"(cmfyp.Name = '{p}')")) : "";
+        }
 
         return (
             "SELECT cmfyn.ImageId AS Id FROM Node cmfyn " +
@@ -36,10 +42,6 @@ public static class ComfyUIQueryBuilder
             $"{whereClause}",
             bindings
         );
-
-        //"p.Name LIKE 'lora__02'
-        //"p.Value = @ComfyUIPrompt";
-        //"AND n.Name = 'Lora Loader Stack (rgthree)'
     }
 
     private static void ParsePrompt(string prompt, List<KeyValuePair<string, object>> conditions)

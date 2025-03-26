@@ -14,6 +14,10 @@ public class QueryOptions
     public bool SearchNodes { get; set; }
     public ComfyQueryOptions ComfyQueryOptions { get; set; }
     public string? Folder { get; set; }
+    public bool UseFilter { get; set; }
+    public Filter Filter { get; set; }
+    public bool SearchRawData { get; set; }
+    public bool SearchAllProperties { get; set; }
 }
 
 
@@ -22,4 +26,17 @@ public class ModelInfo
     public string Name { get; set; }
     public string Hash { get; set; }
     public string HashV2 { get; set; }
+}
+
+
+public class CountSize
+{
+    public int Total { get; set; }
+    public long Size { get; set; }
+
+    public void Deconstruct(out int total, out long size)
+    {
+        total = Total;
+        size = Size;
+    }
 }

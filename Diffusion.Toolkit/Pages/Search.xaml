@@ -71,7 +71,7 @@
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,10,0" Orientation="Horizontal">
                     <Border Visibility="{Binding MainModel.HasSelectedModels, Converter={StaticResource boolToVisCol}}" Background="SeaGreen" CornerRadius="6" Height="24" Padding="6,0,6,0" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">
-                            <Label FontSize="10">Models:</Label>
+                            <Label FontSize="10" Content="{lex:Loc Search.Navigation.Models}"></Label>
                             <Label FontSize="12" Content="{Binding MainModel.SelectedModelsCount}"></Label>
                             <Button Style="{StaticResource StaticButton}" Command="{Binding MainModel.ClearModelsCommand}">
                                 <fa:FontAwesome FontSize="10" Icon="Close"></fa:FontAwesome>
@@ -675,26 +675,32 @@
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
                 </Border.Effect>
-                <Grid Margin="10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="30"/>
-                    </Grid.RowDefinitions>
-                    <controls:FilterControl  
-                        Models="{Binding MainModel.ImageModelNames}"
-                        Filter="{Binding Filter}" 
-                        SearchCommand="{Binding FilterCommand}" 
-                        VerticalAlignment="Stretch"/>
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Height="30" Command="{Binding ClearCommand}">Clear</Button>
-                        <Button Grid.Column="1" Height="30" Command="{Binding FilterCommand}">Apply (CTRL+Enter)</Button>
-                        <Button Grid.Column="2" Height="30" Command="{Binding HideFilter}">Close</Button>
-                    </Grid>
+                <Grid Margin="10,5,10,10">
+                    <StackPanel>
+                        <Label FontSize="20" Margin="0,0,0,0">Filter</Label>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="510"/>
+                                <RowDefinition Height="30"/>
+                            </Grid.RowDefinitions>
+                            <controls:FilterControl  
+                                Grid.Row="0"
+                                Models="{Binding MainModel.ImageModelNames}"
+                                Filter="{Binding Filter}" 
+                                SearchCommand="{Binding FilterCommand}" 
+                                />
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" Height="30" Command="{Binding ClearCommand}">Clear</Button>
+                                <Button Grid.Column="1" Height="30" Command="{Binding FilterCommand}">Apply (CTRL+Enter)</Button>
+                                <Button Grid.Column="2" Height="30" Command="{Binding HideFilter}">Close</Button>
+                            </Grid>
+                        </Grid>
+                    </StackPanel>
                 </Grid>
             </Border>
         </Popup>
@@ -712,21 +718,31 @@
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
                 </Border.Effect>
-                <Grid Margin="10" DataContext="{Binding DataContext.SearchSettings, ElementName=MainGrid}">
+                <Grid Margin="10,0,10,10" DataContext="{Binding DataContext.SearchSettings, ElementName=MainGrid}">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition Height="30"/>
                     </Grid.RowDefinitions>
-                    <Grid Margin="0,0,0,10">
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="24"/>
-                                <RowDefinition/>
-                            </Grid.RowDefinitions>
-                            <CheckBox IsChecked="{Binding SearchNodes}">Search in ComfyUI Properties (one property per line)</CheckBox>
-                            <TextBox FontFamily="Consolas" Grid.Row="1" Text="{Binding IncludeNodeProperties}" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"></TextBox>
+                    <StackPanel>
+                        <Label FontSize="20" Margin="0,0,0,10">Search Settings</Label>
+                        <Grid Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="24"/>
+                                    <RowDefinition Height="24"/>
+                                    <RowDefinition Height="24"/>
+                                    <RowDefinition Height="24"/>
+                                    <RowDefinition/>
+                                </Grid.RowDefinitions>
+                                <CheckBox IsChecked="{Binding SearchRawData}">Search in raw metadata (can be very slow)</CheckBox>
+                                <RadioButton Grid.Row="1" IsChecked="{Binding SearchNoProperties}">Do not search ComfyUI properties</RadioButton>
+                                <RadioButton Grid.Row="2" IsChecked="{Binding SearchAllProperties}">Search in all ComfyUI properties</RadioButton>
+                                <RadioButton Grid.Row="3" IsChecked="{Binding SearchNodes}">Search in specific ComfyUI Properties (one property per line)</RadioButton>
+                                <TextBox Padding="5" FontFamily="Consolas" Grid.Row="4" Text="{Binding IncludeNodeProperties}" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"></TextBox>
+                            </Grid>
                         </Grid>
-                    </Grid>
+                    </StackPanel>
+
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>

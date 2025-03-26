@@ -28,12 +28,21 @@ namespace Diffusion.Toolkit.Pages
         private readonly DataStore _dataStore;
         private readonly Settings _settings;
         private PromptsModel _model;
-
-        public Prompts(IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, MainModel mainModel, Settings settings)
+        private bool _isLoaded;
+        public Prompts(NavigatorService navigatorService, IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, MainModel mainModel, Settings settings)
         {
             _dataStore = dataStoreOptions.Value;
             _settings = settings;
             InitializeComponent();
+
+            navigatorService.OnNavigate += (sender, page) =>
+            {
+                if (this == page && !_isLoaded)
+                {
+                    ReloadPrompts();
+                    _isLoaded = true;
+                }
+            };
 
             _model = new PromptsModel(mainModel);
 
@@ -48,8 +57,6 @@ namespace Diffusion.Toolkit.Pages
 
             ThumbnailListView.MessagePopupManager = messagePopupManager;
 
-            ReloadPrompts();
-
             _model.PropertyChanged += ModelOnPropertyChanged;
         }
 
@@ -59,11 +66,11 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.PropertyName == nameof(PromptsModel.FullTextPrompt) || e.PropertyName == nameof(PromptsModel.PromptDistance))
             {
-                LoadPrompts();
+                Dispatcher.Invoke(() => { LoadPrompts(); });
             }
             if (e.PropertyName == nameof(PromptsModel.NegativeFullTextPrompt) || e.PropertyName == nameof(PromptsModel.NegativePromptDistance))
             {
-                LoadNegativePrompts();
+                Dispatcher.Invoke(() => { LoadNegativePrompts(); });
             }
         }
 
@@ -71,7 +78,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.Key == Key.Enter)
             {
-                LoadPrompts();
+                Dispatcher.Invoke(() => { LoadPrompts(); });
             }
         }
 
@@ -79,7 +86,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.Key == Key.Enter)
             {
-                LoadNegativePrompts();
+                Dispatcher.Invoke(() => { LoadNegativePrompts(); });
             }
         }
 
@@ -95,8 +102,14 @@ namespace Diffusion.Toolkit.Pages
 
         public void ReloadPrompts()
         {
-            LoadPrompts();
-            LoadNegativePrompts();
+            Task.Run(() =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    LoadPrompts();
+                    LoadNegativePrompts();
+                });
+            });
         }
 
         public void LoadImages()
@@ -169,7 +182,8 @@ namespace Diffusion.Toolkit.Pages
         {
             Dispatcher.Invoke(() =>
             {
-                _model.PromptsResults.Images?.Clear();
+                _model.IsBusy = true;
+                //_model.PromptsResults.Images?.Clear();
             });
 
             var images = new List<ImageEntry>();
@@ -207,7 +221,6 @@ namespace Diffusion.Toolkit.Pages
             var count = 0;
 
 
-
             foreach (var file in matches)
             {
                 var imageEntry = new ImageEntry(rId)
@@ -221,6 +234,7 @@ namespace Diffusion.Toolkit.Pages
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
                     NSFW = file.NSFW,
+                    AlbumCount = file.AlbumCount,
                     EntryType = EntryType.File
                 };
 
@@ -245,8 +259,51 @@ namespace Diffusion.Toolkit.Pages
             Dispatcher.Invoke(() =>
             {
                 _model.PromptsResults.Images = new ObservableCollection<ImageEntry>(images);
-                RefreshThumbnails();
+                //RefreshThumbnails();
+            });
 
+
+            Dispatcher.Invoke(() =>
+            {
+                if (_model.PromptsResults.Images == null || _model.PromptsResults.Images.Count != images.Count)
+                {
+                    _model.PromptsResults.Images = new ObservableCollection<ImageEntry>(images);
+                }
+                else
+                {
+                    for (var i = 0; i < images.Count; i++)
+                    {
+                        var dest = _model.PromptsResults.Images[i];
+                        var src = images[i];
+
+                        dest.BatchId = src.BatchId;
+                        dest.Id = src.Id;
+                        dest.EntryType = src.EntryType;
+                        dest.Name = src.Name;
+                        dest.ForDeletion = src.ForDeletion;
+                        dest.Favorite = src.Favorite;
+                        dest.Rating = src.Rating;
+                        dest.Score = src.Score;
+                        dest.NSFW = src.NSFW;
+                        dest.FileName = src.FileName;
+                        dest.Unavailable = src.Unavailable;
+                        dest.Height = src.Height;
+                        dest.Width = src.Width;
+                        dest.Path = src.Path;
+                        dest.CreatedDate = src.CreatedDate;
+                        dest.AlbumCount = src.AlbumCount;
+                        dest.Albums = src.Albums;
+                        dest.HasError = src.HasError;
+
+                        dest.LoadState = LoadState.Unloaded;
+                        dest.Dispatcher = Dispatcher;
+                        dest.Thumbnail = null;
+                    }
+                }
+
+                ThumbnailListView.ReloadThumbnailsView();
+
+                _model.IsBusy = false;
             });
 
             sw.Stop();
@@ -261,7 +318,7 @@ namespace Diffusion.Toolkit.Pages
         public void SetThumbnailSize(int thumbnailSize)
         {
             ThumbnailListView.SetThumbnailSize(thumbnailSize);
-            RefreshThumbnails();
+            //RefreshThumbnails();
         }
 
 
@@ -270,16 +327,16 @@ namespace Diffusion.Toolkit.Pages
             ThumbnailListView.PageSize = pageSize;
         }
 
-        public void RefreshThumbnails()
-        {
-            if (_model.PromptsResults.Images != null)
-            {
-                foreach (var image in _model.PromptsResults.Images)
-                {
-                    image.QueueLoadThumbnail();
-                }
-            }
-        }
+        //public void RefreshThumbnails()
+        //{
+        //    if (_model.PromptsResults.Images != null)
+        //    {
+        //        foreach (var image in _model.PromptsResults.Images)
+        //        {
+        //            image.QueueLoadThumbnail();
+        //        }
+        //    }
+        //}
 
         private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {

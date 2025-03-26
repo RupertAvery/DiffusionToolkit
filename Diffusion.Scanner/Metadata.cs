@@ -10,6 +10,7 @@ using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
 using System.Linq;
 using System.IO;
+using System.Text;
 using System.Xml.Linq;
 
 namespace Diffusion.IO;
@@ -451,8 +452,13 @@ public class Metadata
 
     private static FileParameters ReadInvokeAIParameters(string file, string description)
     {
-        var fp = new FileParameters();
         var command = description.Substring("Dream: ".Length);
+
+        var fp = new FileParameters();
+
+        fp.WorkflowId = command.GetHashCode().ToString("X");
+        fp.Workflow = command;
+
         var start = command.IndexOf("\"");
         var end = command.IndexOf("\"", start + 1);
         fp.Prompt = command.Substring(start + 1, end - start - 1);
@@ -501,10 +507,13 @@ public class Metadata
     {
         var fp = new FileParameters();
 
+        var workflowBuilder = new StringBuilder();
+
         string? GetTag(string key)
         {
             if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
             {
+                workflowBuilder.AppendLine(tag.Description);
                 return tag.Description.Substring($"{key}: ".Length);
             }
 
@@ -515,6 +524,7 @@ public class Metadata
         {
             if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
             {
+                workflowBuilder.AppendLine(tag.Description);
                 var value = tag.Description.Substring($"{key}: ".Length);
 
                 return float.Parse(value);
@@ -527,6 +537,7 @@ public class Metadata
         {
             if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
             {
+                workflowBuilder.AppendLine(tag.Description);
                 var value = tag.Description.Substring($"{key}: ".Length);
 
                 return decimal.Parse(value);
@@ -540,6 +551,7 @@ public class Metadata
         {
             if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
             {
+                workflowBuilder.AppendLine(tag.Description);
                 var value = tag.Description.Substring($"{key}: ".Length);
 
                 return int.Parse(value);
@@ -560,6 +572,11 @@ public class Metadata
 
 
         fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
+
+        var workflow = workflowBuilder.ToString();
+
+        fp.WorkflowId = workflow.GetHashCode().ToString("X");
+        fp.Workflow = workflow;
 
         //    return fp;
 
@@ -629,8 +646,12 @@ public class Metadata
 
     private static FileParameters ReadInvokeAIParametersNew(string file, string description)
     {
-        var fp = new FileParameters();
         var json = description.Substring("sd-metadata: ".Length);
+
+        var fp = new FileParameters();
+        fp.WorkflowId = json.GetHashCode().ToString("X");
+        fp.Workflow = json;
+
         var root = JsonDocument.Parse(json);
         var image = root.RootElement.GetProperty("image");
         var prompt = image.GetProperty("prompt");
@@ -662,8 +683,12 @@ public class Metadata
 
     private static FileParameters ReadInvokeAIParameters2(string file, string description)
     {
-        var fp = new FileParameters();
         var json = description.Substring("invokeai_metadata: ".Length);
+
+        var fp = new FileParameters();
+        fp.WorkflowId = json.GetHashCode().ToString("X");
+        fp.Workflow = json;
+
         var root = JsonDocument.Parse(json);
         var image = root.RootElement;
 
@@ -690,8 +715,11 @@ public class Metadata
 
         Tag tag;
 
+        var workflowBuilder = new StringBuilder();
+
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Description:"), out tag))
         {
+            workflowBuilder.AppendLine(tag.Description);
             fileParameters.Prompt = tag.Description.Substring("Description: ".Length);
         }
 
@@ -701,6 +729,7 @@ public class Metadata
             var match = hashRegex.Match(tag.Description.Substring("Source: ".Length));
             if (match.Success)
             {
+                workflowBuilder.AppendLine(tag.Description);
                 fileParameters.ModelHash = match.Groups[0].Value;
             }
         }
@@ -710,6 +739,8 @@ public class Metadata
 
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Comment:"), out tag))
         {
+            workflowBuilder.AppendLine(tag.Description);
+
             var json = JsonDocument.Parse(tag.Description.Substring("Comment: ".Length));
 
             fileParameters.Steps = json.RootElement.GetProperty("steps").GetInt32();
@@ -753,12 +784,21 @@ public class Metadata
             }
         }
 
+
+        var workflow = workflowBuilder.ToString();
+        fileParameters.WorkflowId = workflow.GetHashCode().ToString("X");
+        fileParameters.Workflow = workflow;
+
+
         return fileParameters;
     }
 
     private static FileParameters ReadStableDiffusionParameters(string data)
     {
         var fileParameters = new FileParameters();
+
+        fileParameters.WorkflowId = data.GetHashCode().ToString("X");
+        fileParameters.Workflow = data;
 
         var parts = data.Split(new[] { '\n' });
 
@@ -878,6 +918,9 @@ public class Metadata
         var json = data.Substring("Comment: ".Length);
         var root = JsonDocument.Parse(json);
 
+        fp.WorkflowId = json.GetHashCode().ToString("X");
+        fp.Workflow = json;
+
         fp.Prompt = root.RootElement.GetProperty("prompt").GetString();
 
         string real_prompt;
@@ -944,6 +987,8 @@ public class Metadata
         var root = json.RootElement;
 
         var fp = new FileParameters();
+        fp.WorkflowId = data.GetHashCode().ToString("X");
+        fp.Workflow = data;
 
         var suiRoot = root.GetProperty("sui_image_params");
 
@@ -978,11 +1023,14 @@ public class Metadata
 
     private static FileParameters ReadFooocusParameters(string data)
     {
+        var fp = new FileParameters();
+
+        fp.WorkflowId = data.GetHashCode().ToString("X");
+        fp.Workflow = data;
+
         var json = JsonDocument.Parse(data);
 
         var root = json.RootElement;
-
-        var fp = new FileParameters();
 
         var fullPrompt = root.GetProperty("full_prompt").EnumerateArray().Select(x => x.GetString());
         var fullNegativePrompt = root.GetProperty("full_negative_prompt").EnumerateArray().Select(x => x.GetString());
@@ -1009,14 +1057,19 @@ public class Metadata
 
     private static FileParameters ReadRuinedFooocusParameters(string data)
     {
-        var json = JsonDocument.Parse(data.Substring("parameters: ".Length));
+        var parameters = data.Substring("parameters: ".Length);
+        var json = JsonDocument.Parse(parameters);
 
         var root = json.RootElement;
 
         var fp = new FileParameters();
 
+
         if (root.TryGetProperty("software", out var softwareProperty))
         {
+            fp.WorkflowId = parameters.GetHashCode().ToString("X");
+            fp.Workflow = parameters;
+
             var software = softwareProperty.GetString();
 
             if (software == "RuinedFooocus")
@@ -1054,10 +1107,12 @@ public class Metadata
         const string negativePromptKey = "Negative prompt:";
         const string stepsKey = "Steps:";
 
+        fileParameters.WorkflowId = data.GetHashCode().ToString("X");
+        fileParameters.Workflow = data;
         fileParameters.Parameters = data;
 
         var state = 0;
-
+        
         fileParameters.Prompt = "";
         fileParameters.NegativePrompt = "";
 

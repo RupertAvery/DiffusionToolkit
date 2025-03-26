@@ -429,6 +429,9 @@ public class SearchSettings : BaseNotify
 {
     private string _includeNodeProperties;
     private bool _searchNodes;
+    private bool _searchRawData;
+    private bool _searchAllProperties;
+    private bool _searchNoProperties;
 
     public string IncludeNodeProperties
     {
@@ -450,6 +453,24 @@ public class SearchSettings : BaseNotify
         }
     }
 
+    public bool SearchRawData
+
+    {
+        get => _searchRawData;
+        set => SetField(ref _searchRawData, value);
+    }
+
+    public bool SearchNoProperties
+    {
+        get => _searchNoProperties;
+        set => SetField(ref _searchNoProperties, value);
+    }
+
+    public bool SearchAllProperties
+    {
+        get => _searchAllProperties;
+        set => SetField(ref _searchAllProperties, value);
+    }
 
     public bool SearchNodes
     {

@@ -29,9 +29,9 @@ namespace Diffusion.Toolkit
             _settings.HideNSFW = _model.HideNSFW;
             _search.SearchImages();
 
-            _prompts.ReloadPrompts();
-            _prompts.LoadImages();
-            LoadImageModels();
+            //_prompts.ReloadPrompts();
+            //_prompts.LoadImages();
+            //LoadImageModels();
         }
 
         private void ToggleHideDeleted()
@@ -41,8 +41,8 @@ namespace Diffusion.Toolkit
             _settings.HideDeleted = _model.HideDeleted;
             _search.SearchImages();
 
-            _prompts.ReloadPrompts();
-            _prompts.LoadImages();
+            //_prompts.ReloadPrompts();
+            //_prompts.LoadImages();
         }
 
         private void ToggleHideUnavailable()
@@ -52,8 +52,8 @@ namespace Diffusion.Toolkit
             _settings.HideUnavailable = _model.HideUnavailable;
             _search.SearchImages();
 
-            _prompts.ReloadPrompts();
-            _prompts.LoadImages();
+            //_prompts.ReloadPrompts();
+            //_prompts.LoadImages();
         }
 
         private void ToggleNSFWBlur()

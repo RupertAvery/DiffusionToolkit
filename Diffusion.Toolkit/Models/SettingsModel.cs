@@ -49,6 +49,8 @@ public class SettingsModel : BaseNotify
     private int _slideShowDelay;
     private bool _scrollNavigation;
     private bool _advanceOnTag;
+    private bool _storeMetadata;
+    private bool _storeWorkflow;
 
     public SettingsModel()
     {
@@ -229,5 +231,17 @@ public class SettingsModel : BaseNotify
     {
         get => _advanceOnTag;
         set => SetField(ref _advanceOnTag, value);
+    }
+
+    public bool StoreMetadata
+    {
+        get => _storeMetadata;
+        set => SetField(ref _storeMetadata, value);
+    }
+
+    public bool StoreWorkflow
+    {
+        get => _storeWorkflow;
+        set => SetField(ref _storeWorkflow, value);
     }
 }

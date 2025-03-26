@@ -71,6 +71,14 @@ namespace Diffusion.Database
 
             InsertIds(db, "DeletedIds", ids);
 
+            var propsQuery = "DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN (SELECT Id FROM DeletedIds))";
+            var propsCommand = db.CreateCommand(propsQuery);
+            propsCommand.ExecuteNonQuery();
+
+            var nodesQuery = "DELETE FROM Node WHERE ImageId IN (SELECT Id FROM DeletedIds)";
+            var nodesCommand = db.CreateCommand(nodesQuery);
+            nodesCommand.ExecuteNonQuery();
+
             var albumQuery = "DELETE FROM AlbumImage WHERE ImageId IN (SELECT Id FROM DeletedIds)";
             var albumCommand = db.CreateCommand(albumQuery);
             albumCommand.ExecuteNonQuery();
@@ -167,7 +175,8 @@ namespace Diffusion.Database
                 nameof(Image.Favorite),
                 nameof(Image.ForDeletion),
                 nameof(Image.NSFW),
-                nameof(Image.Unavailable)
+                nameof(Image.Unavailable),
+                nameof(Image.Workflow)
             };
 
 
