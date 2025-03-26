@@ -81,7 +81,7 @@
   "Settings.Checkpoints.A1111Cache": "A1111 Cache (cache.json)",
   "Settings.Checkpoints.A1111Cache.Description": "Set the A1111 Cache to the path of the AUTOMATIC111 cache.json file to allow model name searches if your metadata contains only the hash. SHA256 model hashes are also read from this file.",
   "Settings.Images": "Images",
-  "Settings.Images.AutoAdvance": "Advance to next image after tag (Rate, Delete, Favorite, NSFW) ",
+  "Settings.Images.AdvanceOnTag": "Advance to next image after tag (Rate, Delete, Favorite, NSFW) ",
   "Settings.Images.ThumbnailsPerPage": "Thumbnails per page",
   "Settings.Images.OpenImagesUsing": "Open images using:",
   "Settings.Images.OpenImagesUsing.BuiltInViewer": "Built-in viewer",

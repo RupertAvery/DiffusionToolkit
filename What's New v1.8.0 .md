@@ -117,6 +117,10 @@ There have been a lot of improvements in querying and loading data. Search will 
 
 Album and Model "Views" have been removed. They are now treated as filters, and you can freely select multiple albums and models to filter on at the same time.
 
+## Increased Max Thumbnails per page to 1000
+
+Due to improved loading performance, you can now load 1000 images at a time, if you wish. The recommended is still 250-500.
+
 # Updates Summary
 
 * ComfyUI Worklow Search
@@ -129,6 +133,7 @@ Album and Model "Views" have been removed. They are now treated as filters, and 
    * Increased SQLite `cache_size` to 1GB. Memory usage will be increased
    * Added a spinner to indicate progress on some slow queries
 * Filtering on multiple albums and models
+* Increased max thumbnails per page to 1000
 * Scroll wheel now works over albums / models / folders
 * Fixed Fit to Preview and Actual Size being reset when moving between images in the Preview
 * Fixed Prompt Search error

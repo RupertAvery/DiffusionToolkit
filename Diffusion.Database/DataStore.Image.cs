@@ -417,9 +417,15 @@ namespace Diffusion.Database
                 //image.Id = pcommand.ExecuteScalar<int>();
             }
 
+            if (cancellationToken.IsCancellationRequested)
+            {
+                db.Rollback();
+                return;
+            }
+
             query.Remove(query.Length - 1, 1);
 
-            query.Append("ON CONFLICT (Path) DO NOTHING ");
+            query.Append(" ON CONFLICT (Path) DO NOTHING ");
 
             query.Append("RETURNING Id ");
 
