@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
 {
@@ -21,7 +22,7 @@ namespace Diffusion.Toolkit
 
             if (addedTotal > 0)
             {
-                Report(addedTotal, 0, 0, false, false, false);
+                ServiceLocator.ScanningService.Report(addedTotal, 0, 0, false, false, false);
                 lock (_lock)
                 {
                     addedTotal = 0;
@@ -105,7 +106,7 @@ namespace Diffusion.Toolkit
         private void ProcessQueueCallback(object? state)
         {
             int added;
-            float elapsed;
+            long elapsed;
 
             lock (_lock)
             {
@@ -114,7 +115,7 @@ namespace Diffusion.Toolkit
 
                 var filteredFiles = _detectedFiles.Where(f => !_settings.ExcludePaths.Any(p => f.StartsWith(p))).ToList();
 
-                (added, elapsed) = ScanFiles(filteredFiles, false, _settings.StoreMetadata, _settings.StoreWorkflow, CancellationToken.None);
+                (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filteredFiles, false, _settings.StoreMetadata, _settings.StoreWorkflow, CancellationToken.None);
             }
 
             if (added > 0)
@@ -124,7 +125,7 @@ namespace Diffusion.Toolkit
                     var currentWindow = Application.Current.Windows.OfType<Window>().First();
                     if (currentWindow.IsActive)
                     {
-                        Report(added, 0, elapsed, false, false, false);
+                        ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
                     }
                     else
                     {

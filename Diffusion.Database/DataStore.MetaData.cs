@@ -164,15 +164,11 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            var query = $"UPDATE Image SET Unavailable = @Unavailable WHERE Id = @Id";
-            var command = db.CreateCommand(query);
+            InsertIds(db, "UnavailableIds", ids);
 
-            foreach (var id in ids)
-            {
-                command.Bind("@Unavailable", unavailable);
-                command.Bind("@Id", id);
-                command.ExecuteNonQuery();
-            }
+            var query = "UPDATE Image SET Unavailable = @Unavailable WHERE Id IN (SELECT Id FROM UnavailableIds)";
+            var command = db.CreateCommand(query);
+            command.Bind("@Unavailable", unavailable);
 
             db.Commit();
         }
@@ -260,7 +256,7 @@ namespace Diffusion.Database
             public int Id { get; set; }
         }
 
-        public void UpdateNodes(IEnumerable<ComfyUINode> nodes, CancellationToken cancellationToken)
+        public void UpdateNodes(IReadOnlyCollection<ComfyUINode> nodes, CancellationToken cancellationToken)
         {
             using var db = OpenConnection();
 
@@ -301,24 +297,30 @@ namespace Diffusion.Database
                 node.First.RefId = node.Second.Id;
             }
 
-            var propertyQuery = new StringBuilder($"INSERT INTO {nameof(NodeProperty)} (NodeId, Name, Value) VALUES ");
-
             values.Clear();
 
-            foreach (var property in nodes.SelectMany(n => n.Inputs.Select(p => new NodeProperty()
+            var nodeProperties = nodes.SelectMany(n => n.Inputs.Select(p => new NodeProperty()
             {
                 NodeId = n.RefId,
                 Name = p.Name,
                 Value = p.Value.ToString()
-            })))
+            }));
+
+            // Break up large workflows into smaller chunks
+            foreach (var chunk in nodeProperties.Chunk(1000))
             {
-                values.Add($"({property.NodeId}, '{property.Name}', '{SqlEscape(property.Value)}')");
+                var propertyQuery = new StringBuilder($"INSERT INTO {nameof(NodeProperty)} (NodeId, Name, Value) VALUES ");
+
+                foreach (var property in chunk)
+                {
+                    values.Add($"({property.NodeId}, '{property.Name}', '{SqlEscape(property.Value)}')");
+                }
+
+                propertyQuery.Append(string.Join(",", values));
+
+                var propertyCommand = db.CreateCommand(propertyQuery.ToString());
+                propertyCommand.ExecuteNonQuery();
             }
-
-            propertyQuery.Append(string.Join(",", values));
-
-            var propertyCommand = db.CreateCommand(propertyQuery.ToString());
-            propertyCommand.ExecuteNonQuery();
 
             db.Commit();
         }

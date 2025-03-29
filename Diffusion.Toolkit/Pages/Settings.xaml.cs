@@ -1,53 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using Diffusion.Database;
+﻿using Diffusion.Common;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Themes;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Windows;
-using Diffusion.Toolkit.Classes;
-using System.Text.RegularExpressions;
-using System.Windows.Input;
-using Diffusion.Toolkit.Themes;
 using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
-using Diffusion.Common;
-using WPFLocalizeExtension.Engine;
-using Diffusion.Toolkit.Models;
-using Diffusion.Toolkit.Localization;
 using System.Globalization;
-using static Dapper.SqlMapper;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using Diffusion.Database;
+using Diffusion.Toolkit.Common;
+using Diffusion.Toolkit.Services;
+using Diffusion.Civitai.Models;
 
-namespace Diffusion.Toolkit
+namespace Diffusion.Toolkit.Pages
 {
     /// <summary>
-    /// Interaction logic for Window1.xaml
+    /// Interaction logic for Settings.xaml
     /// </summary>
-    public partial class SettingsWindow : BorderlessWindow
+    public partial class Settings : Page
     {
-        private DataStore _dataStore;
-        private readonly Settings _settings;
-        private readonly SettingsModel _model;
+        private SettingsModel _model = new SettingsModel();
 
-        public SettingsWindow()
+        private DataStore _dataStore => ServiceLocator.DataStore;
+
+        private string GetLocalizedText(string key)
         {
+            return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+        }
+
+        public Settings(Window window, NavigatorService navigatorService, Toolkit.Settings settings)
+        {
+            _window = window;
             InitializeComponent();
-        }
 
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            IconHelper.RemoveIcon(this);
-            base.OnSourceInitialized(e);
-        }
-
-        public SettingsWindow(DataStore dataStore, Settings settings) : this()
-        {
-            _dataStore = dataStore;
-            _settings = settings;
-
-            _model = new SettingsModel();
             _model.PropertyChanged += ModelOnPropertyChanged;
             _model.ImagePaths = new ObservableCollection<string>(settings.ImagePaths);
             _model.ExcludePaths = new ObservableCollection<string>(settings.ExcludePaths);
@@ -77,10 +72,10 @@ namespace Diffusion.Toolkit
 
             _model.StoreMetadata = settings.StoreMetadata;
             _model.StoreWorkflow = settings.StoreWorkflow;
+            _model.ScanUnavailable = settings.ScanUnavailable;
+            _model.ExternalApplications = new ObservableCollection<ExternalApplication>(settings.ExternalApplications);
 
             _model.Culture = settings.Culture;
-
-            _model.Escape = new RelayCommand<object>(o => Close());
 
             var cultures = new List<Langauge>
             {
@@ -112,13 +107,19 @@ namespace Diffusion.Toolkit
 
             _model.Cultures = new ObservableCollection<Langauge>(cultures);
 
-            DataContext = _model;
+            navigatorService.OnNavigate += NavigatorServiceOnOnNavigate;
 
-            //var str = new System.Text.StringBuilder();
-            //using (var writer = new System.IO.StringWriter(str))
-            //    System.Windows.Markup.XamlWriter.Save(TabItem.Template, writer);
-            //System.Diagnostics.Debug.Write(str);
+            DataContext = _model;
         }
+
+        private void NavigatorServiceOnOnNavigate(object? sender, NavigateEventArgs e)
+        {
+            if (e.CurrentUrl == "settings")
+            {
+                ApplySettings();
+            }
+        }
+
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -139,15 +140,17 @@ namespace Diffusion.Toolkit
             }
         }
 
+        private Window _window;
+
         private void AddFolder_OnClick(object sender, RoutedEventArgs e)
         {
             using var dialog = new CommonOpenFileDialog();
             dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
                 if (_model.ImagePaths.Any(d => dialog.FileName.StartsWith(d + "\\")))
                 {
-                    MessageBox.Show(this,
+                    MessageBox.Show(this._window,
                         "The selected folder is already on the path of one of the included folders",
                         "Add folder", MessageBoxButton.OK,
                         MessageBoxImage.Information);
@@ -155,7 +158,7 @@ namespace Diffusion.Toolkit
                 }
                 else if (_model.ImagePaths.Any(d => d.StartsWith(dialog.FileName)))
                 {
-                    MessageBox.Show(this,
+                    MessageBox.Show(this._window,
                         "One of the included folders is on the path of the selected folder! It is recommended that you remove it.",
                         "Add folder", MessageBoxButton.OK,
                         MessageBoxImage.Warning);
@@ -168,7 +171,7 @@ namespace Diffusion.Toolkit
 
         private void RemoveFolder_OnClick(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(this,
+            var result = MessageBox.Show(this._window,
                 "Are you sure you want to remove this folder? Images and any custom metadata in the database will be removed. Images on disk will not be affected",
                 "Remove folder", MessageBoxButton.YesNo,
                 MessageBoxImage.Exclamation, MessageBoxResult.No);
@@ -184,11 +187,11 @@ namespace Diffusion.Toolkit
         {
             using var dialog = new CommonOpenFileDialog();
             dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
                 if (_model.ImagePaths.All(d => !dialog.FileName.StartsWith(d)))
                 {
-                    MessageBox.Show(this,
+                    MessageBox.Show(this._window,
                         "The selected folder must be on the path of one of the included folders",
                         "Add Excluded folder", MessageBoxButton.OK,
                         MessageBoxImage.Information);
@@ -202,7 +205,7 @@ namespace Diffusion.Toolkit
 
         private void ExcludedRemoveFolder_OnClick(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(this,
+            var result = MessageBox.Show(this._window,
                 "Are you sure you want to remove this folder?",
                 "Remove Excluded folder", MessageBoxButton.YesNo,
                 MessageBoxImage.Question, MessageBoxResult.No);
@@ -218,7 +221,7 @@ namespace Diffusion.Toolkit
         {
             using var dialog = new CommonOpenFileDialog();
             dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
                 _model.ModelRootPath = dialog.FileName;
             }
@@ -239,7 +242,7 @@ namespace Diffusion.Toolkit
         {
             _dataStore.CreateBackup();
 
-            var result = MessageBox.Show(this,
+            var result = MessageBox.Show(this._window,
                 "A database backup has been created.",
                 "Backup Database", MessageBoxButton.OK,
                 MessageBoxImage.Information);
@@ -251,11 +254,11 @@ namespace Diffusion.Toolkit
             dialog.Filters.Add(new CommonFileDialogFilter("SQLite databases", ".db"));
             dialog.DefaultDirectory = Path.GetDirectoryName(_dataStore.DatabasePath);
             dialog.Filters.Add(new CommonFileDialogFilter("All files", ".*"));
-            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
                 if (dialog.FileName == _dataStore.DatabasePath)
                 {
-                    MessageBox.Show(this,
+                    MessageBox.Show(this._window,
                     "The selected file is the current database. Please try another file.",
                     "Restore Database", MessageBoxButton.OK,
                     MessageBoxImage.Exclamation);
@@ -263,16 +266,16 @@ namespace Diffusion.Toolkit
                     return;
                 }
 
-                var result = MessageBox.Show(this,
+                var result = MessageBox.Show(this._window,
                     $"Are you sure you want to restore the file {dialog.FileName}? Your current database will be overwritten!",
-                    "Restore Database", MessageBoxButton.YesNo,
+                "Restore Database", MessageBoxButton.YesNo,
                     MessageBoxImage.Exclamation, MessageBoxResult.No);
 
                 if (result == MessageBoxResult.Yes)
                 {
                     if (!_dataStore.TryRestoreBackup(dialog.FileName))
                     {
-                        MessageBox.Show(this,
+                        MessageBox.Show(this._window,
                             "The database backup is not a Diffusion Toolkit database.",
                             "Restore Database", MessageBoxButton.OK,
                             MessageBoxImage.Error);
@@ -280,7 +283,7 @@ namespace Diffusion.Toolkit
                     }
                 }
 
-                MessageBox.Show(this,
+                MessageBox.Show(this._window,
                     "The database backup has been restored.",
                     "Restore Database", MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -291,7 +294,7 @@ namespace Diffusion.Toolkit
         {
             using var dialog = new CommonOpenFileDialog();
             dialog.Filters.Add(new CommonFileDialogFilter("A1111 cache", "*.json"));
-            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
                 _model.HashCache = dialog.FileName;
             }
@@ -300,64 +303,123 @@ namespace Diffusion.Toolkit
         private void BrowseCustomViewer_OnClick(object sender, RoutedEventArgs e)
         {
             using var dialog = new CommonOpenFileDialog();
+            dialog.DefaultFileName = _model.CustomCommandLine;
             dialog.Filters.Add(new CommonFileDialogFilter("Executable files", "*.exe;*.bat;*.cmd"));
-            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
                 _model.CustomCommandLine = dialog.FileName;
             }
         }
 
-        private void OK_OnClick(object sender, RoutedEventArgs e)
-        {
-            ApplySettings();
-            Close();
-        }
 
-        private void Close_OnClick(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
 
         private void ApplySettings()
         {
-            _settings.SetPristine();
-            _settings.ImagePaths = _model.ImagePaths.ToList();
-            _settings.ExcludePaths = _model.ExcludePaths.ToList();
-            _settings.ModelRootPath = _model.ModelRootPath;
-            _settings.FileExtensions = _model.FileExtensions;
-            _settings.Theme = _model.Theme;
-            _settings.PageSize = _model.PageSize;
-            _settings.WatchFolders = _model.WatchFolders;
-            _settings.AutoRefresh = _model.AutoRefresh;
+            var settings = ServiceLocator.Settings;
 
-            _settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
-            _settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
-            _settings.AutoTagNSFW = _model.AutoTagNSFW;
-            _settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-            _settings.HashCache = _model.HashCache;
-            _settings.PortableMode = _model.PortableMode;
-            _settings.RecurseFolders = _model.RecurseFolders;
+            settings.SetPristine();
+            settings.ImagePaths = _model.ImagePaths.ToList();
+            settings.ExcludePaths = _model.ExcludePaths.ToList();
+            settings.ModelRootPath = _model.ModelRootPath;
+            settings.FileExtensions = _model.FileExtensions;
+            settings.Theme = _model.Theme;
+            settings.PageSize = _model.PageSize;
+            settings.WatchFolders = _model.WatchFolders;
+            settings.AutoRefresh = _model.AutoRefresh;
 
-            _settings.UseBuiltInViewer = _model.UseBuiltInViewer;
-            _settings.OpenInFullScreen = _model.OpenInFullScreen;
-            _settings.UseSystemDefault = _model.UseSystemDefault;
-            _settings.UseCustomViewer = _model.UseCustomViewer;
-            _settings.CustomCommandLine = _model.CustomCommandLine;
-            _settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
-            _settings.SlideShowDelay = _model.SlideShowDelay;
-            _settings.ScrollNavigation = _model.ScrollNavigation;
-            _settings.AutoAdvance = _model.AdvanceOnTag;
+            settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
+            settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
+            settings.AutoTagNSFW = _model.AutoTagNSFW;
+            settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+            settings.HashCache = _model.HashCache;
+            settings.PortableMode = _model.PortableMode;
+            settings.RecurseFolders = _model.RecurseFolders;
 
-            _settings.StoreMetadata = _model.StoreMetadata;
-            _settings.StoreWorkflow = _model.StoreWorkflow;
+            settings.UseBuiltInViewer = _model.UseBuiltInViewer;
+            settings.OpenInFullScreen = _model.OpenInFullScreen;
+            settings.UseSystemDefault = _model.UseSystemDefault;
+            settings.UseCustomViewer = _model.UseCustomViewer;
+            settings.CustomCommandLine = _model.CustomCommandLine;
+            settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
+            settings.SlideShowDelay = _model.SlideShowDelay;
+            settings.ScrollNavigation = _model.ScrollNavigation;
+            settings.AutoAdvance = _model.AdvanceOnTag;
 
-            _settings.Culture = _model.Culture;
+            settings.StoreMetadata = _model.StoreMetadata;
+            settings.StoreWorkflow = _model.StoreWorkflow;
+            settings.ScanUnavailable = _model.ScanUnavailable;
+            settings.ExternalApplications = _model.ExternalApplications.ToList();
+
+            settings.Culture = _model.Culture;
         }
 
-        private string GetLocalizedText(string key)
+        private void BrowseExternalApplicationPath_OnClick(object sender, RoutedEventArgs e)
         {
-            return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+            //var button = (Button)sender;
+            //var dc = (ExternalApplication)button.DataContext;
+            var app = _model.SelectedApplication;
+
+            using var dialog = new CommonOpenFileDialog();
+            dialog.DefaultFileName = app.Path;
+            dialog.Filters.Add(new CommonFileDialogFilter("Executable files", "*.exe;*.bat;*.cmd"));
+            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
+            {
+                app.Path = dialog.FileName;
+            }
         }
 
+        private void RemoveExternalApplication_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (_model.SelectedApplication != null)
+            {
+                var result = MessageBox.Show(this._window,
+                $"Are you sure you want to remove \"{_model.SelectedApplication.Name}\"?",
+                "Remove Application", MessageBoxButton.YesNo,
+                MessageBoxImage.Question, MessageBoxResult.No);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    _model.ExternalApplications.Remove(_model.SelectedApplication);
+                }
+            }
+        }
+
+        private void AddExternalApplication_OnClick(object sender, RoutedEventArgs e)
+        {
+            _model.ExternalApplications.Add(new ExternalApplication()
+            {
+                Name = "Application",
+                Path = ""
+            });
+        }
+
+        private void MoveExternalApplicationUp_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (_model.SelectedApplication != null)
+            {
+                var index = _model.ExternalApplications.IndexOf(_model.SelectedApplication);
+
+                if (index > 0)
+                {
+                    _model.ExternalApplications.Move(index, index - 1);
+                }
+            }
+        }
+
+        private void MoveExternalApplicationDown_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (_model.SelectedApplication != null)
+            {
+                var index = _model.ExternalApplications.IndexOf(_model.SelectedApplication);
+
+                if (index < _model.ExternalApplications.Count)
+                {
+                    _model.ExternalApplications.Move(index, index + 1);
+                }
+            }
+        }
     }
+
+
+
 }

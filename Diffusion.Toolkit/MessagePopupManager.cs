@@ -34,16 +34,19 @@ public class MessagePopupManager
     private void ParentOnDeactivated(object? sender, EventArgs e)
     {
         //throw new NotImplementedException();
-        foreach (var popup in _popups)
+        _dispatcher.Invoke(() =>
         {
-            try
+            foreach (var popup in _popups)
             {
-                popup.Hide();
+                try
+                {
+                    popup.Hide();
+                }
+                catch (Exception exception)
+                {
+                }
             }
-            catch (Exception exception)
-            {
-            }
-        }
+        });
     }
 
     private Timer t;
@@ -75,107 +78,102 @@ public class MessagePopupManager
 
     public Task<(PopupResult, string?)> ShowInput(string message, string title, string? defaultText = null)
     {
-        _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget, 0, true);
-        popup.Text = defaultText;
+        return _dispatcher.Invoke(() =>
+        {
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(this, _placementTarget, 0, true);
+            popup.Text = defaultText;
+            _popups.Add(popup);
+            _host.Children.Add(popup);
 
-        _popups.Add(popup);
-        _host.Children.Add(popup);
-        return popup.Show(message, title, PopupButtons.OkCancel, PopupResult.Cancel)
-            .ContinueWith(t =>
-            {
-                _dispatcher.Invoke(() =>
+            return popup.Show(message, title, PopupButtons.OkCancel, PopupResult.Cancel)
+                .ContinueWith(t =>
                 {
-                    _host.Visibility = Visibility.Hidden;
+                    _dispatcher.Invoke(() => { _host.Visibility = Visibility.Hidden; });
+                    return (t.Result, popup.Text);
                 });
-                return (t.Result, popup.Text);
-            });
+        });
     }
+
 
     public MessagePopupHandle ShowMessage(string message, string title, int timeout = 0)
     {
-        _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget, timeout);
-        _popups.Add(popup);
-        _host.Children.Add(popup);
-        return popup.ShowMessage(message, title).ContinueWith(() =>
+        return _dispatcher.Invoke(() =>
         {
-            _dispatcher.Invoke(() =>
-            {
-                _host.Visibility = Visibility.Hidden;
-            });
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(this, _placementTarget, timeout);
+            _popups.Add(popup);
+            _host.Children.Add(popup);
+            return popup.ShowMessage(message, title).ContinueWith(() => { _dispatcher.Invoke(() => { _host.Visibility = Visibility.Hidden; }); });
         });
     }
 
     public Task<PopupResult> Show(string message, string title, int timeout = 0)
     {
-        _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget, timeout);
-        _popups.Add(popup);
-        _host.Children.Add(popup);
-        return popup.Show(message, title)
-            .ContinueWith(t =>
-            {
-                _dispatcher.Invoke(() =>
+        return _dispatcher.Invoke(() =>
+        {
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(this, _placementTarget, timeout);
+            _popups.Add(popup);
+            _host.Children.Add(popup);
+            return popup.Show(message, title)
+                .ContinueWith(t =>
                 {
-                    _host.Visibility = Visibility.Hidden;
+                    _dispatcher.Invoke(() => { _host.Visibility = Visibility.Hidden; });
+                    return t.Result;
                 });
-                return t.Result;
-            });
+        });
     }
 
     public Task<PopupResult> Show(string message, string title, PopupButtons buttons, int timeout = 0)
     {
-        _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget, timeout);
-        _popups.Add(popup);
-        _host.Children.Add(popup);
-
-
-
-        return popup.Show(message, title, buttons, GetDefaultResult(buttons))
-            .ContinueWith(t =>
-            {
-                _dispatcher.Invoke(() =>
+        return _dispatcher.Invoke(() =>
+        {
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(this, _placementTarget, timeout);
+            _popups.Add(popup);
+            _host.Children.Add(popup);
+            return popup.Show(message, title, buttons, GetDefaultResult(buttons))
+                .ContinueWith(t =>
                 {
-                    _host.Visibility = Visibility.Hidden;
+                    _dispatcher.Invoke(() => { _host.Visibility = Visibility.Hidden; });
+                    return t.Result;
                 });
-                return t.Result;
-            });
+        });
     }
 
     public Task<PopupResult> ShowMedium(string message, string title, PopupButtons buttons, int timeout = 0)
     {
-        _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget, timeout);
-        _popups.Add(popup);
-        _host.Children.Add(popup);
-        return popup.ShowMedium(message, title, buttons, GetDefaultResult(buttons))
-            .ContinueWith(t =>
-            {
-                _dispatcher.Invoke(() =>
+        return _dispatcher.Invoke(() =>
+        {
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(this, _placementTarget, timeout);
+            _popups.Add(popup);
+            _host.Children.Add(popup);
+            return popup.ShowMedium(message, title, buttons, GetDefaultResult(buttons))
+                .ContinueWith(t =>
                 {
-                    _host.Visibility = Visibility.Hidden;
+                    _dispatcher.Invoke(() => { _host.Visibility = Visibility.Hidden; });
+                    return t.Result;
                 });
-                return t.Result;
-            });
+        });
     }
 
     public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons, int width, int height, int timeout = 0)
     {
-        _host.Visibility = Visibility.Visible;
-        var popup = new MessagePopup(this, _placementTarget, timeout);
-        _popups.Add(popup);
-        _host.Children.Add(popup);
-        return popup.ShowCustom(message, title, buttons, GetDefaultResult(buttons), width, height)
-            .ContinueWith(t =>
-            {
-                _dispatcher.Invoke(() =>
+        return _dispatcher.Invoke(() =>
+        {
+            _host.Visibility = Visibility.Visible;
+            var popup = new MessagePopup(this, _placementTarget, timeout);
+            _popups.Add(popup);
+            _host.Children.Add(popup);
+            return popup.ShowCustom(message, title, buttons, GetDefaultResult(buttons), width, height)
+                .ContinueWith(t =>
                 {
-                    _host.Visibility = Visibility.Hidden;
+                    _dispatcher.Invoke(() => { _host.Visibility = Visibility.Hidden; });
+                    return t.Result;
                 });
-                return t.Result;
-            });
+        });
     }
 
     private PopupResult GetDefaultResult(PopupButtons buttons)
@@ -203,17 +201,19 @@ public class MessagePopupManager
         _dispatcher.Invoke(() =>
         {
             _host.Children.Remove(messagePopup);
+            _popups.Remove(messagePopup);
         });
-        _popups.Remove(messagePopup);
     }
 
     public void Cancel()
     {
-        var popup = _popups.LastOrDefault();
-        if (popup != null)
+        _dispatcher.Invoke(() =>
         {
-            popup.Cancel();
-        }
-
+            var popup = _popups.LastOrDefault();
+            if (popup != null)
+            {
+                popup.Cancel();
+            }
+        });
     }
 }

@@ -5,7 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Diffusion.Toolkit"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance local:WelcomeModel, IsDesignTimeCreatable=True}"
+        xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+        xmlns:lex="http://wpflocalizeextension.codeplex.com"
+        lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
+        lex:LocalizeDictionary.Separation="."
+        lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
+        d:DataContext="{d:DesignInstance local:WelcomeModel, IsDesignTimeCreatable = True}"
         WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False"
         MenuWidth="0"
@@ -14,92 +19,92 @@
         Style="{StaticResource BorderlessWindowStyle}"
         ResizeMode="NoResize"
         Title="Welcome" Height="500" Width="600">
+    <Window.Resources>
+        <ResourceDictionary>
+            <converters:ValueVisibilityConverter x:Key="ValueVisible"></converters:ValueVisibilityConverter>
+            <local:WelcomeModel x:Key="SampleData" Step="2">
+            </local:WelcomeModel>
+        </ResourceDictionary>
+    </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
     </Window.InputBindings>
-    <Grid>
+    <Grid Margin="10" d:DataContext="{StaticResource SampleData}">
         <Grid.RowDefinitions>
             <RowDefinition/>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="26"/>
         </Grid.RowDefinitions>
-        <RichTextBox Padding="10" IsReadOnly="True" IsDocumentEnabled="True" Background="Transparent" Foreground="{DynamicResource ForegroundBrush}" BorderBrush="Transparent" >
-            <FlowDocument>
-                <Paragraph>
-                    <Run FontSize="20">Diffusion Toolkit</Run>
-                    <Run FontSize="20" xml:space="preserve"> </Run>
-                    <Run FontSize="20">v</Run>
-                    <Run FontSize="20" Text="{Binding Version}"></Run>
-                </Paragraph>
-                <Table>
-                    <Table.Columns>
-                        <TableColumn  Width="140"/>
-                        <TableColumn />
-                    </Table.Columns>
-                    <TableRowGroup>
-                        <TableRow>
-                            <TableCell>
-                                <Paragraph>
-                                    <Image Source="Images/thumbnail.png" Width="128" Height="128"></Image>
-                                </Paragraph>
-                            </TableCell>
-                            <TableCell>
-                                <Paragraph>
-                                    <Bold>Diffusion Toolkit</Bold>
-                                    <Run>is an image viewer with support for reading metadata stored with AI-generated images by tools such as AUTOMATIC1111 and NovelAI, InvokeAI, Stable Diffusion and many others.</Run>
-                                </Paragraph>
-                                <Paragraph>
-                                </Paragraph>
-                                <Paragraph>
-                                    <Run>Diffusion Toolkit stores this metadata in a local SQLite database and lets you search through your images using the prompt, seed, hash and other parameters in any combination, including the path of the file and the date it was generated, using a simple querying language.</Run>
-                                </Paragraph>
-
-                            </TableCell>
-                        </TableRow>
-                    </TableRowGroup>
-
-                </Table>
-                <Paragraph>
-                    <Run>Features include:</Run>
-                </Paragraph>
-                <List>
-                    <ListItem>
-                        <Paragraph>
-                            <Run>Support for AUTOMATIC1111, NovelAI, InvokeAI, and Stable Diffusion metadata formats</Run>
-                        </Paragraph>
-                    </ListItem>
-                    <ListItem>
-                        <Paragraph>
-                            <Run>Support for .PNG and .JPG + .TXT files</Run>
-                        </Paragraph>
-                    </ListItem>
-                    <ListItem>
-                        <Paragraph>
-                            <Run>A custom query language to search using image generation parameters</Run>
-                        </Paragraph>
-                    </ListItem>
-                    <ListItem>
-                        <Paragraph>
-                            <Run>Support for dragging from the thumbnail view to any app. Drag and drop a thumbnail into the PNGInfo tab of a WebUI, or into an Explorer folder to copy the selected images.</Run>
-                        </Paragraph>
-                    </ListItem>
-                    <ListItem>
-                        <Paragraph>
-                            <Run>Tagging images quickly for later deletion</Run>
-                        </Paragraph>
-                    </ListItem>
-                </List>
-                <Paragraph>
-                    See
-                    <Bold>Help > Getting Started</Bold> or press F1 for information on how to use this application.
-                </Paragraph>
-                <Paragraph>
-                    Check for updates at
-                    <Hyperlink RequestNavigate="HyperLink_OnRequestNavigate" NavigateUri="https://github.com/RupertAvery/DiffusionToolkit/releases">https://github.com/RupertAvery/DiffusionToolkit/releases</Hyperlink>
-                </Paragraph>
-            </FlowDocument>
-        </RichTextBox>
-        <Grid Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <CheckBox IsChecked="{Binding DontShowWelcomeOnStartup}">Don't show on startup</CheckBox>
+        <Grid Margin="10" Visibility="{Binding Step, Converter={StaticResource ValueVisible}, ConverterParameter=1}">
+            <StackPanel Background="Transparent">
+                <Label FontSize="24" FontWeight="DemiBold">Welcome to Diffusion Toolkit!</Label>
+                <Label FontSize="18">Let's get you started!</Label>
+            </StackPanel>
+        </Grid>
+        <Grid Margin="10" Visibility="{Binding Step, Converter={StaticResource ValueVisible}, ConverterParameter=2}">
+            <StackPanel Grid.Row="0">
+                <Label FontSize="18" FontWeight="DemiBold">Select the folders you want to scan</Label>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap">These folders will be watched for new content and will be scanned recursively. You can change these settings later.</TextBlock>
+                <Grid Height="120" VerticalAlignment="Top" Margin="5,5,5,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="120"/>
+                    </Grid.ColumnDefinitions>
+                    <ListBox ItemsSource="{Binding ImagePaths}" SelectedIndex="{Binding SelectedIndex}" Margin="0,0,10,0"></ListBox>
+                    <StackPanel Grid.Column="1">
+                        <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.AddFolder}"></Button>
+                        <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}"></Button>
+                    </StackPanel>
+                </Grid>
+                <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="5,0,0,0" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>
+                <!--<StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" ToolTip="{lex:Loc Settings.General.WatchFolders.ToolTip}" Content="{lex:Loc Settings.General.WatchFolders}"></CheckBox>
+                    <CheckBox IsChecked="{Binding AutoRefresh}" Margin="10,0,0,0" ToolTip="{lex:Loc Settings.General.General.ToolTip}"  Content="{lex:Loc Settings.General.AutoRefresh}"></CheckBox>
+                    <CheckBox IsChecked="{Binding RecurseFolders}" Margin="10,0,0,0"  VerticalContentAlignment="Center" ToolTip="{lex:Loc Settings.General.Recursive.ToolTip}" Content="{lex:Loc Settings.General.Recursive}"></CheckBox>
+                </StackPanel>-->
+                <!--<Label>Scan these file types</Label>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="120"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
+                </Grid>-->
+            </StackPanel>
+        </Grid>
+        <Grid Margin="10" Visibility="{Binding Step, Converter={StaticResource ValueVisible}, ConverterParameter=3}">
+            <StackPanel Grid.Row="0">
+                <Label FontSize="18" FontWeight="DemiBold">Select additional metadata for searching</Label>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap">
+                    By default Diffusion Toolkit will store basic supported metadata. You may chose to store additional metadata as needed.
+                </TextBlock>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5" TextWrapping="Wrap">
+                    Check this option if you use ComfyUI and you want to search in ComfyUI Node Properties. 
+                </TextBlock>
+                <CheckBox IsChecked="{Binding StoreWorkflow}" Margin="20,15,0,15" Content="{lex:Loc Settings.Metadata.StoreWorkflow}"></CheckBox>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5" TextWrapping="Wrap">
+                    Check this option if you want to store the raw metadata and use it for searching. You will need to enable Raw Metadata Search in the Search Bar Settings.
+                </TextBlock>
+                <CheckBox IsChecked="{Binding StoreMetadata}" Margin="20,15,0,15" Content="{lex:Loc Settings.Metadata.StoreMetadata}"></CheckBox>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5" TextWrapping="Wrap" Text="{lex:Loc Settings.Metadata.Warning}"></TextBlock>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5,10" TextWrapping="Wrap">You can change these settings later.</TextBlock>
+            </StackPanel>
+        </Grid>
+        <Grid Margin="10" Visibility="{Binding Step, Converter={StaticResource ValueVisible}, ConverterParameter=4}">
+            <StackPanel Grid.Row="0">
+                <Label FontSize="18" FontWeight="DemiBold">All set!</Label>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap">
+                    Diffusion Toolkit will now scan your folders.  You can begin searching and viewing images as soon as any images have been scanned.
+                    Press CTRL+F5 or hold CTRL and click the Refresh button to reload search results.
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Click="Back_OnClick" IsEnabled="{Binding NotStart}">Back</Button>
+            <Button Grid.Column="1" Click="Next_OnClick" Content="{Binding NextButton}"></Button>
         </Grid>
     </Grid>
 </local:BorderlessWindow>

@@ -88,13 +88,12 @@ namespace Diffusion.Toolkit.Pages
 
         private DataStore DataStore => _dataStoreOptions.Value;
 
-        private Settings _settings;
+        private Toolkit.Settings _settings;
         //private readonly MainModel _mainModel;
 
         private ModeSettings _currentModeSettings;
 
         private ICollection<Model>? _modelLookup;
-        public Action<string, string> Toast { get; set; }
 
         public Search()
         {
@@ -184,7 +183,7 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public Search(NavigatorService navigatorService, IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, Settings settings, MainModel mainModel) : this()
+        public Search(NavigatorService navigatorService, IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, Toolkit.Settings settings, MainModel mainModel) : this()
         {
             this._navigatorService = navigatorService;
             this._dataStoreOptions = dataStoreOptions;
@@ -233,6 +232,11 @@ namespace Diffusion.Toolkit.Pages
             ServiceLocator.SearchService.Search += (obj, args) =>
             {
                 SearchImages(null);
+            };
+
+            ServiceLocator.SearchService.Refresh += (obj, args) =>
+            {
+                ReloadMatches(null);
             };
 
             _model.Page = 0;
@@ -676,7 +680,7 @@ namespace Diffusion.Toolkit.Pages
             _settings.PreviewGridHeight2 = PreviewGrid.RowDefinitions[2].Height.ToString();
         }
 
-        public Settings Settings
+        public Toolkit.Settings Settings
         {
             get => _settings;
             set => _settings = value;

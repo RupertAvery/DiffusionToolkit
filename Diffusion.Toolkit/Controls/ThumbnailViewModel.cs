@@ -66,6 +66,7 @@ public class ThumbnailViewModel : BaseNotify
     private int _pageSize;
     private ICommand _expandToFolderCommand;
     private ObservableCollection<Control> _selectionAlbumMenuItems;
+    private ObservableCollection<Control> _openWithMenuItems;
 
     public ThumbnailViewModel()
     {
@@ -405,6 +406,12 @@ public class ThumbnailViewModel : BaseNotify
     {
         get => _selectionAlbumMenuItems;
         set => SetField(ref _selectionAlbumMenuItems, value);
+    }
+
+    public ObservableCollection<Control> OpenWithMenuItems
+    {
+        get => _openWithMenuItems;
+        set => SetField(ref _openWithMenuItems, value);
     }
 
     public int PageSize

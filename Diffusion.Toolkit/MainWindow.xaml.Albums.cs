@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
 {
@@ -40,7 +41,7 @@ namespace Diffusion.Toolkit
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
                 if (_dataStore.AddImagesToAlbum(album.Id, images))
                 {
-                    Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
+                    ServiceLocator.ToastService.Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
                     LoadAlbums();
                     _search.ReloadMatches(null);
                 }
@@ -53,7 +54,7 @@ namespace Diffusion.Toolkit
                 var album = ((MenuItem)o).Tag as Album;
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
                 var count = _dataStore.RemoveImagesFromAlbum(album.Id, images);
-                Toast($"{count} image{(count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
+                ServiceLocator.ToastService.Toast($"{count} image{(count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
                 //_search.SearchImages(null);
                 LoadAlbums();
                 _search.ReloadMatches(null);
@@ -120,7 +121,7 @@ namespace Diffusion.Toolkit
 
         private void LoadAlbums()
         {
-            var currentAlbums = _model.Albums is {} ? _model.Albums.ToList() : Enumerable.Empty<AlbumModel>();
+            var currentAlbums = _model.Albums is { } ? _model.Albums.ToList() : Enumerable.Empty<AlbumModel>();
 
             var albums = _dataStore.GetAlbumsView().Select(a => new AlbumModel()
             {
@@ -156,7 +157,7 @@ namespace Diffusion.Toolkit
                     break;
             }
 
-            
+
         }
 
         private void Album_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -188,18 +189,18 @@ namespace Diffusion.Toolkit
                         imageEntry.AlbumCount++;
                     }
 
-                    Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to new album \"{album.Name}\".", "Add to Album");
+                    ServiceLocator.ToastService.Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to new album \"{album.Name}\".", "Add to Album");
                 }
                 else
                 {
-                    Toast($"Album \"{album.Name}\" created.", "Add to Album");
+                    ServiceLocator.ToastService.Toast($"Album \"{album.Name}\" created.", "Add to Album");
                 }
 
                 LoadAlbums();
             }
             catch (SQLiteException ex)
             {
-                await _messagePopupManager.Show($"Album {name} already exists!\r\n Please use another name.", "New Album", PopupButtons.OK);
+                await ServiceLocator.MessageService.Show($"Album {name} already exists!\r\n Please use another name.", "New Album", PopupButtons.OK);
             }
         }
 
@@ -210,8 +211,10 @@ namespace Diffusion.Toolkit
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
                 if (_dataStore.AddImagesToAlbum(album.Id, images))
                 {
-                    Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
+                    ServiceLocator.ToastService.Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
+
                     LoadAlbums();
+
                     foreach (var image in _model.SelectedImages)
                     {
                         image.AlbumCount++;

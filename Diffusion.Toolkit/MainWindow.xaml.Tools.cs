@@ -36,12 +36,14 @@ namespace Diffusion.Toolkit
 
                     try
                     {
-                        ServiceLocator.ScanningService.Scan(paths, true, ServiceLocator.Settings.StoreMetadata, ServiceLocator.Settings.StoreWorkflow);
+                        ServiceLocator.ScanningService.ScanFiles(paths, true, ServiceLocator.Settings.StoreMetadata, ServiceLocator.Settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
                         ServiceLocator.SearchService.ExecuteSearch();
                     }
                     finally
                     {
                         ServiceLocator.ProgressService.CompleteTask();
+                        var status = GetLocalizedText("Actions.Scanning.Completed");
+                        ServiceLocator.ProgressService.SetStatus(status);
                     }
                 }
             });
@@ -63,7 +65,7 @@ namespace Diffusion.Toolkit
                           "You should use this if you previously removed a folder and you want to remove the images associated with the folder\r\n\r\n" +
                           "Are you sure you want to continue?";
 
-            var result = await _messagePopupManager.ShowCustom(message, "Remove images from Database", PopupButtons.YesNo, 500, 400);
+            var result = await ServiceLocator.MessageService.ShowCustom(message, "Remove images from Database", PopupButtons.YesNo, 500, 400);
 
             if (result == PopupResult.Yes)
             {
@@ -73,9 +75,9 @@ namespace Diffusion.Toolkit
 
                 message = $"{ids.Count} images were removed";
 
-                await _messagePopupManager.ShowMedium(message, "Remove images from Database", PopupButtons.OK);
+                await ServiceLocator.MessageService.ShowMedium(message, "Remove images from Database", PopupButtons.OK);
 
-                _search.ReloadMatches(null);
+                ServiceLocator.SearchService.RefreshResults();
 
                 //await _search.ReloadMatches();
             }
@@ -244,7 +246,7 @@ namespace Diffusion.Toolkit
 
                 _search.ReloadMatches(null);
 
-                Toast($"{ids.Count} images added to album {albumName}.", "Add to Album");
+                ServiceLocator.ToastService.Toast($"{ids.Count} images added to album {albumName}.", "Add to Album");
             }
         }
     }

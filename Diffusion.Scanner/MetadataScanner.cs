@@ -1,10 +1,11 @@
 ﻿using Diffusion.Common;
+using System.Threading;
 
 namespace Diffusion.IO
 {
     public class MetadataScanner
     {
-        public static IEnumerable<string> GetFiles(string path, string extensions, bool recursive)
+        public static IEnumerable<string> GetFiles(string path, string extensions, bool recursive, CancellationToken cancellationToken)
         {
             var files = Enumerable.Empty<string>();
 
@@ -13,13 +14,19 @@ namespace Diffusion.IO
 
                 foreach (var extension in extensions.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
                     try
                     {
-                        var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
-                        {
-                            RecurseSubdirectories = recursive,
-                            IgnoreInaccessible = true
-                        });
+                        var dirFiles = EnumerateFilesRecursively(path, $"*{extension}", cancellationToken);
+
+                        //var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
+                        //{
+                        //    RecurseSubdirectories = recursive,
+                        //    IgnoreInaccessible = true
+                        //});
 
                         files = files.Concat(dirFiles);
                     }
@@ -34,7 +41,64 @@ namespace Diffusion.IO
             return files;
         }
 
-        public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, IEnumerable<string>? excludePaths)
+
+        public static IEnumerable<string> EnumerateFilesRecursively(string path, string extension, CancellationToken cancellationToken)
+        {
+            var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
+            {
+                IgnoreInaccessible = true
+            });
+
+            foreach (var file in dirFiles)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                yield return file;
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                yield break;
+            }
+
+            IEnumerable<string> dirs = Enumerable.Empty<string>();
+
+            try
+            {
+                dirs = Directory.GetDirectories(path);
+            }
+            catch (System.UnauthorizedAccessException e)
+            {
+                yield break;
+            }
+            catch (System.Security.SecurityException e)
+            {
+                yield break;
+            }
+
+            foreach (var dir in dirs)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var childDirFiles = EnumerateFilesRecursively(dir, extension, cancellationToken);
+
+                foreach (var file in childDirFiles)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    yield return file;
+                }
+            }
+        }
+
+        public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, IEnumerable<string>? excludePaths, CancellationToken cancellationToken)
         {
             var files = Enumerable.Empty<string>();
 
@@ -43,13 +107,19 @@ namespace Diffusion.IO
 
                 foreach (var extension in extensions.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
                     try
                     {
-                        var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
-                        {
-                            RecurseSubdirectories = recursive,
-                            IgnoreInaccessible = true
-                        });
+                        var dirFiles = EnumerateFilesRecursively(path, $"*{extension}", cancellationToken);
+
+                        //var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
+                        //{
+                        //    RecurseSubdirectories = recursive,
+                        //    IgnoreInaccessible = true
+                        //});
 
                         files = files.Concat(dirFiles);
                     }
@@ -58,6 +128,11 @@ namespace Diffusion.IO
                         Logger.Log($"MetadataScanner.GetFiles: {ex}");
                     }
 
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return files;
                 }
 
                 if (ignoreFiles != null)

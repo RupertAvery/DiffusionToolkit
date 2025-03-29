@@ -6,15 +6,33 @@ using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Common;
 
+public class NavigateException : Exception
+{
+    public string Url { get; }
+
+    public NavigateException(string url) : base($"Invalid url: {url}")
+    {
+        Url = url;
+    }
+
+}
+
+public class NavigateEventArgs
+{
+    public string? CurrentUrl { get; set; }
+    public string? TargetUrl { get; set; }
+    public Page? TargetPage { get; set; }
+}
+
 public class NavigatorService : INavigatorService
 {
     public Window Host { get; }
 
     private Dictionary<string, Page> _pages;
     private readonly Stack<string> _history;
-    private string _currentUrl;
+    private string? _currentUrl;
 
-    public event EventHandler<Page> OnNavigate;
+    public event EventHandler<NavigateEventArgs> OnNavigate;
 
     public NavigatorService(Window host)
     {
@@ -33,18 +51,30 @@ public class NavigatorService : INavigatorService
         {
             _history.Push(_currentUrl);
         }
-        _currentUrl = url;
-        Navigate();
+        Navigate(url);
     }
 
     public void Back()
     {
-        _currentUrl = _history.Pop();
-        Navigate();
+        Navigate(_history.Pop());
     }
 
-    private void Navigate()
+    private void Navigate(string url)
     {
-        OnNavigate?.Invoke(this, _pages[_currentUrl]);
+        if (_pages.TryGetValue(url, out var page))
+        {
+            var args = new NavigateEventArgs()
+            {
+                CurrentUrl = _currentUrl,
+                TargetUrl = url,
+                TargetPage = page
+            };
+            OnNavigate?.Invoke(this, args);
+            _currentUrl = url;
+        }
+        else
+        {
+            throw new NavigateException(url);
+        }
     }
 }

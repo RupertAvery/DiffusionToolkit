@@ -21,11 +21,11 @@ namespace Diffusion.Toolkit.Pages
     /// </summary>
     public partial class Models : Page
     {
-        private readonly Settings _settings;
+        private readonly Toolkit.Settings _settings;
 
         private ModelsModel _model;
 
-        public Models(IOptions<DataStore> dataStoreOptions, Settings settings)
+        public Models(IOptions<DataStore> dataStoreOptions, Toolkit.Settings settings)
         {
             _settings = settings;
 

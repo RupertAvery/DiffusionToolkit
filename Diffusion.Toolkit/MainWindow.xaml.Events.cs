@@ -179,29 +179,29 @@ namespace Diffusion.Toolkit
                                     }
                                 }
 
+                                ServiceLocator.ProgressService.ClearProgress();
 
                                 await Dispatcher.Invoke(async () =>
                                 {
-                                    _model.TotalProgress = 100;
-                                    _model.CurrentProgress = 0;
-
                                     LoadAlbums();
 
-                                    if (cancelled || token.IsCancellationRequested)
-                                    {
-                                        await _messagePopupManager.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
-                                    }
 
-                                    Toast($"{count} images were deleted", "Empty recycle bin");
 
                                 });
+
+                                if (cancelled || token.IsCancellationRequested)
+                                {
+                                    await ServiceLocator.MessageService.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
+                                }
+
+                                ServiceLocator.ToastService.Toast($"{count} images were deleted", "Empty recycle bin");
 
                             }
                             finally
                             {
                                 ServiceLocator.ProgressService.CompleteTask();
 
-                                SetTotalFilesStatus();
+                                ServiceLocator.ScanningService.SetTotalFilesStatus();
 
                                 _search.ReloadMatches(null);
                             }

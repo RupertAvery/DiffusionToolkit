@@ -51,6 +51,9 @@ public class SettingsModel : BaseNotify
     private bool _advanceOnTag;
     private bool _storeMetadata;
     private bool _storeWorkflow;
+    private ObservableCollection<ExternalApplication> _externalApplications;
+    private bool _scanUnavailable;
+    private ExternalApplication? _selectedApplication;
 
     public SettingsModel()
     {
@@ -243,5 +246,23 @@ public class SettingsModel : BaseNotify
     {
         get => _storeWorkflow;
         set => SetField(ref _storeWorkflow, value);
+    }
+
+    public bool ScanUnavailable
+    {
+        get => _scanUnavailable;
+        set => SetField(ref _scanUnavailable, value);
+    }
+
+    public ObservableCollection<ExternalApplication> ExternalApplications
+    {
+        get => _externalApplications;
+        set => SetField(ref _externalApplications, value);
+    }
+
+    public ExternalApplication? SelectedApplication
+    {
+        get => _selectedApplication;
+        set => SetField(ref _selectedApplication, value);
     }
 }

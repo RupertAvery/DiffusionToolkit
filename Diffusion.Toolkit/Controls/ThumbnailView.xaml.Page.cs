@@ -132,27 +132,11 @@ namespace Diffusion.Toolkit.Controls
                     left = 0;
                 }
             }
-
-            //var start = ((int)offset / (int)item.ActualHeight * columnWidth);
-            //var end = ((int)(offset + height) / (int)item.ActualHeight * columnWidth + columnWidth);
-
-            //end = Math.Min(wrapPanel.Children.Count, end);
-
-            //for (int i = start; i < end; i++)
-            //{
-            //    item = wrapPanel.Children[i] as ListViewItem;
-
-            //    if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
-            //    {
-            //        imageEntry.LoadThumbnail();
-            //    }
-            //}
         }
 
         private void ScrollViewer_OnScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             _debounceRedrawThumbnails();
-            //ReloadThumbnailsView(e.VerticalOffset);
         }
 
     }

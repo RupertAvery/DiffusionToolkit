@@ -2,243 +2,17 @@
 using Diffusion.Toolkit.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using Diffusion.Database;
 using Diffusion.Toolkit.Services;
-using Node = Diffusion.Database.Node;
 
 namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
-        private async Task ScanUnavailable(UnavailableFilesModel options)
-        {
-            if (options.RemoveImmediately)
-            {
-                var result = await _messagePopupManager.Show("Are you sure you want to remove all unavailable files?", "Scan for Unavailable Images", PopupButtons.YesNo);
-                if (result == PopupResult.No)
-                {
-                    return;
-                }
-            }
-
-            await Task.Run(async () =>
-            {
-                var candidateImages = new List<int>();
-                var restoredImages = new List<int>();
-
-                if (await ServiceLocator.ProgressService.TryStartTask())
-                {
-                    var token = ServiceLocator.ProgressService.CancellationToken;
-
-                    try
-                    {
-
-                        if (options.UseRootFolders)
-                        {
-                            var rootFolders = options.ImagePaths.Where(f => f.IsSelected);
-
-                            var total = 0;
-
-                            foreach (var folder in rootFolders)
-                            {
-                                total += _dataStore.CountAllPathImages(folder.Path);
-                            }
-
-                            Dispatcher.Invoke(() =>
-                            {
-                                _model.CurrentProgress = 0;
-                                _model.TotalProgress = total;
-                            });
-
-                            var current = 0;
-
-                            var scanning = GetLocalizedText("Actions.Scanning.Status");
-
-                            foreach (var folder in rootFolders)
-                            {
-                                if (token.IsCancellationRequested)
-                                {
-                                    break;
-                                }
-
-                                HashSet<string> ignoreFiles = new HashSet<string>();
-
-                                var folderImages = _dataStore.GetAllPathImages(folder.Path).ToDictionary(f => f.Path);
-
-
-                                if (Directory.Exists(folder.Path))
-                                {
-                                    //var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, null, _settings.RecurseFolders.GetValueOrDefault(true), null);
-                                    var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), _settings.ExcludePaths);
-
-                                    foreach (var file in filesOnDisk)
-                                    {
-                                        if (token.IsCancellationRequested)
-                                        {
-                                            break;
-                                        }
-
-                                        if (folderImages.TryGetValue(file, out var imagePath))
-                                        {
-                                            if (imagePath.Unavailable)
-                                            {
-                                                restoredImages.Add(imagePath.Id);
-                                            }
-                                            folderImages.Remove(file);
-                                        }
-
-                                        current++;
-
-                                        if (current % 113 == 0)
-                                        {
-
-                                            Dispatcher.Invoke(() =>
-                                            {
-                                                _model.CurrentProgress = current;
-
-                                                var status = scanning
-                                                    .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
-                                                    .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                                                _model.Status = status;
-                                            });
-                                        }
-                                    }
-
-                                    foreach (var folderImage in folderImages)
-                                    {
-                                        candidateImages.Add(folderImage.Value.Id);
-                                    }
-                                }
-                                else
-                                {
-                                    if (options.ShowUnavailableRootFolders)
-                                    {
-                                        foreach (var folderImage in folderImages)
-                                        {
-                                            candidateImages.Add(folderImage.Value.Id);
-
-                                            current++;
-
-                                            if (current % 113 == 0)
-                                            {
-                                                Dispatcher.Invoke(() =>
-                                                {
-                                                    _model.CurrentProgress = current;
-
-                                                    var status = scanning
-                                                        .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
-                                                        .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                                                    _model.Status = status;
-                                                });
-                                            }
-                                        }
-                                    }
-
-                                }
-                            }
-
-                            Dispatcher.Invoke(() =>
-                            {
-                                _model.CurrentProgress = total;
-                                _model.TotalProgress = total;
-
-                                var unavailableFiles = GetLocalizedText("UnavailableFiles");
-
-                                if (restoredImages.Any())
-                                {
-                                    _dataStore.SetUnavailable(restoredImages, false);
-                                }
-
-                                if (options.JustUpdate)
-                                {
-                                    //var currentUnavailableImages = _dataStore.GetUnavailable(true);
-                                    //candidateImages = candidateImages.Except(currentUnavailableImages.Select(i => i.Id)).ToList();
-
-                                    _dataStore.SetUnavailable(candidateImages, true);
-
-                                    var updated = GetLocalizedText("UnavailableFiles.Results.Updated");
-                                    updated = updated.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                                    if (restoredImages.Any())
-                                    {
-                                        var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
-                                        updated += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-                                    }
-
-                                    _messagePopupManager.Show(updated, unavailableFiles, PopupButtons.OK);
-                                }
-                                else if (options.MarkForDeletion)
-                                {
-                                    //var currentUnavailableImages = _dataStore.GetUnavailable(true);
-                                    //candidateImages = candidateImages.Except(currentUnavailableImages.Select(i => i.Id)).ToList();
-
-                                    _dataStore.SetUnavailable(candidateImages, true);
-                                    _dataStore.SetDeleted(candidateImages, true);
-
-                                    var marked = GetLocalizedText("UnavailableFiles.Results.MarkedForDeletion");
-                                    marked = marked.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                                    if (restoredImages.Any())
-                                    {
-                                        var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
-                                        marked += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-                                    }
-
-                                    _messagePopupManager.Show(marked, unavailableFiles, PopupButtons.OK);
-                                }
-                                else if (options.RemoveImmediately)
-                                {
-                                    if (candidateImages.Any())
-                                    {
-                                        _dataStore.RemoveImages(candidateImages);
-                                    }
-
-                                    var removed = GetLocalizedText("UnavailableFiles.Results.Removed");
-                                    removed = removed.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-
-                                    if (restoredImages.Any())
-                                    {
-                                        var restored = GetLocalizedText("UnavailableFiles.Results.Restored");
-                                        removed += " " + restored.Replace("{count}", $"{candidateImages.Count:#,###,##0}");
-                                    }
-
-
-                                    _messagePopupManager.Show(removed, unavailableFiles, PopupButtons.OK);
-                                }
-
-
-                                var completed = GetLocalizedText("Actions.Scanning.Completed");
-
-                                _model.Status = completed;
-                                _model.CurrentProgress = 0;
-                                _model.TotalProgress = Int32.MaxValue;
-                            });
-
-                        }
-                    }
-                    finally
-                    {
-
-                        ServiceLocator.ProgressService.CompleteTask();
-                    }
-
-
-                }
-
-
-            });
-
-        }
-
-
         private async Task RescanTask(object o)
         {
             if (_settings.ImagePaths.Any())
@@ -279,13 +53,8 @@ namespace Diffusion.Toolkit
                 ShowSettings(null);
             }
         }
-
-        private async Task CancelProgress()
-        {
-            await ServiceLocator.ProgressService.CancelTask();
-        }
-
-        private Task Scan()
+        
+        private Task Scan(bool isFirstTime = false)
         {
             return Task.Run(async () =>
             {
@@ -293,18 +62,29 @@ namespace Diffusion.Toolkit
                 {
                     try
                     {
-                        var result = await ScanInternal(_settings!, false, true, ServiceLocator.ProgressService.CancellationToken);
+                        if (isFirstTime)
+                        {
+                            _ = Task.Delay(10000).ContinueWith(t =>
+                            {
+                                ServiceLocator.SearchService.ExecuteSearch();
+                                ServiceLocator.MessageService.Show("You may now view your images while we continue to scan your folders in the background", "Welcome to Diffusion Toolkit", PopupButtons.OK);
+                            });
+                        }
+
+                        var result = await ServiceLocator.ScanningService.ScanWatchedFolders(false, true, ServiceLocator.ProgressService.CancellationToken);
                         if (result && _search != null)
                         {
+                            LoadFolders();
                             _search.SearchImages();
                         }
                     }
                     finally
                     {
                         ServiceLocator.ProgressService.CompleteTask();
+                        ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
                     }
                 }
-               
+
             });
         }
 
@@ -316,18 +96,20 @@ namespace Diffusion.Toolkit
                 {
                     try
                     {
-                        var result = await ScanInternal(_settings!, true, true, ServiceLocator.ProgressService.CancellationToken);
+                        var result = await ServiceLocator.ScanningService.ScanWatchedFolders(true, true, ServiceLocator.ProgressService.CancellationToken);
                         if (result)
                         {
+                            LoadFolders();
                             _search.SearchImages();
                         }
                     }
                     finally
                     {
                         ServiceLocator.ProgressService.CompleteTask();
+                        ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
                     }
                 }
-               
+
             });
         }
 
@@ -398,14 +180,11 @@ namespace Diffusion.Toolkit
                 progress++;
             }
 
+            _model.Status = "";
+            _model.TotalProgress = Int32.MaxValue;
+            _model.CurrentProgress = 0;
 
-            Dispatcher.Invoke(() =>
-            {
-                _model.Status = "";
-                _model.TotalProgress = Int32.MaxValue;
-                _model.CurrentProgress = 0;
-                Toast($"{updated} files were updated.", "Fix folders");
-            });
+            ServiceLocator.ToastService.Toast($"{updated} files were updated.", "Fix folders");
 
             return updated;
         }
@@ -504,13 +283,10 @@ namespace Diffusion.Toolkit
             }
 
 
-            await Dispatcher.Invoke(async () =>
-            {
-                _model.Status = $"Moving {_model.TotalProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
-                _model.TotalProgress = Int32.MaxValue;
-                _model.CurrentProgress = 0;
-                Toast($"{moved} files were moved.", "Move images");
-            });
+            _model.Status = $"Moving {_model.TotalProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
+            _model.TotalProgress = Int32.MaxValue;
+            _model.CurrentProgress = 0;
+            ServiceLocator.ToastService.Toast($"{moved} files were moved.", "Move images");
 
             //await _search.ReloadMatches();
 
@@ -521,450 +297,7 @@ namespace Diffusion.Toolkit
 
 
         }
-
-        private void InitScanningEvents()
-        {
-            ServiceLocator.ScanningService.ScanProgress += (sender, args) =>
-            {
-                switch (args.Type)
-                {
-                    case ScanningEventType.Start:
-                        Dispatcher.Invoke(() =>
-                        {
-                            _model.TotalProgress = args.TotalCount;
-                            _model.CurrentProgress = 0;
-                        });
-
-                        break;
-                    case ScanningEventType.Progress:
-                        Dispatcher.Invoke(() =>
-                        {
-                            var scanning = GetLocalizedText("Actions.Scanning.Status");
-
-                            _model.CurrentProgress = args.ProgressCount;
-
-                            var text = scanning
-                                .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
-                                .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                            _model.Status = text;
-                        });
-
-                        break;
-                    case ScanningEventType.Complete:
-                        Dispatcher.Invoke(() =>
-                        {
-                            if (_model.TotalProgress > 0)
-                            {
-                                var scanning = GetLocalizedText("Actions.Scanning.Status");
-
-                                var text = scanning
-                                    .Replace("{current}", $"{_model.TotalProgress:#,###,##0}")
-                                    .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                                _model.Status = text;
-                            }
-
-                            _model.TotalProgress = Int32.MaxValue;
-                            _model.CurrentProgress = 0;
-                        });
-
-                        break;
-                    case ScanningEventType.Error:
-                        Dispatcher.Invoke(() =>
-                        {
-                            _model.TotalProgress = Int32.MaxValue;
-                            _model.CurrentProgress = 0;
-                        });
-
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            };
-        }
-
-
-        private (int, float) ScanFiles(IList<string> filesToScan, bool updateImages, bool storeMetadata, bool storeWorkflow, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var added = 0;
-                var scanned = 0;
-
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
-
-                var max = filesToScan.Count;
-
-                Dispatcher.Invoke(() =>
-                {
-                    _model.TotalProgress = max;
-                    _model.CurrentProgress = 0;
-                });
-
-                var folderIdCache = new Dictionary<string, int>();
-
-                var newImages = new List<Image>();
-                var newNodes = new List<IO.Node>();
-
-                var includeProperties = new List<string>();
-
-                if (_settings.AutoTagNSFW)
-                {
-                    includeProperties.Add(nameof(Image.NSFW));
-                }
- 
-                if (storeMetadata)
-                {
-                    includeProperties.Add(nameof(Image.Workflow));
-                }
-                var scanning = GetLocalizedText("Actions.Scanning.Status");
-
-                foreach (var file in MetadataScanner.Scan(filesToScan))
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    scanned++;
-
-                    if (file != null)
-                    {
-                        var fileInfo = new FileInfo(file.Path);
-
-                        var image = new Image()
-                        {
-                            Prompt = file.Prompt,
-                            NegativePrompt = file.NegativePrompt,
-                            Path = file.Path,
-                            FileName = fileInfo.Name,
-                            Width = file.Width,
-                            Height = file.Height,
-                            ModelHash = file.ModelHash,
-                            Model = file.Model,
-                            Steps = file.Steps,
-                            Sampler = file.Sampler,
-                            CFGScale = file.CFGScale,
-                            Seed = file.Seed,
-                            BatchPos = file.BatchPos,
-                            BatchSize = file.BatchSize,
-                            CreatedDate = fileInfo.CreationTime,
-                            ModifiedDate = fileInfo.LastWriteTime,
-                            AestheticScore = file.AestheticScore,
-                            HyperNetwork = file.HyperNetwork,
-                            HyperNetworkStrength = file.HyperNetworkStrength,
-                            ClipSkip = file.ClipSkip,
-                            FileSize = file.FileSize,
-                            NoMetadata = file.NoMetadata,
-                            WorkflowId = file.WorkflowId,
-                            HasError = file.HasError
-                        };
-
-                        if (storeMetadata)
-                        {
-                            image.Workflow = file.Workflow;
-                        }
-
-                        if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
-                        {
-                            file.HyperNetworkStrength = 1;
-                        }
-
-                        if (_settings.AutoTagNSFW)
-                        {
-                            if (_settings.NSFWTags.Any(t => image.Prompt != null && image.Prompt.ToLower().Contains(t.Trim().ToLower())))
-                            {
-                                image.NSFW = true;
-                            }
-                        }
-
-                        newImages.Add(image);
-
-                        if (storeWorkflow && file.Nodes is { Count: > 0 })
-                        {
-                            foreach (var fileNode in file.Nodes)
-                            {
-                                fileNode.ImageRef = image;
-                            }
-
-                            newNodes.AddRange(file.Nodes);
-                        }
-                    }
-
-                    if (newImages.Count == 100)
-                    {
-                        if (updateImages)
-                        {
-
-                            added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
-                            if (storeWorkflow && newNodes.Any())
-                            {
-                                _dataStore.UpdateNodes(newNodes, cancellationToken);
-                            }
-                        }
-                        else
-                        {
-                            _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                            if (storeWorkflow && newNodes.Any())
-                            {
-                                _dataStore.AddNodes(newNodes, cancellationToken);
-                            }
-                            added += newImages.Count;
-                        }
-
-                        newNodes.Clear();
-                        newImages.Clear();
-                    }
-
-                    if (scanned % 33 == 0)
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            _model.CurrentProgress = scanned;
-
-                            var text = scanning
-                                .Replace("{current}", $"{_model.CurrentProgress:#,###,##0}")
-                                .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                            _model.Status = text;
-                        });
-                    }
-                }
-
-                if (newImages.Count > 0)
-                {
-                    if (updateImages)
-                    {
-                        added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
-                        if (storeWorkflow && newNodes.Any())
-                        {
-                            _dataStore.UpdateNodes(newNodes, cancellationToken);
-                        }
-                    }
-                    else
-                    {
-                        _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                        if (storeWorkflow && newNodes.Any())
-                        {
-                            _dataStore.AddNodes(newNodes, cancellationToken);
-                        }
-
-                        added += newImages.Count;
-                    }
-                }
-
-                Dispatcher.Invoke(() =>
-                {
-                    if (_model.TotalProgress > 0)
-                    {
-                        var text = scanning
-                            .Replace("{current}", $"{_model.TotalProgress:#,###,##0}")
-                            .Replace("{total}", $"{_model.TotalProgress:#,###,##0}");
-
-                        _model.Status = text;
-                    }
-                    _model.TotalProgress = Int32.MaxValue;
-                    _model.CurrentProgress = 0;
-                });
-
-                stopwatch.Stop();
-
-                var elapsedTime = stopwatch.ElapsedMilliseconds / 1000f;
-
-
-                return (added, elapsedTime);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-
-        }
-
-
-        private async Task<bool> ScanInternal(IScanOptions settings, bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
-        {
-            bool foldersUnavailable = false;
-            bool foldersRestored = false;
-
-            var unavailable = 0;
-            var added = 0;
-
-            Dispatcher.Invoke(() =>
-            {
-                _model.Status = GetLocalizedText("Actions.Scanning.BeginScanning");
-            });
-
-            try
-            {
-                //var existingImages = _dataStore.GetImagePaths().ToList();
-
-                var filesToScan = new List<string>();
-
-                var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
-
-                foreach (var path in settings.ImagePaths)
-                {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    if (Directory.Exists(path))
-                    {
-                        var folder = _dataStore.GetFolder(path);
-
-                        if (folder is { Unavailable: true })
-                        {
-                            foldersRestored = true;
-
-                            _dataStore.SetFolderUnavailable(path, false);
-
-                            var childImages = _dataStore.GetAllPathImages(path);
-
-                            foreach (var childImageChunk in childImages.Chunk(100))
-                            {
-                                _dataStore.SetUnavailable(childImageChunk.Select(c => c.Id), false);
-                            }
-                        }
-
-                        Dispatcher.Invoke(() =>
-                        {
-                            _model.Status = GetLocalizedText("Actions.Scanning.CheckUnavailable");
-                        });
-
-                        var folderImages = _dataStore.GetAllPathImages(path).ToList();
-
-                        var folderImagesHashSet = folderImages.Select(p => p.Path).ToHashSet();
-
-                        var allDirectoryFiles = MetadataScanner.GetFiles(path, settings.FileExtensions, true).ToHashSet();
-
-                        var unavailableFiles = folderImagesHashSet.Except(allDirectoryFiles).ToHashSet();
-
-                        var unavailableIds = new List<int>();
-
-                        foreach (var image in folderImages.Where(f => unavailableFiles.Contains(f.Path)))
-                        {
-                            unavailableIds.Add(image.Id);
-                        }
-
-                        var currentUnavailable = _dataStore.GetUnavailable(true);
-
-                        var newlyUnavailable = unavailableIds.Except(currentUnavailable.Select(i => i.Id)).ToList();
-
-                        foreach (var chunk in newlyUnavailable.Chunk(100))
-                        {
-                            _dataStore.SetUnavailable(chunk, true);
-                        }
-
-                        unavailable += newlyUnavailable.Count;
-
-                        Dispatcher.Invoke(() =>
-                        {
-                            _model.Status = gatheringFilesMessage.Replace("{path}", path);
-                        });
-
-                        var ignoreFiles = updateImages ? null : folderImagesHashSet;
-
-                        filesToScan.AddRange(MetadataScanner.GetFiles(path, settings.FileExtensions, ignoreFiles, settings.RecurseFolders.GetValueOrDefault(true), settings.ExcludePaths).ToList());
-                    }
-                    else
-                    {
-                        foldersUnavailable = true;
-
-                        _dataStore.SetFolderUnavailable(path, true);
-
-                        var childImages = _dataStore.GetAllPathImages(path);
-
-                        foreach (var childImageChunk in childImages.Chunk(100))
-                        {
-                            _dataStore.SetUnavailable(childImageChunk.Select(c => c.Id), true);
-                        }
-
-                    }
-                }
-
-                var (_added, elapsedTime) = ScanFiles(filesToScan, updateImages, settings.StoreMetadata, settings.StoreWorkflow, cancellationToken);
-
-                added = _added;
-
-                LoadFolders();
-
-                if ((added + unavailable == 0 && reportIfNone) || added + unavailable > 0)
-                {
-                    Report(added, unavailable, elapsedTime, updateImages, foldersUnavailable, foldersRestored);
-                }
-            }
-            catch (Exception ex)
-            {
-                await _messagePopupManager.ShowMedium(
-                    ex.Message,
-                    "Scan Error", PopupButtons.OK);
-            }
-            finally
-            {
-                _model.IsBusy = false;
-
-                Dispatcher.Invoke(() =>
-                {
-                    _model.Status = GetLocalizedText("Actions.Scanning.Completed");
-                });
-            }
-
-
-            return added + unavailable > 0;
-        }
-
-        private void Report(int added, int unavailable, float elapsedTime, bool updateImages, bool foldersUnavailable, bool foldersRestored)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                var scanComplete = updateImages
-                    ? GetLocalizedText("Actions.Scanning.RebuildComplete.Caption")
-                    : GetLocalizedText("Actions.Scanning.ScanComplete.Caption");
-
-                if (added == 0 && unavailable == 0)
-                {
-                    var message = GetLocalizedText("Actions.Scanning.NoNewImages.Toast");
-                    Toast(message, scanComplete);
-                }
-                else
-                {
-                    var updatedMessage = GetLocalizedText("Actions.Scanning.ImagesUpdated.Toast");
-                    var addedMessage = GetLocalizedText("Actions.Scanning.ImagesAdded.Toast");
-                    var unavailableMessage = GetLocalizedText("Actions.Scanning.FilesUnavailable.Toast");
-                    var foldersUnavailableMessage = GetLocalizedText("Actions.Scanning.FoldersUnavailable.Toast");
-                    var foldersRestoredMessage = GetLocalizedText("Actions.Scanning.FoldersRestored.Toast");
-
-                    updatedMessage = updatedMessage.Replace("{count}", $"{added:#,###,##0}");
-                    addedMessage = addedMessage.Replace("{count}", $"{added:#,###,##0}");
-                    unavailableMessage = unavailableMessage.Replace("{count}", $"{unavailable:#,###,##0}");
-
-                    var newOrOpdated = updateImages ? updatedMessage : addedMessage;
-
-                    var messages = new[]
-                     {
-                        added > 0 ? newOrOpdated : string.Empty,
-                        unavailable > 0 ? unavailableMessage : string.Empty,
-                        foldersUnavailable ? foldersUnavailableMessage : string.Empty,
-                        foldersRestored ? foldersRestoredMessage : string.Empty,
-                    };
-
-                    foreach (var message in messages.Where(m => !string.IsNullOrEmpty(m)))
-                    {
-                        Toast(message, scanComplete, 5);
-                    }
-
-                }
-
-                SetTotalFilesStatus();
-            });
-
-        }
-
+        
         private async void CleanExcludedPaths()
         {
             var message = "This will remove any remaining images in excluded folders from the database. The images on disk will not be deleted.\r\n\r\n" +
@@ -975,7 +308,7 @@ namespace Diffusion.Toolkit
             {
                 var total = CleanExcludedPaths(_settings.ExcludePaths);
 
-                Toast($"{total} images removed from database", "");
+                ServiceLocator.ToastService.Toast($"{total} images removed from database", "");
             }
         }
 
@@ -1020,19 +353,8 @@ namespace Diffusion.Toolkit
             {
                 _search.ReloadMatches(null);
 
-                Toast($"{total} images removed from database", "");
+                ServiceLocator.ToastService.Toast($"{total} images removed from database", "");
             }
-        }
-
-        private void SetTotalFilesStatus()
-        {
-            var total = _dataStore.GetTotal();
-            _model.Status = $"{total:###,###,##0} images in database";
-        }
-
-        private void SortAlbums_OnClick(object sender, RoutedEventArgs e)
-        {
-            SortAlbums();
         }
 
         private void SortAlbums()
@@ -1062,5 +384,12 @@ namespace Diffusion.Toolkit
 
             _model.HasSelectedModels = false;
         }
+
+        public async Task CancelProgress()
+        {
+            await ServiceLocator.ProgressService.CancelTask();
+        }
     }
+
+
 }

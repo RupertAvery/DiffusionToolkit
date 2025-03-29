@@ -11,6 +11,7 @@ public class SearchService
     public event EventHandler<string> SortOrder;
     public event EventHandler<SearchFilter> SearchFilter;
     public event EventHandler Search;
+    public event EventHandler Refresh;
     public event EventHandler<SearchView> View;
 
     public void SetSortBy(string value)
@@ -41,6 +42,11 @@ public class SearchService
     public void ExecuteSearch()
     {
         Search?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void RefreshResults()
+    {
+        Refresh?.Invoke(this, EventArgs.Empty);
     }
 
     public void SetView(SearchView view)

@@ -29,6 +29,7 @@ public class ServiceLocator
     public static ThumbnailCache? ThumbnailCache => _thumbnailCache;
     public static Settings? Settings => _settings;
     public static ThumbnailLoader? ThumbnailLoader => _thumbnailLoader;
+    public static ToastService ToastService { get; set; }
 
     public static void SetThumbnailLoader(ThumbnailLoader thumbnailLoader)
     {

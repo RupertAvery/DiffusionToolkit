@@ -11,7 +11,7 @@ public class ProgressService
 {
     private CancellationTokenSource _progressCancellationTokenSource;
     private Dispatcher _dispatcher;
-
+    private SemaphoreSlim _syncLock = new SemaphoreSlim(1, 1);
     public CancellationToken CancellationToken => _progressCancellationTokenSource.Token;
 
     private string GetLocalizedText(string key)
@@ -27,20 +27,25 @@ public class ProgressService
 
     public async Task<bool> TryStartTask()
     {
-        if (ServiceLocator.MainModel.IsBusy)
+        await _syncLock.WaitAsync();
+        try
         {
-            await _dispatcher.InvokeAsync(async () => { await ServiceLocator.MessageService.Show(GetLocalizedText("Common.MessageBox.OperationInProgress"), GetLocalizedText("Common.MessageBox.Title"), PopupButtons.YesNo); });
-            return false;
+            if (ServiceLocator.MainModel.IsBusy)
+            {
+                await ServiceLocator.MessageService.Show(GetLocalizedText("Common.MessageBox.OperationInProgress"), GetLocalizedText("Common.MessageBox.Title"), PopupButtons.OK);
+                return false;
+            }
+
+            _progressCancellationTokenSource = new CancellationTokenSource();
+
+            _dispatcher.Invoke(() => { ServiceLocator.MainModel.IsBusy = true; });
+
+            return true;
         }
-
-        _progressCancellationTokenSource = new CancellationTokenSource();
-
-        _dispatcher.Invoke(() =>
+        finally
         {
-            ServiceLocator.MainModel.IsBusy = true;
-        });
-
-        return true;
+            _syncLock.Release();
+        }
     }
 
     public void CompleteTask()
@@ -60,4 +65,43 @@ public class ProgressService
             _progressCancellationTokenSource.Cancel();
         }
     }
+
+    public void InitializeProgress(int count)
+    {
+        _dispatcher.Invoke(() =>
+        {
+            ServiceLocator.MainModel.TotalProgress = count;
+            ServiceLocator.MainModel.CurrentProgress = 0;
+        });
+    }
+
+    public void SetProgress(int value, string? statusFormat = null)
+    {
+        _dispatcher.Invoke(() =>
+        {
+            ServiceLocator.MainModel.CurrentProgress = value;
+            if (statusFormat != null)
+            {
+                ServiceLocator.MainModel.Status = statusFormat.Replace("{current}", value.ToString()).Replace("{total}", ServiceLocator.MainModel.TotalProgress.ToString());
+            }
+        });
+    }
+
+    public void ClearProgress()
+    {
+        _dispatcher.Invoke(() =>
+        {
+            ServiceLocator.MainModel.TotalProgress = 100;
+            ServiceLocator.MainModel.CurrentProgress = 0;
+        });
+    }
+
+    public void SetStatus(string status)
+    {
+        _dispatcher.Invoke(() =>
+        {
+            ServiceLocator.MainModel.Status = status;
+        });
+    }
+
 }

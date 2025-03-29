@@ -4,8 +4,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 using SQLite;
 using Path = System.IO.Path;
 
@@ -238,12 +240,10 @@ namespace Diffusion.Toolkit
                     var moved1 = moved;
                     if (moved % 113 == 0)
                     {
-                        Dispatcher.Invoke(() =>
-                        {
-                            image.Path = newPath;
-                            _model.CurrentProgress = moved1;
-                            _model.Status = $"Moving {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
-                        });
+                        image.Path = newPath;
+
+                        ServiceLocator.ProgressService.SetProgress(moved1);
+                        ServiceLocator.ProgressService.SetStatus($"Moving {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...");
                     }
 
                     moved++;
@@ -254,13 +254,10 @@ namespace Diffusion.Toolkit
                 }
             }
             
-            await Dispatcher.Invoke(async () =>
-            {
-                _model.Status = $"Moving {_model.TotalProgress:#,###,###} of {_model.TotalProgress:#,###,###}...";
-                _model.TotalProgress = Int32.MaxValue;
-                _model.CurrentProgress = 0;
-                Toast($"{moved} files were moved.", "Move images");
-            });
+            ServiceLocator.ProgressService.CompleteTask();
+            ServiceLocator.ProgressService.SetStatus("");
+
+            ServiceLocator.ToastService.Toast($"{moved} files were moved.", "Move images");
 
             //await _search.ReloadMatches();
 

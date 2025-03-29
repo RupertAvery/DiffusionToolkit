@@ -26,18 +26,12 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Diagnostics;
-using System.Windows.Forms;
-using DragDropEffects = System.Windows.Forms.DragDropEffects;
-using DragEventArgs = System.Windows.Forms.DragEventArgs;
 using System.Text.Json.Serialization;
 using Diffusion.Civitai.Models;
-using Diffusion.Toolkit.Localization;
 using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
-using System.Configuration;
 using System.Windows.Input;
 using Diffusion.Toolkit.Services;
-using System.Windows.Threading;
 using Diffusion.Toolkit.Common;
 
 namespace Diffusion.Toolkit
@@ -54,10 +48,11 @@ namespace Diffusion.Toolkit
 
 
         private Configuration<Settings> _configuration;
-        private Settings? _settings;
-        
+        private Toolkit.Settings? _settings;
+
 
         private Search _search;
+        private Pages.Settings _settingsPage;
         private Pages.Models _models;
         private bool _tipsOpen;
         private MessagePopupManager _messagePopupManager;
@@ -118,7 +113,7 @@ namespace Diffusion.Toolkit
                 });
                 _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
                 _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
-                _model.CancelCommand = new AsyncCommand<object>(async (o) => await CancelProgress());
+                _model.CancelCommand = new AsyncCommand<object>((o) => CancelProgress());
                 _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
                 _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
                 _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
@@ -194,6 +189,7 @@ namespace Diffusion.Toolkit
 
                 ServiceLocator.ProgressService = new ProgressService(Dispatcher);
                 ServiceLocator.MessageService = new MessageService(_messagePopupManager);
+                ServiceLocator.ToastService = new ToastService(ToastPopup, Dispatcher);
 
                 //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
                 //Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-PT");
@@ -242,10 +238,37 @@ namespace Diffusion.Toolkit
             var window = new UnavailableFilesWindow(_dataStore, _settings);
             window.Owner = this;
             window.ShowDialog();
+
             if (window.DialogResult is true)
             {
-                await ScanUnavailable(window.Model);
+                if (window.Model.RemoveImmediately)
+                {
+                    var result = await ServiceLocator.MessageService.Show("Are you sure you want to remove all unavailable files?", "Scan for Unavailable Images", PopupButtons.YesNo);
+                    if (result == PopupResult.No)
+                    {
+                        return;
+                    }
+                }
+
+                Task.Run(async () =>
+                {
+                    if (await ServiceLocator.ProgressService.TryStartTask())
+                    {
+                        try
+                        {
+                            await ServiceLocator.ScanningService.ScanUnavailable(window.Model, ServiceLocator.ProgressService.CancellationToken);
+                        }
+                        finally
+                        {
+                            ServiceLocator.ProgressService.CompleteTask();
+                            ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
+                        }
+                    }
+                });
+
             }
+
+        
         }
 
         private void ToggleNavigationPane()
@@ -441,11 +464,7 @@ namespace Diffusion.Toolkit
                 var welcome = new WelcomeWindow(_settings);
                 welcome.Owner = this;
                 welcome.ShowDialog();
-
-                var settings = new SettingsWindow(dataStore, _settings);
-                settings.Owner = this;
-                settings.ShowDialog();
-
+                
                 if (_settings.IsDirty())
                 {
                     _configuration.Save(_settings);
@@ -470,19 +489,6 @@ namespace Diffusion.Toolkit
                     _settings.Theme ??= "System";
 
                     UpdateTheme(_settings.Theme);
-
-                    if (!_settings.DontShowWelcomeOnStartup)
-                    {
-                        var welcome = new WelcomeWindow(_settings);
-                        welcome.Owner = this;
-                        welcome.ShowDialog();
-
-                        if (_settings.IsDirty())
-                        {
-                            _configuration.Save(_settings);
-                            _settings.SetPristine();
-                        }
-                    }
 
                     _settings.PortableMode = _configuration.Portable;
                     _settings.SetPristine();
@@ -592,8 +598,6 @@ namespace Diffusion.Toolkit
 
             _search = new Search(_navigatorService, _dataStoreOptions, _messagePopupManager, _settings, _model);
 
-            _search.Toast = (message, caption) => Toast(message, caption);
-
             _search.MoveFiles = (files) =>
             {
                 using var dialog = new CommonOpenFileDialog();
@@ -658,6 +662,7 @@ namespace Diffusion.Toolkit
             };
 
             _prompts = new Prompts(_navigatorService, _dataStoreOptions, _messagePopupManager, _model, _settings);
+            _settingsPage = new Pages.Settings(this, _navigatorService, _settings);
 
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
 
@@ -719,7 +724,11 @@ namespace Diffusion.Toolkit
                 _model.ActiveView = "Prompts";
             });
 
-
+            _model.ShowSettingsCommand = new RelayCommand<object>((o) =>
+            {
+                _navigatorService.Goto("settings");
+                _model.ActiveView = "Settings";
+            });
 
             if (_settings.WatchFolders)
             {
@@ -732,6 +741,7 @@ namespace Diffusion.Toolkit
                 { "search", _search },
                 { "models", _models },
                 { "prompts", _prompts },
+                { "settings", _settingsPage },
                 //{ "config", _configPage},
                 //{ "setup", new SetupPage(_navigatorService) },
             };
@@ -788,11 +798,12 @@ namespace Diffusion.Toolkit
                     {
                         try
                         {
-                            await ScanInternal(_settings, false, false, ServiceLocator.ProgressService.CancellationToken);
+                            await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
                         }
                         finally
                         {
                             ServiceLocator.ProgressService.CompleteTask();
+                            ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
                         }
                     }
                 });
@@ -804,8 +815,12 @@ namespace Diffusion.Toolkit
 
                 if (isFirstTime)
                 {
-                    await TryScanFolders();
+                    _ = Scan(true);
                 }
+                //else
+                //{
+                //    _ = TryScanFolders();
+                //}
             }
 
             Logger.Log($"Init completed");
@@ -814,7 +829,6 @@ namespace Diffusion.Toolkit
             //_previewWindow.ShowInTaskbar = false;
             //_previewWindow.Owner = this;
             //_previewWindow.Show();
-            InitScanningEvents();
         }
 
 
@@ -899,9 +913,11 @@ namespace Diffusion.Toolkit
             {
                 var oldImagePaths = _settings.ImagePaths.ToList();
 
-                var settings = new SettingsWindow(_dataStore, _settings);
-                settings.Owner = this;
-                settings.ShowDialog();
+                //var settings = new SettingsWindow(_dataStore, _settings);
+                //settings.Owner = this;
+                //settings.ShowDialog();
+                //_navigatorService.Goto("settings");
+
 
                 if (_settings.IsDirty())
                 {
@@ -1013,9 +1029,9 @@ namespace Diffusion.Toolkit
         }
 
 
-        private void OnNavigate(object sender, Page page)
+        private void OnNavigate(object sender, NavigateEventArgs args)
         {
-            _model.Page = page;
+            _model.Page = args.TargetPage;
         }
 
 
@@ -1150,64 +1166,64 @@ namespace Diffusion.Toolkit
 
 
     public class Hashes
+{
+    public Dictionary<string, HashInfo> hashes { get; set; }
+}
+
+public class HashInfo
+{
+    public double mtime { get; set; }
+    public string sha256 { get; set; }
+}
+
+static class WindowExtensions
+{
+    [StructLayout(LayoutKind.Sequential)]
+    struct RECT
     {
-        public Dictionary<string, HashInfo> hashes { get; set; }
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
     }
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
-    public class HashInfo
+
+    public static double ActualTop(this Window window)
     {
-        public double mtime { get; set; }
-        public string sha256 { get; set; }
+        switch (window.WindowState)
+        {
+            case WindowState.Normal:
+                return window.Top;
+            case WindowState.Minimized:
+                return window.RestoreBounds.Top;
+            case WindowState.Maximized:
+                {
+                    RECT rect;
+                    GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
+                    return rect.Top;
+                }
+        }
+        return 0;
     }
-
-    static class WindowExtensions
+    public static double ActualLeft(this Window window)
     {
-        [StructLayout(LayoutKind.Sequential)]
-        struct RECT
+        switch (window.WindowState)
         {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
+            case WindowState.Normal:
+                return window.Left;
+            case WindowState.Minimized:
+                return window.RestoreBounds.Left;
+            case WindowState.Maximized:
+                {
+                    RECT rect;
+                    GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
+                    return rect.Left;
+                }
         }
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-
-        public static double ActualTop(this Window window)
-        {
-            switch (window.WindowState)
-            {
-                case WindowState.Normal:
-                    return window.Top;
-                case WindowState.Minimized:
-                    return window.RestoreBounds.Top;
-                case WindowState.Maximized:
-                    {
-                        RECT rect;
-                        GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
-                        return rect.Top;
-                    }
-            }
-            return 0;
-        }
-        public static double ActualLeft(this Window window)
-        {
-            switch (window.WindowState)
-            {
-                case WindowState.Normal:
-                    return window.Left;
-                case WindowState.Minimized:
-                    return window.RestoreBounds.Left;
-                case WindowState.Maximized:
-                    {
-                        RECT rect;
-                        GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
-                        return rect.Left;
-                    }
-            }
-            return 0;
-        }
+        return 0;
     }
+}
 }

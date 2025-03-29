@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,6 +19,7 @@ using Microsoft.Extensions.Options;
 using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Pages;
+using Diffusion.IO;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -141,10 +143,74 @@ namespace Diffusion.Toolkit.Controls
             //_model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
             //_model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             //_model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
+            Model.OpenWithMenuItems = new ObservableCollection<Control>();
+
+            ServiceLocator.Settings.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(Settings.ExternalApplications))
+                {
+                    BuildOpenWIthContextMenu();
+                }
+            };
+
+            BuildOpenWIthContextMenu();
 
             _debounceRedrawThumbnails = Utility.Debounce(() => Dispatcher.Invoke(() => ReloadThumbnailsView()));
+
             Init();
         }
+
+        private void BuildOpenWIthContextMenu()
+        {
+            Model.OpenWithMenuItems = new ObservableCollection<Control>();
+            if (ServiceLocator.Settings.ExternalApplications != null)
+            {
+                foreach (var externalApplication in ServiceLocator.Settings.ExternalApplications)
+                {
+                    var menuItem = new MenuItem()
+                    {
+                        Header = externalApplication.Name,
+                    };
+                    menuItem.Click += (o, eventArgs) =>
+                    {
+                        //var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
+                        //var boundInput = (Input)bindingExpression.ResolvedSource;
+                        string args = "%1";
+
+                        if (!string.IsNullOrEmpty(externalApplication.CommandLineArgs))
+                        {
+                            args = externalApplication.CommandLineArgs;
+                        }
+
+                        var images = string.Join(" ", SelectedImages.Select(d => $"\"{d.Path}\""));
+
+                        var appPath = externalApplication.Path;
+
+                        args = args.Replace("%1", images);
+
+                        if (!string.IsNullOrEmpty(appPath) && File.Exists(appPath))
+                        {
+                            var ps = new ProcessStartInfo()
+                            {
+                                FileName = appPath,
+                                Arguments = args,
+                                UseShellExecute = true
+                            };
+
+                            Process.Start(ps);
+                        }
+                        else
+                        {
+                            ServiceLocator.MessageService.ShowMedium($"Failed to launch the application {externalApplication.Name}.\r\n\r\nPath not found", "Error opening External Application", PopupButtons.OK);
+                        }
+ 
+                    };
+                    Model.OpenWithMenuItems.Add(menuItem);
+                }
+            }
+        }
+
+
 
         private readonly Action _debounceRedrawThumbnails;
 
@@ -159,12 +225,14 @@ namespace Diffusion.Toolkit.Controls
 
                     try
                     {
-                        ServiceLocator.ScanningService.Scan(imageEntries.Select(s => s.Path).ToList(), true, ServiceLocator.Settings.StoreMetadata, ServiceLocator.Settings.StoreWorkflow);
+                        ServiceLocator.ScanningService.ScanFiles(imageEntries.Select(s => s.Path).ToList(), true, ServiceLocator.Settings.StoreMetadata, ServiceLocator.Settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
                         ServiceLocator.SearchService.ExecuteSearch();
                     }
                     finally
                     {
                         ServiceLocator.ProgressService.CompleteTask();
+                        var status = GetLocalizedText("Actions.Scanning.Completed");
+                        ServiceLocator.ProgressService.SetStatus(status);
                     }
                 }
             });
@@ -594,13 +662,22 @@ namespace Diffusion.Toolkit.Controls
 
                     Model.SelectedImageEntry = null;
                     //ThumbnailListView.SelectedIndex = -1;
-
-                    foreach (var image in imageEntries)
+                    Task.Run(async () =>
                     {
-                        Model.Images.Remove(image);
-                    }
+                        if (await ServiceLocator.ProgressService.TryStartTask())
+                        {
+                            try
+                            {
+                                DataStore.RemoveImages(ids);
+                                ServiceLocator.SearchService.RefreshResults();
+                            }
+                            finally
+                            {
+                                ServiceLocator.ProgressService.CompleteTask();
+                            }
+                        }
 
-                    DataStore.RemoveImages(ids);
+                    });
                 }
             }
         }
@@ -754,7 +831,7 @@ namespace Diffusion.Toolkit.Controls
         {
             Dispatcher.Invoke(() =>
             {
-                if (reloadOptions is not null &&  Model.Images is { Count: > 0 })
+                if (reloadOptions is not null && Model.Images is { Count: > 0 })
                 {
                     switch (reloadOptions.CursorPosition)
                     {

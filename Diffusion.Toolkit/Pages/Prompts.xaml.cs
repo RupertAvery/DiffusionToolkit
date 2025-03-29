@@ -26,18 +26,18 @@ namespace Diffusion.Toolkit.Pages
     public partial class Prompts : Page
     {
         private readonly DataStore _dataStore;
-        private readonly Settings _settings;
+        private readonly Toolkit.Settings _settings;
         private PromptsModel _model;
         private bool _isLoaded;
-        public Prompts(NavigatorService navigatorService, IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, MainModel mainModel, Settings settings)
+        public Prompts(NavigatorService navigatorService, IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, MainModel mainModel, Toolkit.Settings settings)
         {
             _dataStore = dataStoreOptions.Value;
             _settings = settings;
             InitializeComponent();
 
-            navigatorService.OnNavigate += (sender, page) =>
+            navigatorService.OnNavigate += (sender, args) =>
             {
-                if (this == page && !_isLoaded)
+                if (this == args.TargetPage && !_isLoaded)
                 {
                     ReloadPrompts();
                     _isLoaded = true;
@@ -60,7 +60,7 @@ namespace Diffusion.Toolkit.Pages
             _model.PropertyChanged += ModelOnPropertyChanged;
         }
 
-        public Settings Settings { get; set; }
+        public Toolkit.Settings Settings { get; set; }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

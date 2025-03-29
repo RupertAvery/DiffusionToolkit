@@ -23,6 +23,7 @@ public interface IScanOptions
     bool StoreMetadata { get; set; }
 
     bool StoreWorkflow { get; set; }
+    bool ScanUnavailable { get; set; }
 }
 
 public class SettingChangedEventArgs
@@ -34,6 +35,13 @@ public class SettingChangedEventArgs
 
 public delegate void SettingChangedEventHander(object sender, SettingChangedEventArgs args);
 
+
+public class ExternalApplication
+{
+    public string Name { get; set; }
+    public string Path { get; set; }
+    public string CommandLineArgs { get; set; }
+}
 
 public class Settings : SettingsContainer, IScanOptions
 {
@@ -92,6 +100,9 @@ public class Settings : SettingsContainer, IScanOptions
     private bool _searchRawData;
     private bool _storeMetadata;
     private bool _storeWorkflow;
+    private bool _scanUnavailable;
+    private bool _showNotifications;
+    private List<ExternalApplication> _externalApplications;
 
     public Settings() : this(false)
     {
@@ -100,7 +111,6 @@ public class Settings : SettingsContainer, IScanOptions
 
     public Settings(bool initialize)
     {
-        DontShowWelcomeOnStartup = false;
         ImagePaths = new List<string>();
         ExcludePaths = new List<string>();
         NSFWTags = new List<string>() { "nsfw", "nude", "naked" };
@@ -125,6 +135,12 @@ public class Settings : SettingsContainer, IScanOptions
         PreviewGridHeight = "*";
         PreviewGridHeight2 = "3*";
         SlideShowDelay = 5;
+
+        WatchFolders = true;
+        ScanUnavailable = false;
+        ShowNotifications = true;
+        FitToPreview = true;
+        ExternalApplications = new List<ExternalApplication>();
 
         SearchNodes = true;
         IncludeNodeProperties = new List<string>
@@ -287,12 +303,7 @@ public class Settings : SettingsContainer, IScanOptions
         get => _nsfwBlur;
         set => UpdateValue(ref _nsfwBlur, value);
     }
-    public bool DontShowWelcomeOnStartup
-    {
-        get => _dontShowWelcomeOnStartup;
-        set => UpdateValue(ref _dontShowWelcomeOnStartup, value);
-    }
-
+  
     public bool CheckForUpdatesOnStartup
     {
         get => _checkForUpdatesOnStartup;
@@ -463,6 +474,24 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _storeWorkflow;
         set => UpdateValue(ref _storeWorkflow, value);
+    }
+
+    public bool ScanUnavailable
+    {
+        get => _scanUnavailable;
+        set => UpdateValue(ref _scanUnavailable, value);
+    }
+
+    public bool ShowNotifications
+    {
+        get => _showNotifications;
+        set => UpdateValue(ref _showNotifications, value);
+    }
+
+    public List<ExternalApplication> ExternalApplications
+    {
+        get => _externalApplications;
+        set => UpdateValue(ref _externalApplications, value);
     }
 }
 

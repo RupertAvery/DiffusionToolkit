@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Common;
+using Diffusion.Toolkit.Classes;
 using WPFLocalizeExtension.Providers;
 
 namespace Diffusion.Toolkit.Models;
@@ -310,6 +311,12 @@ public class MainModel : BaseNotify
     {
         get => _showPromptsCommand;
         set => SetField(ref _showPromptsCommand, value);
+    }
+
+    public ICommand ShowSettingsCommand
+    {
+        get => _showSettingsCommand;
+        set => SetField(ref _showSettingsCommand, value);
     }
 
     public bool FitToPreview
@@ -639,6 +646,8 @@ public class MainModel : BaseNotify
     private bool _hasSelectedModels;
     private int _selectedAlbumsCount;
     private int _selectedModelsCount;
+    private string _toastMessage;
+    private ICommand _showSettingsCommand;
 
     public FolderViewModel? CurrentFolder
     {
@@ -657,4 +666,10 @@ public class MainModel : BaseNotify
     public ICommand DeleteFolderCommand { get; set; }
     public ICommand ToggleNavigationPane { get; set; }
     public ICommand ShowInExplorerCommand { get; set; }
+    public string ToastMessage
+    {
+        get => _toastMessage;
+        set => SetField(ref _toastMessage, value);
+    }
+
 }
