@@ -8,6 +8,7 @@
       xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
       xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
       xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+      xmlns:system="clr-namespace:System;assembly=System.Runtime"
       lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
       lex:LocalizeDictionary.Separation="."
       lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
@@ -19,10 +20,24 @@
         <ResourceDictionary>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
             <converters:NotNullConverter x:Key="NotNullVConverter"></converters:NotNullConverter>
+            <toolkit:SettingsModel x:Key="TestData">
+                <toolkit:SettingsModel.ImagePaths>
+                    <system:String>Hello world!</system:String>
+                </toolkit:SettingsModel.ImagePaths>
+            </toolkit:SettingsModel>
         </ResourceDictionary>
     </Page.Resources>
-    <Grid>
+    <Grid d:DataContext="{StaticResource TestData}">
         <TabControl x:Name="TabControl" Padding="10" Background="{DynamicResource PrimaryBrush}">
+            <TabControl.Style>
+                <Style TargetType="{x:Type TabControl}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsDirty}" Value="True">
+                            <Setter Property="Background" Value="Red"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TabControl.Style>
             <TabControl.Resources>
                 <Style TargetType="{x:Type TabItem}">
                     <Setter Property="Template">
@@ -285,7 +300,7 @@
 
                     </Grid>
                 </Grid>
-               
+
 
             </TabItem>
             <TabItem Header="{lex:Loc Settings.Database}">

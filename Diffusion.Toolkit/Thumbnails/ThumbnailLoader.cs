@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Channels;
@@ -37,7 +38,7 @@ public class ThumbnailLoader
     private readonly Channel<Job<ThumbnailJob, ThumbailResult>> _channel = Channel.CreateUnbounded<Job<ThumbnailJob, ThumbailResult>>();
     private readonly int _degreeOfParallelism = 2;
 
-    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+    private CancellationTokenSource cancellationTokenSource;
 
     private Stream _defaultStream;
 
@@ -97,28 +98,28 @@ public class ThumbnailLoader
 
     public Task Start()
     {
+        cancellationTokenSource = new CancellationTokenSource();
+
         var consumers = new List<Task>();
 
         for (var i = 0; i < _degreeOfParallelism; i++)
         {
             consumers.Add(ProcessTaskAsync(cancellationTokenSource.Token));
         }
-
-        //_channel.Writer.Complete();
-
+        
         return Task.WhenAll(consumers);
     }
 
     public Task StartRun()
     {
+        cancellationTokenSource = new CancellationTokenSource();
+
         var consumers = new List<Task>();
 
         for (var i = 0; i < _degreeOfParallelism; i++)
         {
             consumers.Add(Task.Run(async () => await ProcessTaskAsync(cancellationTokenSource.Token)));
         }
-
-        //_channel.Writer.Complete();
 
         return Task.WhenAll(consumers);
     }
@@ -220,11 +221,15 @@ public class ThumbnailLoader
 
 
         }
+        Debug.WriteLine("Shutting down Thumbnail Task");
     }
 
     public async Task QueueAsync(ThumbnailJob job, Action<ThumbailResult> completion)
     {
-        await _channel.Writer.WriteAsync(new Job<ThumbnailJob, ThumbailResult>() { Data = job, Completion = completion });
+        if (!cancellationTokenSource.IsCancellationRequested)
+        {
+            await _channel.Writer.WriteAsync(new Job<ThumbnailJob, ThumbailResult>() { Data = job, Completion = completion });
+        }
     }
 
     private static Stream GenerateThumbnail(string path, int width, int height, int size)

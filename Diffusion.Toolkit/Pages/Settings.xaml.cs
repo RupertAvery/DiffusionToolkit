@@ -73,7 +73,12 @@ namespace Diffusion.Toolkit.Pages
             _model.StoreMetadata = settings.StoreMetadata;
             _model.StoreWorkflow = settings.StoreWorkflow;
             _model.ScanUnavailable = settings.ScanUnavailable;
-            _model.ExternalApplications = new ObservableCollection<ExternalApplication>(settings.ExternalApplications);
+            _model.ExternalApplications = new ObservableCollection<ExternalApplicationModel>(settings.ExternalApplications.Select(d => new ExternalApplicationModel()
+            {
+                CommandLineArgs = d.CommandLineArgs,
+                Name = d.Name,
+                Path = d.Path
+            }));
 
             _model.Culture = settings.Culture;
 
@@ -106,6 +111,8 @@ namespace Diffusion.Toolkit.Pages
             }
 
             _model.Cultures = new ObservableCollection<Langauge>(cultures);
+
+            _model.SetPristine();
 
             navigatorService.OnNavigate += NavigatorServiceOnOnNavigate;
 
@@ -311,46 +318,53 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-
-
-        private void ApplySettings()
+        public void ApplySettings()
         {
             var settings = ServiceLocator.Settings;
 
-            settings.SetPristine();
-            settings.ImagePaths = _model.ImagePaths.ToList();
-            settings.ExcludePaths = _model.ExcludePaths.ToList();
-            settings.ModelRootPath = _model.ModelRootPath;
-            settings.FileExtensions = _model.FileExtensions;
-            settings.Theme = _model.Theme;
-            settings.PageSize = _model.PageSize;
-            settings.WatchFolders = _model.WatchFolders;
-            settings.AutoRefresh = _model.AutoRefresh;
+            if (_model.IsDirty)
+            {
+                settings.SetPristine();
+                settings.ImagePaths = _model.ImagePaths.ToList();
+                settings.ExcludePaths = _model.ExcludePaths.ToList();
+                settings.ModelRootPath = _model.ModelRootPath;
+                settings.FileExtensions = _model.FileExtensions;
+                settings.Theme = _model.Theme;
+                settings.PageSize = _model.PageSize;
+                settings.WatchFolders = _model.WatchFolders;
+                settings.AutoRefresh = _model.AutoRefresh;
 
-            settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
-            settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
-            settings.AutoTagNSFW = _model.AutoTagNSFW;
-            settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-            settings.HashCache = _model.HashCache;
-            settings.PortableMode = _model.PortableMode;
-            settings.RecurseFolders = _model.RecurseFolders;
+                settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
+                settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
+                settings.AutoTagNSFW = _model.AutoTagNSFW;
+                settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                settings.HashCache = _model.HashCache;
+                settings.PortableMode = _model.PortableMode;
+                settings.RecurseFolders = _model.RecurseFolders;
 
-            settings.UseBuiltInViewer = _model.UseBuiltInViewer;
-            settings.OpenInFullScreen = _model.OpenInFullScreen;
-            settings.UseSystemDefault = _model.UseSystemDefault;
-            settings.UseCustomViewer = _model.UseCustomViewer;
-            settings.CustomCommandLine = _model.CustomCommandLine;
-            settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
-            settings.SlideShowDelay = _model.SlideShowDelay;
-            settings.ScrollNavigation = _model.ScrollNavigation;
-            settings.AutoAdvance = _model.AdvanceOnTag;
+                settings.UseBuiltInViewer = _model.UseBuiltInViewer;
+                settings.OpenInFullScreen = _model.OpenInFullScreen;
+                settings.UseSystemDefault = _model.UseSystemDefault;
+                settings.UseCustomViewer = _model.UseCustomViewer;
+                settings.CustomCommandLine = _model.CustomCommandLine;
+                settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
+                settings.SlideShowDelay = _model.SlideShowDelay;
+                settings.ScrollNavigation = _model.ScrollNavigation;
+                settings.AutoAdvance = _model.AdvanceOnTag;
 
-            settings.StoreMetadata = _model.StoreMetadata;
-            settings.StoreWorkflow = _model.StoreWorkflow;
-            settings.ScanUnavailable = _model.ScanUnavailable;
-            settings.ExternalApplications = _model.ExternalApplications.ToList();
+                settings.StoreMetadata = _model.StoreMetadata;
+                settings.StoreWorkflow = _model.StoreWorkflow;
+                settings.ScanUnavailable = _model.ScanUnavailable;
+                settings.ExternalApplications = _model.ExternalApplications.Select(d => new ExternalApplication()
+                {
+                    CommandLineArgs = d.CommandLineArgs,
+                    Name = d.Name,
+                    Path = d.Path
+                }).ToList();
 
-            settings.Culture = _model.Culture;
+                settings.Culture = _model.Culture;
+            }
+
         }
 
         private void BrowseExternalApplicationPath_OnClick(object sender, RoutedEventArgs e)
@@ -386,7 +400,7 @@ namespace Diffusion.Toolkit.Pages
 
         private void AddExternalApplication_OnClick(object sender, RoutedEventArgs e)
         {
-            _model.ExternalApplications.Add(new ExternalApplication()
+            _model.ExternalApplications.Add(new ExternalApplicationModel()
             {
                 Name = "Application",
                 Path = ""

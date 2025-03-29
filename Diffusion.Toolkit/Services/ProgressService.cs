@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Threading;
@@ -56,14 +57,30 @@ public class ProgressService
         });
     }
 
-    public async Task CancelTask()
+    public async Task WaitForCompletion()
+    {
+        while (ServiceLocator.MainModel.IsBusy)
+        {
+            await Task.Delay(500);
+        }
+    }
+
+    public void Cancel()
+    {
+        _progressCancellationTokenSource.Cancel();
+    }
+
+    public async Task<bool> CancelTask()
     {
         var dialogResult = await ServiceLocator.MessageService.Show(GetLocalizedText("Common.MessageBox.ConfirmCancelOperation"), GetLocalizedText("Common.MessageBox.Cancel"), PopupButtons.YesNo);
 
         if (dialogResult == PopupResult.Yes)
         {
             _progressCancellationTokenSource.Cancel();
+            return true;
         }
+
+        return false;
     }
 
     public void InitializeProgress(int count)

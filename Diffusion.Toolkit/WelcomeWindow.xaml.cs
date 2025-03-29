@@ -176,15 +176,7 @@ namespace Diffusion.Toolkit
 
         private void RemoveFolder_OnClick(object sender, RoutedEventArgs e)
         {
-            var result = MessageBox.Show(this,
-                "Are you sure you want to remove this folder? Images and any custom metadata in the database will be removed. Images on disk will not be affected",
-                "Remove folder", MessageBoxButton.YesNo,
-                MessageBoxImage.Exclamation, MessageBoxResult.No);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                _model.ImagePaths.RemoveAt(_model.SelectedIndex);
-            }
+            _model.ImagePaths.RemoveAt(_model.SelectedIndex);
         }
 
         private void Back_OnClick(object sender, RoutedEventArgs e)

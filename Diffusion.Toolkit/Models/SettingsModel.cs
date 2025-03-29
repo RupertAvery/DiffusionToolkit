@@ -51,31 +51,38 @@ public class SettingsModel : BaseNotify
     private bool _advanceOnTag;
     private bool _storeMetadata;
     private bool _storeWorkflow;
-    private ObservableCollection<ExternalApplication> _externalApplications;
+    private ObservableCollection<ExternalApplicationModel> _externalApplications;
     private bool _scanUnavailable;
-    private ExternalApplication? _selectedApplication;
+    private ExternalApplicationModel? _selectedApplication;
+    private IEnumerable<OptionValue> _themeOptions;
 
     public SettingsModel()
     {
-        _imagePaths = new ObservableCollection<string>();
+        ImagePaths = new ObservableCollection<string>();
+        ExternalApplications = new ObservableCollection<ExternalApplicationModel>();
+        ExcludePaths = new ObservableCollection<string>();
     }
 
     public ObservableCollection<string> ImagePaths
     {
         get => _imagePaths;
-        set => SetField(ref _imagePaths, value);
+        set
+        {
+            SetField(ref _imagePaths, value);
+            RegisterObservableChanges(_imagePaths);
+        }
     }
 
     public int SelectedIndex
     {
         get => _selectedIndex;
-        set => SetField(ref _selectedIndex, value);
+        set => SetField(ref _selectedIndex, value, false);
     }
 
     public int ExcludedSelectedIndex
     {
         get => _excludedSelectedIndex;
-        set => SetField(ref _excludedSelectedIndex, value);
+        set => SetField(ref _excludedSelectedIndex, value, false);
     }
 
     public string FileExtensions
@@ -166,7 +173,11 @@ public class SettingsModel : BaseNotify
     public ObservableCollection<string> ExcludePaths
     {
         get => _excludePaths;
-        set => SetField(ref _excludePaths, value);
+        set
+        {
+            SetField(ref _excludePaths, value);
+            RegisterObservableChanges(_excludePaths);
+        }
     }
 
     public bool? RecurseFolders
@@ -216,7 +227,11 @@ public class SettingsModel : BaseNotify
         set => SetField(ref _customCommandLineArgs, value);
     }
 
-    public IEnumerable<OptionValue> ThemeOptions { get; set; }
+    public IEnumerable<OptionValue> ThemeOptions
+    {
+        get => _themeOptions;
+        set => _themeOptions = value;
+    }
 
     public int SlideShowDelay
     {
@@ -254,15 +269,44 @@ public class SettingsModel : BaseNotify
         set => SetField(ref _scanUnavailable, value);
     }
 
-    public ObservableCollection<ExternalApplication> ExternalApplications
+    public ObservableCollection<ExternalApplicationModel> ExternalApplications
     {
         get => _externalApplications;
-        set => SetField(ref _externalApplications, value);
+        set
+        {
+            SetField(ref _externalApplications, value);
+            RegisterObservableChanges(_externalApplications);
+        }
     }
 
-    public ExternalApplication? SelectedApplication
+    public ExternalApplicationModel? SelectedApplication
     {
         get => _selectedApplication;
         set => SetField(ref _selectedApplication, value);
+    }
+}
+
+public class ExternalApplicationModel : BaseNotify
+{
+    private string _name;
+    private string _path;
+    private string _commandLineArgs;
+
+    public string Name
+    {
+        get => _name;
+        set => SetField(ref _name, value);
+    }
+
+    public string Path
+    {
+        get => _path;
+        set => SetField(ref _path, value);
+    }
+
+    public string CommandLineArgs
+    {
+        get => _commandLineArgs;
+        set => SetField(ref _commandLineArgs, value);
     }
 }

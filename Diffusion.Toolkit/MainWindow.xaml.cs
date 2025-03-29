@@ -174,6 +174,8 @@ namespace Diffusion.Toolkit
 
                 _model.PropertyChanged += ModelOnPropertyChanged;
 
+                _thumbailTask  = ThumbnailLoader.Instance.StartRun();
+
 
                 this.Loaded += OnLoaded;
                 this.Closing += OnClosing;
@@ -787,7 +789,7 @@ namespace Diffusion.Toolkit
 
             }
 
-            if (_settings.ScanForNewImagesOnStartup)
+            if (!isFirstTime && _settings.ScanForNewImagesOnStartup)
             {
                 Logger.Log($"Scanning for new images");
 

@@ -99,12 +99,6 @@ namespace Diffusion.Toolkit.Pages
         {
             InitializeComponent();
 
-
-            Task.Run(() =>
-            {
-                _ = ThumbnailLoader.Instance.StartRun();
-            });
-
             ServiceLocator.ThumbnailNavigationService.Next += ThumbnailNavigationServiceOnNext;
             ServiceLocator.ThumbnailNavigationService.Previous += ThumbnailNavigationServiceOnPrevious;
             ServiceLocator.ThumbnailNavigationService.NextPage += ThumbnailNavigationServiceOnNextPage;
@@ -189,11 +183,6 @@ namespace Diffusion.Toolkit.Pages
             this._dataStoreOptions = dataStoreOptions;
 
             _settings = settings;
-
-            navigatorService.Host.Closed += async (sender, args) =>
-            {
-                ThumbnailLoader.Instance.Stop();
-            };
 
             if (_settings.MainGridWidth != null)
             {

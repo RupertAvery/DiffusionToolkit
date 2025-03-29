@@ -15,13 +15,17 @@ using WPFLocalizeExtension.Providers;
 using System.Collections.ObjectModel;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
+using Diffusion.Toolkit.Thumbnails;
 using WPFLocalizeExtension.Engine;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Diffusion.Toolkit
 {
 
     public partial class MainWindow
     {
+        private readonly Task _thumbailTask;
+
         private void ToggleHideNSFW()
         {
             _model.HideNSFW = !_model.HideNSFW;
@@ -264,11 +268,37 @@ namespace Diffusion.Toolkit
         }
 
 
-        private void OnClosing(object? sender, CancelEventArgs e)
+        private async void OnClosing(object? sender, CancelEventArgs e)
         {
-            if (_settings.IsDirty())
+            if (ServiceLocator.MainModel.IsBusy)
             {
-                _configuration.Save(_settings);
+                var d = MessageBox.Show(this, "An operation is currently in progress. Are you sure you want to exit?", "Confirm close", MessageBoxButton.YesNo);
+                if (d == MessageBoxResult.No)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+
+                e.Cancel = true;
+
+                await Dispatcher.InvokeAsync(async () =>
+                {
+                    ServiceLocator.ProgressService.Cancel();
+                    await ServiceLocator.ProgressService.WaitForCompletion();
+                    Close();
+                });
+            }
+            else
+            {
+                ThumbnailLoader.Instance.Stop();
+
+                _settingsPage.ApplySettings();
+
+                if (_settings.IsDirty())
+                {
+                    _configuration.Save(_settings);
+                }
             }
         }
 
