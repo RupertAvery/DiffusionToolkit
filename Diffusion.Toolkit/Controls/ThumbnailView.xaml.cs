@@ -29,22 +29,10 @@ namespace Diffusion.Toolkit.Controls
     public partial class ThumbnailView : UserControl
     {
         private IEnumerable<Album> _albums;
-        private IOptions<DataStore> _dataStoreOptions;
 
         public ThumbnailViewModel Model { get; set; }
 
-
-        public IOptions<DataStore> DataStoreOptions
-        {
-            get => _dataStoreOptions;
-            set
-            {
-                _dataStoreOptions = value;
-                ReloadAlbums();
-            }
-        }
-
-        public DataStore DataStore => _dataStoreOptions.Value;
+        private DataStore _dataStore => ServiceLocator.DataStore;
 
         public void ReloadAlbums()
         {
@@ -68,7 +56,7 @@ namespace Diffusion.Toolkit.Controls
             });
 
 
-            var albums = DataStore.GetAlbumsByName();
+            var albums = _dataStore.GetAlbumsByName();
 
             foreach (var album in albums)
             {
@@ -89,8 +77,6 @@ namespace Diffusion.Toolkit.Controls
         //    var menuItem = (MenuItem)sender;
         //    AddToAlbumCommand?.Execute(null);
         //}
-
-        public MessagePopupManager MessagePopupManager { get; set; }
 
         public ThumbnailView()
         {
@@ -544,7 +530,7 @@ namespace Diffusion.Toolkit.Controls
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
 
-                DataStore.SetRating(ids, effectiveRating);
+                _dataStore.SetRating(ids, effectiveRating);
 
                 if (imageEntries.Count == 1)
                 {
@@ -571,7 +557,7 @@ namespace Diffusion.Toolkit.Controls
                 }
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
-                DataStore.SetRating(ids, null);
+                _dataStore.SetRating(ids, null);
             }
         }
 
@@ -595,7 +581,7 @@ namespace Diffusion.Toolkit.Controls
                 }
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
-                DataStore.SetFavorite(ids, favorite);
+                _dataStore.SetFavorite(ids, favorite);
 
                 if (imageEntries.Count == 1)
                 {
@@ -624,7 +610,7 @@ namespace Diffusion.Toolkit.Controls
                 }
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
-                DataStore.SetNSFW(ids, nsfw);
+                _dataStore.SetNSFW(ids, nsfw);
 
                 if (imageEntries.Count == 1)
                 {
@@ -654,7 +640,7 @@ namespace Diffusion.Toolkit.Controls
                 var message = GetLocalizedText("Actions.RemoveEntry.Message");
                 var caption = GetLocalizedText("Actions.RemoveEntry.Caption");
 
-                var result = await MessagePopupManager.ShowMedium(message, caption, PopupButtons.YesNo);
+                var result = await ServiceLocator.MessageService.ShowMedium(message, caption, PopupButtons.YesNo);
 
                 if (result == PopupResult.Yes)
                 {
@@ -668,7 +654,7 @@ namespace Diffusion.Toolkit.Controls
                         {
                             try
                             {
-                                DataStore.RemoveImages(ids);
+                                _dataStore.RemoveImages(ids);
                                 ServiceLocator.SearchService.RefreshResults();
                             }
                             finally
@@ -701,7 +687,7 @@ namespace Diffusion.Toolkit.Controls
                 }
 
                 var ids = imageEntries.Select(x => x.Id).ToList();
-                DataStore.SetDeleted(ids, delete);
+                _dataStore.SetDeleted(ids, delete);
 
                 if (imageEntries.Count == 1)
                 {

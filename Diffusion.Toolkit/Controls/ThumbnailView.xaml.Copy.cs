@@ -7,6 +7,7 @@ using System.Windows;
 using Diffusion.Civitai;
 using Diffusion.Civitai.Models;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -29,7 +30,7 @@ namespace Diffusion.Toolkit.Controls
                 catch (CivitaiRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)
                 {
                     var message = "The requested model hash was not found";
-                    await MessagePopupManager.Show(message, "Search Model", PopupButtons.OK);
+                    await ServiceLocator.MessageService.Show(message, "Search Model", PopupButtons.OK);
                 }
             }
         }

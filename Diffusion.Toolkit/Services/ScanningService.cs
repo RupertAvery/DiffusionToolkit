@@ -21,24 +21,55 @@ public class ScanningService
     }
 
     private Settings _settings => ServiceLocator.Settings!;
+
     private DataStore _dataStore => ServiceLocator.DataStore!;
 
-    private bool CheckFolderUnavailable(string path)
+
+
+    public async Task CheckUnavailableFolders()
     {
-
-        var folder = _dataStore.GetFolder(path);
-
-        if (folder is { Unavailable: true })
+        await Task.Run(() =>
         {
-            _dataStore.SetFolderUnavailable(path, false);
+            foreach (var path in _settings.ImagePaths)
+            {
+                // Check if we can access the path
+                if (Directory.Exists(path))
+                {
+                    // See if this was previously tagged as unavailable
+                    var folder = _dataStore.GetFolder(path);
 
-            var childImages = _dataStore.GetAllPathImages(path);
+                    if (folder is { Unavailable: true })
+                    {
+                        // Restore it
+                        _dataStore.SetFolderUnavailable(path, false);
 
-            _dataStore.SetUnavailable(childImages.Select(d => d.Id), false);
+                        var childImages = _dataStore.GetAllPathImages(path);
 
-            return true;
-        }
-        return false;
+                        var ids = childImages.Select(c => c.Id).ToList();
+
+                        if (ids.Any())
+                        {
+                            _dataStore.SetUnavailable(ids, false);
+                        }
+                    }
+                }
+                else
+                {
+                    // Tag it and it's children as unavailable
+                    _dataStore.SetFolderUnavailable(path, true);
+
+                    var childImages = _dataStore.GetAllPathImages(path);
+
+                    var ids = childImages.Select(c => c.Id).ToList();
+
+                    if (ids.Any())
+                    {
+                        _dataStore.SetUnavailable(ids, true);
+                    }
+                }
+            }
+        });
+       
     }
 
     private int CheckFilesUnavailable(List<ImagePath> folderImages, HashSet<string> folderImagesHashSet, CancellationToken cancellationToken)
@@ -103,6 +134,10 @@ public class ScanningService
 
     }
 
+    public async Task<IEnumerable<string>> GetFilesToScan(string path, HashSet<string> ignoreFiles, CancellationToken cancellationToken)
+    {
+        return await Task.Run(() => MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), _settings.ExcludePaths, cancellationToken).ToList());
+    }
 
     public async Task<bool> ScanWatchedFolders(bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
     {

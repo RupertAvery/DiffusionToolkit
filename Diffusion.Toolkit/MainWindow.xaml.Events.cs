@@ -26,6 +26,22 @@ namespace Diffusion.Toolkit
     {
         private readonly Task _thumbailTask;
 
+        static readonly CultureInfo DefaultCulture = CultureInfo.CurrentCulture;
+
+        private async void OnActivated(object? sender, EventArgs e)
+        {
+            //await Task.Delay(500);
+
+            //if (addedTotal > 0)
+            //{
+            //    ServiceLocator.ScanningService.Report(addedTotal, 0, 0, false, false, false);
+            //    lock (_lock)
+            //    {
+            //        addedTotal = 0;
+            //    }
+            //}
+
+        }
         private void ToggleHideNSFW()
         {
             _model.HideNSFW = !_model.HideNSFW;
@@ -267,6 +283,7 @@ namespace Diffusion.Toolkit
             _settings.Left = this.Left;
         }
 
+        private bool _isClosing;
 
         private async void OnClosing(object? sender, CancelEventArgs e)
         {
@@ -291,9 +308,13 @@ namespace Diffusion.Toolkit
             }
             else
             {
+                _isClosing = true;
+
                 ThumbnailLoader.Instance.Stop();
 
-                _settingsPage.ApplySettings();
+                //var changes = _settingsPage.ApplySettings();
+
+                //CleanupFolderChanges(changes);
 
                 if (_settings.IsDirty())
                 {
@@ -308,5 +329,53 @@ namespace Diffusion.Toolkit
             return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
         }
 
+        private void OnSettingsChanged(PropertyChangedEventArgs args)
+        {
+            // Don't do any database updates here
+            switch (args.PropertyName)
+            {
+                case nameof(Toolkit.Settings.PageSize):
+                    ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
+                    _search.SetPageSize(_settings.PageSize);
+                    _prompts.SetPageSize(_settings.PageSize);
+                    _search.SearchImages();
+                    break;
+
+                case nameof(Toolkit.Settings.ModelRootPath):
+                case nameof(Toolkit.Settings.HashCache):
+                    LoadModels();
+                    break;
+
+                case nameof(Toolkit.Settings.Theme):
+                    UpdateTheme(_settings.Theme);
+                    break;
+
+                case nameof(Toolkit.Settings.PortableMode):
+                    if (_settings.PortableMode)
+                    {
+                        GoPortable();
+                    }
+                    else
+                    {
+                        GoLocal();
+                    }
+                    break;
+
+                case nameof(Toolkit.Settings.Culture):
+                    if (_settings.Culture == "default")
+                    {
+                        LocalizeDictionary.Instance.Culture = DefaultCulture;
+                    }
+                    else
+                    {
+                        LocalizeDictionary.Instance.Culture = new CultureInfo(_settings.Culture);
+                    }
+                    break;
+
+            }
+        }
+
     }
+
 }
+

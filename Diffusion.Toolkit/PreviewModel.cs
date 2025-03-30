@@ -1,5 +1,6 @@
 ﻿using System.Windows.Input;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit;
 
@@ -41,4 +42,6 @@ public class PreviewModel : BaseNotify
     public ICommand StartStopSlideShow { get; set; }
     public ICommand ToggleInfo { get; set; }
     public ICommand ToggleFullScreen { get; set; }
+
+    public MainModel MainModel => ServiceLocator.MainModel;
 }

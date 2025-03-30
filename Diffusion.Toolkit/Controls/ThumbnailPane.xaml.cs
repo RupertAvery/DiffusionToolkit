@@ -29,22 +29,6 @@ namespace Diffusion.Toolkit.Controls
             new PropertyMetadata(default(ImageEntry))
             );
 
-        //public DataStore DataStore
-        //{
-        //    set
-        //    {
-        //        ThumbnailListView.DataStore = value;
-        //    }
-        //}
-
-        public MessagePopupManager MessagePopupManager
-        {
-            set
-            {
-                ThumbnailListView.MessagePopupManager = value;
-            }
-        }
-
         public ThumbnailPaneModel Model
         {
             get => (ThumbnailPaneModel)GetValue(ModelProperty);

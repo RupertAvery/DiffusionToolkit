@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -7,9 +8,9 @@ namespace Diffusion.Toolkit;
 
 public class BaseNotify : INotifyPropertyChanged
 {
-    private bool _isDirty;
+    protected bool _isDirty;
 
-    public bool IsDirty
+    public virtual bool IsDirty
     {
         get => _isDirty;
     }
@@ -17,15 +18,29 @@ public class BaseNotify : INotifyPropertyChanged
     public void SetPristine()
     {
         _isDirty = false;
+        OnPropertyChanged(nameof(IsDirty));
     }
 
-    protected void RegisterObservableChanges<T>(ObservableCollection<T>? observableCollection)
+    public void SetDirty()
+    {
+        _isDirty = true;
+        OnPropertyChanged(nameof(IsDirty));
+    }
+
+    protected void RegisterObservableChanges<T>(ObservableCollection<T>? observableCollection, Action? alternateDirtyAction = null)
     {
         if (observableCollection != null)
         {
             observableCollection.CollectionChanged += (sender, args) =>
             {
-                _isDirty = true;
+                if (alternateDirtyAction != null)
+                {
+                    alternateDirtyAction(); }
+                else
+                {
+                    SetDirty();
+                }
+
                 if (args.NewItems != null)
                 {
                     foreach (var item in args.NewItems)
@@ -34,7 +49,14 @@ public class BaseNotify : INotifyPropertyChanged
                         {
                             notify.PropertyChanged += (o, eventArgs) =>
                             {
-                                _isDirty = true;
+                                if (alternateDirtyAction != null)
+                                {
+                                    alternateDirtyAction();
+                                }
+                                else
+                                {
+                                    SetDirty();
+                                }
                             };
                         }
                     }
@@ -48,7 +70,14 @@ public class BaseNotify : INotifyPropertyChanged
                 {
                     notify.PropertyChanged += (o, eventArgs) =>
                     {
-                        _isDirty = true;
+                        if (alternateDirtyAction != null)
+                        {
+                            alternateDirtyAction();
+                        }
+                        else
+                        {
+                            SetDirty();
+                        }
                     };
                 }
             }
@@ -72,7 +101,7 @@ public class BaseNotify : INotifyPropertyChanged
         if(!PreventOnPropertyChanged) OnPropertyChanged(propertyName);
         if (setDirty)
         {
-            _isDirty = true;
+            SetDirty();
         }
         return true;
     }

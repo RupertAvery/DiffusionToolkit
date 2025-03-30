@@ -11,7 +11,8 @@ namespace Diffusion.Toolkit.Services;
 public class ProgressService
 {
     private CancellationTokenSource _progressCancellationTokenSource;
-    private Dispatcher _dispatcher;
+    private Dispatcher _dispatcher => ServiceLocator.Dispatcher;
+
     private SemaphoreSlim _syncLock = new SemaphoreSlim(1, 1);
     public CancellationToken CancellationToken => _progressCancellationTokenSource.Token;
 
@@ -20,10 +21,8 @@ public class ProgressService
         return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
     }
 
-    public ProgressService(Dispatcher dispatcher)
+    public ProgressService()
     {
-        _dispatcher = dispatcher;
-        //_dispatcher = Dispatcher.CurrentDispatcher;
     }
 
     public async Task<bool> TryStartTask()

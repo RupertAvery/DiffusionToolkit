@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using System.Windows;
 using System.Windows.Navigation;
+using System.Windows.Threading;
 using Diffusion.Database;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Thumbnails;
@@ -10,6 +11,7 @@ namespace Diffusion.Toolkit.Services;
 
 public class ServiceLocator
 {
+    private static FolderService _folderService;
     private static MessageService _messageServuce;
     private static ProgressService _progressService;
     private static DataStore? _dataStore;
@@ -30,6 +32,7 @@ public class ServiceLocator
     public static Settings? Settings => _settings;
     public static ThumbnailLoader? ThumbnailLoader => _thumbnailLoader;
     public static ToastService ToastService { get; set; }
+    public static Dispatcher Dispatcher { get; set; }
 
     public static void SetThumbnailLoader(ThumbnailLoader thumbnailLoader)
     {
@@ -90,10 +93,15 @@ public class ServiceLocator
 
     public static MainModel MainModel { get; set; }
 
+    public static FolderService FolderService
+    {
+        get { return _folderService ??= new FolderService(); }
+    }
+
+
     public static ProgressService ProgressService
     {
-        get;
-        set;
+        get { return _progressService ??= new ProgressService(); }
     }
 
     public static MessageService MessageService

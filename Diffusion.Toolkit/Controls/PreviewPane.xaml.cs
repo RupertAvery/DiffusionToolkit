@@ -78,11 +78,11 @@ namespace Diffusion.Toolkit.Controls
 
         private void ResetView()
         {
-            if (MainModel.FitToPreview)
+            if (ServiceLocator.MainModel.FitToPreview)
             {
                 FitToPreview();
             }
-            if (MainModel.ActualSize)
+            if (ServiceLocator.MainModel.ActualSize)
             {
                 ActualSize();
             }
@@ -115,16 +115,18 @@ namespace Diffusion.Toolkit.Controls
             InitIcons();
             _scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
             SizeChanged += OnSizeChanged;
+
+            ServiceLocator.MainModel.PropertyChanged += MainModelOnPropertyChanged;
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (MainModel is { FitToPreview: true })
+            if (ServiceLocator.MainModel is { FitToPreview: true })
             {
                 FitToPreview();
             }
 
-            if (MainModel is { ActualSize: true })
+            if (ServiceLocator.MainModel is { ActualSize: true })
             {
                 ActualSize();
             }
@@ -168,7 +170,9 @@ namespace Diffusion.Toolkit.Controls
 
         private Cursor handCursor;
         private Cursor grabCursor;
-        private MainModel? _mainModel;
+
+
+        public MainModel MainModel => ServiceLocator.MainModel;
 
         private void InitIcons()
         {
@@ -241,8 +245,8 @@ namespace Diffusion.Toolkit.Controls
             {
                 if (scrollNavigation)
                 {
-                    MainModel.FitToPreview = false;
-                    MainModel.ActualSize = false;
+                    ServiceLocator.MainModel.FitToPreview = false;
+                    ServiceLocator.MainModel.ActualSize = false;
 
                     Zoom(e);
                     e.Handled = true;
@@ -394,28 +398,18 @@ namespace Diffusion.Toolkit.Controls
 
         public Action OnPopout { get; set; }
 
-        public MainModel? MainModel
-        {
-            get => _mainModel;
-            set
-            {
-                _mainModel = value;
-                _mainModel.PropertyChanged += MainModelOnPropertyChanged;
-            }
-        }
-
         private void MainModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(MainModel.FitToPreview))
             {
-                if (MainModel.FitToPreview)
+                if (ServiceLocator.MainModel.FitToPreview)
                 {
                     FitToPreview();
                 }
             }
             if (e.PropertyName == nameof(MainModel.ActualSize))
             {
-                if (MainModel.ActualSize)
+                if (ServiceLocator.MainModel.ActualSize)
                 {
                     ActualSize();
                 }

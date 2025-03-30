@@ -128,8 +128,6 @@ namespace Diffusion.Toolkit
 
             var dataStore = new DataStore(targetDbPath);
 
-            _dataStoreOptions.UpdateValue(dataStore);
-
             ServiceLocator.SetDataStore(dataStore);
         }
 

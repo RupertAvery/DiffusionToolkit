@@ -588,6 +588,8 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
+            db.BeginTransaction();
+
             var whereClause = string.Join(" AND ", watchedFolders.Select(f => $"PATH NOT LIKE '{f}\\%'"));
 
             //first remove matching entries from AlbumImage
@@ -597,9 +599,96 @@ namespace Diffusion.Database
             var query = $"DELETE FROM Image WHERE {whereClause}";
             var result = db.Execute(query);
 
+            db.Commit();
+
             db.Close();
 
             return result;
+        }
+
+        public int ChangeFolderPath(string path, string newPath)
+        {
+            using var db = OpenConnection();
+
+            db.BeginTransaction();
+
+            var dropTableQuery = $"DROP TABLE IF EXISTS UpdatedIds";
+            var dropCommand = db.CreateCommand(dropTableQuery);
+            dropCommand.ExecuteNonQuery();
+
+            var tempTableQuery = $"CREATE TEMP TABLE UpdatedIds (Id INT)";
+            var tempCommand = db.CreateCommand(tempTableQuery);
+            tempCommand.ExecuteNonQuery();
+
+            var insertQuery = "INSERT INTO UpdatedIds SELECT Id FROM Image WHERE PATH LIKE @Path || '\\%'";
+            var insertCommand = db.CreateCommand(insertQuery);
+            insertCommand.Bind("@Path", path);
+            insertCommand.ExecuteNonQuery();
+
+            var updateQuery = "UPDATE Image SET Path = @NewPath || SUBSTR(Path, length(@Path) + 1) WHERE Id IN (SELECT Id FROM UpdatedIds)";
+            var updateCommand = db.CreateCommand(updateQuery);
+            updateCommand.Bind("@Path", path);
+            updateCommand.Bind("@NewPath", newPath);
+            var images = updateCommand.ExecuteNonQuery();
+
+            var updateFolderQuery = "UPDATE Folder SET Path = @NewPath WHERE PATH = @Path";
+            var updateFolderCommand = db.CreateCommand(updateFolderQuery);
+            updateFolderCommand.Bind("@Path", path);
+            updateFolderCommand.Bind("@NewPath", newPath);
+            updateFolderCommand.ExecuteNonQuery();
+
+            db.Commit();
+
+            db.Close();
+
+            return images;
+        }
+
+        public int RemoveFolder(string path)
+        {
+            using var db = OpenConnection();
+
+            db.BeginTransaction();
+
+            var dropTableQuery = $"DROP TABLE IF EXISTS DeletedIds";
+            var dropCommand = db.CreateCommand(dropTableQuery);
+            dropCommand.ExecuteNonQuery();
+
+            var tempTableQuery = $"CREATE TEMP TABLE DeletedIds (Id INT)";
+            var tempCommand = db.CreateCommand(tempTableQuery);
+            tempCommand.ExecuteNonQuery();
+
+            var insertQuery = "INSERT INTO DeletedIds SELECT Id FROM Image WHERE FolderId IN (SELECT Id FROM Folder WHERE PATH LIKE @Path || '%')";
+            var insertCommand = db.CreateCommand(insertQuery);
+            insertCommand.Bind("@Path", path);
+            insertCommand.ExecuteNonQuery();
+
+            var propsQuery = "DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN (SELECT Id FROM DeletedIds))";
+            var propsCommand = db.CreateCommand(propsQuery);
+            propsCommand.ExecuteNonQuery();
+
+            var nodesQuery = "DELETE FROM Node WHERE ImageId IN (SELECT Id FROM DeletedIds)";
+            var nodesCommand = db.CreateCommand(nodesQuery);
+            nodesCommand.ExecuteNonQuery();
+
+            var albumQuery = "DELETE FROM AlbumImage WHERE ImageId IN (SELECT Id FROM DeletedIds)";
+            var albumCommand = db.CreateCommand(albumQuery);
+            albumCommand.ExecuteNonQuery();
+
+            var query = "DELETE FROM Image WHERE Id IN (SELECT Id FROM DeletedIds)";
+            var command = db.CreateCommand(query);
+            var images = command.ExecuteNonQuery();
+
+            var deletFolderQuery = "DELETE FROM Folder WHERE PATH = @Path";
+            var deleteFolderCommand = db.CreateCommand(deletFolderQuery);
+            deleteFolderCommand.Bind("@Path", path);
+            deleteFolderCommand.ExecuteNonQuery();
+
+            db.Commit();
+
+            db.Close();
+
+            return images;
         }
     }
 }

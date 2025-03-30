@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using Diffusion.Database;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
 {
@@ -12,14 +13,13 @@ namespace Diffusion.Toolkit
     /// </summary>
     public partial class UnavailableFilesWindow : BorderlessWindow
     {
-        private readonly DataStore _dataStore;
-        private readonly Settings _settings;
+        private DataStore _dataStore => ServiceLocator.DataStore;
+        private Settings _settings => ServiceLocator.Settings;
+
         public UnavailableFilesModel Model { get; }
 
-        public UnavailableFilesWindow(DataStore dataStore, Settings settings)
+        public UnavailableFilesWindow()
         {
-            _dataStore = dataStore;
-            _settings = settings;
             InitializeComponent();
 
             Model = new UnavailableFilesModel

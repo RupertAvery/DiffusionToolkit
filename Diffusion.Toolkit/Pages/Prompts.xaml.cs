@@ -8,15 +8,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Thumbnails;
-using Microsoft.Extensions.Options;
-using Image = Diffusion.Database.Image;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -25,14 +23,13 @@ namespace Diffusion.Toolkit.Pages
     /// </summary>
     public partial class Prompts : Page
     {
-        private readonly DataStore _dataStore;
-        private readonly Toolkit.Settings _settings;
+        private DataStore _dataStore => ServiceLocator.DataStore;
+        private Toolkit.Settings _settings => ServiceLocator.Settings;
         private PromptsModel _model;
         private bool _isLoaded;
-        public Prompts(NavigatorService navigatorService, IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, MainModel mainModel, Toolkit.Settings settings)
+
+        public Prompts(NavigatorService navigatorService)
         {
-            _dataStore = dataStoreOptions.Value;
-            _settings = settings;
             InitializeComponent();
 
             navigatorService.OnNavigate += (sender, args) =>
@@ -44,7 +41,7 @@ namespace Diffusion.Toolkit.Pages
                 }
             };
 
-            _model = new PromptsModel(mainModel);
+            _model = new PromptsModel();
 
             _model.PromptsResults.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
             {
@@ -52,10 +49,6 @@ namespace Diffusion.Toolkit.Pages
             });
 
             DataContext = _model;
-
-            ThumbnailListView.DataStoreOptions = dataStoreOptions;
-
-            ThumbnailListView.MessagePopupManager = messagePopupManager;
 
             _model.PropertyChanged += ModelOnPropertyChanged;
         }

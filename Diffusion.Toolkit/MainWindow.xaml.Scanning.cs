@@ -53,7 +53,7 @@ namespace Diffusion.Toolkit
                 ShowSettings(null);
             }
         }
-        
+
         private Task Scan(bool isFirstTime = false)
         {
             return Task.Run(async () =>
@@ -74,7 +74,6 @@ namespace Diffusion.Toolkit
                         var result = await ServiceLocator.ScanningService.ScanWatchedFolders(false, true, ServiceLocator.ProgressService.CancellationToken);
                         if (result && _search != null)
                         {
-                            LoadFolders();
                             _search.SearchImages();
                         }
                     }
@@ -99,7 +98,6 @@ namespace Diffusion.Toolkit
                         var result = await ServiceLocator.ScanningService.ScanWatchedFolders(true, true, ServiceLocator.ProgressService.CancellationToken);
                         if (result)
                         {
-                            LoadFolders();
                             _search.SearchImages();
                         }
                     }
@@ -192,10 +190,7 @@ namespace Diffusion.Toolkit
         private async Task MoveFiles(ICollection<ImageEntry> images, string targetPath, bool remove)
         {
 
-            foreach (var watcher in _watchers)
-            {
-                watcher.EnableRaisingEvents = false;
-            }
+            ServiceLocator.FolderService.DisableWatchers();
 
             Dispatcher.Invoke(() =>
             {
@@ -290,14 +285,11 @@ namespace Diffusion.Toolkit
 
             //await _search.ReloadMatches();
 
-            foreach (var watcher in _watchers)
-            {
-                watcher.EnableRaisingEvents = true;
-            }
+            ServiceLocator.FolderService.EnableWatchers();
 
 
         }
-        
+
         private async void CleanExcludedPaths()
         {
             var message = "This will remove any remaining images in excluded folders from the database. The images on disk will not be deleted.\r\n\r\n" +
@@ -345,16 +337,18 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private void CleanRemovedFoldersInternal()
+        private async Task CleanRemovedFoldersInternal()
         {
-            var total = _dataStore.CleanRemovedFolders(_settings.ImagePaths);
-
-            if (total > 0)
+            await Task.Run(() =>
             {
-                _search.ReloadMatches(null);
+                var total = _dataStore.CleanRemovedFolders(_settings.ImagePaths);
 
-                ServiceLocator.ToastService.Toast($"{total} images removed from database", "");
-            }
+                if (total > 0)
+                {
+                    ServiceLocator.SearchService.RefreshResults();
+                    ServiceLocator.ToastService.Toast($"{total} images removed from removed folders", "");
+                }
+            });
         }
 
         private void SortAlbums()

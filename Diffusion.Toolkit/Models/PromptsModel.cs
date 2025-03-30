@@ -1,13 +1,13 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using Diffusion.Database;
+using Diffusion.Toolkit.Services;
 using MdXaml.LinkActions;
 
 namespace Diffusion.Toolkit.Models;
 
 public class ResultsView : BaseNotify
 {
-    private readonly MainModel _mainModel;
     private ObservableCollection<ImageEntry> _images;
     private int _page;
     private int _pages;
@@ -21,9 +21,8 @@ public class ResultsView : BaseNotify
     private ICommand _copyFiles;
     private ICommand _openCommand;
 
-    public ResultsView(MainModel mainModel)
+    public ResultsView()
     {
-        _mainModel = mainModel;
         SortBy = "Date";
         SortDirection = "DESC";
         ResultStatus = "Select a prompt";
@@ -37,7 +36,7 @@ public class ResultsView : BaseNotify
 
     public bool IsBusy { get; set; }
 
-    public MainModel MainModel => _mainModel;
+    public MainModel MainModel => ServiceLocator.MainModel;
 
     public int Page
     {
@@ -131,21 +130,16 @@ public class PromptsModel : BaseNotify
     private ResultsView _promptsResults;
     private ResultsView _negativePromptsResults;
     private UsedPrompt? _selectedPrompt;
-    private MainModel _mainModel;
     private bool _isBusy;
 
+    
     public PromptsModel()
     {
+        _promptsResults = new ResultsView();
+        _negativePromptsResults = new ResultsView();
     }
 
-    public PromptsModel(MainModel mainModel)
-    {
-        _promptsResults = new ResultsView(mainModel);
-        _negativePromptsResults = new ResultsView(mainModel);
-        _mainModel = mainModel;
-    }
-
-    public MainModel MainModel => _mainModel;
+    public MainModel MainModel => ServiceLocator.MainModel;
     public ObservableCollection<UsedPrompt> Prompts
     {
         get => _prompts;

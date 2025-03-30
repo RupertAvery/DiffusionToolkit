@@ -125,7 +125,7 @@
                 <MenuItem Header="{lex:Loc Menu.Tools.UnavailableFiles}" Command="{Binding UnavailableFilesCommand}"></MenuItem>
             </MenuItem>
             <MenuItem Header="{lex:Loc Menu.Help}">
-                <MenuItem Header="{lex:Loc Menu.Help.About}" Command="{Binding AboutCommand}"/>
+                <!--<MenuItem Header="{lex:Loc Menu.Help.About}" Command="{Binding AboutCommand}"/>-->
                 <MenuItem Header="{lex:Loc Menu.Help.GettingStarted}" Command="{Binding HelpCommand}" InputGestureText="F1"/>
                 <Separator></Separator>
                 <MenuItem Header="{lex:Loc Menu.Help.CheckForUpdates}" Click="MenuItem_OnClick"/>

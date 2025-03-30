@@ -19,7 +19,8 @@
     <Page.Resources>
         <ResourceDictionary>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
-            <converters:NotNullConverter x:Key="NotNullVConverter"></converters:NotNullConverter>
+            <converters:IsIndexSelectedConverter x:Key="IsIndexSelectedConverter"></converters:IsIndexSelectedConverter>
+            <converters:NotNullConverter x:Key="NotNullConverter"></converters:NotNullConverter>
             <toolkit:SettingsModel x:Key="TestData">
                 <toolkit:SettingsModel.ImagePaths>
                     <system:String>Hello world!</system:String>
@@ -27,18 +28,76 @@
             </toolkit:SettingsModel>
         </ResourceDictionary>
     </Page.Resources>
-    <Grid d:DataContext="{StaticResource TestData}">
-        <TabControl x:Name="TabControl" Padding="10" Background="{DynamicResource PrimaryBrush}">
-            <TabControl.Style>
-                <Style TargetType="{x:Type TabControl}">
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsDirty}" Value="True">
-                            <Setter Property="Background" Value="Red"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </TabControl.Style>
+    <Grid d:DataContext="{StaticResource TestData}" Margin="0,0,0,10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="38"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="1" x:Name="TabControl" Padding="10" Margin="5,5,0,0" Background="{DynamicResource PrimaryBrush}">
             <TabControl.Resources>
+                <Style  TargetType="{x:Type TabControl}">
+                    <Setter Property="OverridesDefaultStyle"
+                      Value="True" />
+                    <Setter Property="SnapsToDevicePixels"
+                      Value="True" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TabControl}">
+                                <Grid KeyboardNavigation.TabNavigation="Local">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="CommonStates">
+                                            <VisualState x:Name="Disabled">
+                                                <Storyboard>
+                                                    <ColorAnimationUsingKeyFrames Storyboard.TargetName="Border" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)">
+                                                        <EasingColorKeyFrame KeyTime="0" Value="#FFAAAAAA" />
+                                                    </ColorAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <TabPanel x:Name="HeaderPanel"
+                                        Grid.Row="0"
+                                        Panel.ZIndex="1"
+                                        Margin="0,0,4,-1"
+                                        IsItemsHost="True"
+                                        KeyboardNavigation.TabIndex="1"
+                                        Background="Transparent" />
+                                    <Border x:Name="Border"
+                                  Grid.Row="1"
+                                  BorderThickness="1"
+                                  CornerRadius="2"
+                                  KeyboardNavigation.TabNavigation="Local"
+                                  KeyboardNavigation.DirectionalNavigation="Contained"
+                                  KeyboardNavigation.TabIndex="2">
+                                        <Border.Background>
+                                            <LinearGradientBrush EndPoint="0.5,1"
+                                   StartPoint="0.5,0">
+                                                <GradientStop Color="{DynamicResource ContentAreaColorLight}"
+                              Offset="0" />
+                                                <GradientStop Color="{DynamicResource ContentAreaColorDark}"
+                              Offset="1" />
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <Border.BorderBrush>
+                                            <SolidColorBrush Color="{DynamicResource BorderMediumColor}"/>
+                                        </Border.BorderBrush>
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                                            <ContentPresenter x:Name="PART_SelectedContentHost"
+                                                              Margin="4"
+                                                              ContentSource="SelectedContent" />
+                                        </ScrollViewer>
+                                   
+                                    </Border>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
                 <Style TargetType="{x:Type TabItem}">
                     <Setter Property="Template">
                         <Setter.Value>
@@ -63,6 +122,7 @@
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
+
                         </Setter.Value>
                     </Setter>
                     <Setter Property="HeaderTemplate">
@@ -76,57 +136,69 @@
                 </Style>
             </TabControl.Resources>
             <TabItem x:Name="TabItem" Header="{lex:Loc Settings.General}">
-                <StackPanel Grid.Row="0" Width="800" HorizontalAlignment="Left">
-                    <StackPanel Orientation="Horizontal">
-                        <Label VerticalContentAlignment="Center" Content="{lex:Loc Settings.General.DiffusionFolders}"></Label>
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="600"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Width="600" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal">
+                            <Label VerticalContentAlignment="Center" Content="{lex:Loc Settings.General.DiffusionFolders}"></Label>
+                        </StackPanel>
+                        <Grid Height="120" VerticalAlignment="Top">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <ListBox ItemsSource="{Binding ImagePaths}" SelectedIndex="{Binding SelectedIndex}" Margin="0,0,10,0"></ListBox>
+                            <StackPanel Grid.Column="1">
+                                <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.AddFolder}"></Button>
+                                <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}" IsEnabled="{Binding SelectedIndex, Converter={StaticResource IsIndexSelectedConverter}}"></Button>
+                                <Button Click="ChangeFolderPath_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.ChangeFolderPath}" IsEnabled="{Binding SelectedIndex, Converter={StaticResource IsIndexSelectedConverter}}"></Button>
+                            </StackPanel>
+                        </Grid>
+                        <StackPanel Orientation="Vertical" Margin="0,10,0,0">
+                            <CheckBox IsChecked="{Binding RecurseFolders}" Margin="0,0,0,10"  VerticalContentAlignment="Center" ToolTip="{lex:Loc Settings.General.Recursive.ToolTip}" Content="{lex:Loc Settings.General.Recursive}"></CheckBox>
+                            <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" Margin="0,0,0,10"  ToolTip="{lex:Loc Settings.General.WatchFolders.ToolTip}" Content="{lex:Loc Settings.General.WatchFolders}"></CheckBox>
+                            <CheckBox IsChecked="{Binding AutoRefresh}" Margin="0,0,0,10" ToolTip="{lex:Loc Settings.General.General.ToolTip}"  Content="{lex:Loc Settings.General.AutoRefresh}"></CheckBox>
+                            <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,0,0,10" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>
+                        </StackPanel>
+                        <Label Content="{lex:Loc Settings.General.ExcludedFolders}"></Label>
+                        <Grid Height="100">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <ListBox ItemsSource="{Binding ExcludePaths}" SelectedIndex="{Binding ExcludedSelectedIndex}" Grid.RowSpan="2" Margin="0,0,10,0"></ListBox>
+                            <StackPanel Grid.Column="1">
+                                <Button Click="ExcludedAddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.AddFolder}"></Button>
+                                <Button Click="ExcludedRemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}" IsEnabled="{Binding ExcludedSelectedIndex, Converter={StaticResource IsIndexSelectedConverter}}"></Button>
+                            </StackPanel>
+
+                        </Grid>
+                        <Label Content="{lex:Loc Settings.General.FileExtensions}"></Label>
+                        <Grid >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="120"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
+                        </Grid>
+
+                        <CheckBox IsChecked="{Binding CheckForUpdatesOnStartup}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.CheckForUpdatesOnStartup}"></CheckBox>
+
+                        <CheckBox IsChecked="{Binding PortableMode}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.PortableMode}"></CheckBox>
                     </StackPanel>
-                    <Grid Height="120" VerticalAlignment="Top">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="120"/>
-                        </Grid.ColumnDefinitions>
-                        <ListBox ItemsSource="{Binding ImagePaths}" SelectedIndex="{Binding SelectedIndex}" Margin="0,0,10,0"></ListBox>
-                        <StackPanel Grid.Column="1">
-                            <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.AddFolder}"></Button>
-                            <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}"></Button>
+                    <Grid Grid.Column="1" Margin="20,26,0,0">
+                        <StackPanel Visibility="{Binding IsFoldersDirty, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBlock Margin="0,0,0,10" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundBrush}" Text="{lex:Loc Settings.General.HasChangedFoldersMessage}"></TextBlock>
                         </StackPanel>
                     </Grid>
-                    <StackPanel Orientation="Vertical" Margin="0,10,0,0">
-                        <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" Margin="0,0,0,10"  ToolTip="{lex:Loc Settings.General.WatchFolders.ToolTip}" Content="{lex:Loc Settings.General.WatchFolders}"></CheckBox>
-                        <CheckBox IsChecked="{Binding AutoRefresh}" Margin="0,0,0,10" ToolTip="{lex:Loc Settings.General.General.ToolTip}"  Content="{lex:Loc Settings.General.AutoRefresh}"></CheckBox>
-                        <CheckBox IsChecked="{Binding RecurseFolders}" Margin="0,0,0,10"  VerticalContentAlignment="Center" ToolTip="{lex:Loc Settings.General.Recursive.ToolTip}" Content="{lex:Loc Settings.General.Recursive}"></CheckBox>
-                        <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,0,0,10" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>
-                    </StackPanel>
-                    <Label Content="{lex:Loc Settings.General.ExcludedFolders}"></Label>
-                    <Grid Height="100">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="120"/>
-                        </Grid.ColumnDefinitions>
-                        <ListBox ItemsSource="{Binding ExcludePaths}" SelectedIndex="{Binding ExcludedSelectedIndex}" Grid.RowSpan="2" Margin="0,0,10,0"></ListBox>
-                        <StackPanel Grid.Column="1">
-                            <Button Click="ExcludedAddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.AddFolder}"></Button>
-                            <Button Click="ExcludedRemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}"></Button>
-                        </StackPanel>
-
-                    </Grid>
-                    <Label Content="{lex:Loc Settings.General.FileExtensions}"></Label>
-                    <Grid >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition Width="120"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding FileExtensions, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"></TextBox>
-                    </Grid>
-
-                    <CheckBox IsChecked="{Binding CheckForUpdatesOnStartup}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.CheckForUpdatesOnStartup}"></CheckBox>
-
-                    <CheckBox IsChecked="{Binding PortableMode}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.PortableMode}"></CheckBox>
-                </StackPanel>
+                </Grid>
 
             </TabItem>
             <TabItem Header="{lex:Loc Settings.Checkpoints}">
-                <StackPanel Width="800" HorizontalAlignment="Left">
+                <StackPanel Width="800" HorizontalAlignment="Left" Margin="10">
                     <Label Content="{lex:Loc Settings.Checkpoints.ModelRoot}"></Label>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -152,7 +224,7 @@
                 </StackPanel>
             </TabItem>
             <TabItem Header="{lex:Loc Settings.Images}">
-                <StackPanel  Width="800" HorizontalAlignment="Left">
+                <StackPanel  Width="800" HorizontalAlignment="Left" Margin="10">
                     <Label Content="{lex:Loc Settings.Images.ThumbnailsPerPage}"></Label>
                     <Grid HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
@@ -200,21 +272,21 @@
                 </StackPanel>
             </TabItem>
             <TabItem Header="{lex:Loc Settings.Metadata}">
-                <StackPanel Width="800" HorizontalAlignment="Left">
+                <StackPanel Width="800" HorizontalAlignment="Left" Margin="10">
                     <CheckBox IsChecked="{Binding StoreMetadata}" Margin="0,10,0,0" Content="{lex:Loc Settings.Metadata.StoreMetadata}"></CheckBox>
                     <CheckBox IsChecked="{Binding StoreWorkflow}" Margin="0,10,0,0" Content="{lex:Loc Settings.Metadata.StoreWorkflow}"></CheckBox>
                     <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="0,10,0,0" TextWrapping="Wrap" Text="{lex:Loc Settings.Metadata.Warning}"></TextBlock>
                 </StackPanel>
             </TabItem>
             <TabItem Header="{lex:Loc Settings.NSFW}">
-                <StackPanel>
+                <StackPanel Width="400" HorizontalAlignment="Left" Margin="10">
                     <Label Content="{lex:Loc Settings.NSFW.NSFWTags}"></Label>
-                    <TextBox Text="{Binding NSFWTags, UpdateSourceTrigger=PropertyChanged}" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Margin="0,10,0,10" Height="90"></TextBox>
+                    <TextBox Padding="5" Text="{Binding NSFWTags, UpdateSourceTrigger=PropertyChanged}" VerticalScrollBarVisibility="Auto" AcceptsReturn="True" Margin="0,10,0,10" Height="200"></TextBox>
                     <CheckBox IsChecked="{Binding AutoTagNSFW}" ToolTip="Automatically tag added images as NSFW" Content="{lex:Loc Settings.NSFW.AutoTagNSFW}"></CheckBox>
                 </StackPanel>
             </TabItem>
             <TabItem Header="{lex:Loc Settings.Themes}">
-                <StackPanel>
+                <StackPanel Width="400" HorizontalAlignment="Left" Margin="10">
                     <Label Content="{lex:Loc Settings.Themes.Theme}"></Label>
                     <Grid >
                         <Grid.ColumnDefinitions>
@@ -241,7 +313,7 @@
                 </StackPanel>
             </TabItem>
             <TabItem Header="{lex:Loc Settings.ExternalApplications}">
-                <Grid>
+                <Grid Margin="10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="26"/>
                         <RowDefinition/>
@@ -253,17 +325,17 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="250"/>
                             <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="800"/>
                         </Grid.ColumnDefinitions>
                         <ListBox ItemsSource="{Binding ExternalApplications}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedApplication}">
                         </ListBox>
                         <StackPanel Margin="10,0,0,0" Grid.Column="1" >
                             <Button Height="26" Margin="0,0,0,10" Click="AddExternalApplication_OnClick" Content="{lex:Loc Settings.ExternalApplications.Add}"></Button>
-                            <Button Height="26" Margin="0,0,0,10" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullVConverter}}" Click="RemoveExternalApplication_OnClick" Content="{lex:Loc Settings.ExternalApplications.Remove}"></Button>
-                            <Button Height="26" Margin="0,0,0,10" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullVConverter}}" Click="MoveExternalApplicationUp_OnClick" Content="{lex:Loc Settings.ExternalApplications.MoveUp}"></Button>
-                            <Button Height="26" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullVConverter}}" Click="MoveExternalApplicationDown_OnClick" Content="{lex:Loc Settings.ExternalApplications.MoveDown}"></Button>
+                            <Button Height="26" Margin="0,0,0,10" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullConverter}}" Click="RemoveExternalApplication_OnClick" Content="{lex:Loc Settings.ExternalApplications.Remove}"></Button>
+                            <Button Height="26" Margin="0,0,0,10" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullConverter}}" Click="MoveExternalApplicationUp_OnClick" Content="{lex:Loc Settings.ExternalApplications.MoveUp}"></Button>
+                            <Button Height="26" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullConverter}}" Click="MoveExternalApplicationDown_OnClick" Content="{lex:Loc Settings.ExternalApplications.MoveDown}"></Button>
                         </StackPanel>
-                        <StackPanel Margin="10,0,0,0" Grid.Column="2" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullVConverter}}">
+                        <StackPanel Margin="10,0,0,0" Grid.Column="2" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullConverter}}">
                             <Label>Application Name</Label>
                             <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding SelectedApplication.Name}"></TextBox>
                             <Label>Application Path</Label>
@@ -276,8 +348,8 @@
                                 <Button Height="26" Grid.Column="1" Click="BrowseExternalApplicationPath_OnClick" Content="{lex:Loc Common.Buttons.Browse}"></Button>
                             </Grid>
                             <Label>Command line arguments</Label>
-                            <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding SelectedApplication.CommandLineArgs}"></TextBox>
-                            <RichTextBox Foreground="{DynamicResource ForegroundBrush}" BorderBrush="Transparent" Margin="5" Background="Transparent" IsHitTestVisible="False">
+                            <TextBox Height="26" Margin="0,0,0,20" VerticalContentAlignment="Center" Text="{Binding SelectedApplication.CommandLineArgs}"></TextBox>
+                            <RichTextBox Width="600" HorizontalAlignment="Left" Foreground="{DynamicResource ForegroundBrush}" BorderBrush="Transparent" Margin="5" Background="Transparent" IsHitTestVisible="False">
                                 <FlowDocument>
                                     <Paragraph>
                                         Use %1 to pass the file path. If empty, it will default to %1.
@@ -304,14 +376,25 @@
 
             </TabItem>
             <TabItem Header="{lex:Loc Settings.Database}">
-                <StackPanel>
+                <StackPanel HorizontalAlignment="Left" Margin="10">
                     <Button Click="Open_DB_Folder" Width="200" Height="26" Margin="0,0,0,10" Content="{lex:Loc Settings.Database.OpenFolder}"></Button>
                     <Button Click="Backup_DB" Width="200" Height="26" Margin="0,0,0,10" Content="{lex:Loc Settings.Database.Backup}"></Button>
                     <Button Click="Restore_DB" Width="200" Height="26" Content="{lex:Loc Settings.Database.Restore}"></Button>
                 </StackPanel>
             </TabItem>
         </TabControl>
-
-
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition Width="160"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Label VerticalAlignment="Center" FontSize="22" FontWeight="DemiBold">Settings</Label>
+            <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsDirty}" Click="ApplyChanges_OnClick" Grid.Column="1" Content="{lex:Loc Settings.ApplyChanges}"></Button>
+            <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsDirty}" Click="RevertChanges_OnClick" Grid.Column="2" Content="{lex:Loc Settings.RevertChanges}"></Button>
+            <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsFoldersDirty}" Click="RevertFolders_OnClick" Grid.Column="3" Content="{lex:Loc Settings.RevertFolders}"></Button>
+        </Grid>
     </Grid>
 </Page>

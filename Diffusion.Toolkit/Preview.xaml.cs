@@ -18,7 +18,7 @@ namespace Diffusion.Toolkit
     /// </summary>
     public partial class PreviewWindow : BorderlessWindow
     {
-        private readonly DataStore _dataStore;
+        private DataStore _dataStore => ServiceLocator.DataStore;
         private PreviewModel _model;
         private Action _onNext;
 
@@ -33,9 +33,8 @@ namespace Diffusion.Toolkit
             base.OnSourceInitialized(e);
         }
 
-        public PreviewWindow(DataStore dataStore, MainModel mainModel)
+        public PreviewWindow()
         {
-            _dataStore = dataStore;
             _model = new PreviewModel();
             InitializeComponent();
             DataContext = _model;
@@ -71,13 +70,13 @@ namespace Diffusion.Toolkit
                 Changed?.Invoke(id);
             };
 
-            PreviewPane.MainModel = mainModel;
-
+            var mainModel = ServiceLocator.MainModel;
 
             _model.ToggleFitToPreview = mainModel.ToggleFitToPreview;
             _model.ToggleActualSize = mainModel.ToggleActualSize;
             _model.ToggleAutoAdvance = mainModel.ToggleAutoAdvance;
             _model.ToggleInfo = mainModel.ToggleInfoCommand;
+
             //_slideShowDelay = mainModel.Settings.SlideShowDelay;
             _model.ToggleFullScreen = new RelayCommand<object>((o) => ToggleFullScreen());
             _model.StartStopSlideShow = new RelayCommand<object>((o) => StartStopSlideShow());
@@ -99,7 +98,7 @@ namespace Diffusion.Toolkit
         }
 
         private Timer? _slideShowTimer = null;
-        private int _slideShowDelay => PreviewPane.MainModel.Settings.SlideShowDelay;
+        private int _slideShowDelay => ServiceLocator.Settings.SlideShowDelay;
 
         private void SlideShowAdvance(object? state)
         {

@@ -43,12 +43,14 @@ namespace Diffusion.Toolkit
     {
         private readonly MainModel _model;
         private NavigatorService _navigatorService;
-        private DataStoreOptions _dataStoreOptions;
+
+        private DataStore _dataStore => ServiceLocator.DataStore;
+        private Settings _settings;
 
 
 
         private Configuration<Settings> _configuration;
-        private Toolkit.Settings? _settings;
+        //private Toolkit.Settings? _settings;
 
 
         private Search _search;
@@ -57,9 +59,6 @@ namespace Diffusion.Toolkit
         private bool _tipsOpen;
         private MessagePopupManager _messagePopupManager;
         private string _dbPath;
-
-
-        private DataStore _dataStore => _dataStoreOptions.Value;
 
         public MainWindow()
         {
@@ -103,6 +102,7 @@ namespace Diffusion.Toolkit
                 _model = new MainModel();
 
                 ServiceLocator.MainModel = _model;
+                ServiceLocator.Dispatcher = Dispatcher;
 
                 _model.Rescan = new AsyncCommand<object>(RescanTask);
                 _model.Rebuild = new AsyncCommand<object>(RebuildTask);
@@ -163,9 +163,11 @@ namespace Diffusion.Toolkit
                 InitAlbums();
 
                 _model.Refresh = new RelayCommand<object>((o) => Refresh());
+
+                // TODO: Remove
                 _model.QuickCopy = new RelayCommand<object>((o) =>
                 {
-                    var win = new QuickCopy(_settings);
+                    var win = new QuickCopy();
                     win.Owner = this;
                     win.ShowDialog();
                 });
@@ -174,7 +176,7 @@ namespace Diffusion.Toolkit
 
                 _model.PropertyChanged += ModelOnPropertyChanged;
 
-                _thumbailTask  = ThumbnailLoader.Instance.StartRun();
+                _thumbailTask = ThumbnailLoader.Instance.StartRun();
 
 
                 this.Loaded += OnLoaded;
@@ -189,9 +191,8 @@ namespace Diffusion.Toolkit
 
                 _messagePopupManager = new MessagePopupManager(this, PopupHost, Frame, Dispatcher);
 
-                ServiceLocator.ProgressService = new ProgressService(Dispatcher);
                 ServiceLocator.MessageService = new MessageService(_messagePopupManager);
-                ServiceLocator.ToastService = new ToastService(ToastPopup, Dispatcher);
+                ServiceLocator.ToastService = new ToastService(ToastPopup);
 
                 //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
                 //Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-PT");
@@ -237,7 +238,7 @@ namespace Diffusion.Toolkit
 
         private async Task UnavailableFiles(object o)
         {
-            var window = new UnavailableFilesWindow(_dataStore, _settings);
+            var window = new UnavailableFilesWindow();
             window.Owner = this;
             window.ShowDialog();
 
@@ -270,7 +271,7 @@ namespace Diffusion.Toolkit
 
             }
 
-        
+
         }
 
         private void ToggleNavigationPane()
@@ -334,7 +335,7 @@ namespace Diffusion.Toolkit
                     _search.SetPreviewVisible(_model.IsPreviewVisible);
                 }
 
-                _previewWindow = new PreviewWindow(_dataStore, _model);
+                _previewWindow = new PreviewWindow();
 
                 _previewWindow.WindowState = maximized ? WindowState.Maximized : WindowState.Normal;
 
@@ -466,7 +467,7 @@ namespace Diffusion.Toolkit
                 var welcome = new WelcomeWindow(_settings);
                 welcome.Owner = this;
                 welcome.ShowDialog();
-                
+
                 if (_settings.IsDirty())
                 {
                     _configuration.Save(_settings);
@@ -506,11 +507,11 @@ namespace Diffusion.Toolkit
             }
 
 
-            _settings.SettingChanged += (s, args) =>
+            _settings.PropertyChanged += (s, args) =>
             {
-                if (args.SettingName == nameof(Settings.AutoRefresh))
+                if (!_isClosing)
                 {
-                    _model.AutoRefresh = _settings.AutoRefresh;
+                    OnSettingsChanged(args);
                 }
             };
 
@@ -577,8 +578,6 @@ namespace Diffusion.Toolkit
                 (handle) => { Dispatcher.Invoke(() => { ((MessagePopupHandle)handle).CloseAsync(); }); }
             );
 
-            _dataStoreOptions = new DataStoreOptions(dataStore);
-
             var total = _dataStore.GetTotal();
 
             var text = GetLocalizedText("Main.Status.ImagesInDatabase").Replace("{count}", $"{total:n0}");
@@ -586,7 +585,7 @@ namespace Diffusion.Toolkit
             _model.Status = text;
             _model.TotalProgress = 100;
 
-            _models = new Pages.Models(_dataStoreOptions, _settings);
+            _models = new Pages.Models();
 
             _models.OnModelUpdated = (model) =>
             {
@@ -598,7 +597,7 @@ namespace Diffusion.Toolkit
                 }
             };
 
-            _search = new Search(_navigatorService, _dataStoreOptions, _messagePopupManager, _settings, _model);
+            _search = new Search(_navigatorService);
 
             _search.MoveFiles = (files) =>
             {
@@ -663,8 +662,8 @@ namespace Diffusion.Toolkit
                 }
             };
 
-            _prompts = new Prompts(_navigatorService, _dataStoreOptions, _messagePopupManager, _model, _settings);
-            _settingsPage = new Pages.Settings(this, _navigatorService, _settings);
+            _prompts = new Prompts(_navigatorService);
+            _settingsPage = new Pages.Settings(this);
 
             ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
 
@@ -734,7 +733,7 @@ namespace Diffusion.Toolkit
 
             if (_settings.WatchFolders)
             {
-                CreateWatchers();
+                ServiceLocator.FolderService.CreateWatchers();
             }
 
 
@@ -831,7 +830,23 @@ namespace Diffusion.Toolkit
             //_previewWindow.ShowInTaskbar = false;
             //_previewWindow.Owner = this;
             //_previewWindow.Show();
+            _ = Cleanup();
         }
+
+        private async Task Cleanup()
+        {
+            await CleanRemovedFoldersInternal();
+        }
+
+        //private void NavigatorServiceOnOnNavigate(object? sender, NavigateEventArgs e)
+        //{
+        //    if (e.CurrentUrl == "settings")
+        //    {
+        //        var changes = _settingsPage.ApplySettings();
+
+        //        _ = ExecuteFolderChanges(changes);
+        //    }
+        //}
 
 
         private void OnCurrentImageOpen(ImageViewModel obj)
@@ -911,117 +926,7 @@ namespace Diffusion.Toolkit
 
         private async void ShowSettings(object obj)
         {
-            try
-            {
-                var oldImagePaths = _settings.ImagePaths.ToList();
-
-                //var settings = new SettingsWindow(_dataStore, _settings);
-                //settings.Owner = this;
-                //settings.ShowDialog();
-                //_navigatorService.Goto("settings");
-
-
-                if (_settings.IsDirty())
-                {
-                    _configuration.Save(_settings);
-
-                    _search.Settings = _settings;
-                    _prompts.Settings = _settings;
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.PageSize)))
-                    {
-                        ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
-                        _search.SetPageSize(_settings.PageSize);
-                        _prompts.SetPageSize(_settings.PageSize);
-                        _search.SearchImages();
-                    }
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.ModelRootPath)) || _settings.IsPropertyDirty(nameof(Settings.HashCache)))
-                    {
-                        LoadModels();
-                    }
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.Theme)))
-                    {
-                        UpdateTheme(_settings.Theme);
-                    }
-
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.ImagePaths)))
-                    {
-                        if (oldImagePaths.Except(_settings.ImagePaths).Any())
-                        {
-                            _dataStore.CreateBackup();
-                            CleanRemovedFoldersInternal();
-                        }
-
-                        LoadFolders();
-
-                        await TryScanFolders();
-
-                        // Rebuild watchers in case paths were added or removed
-
-                        if (_settings.WatchFolders)
-                        {
-                            RemoveWatchers();
-                            CreateWatchers();
-                        }
-                    }
-
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.WatchFolders)) || _settings.IsPropertyDirty(nameof(Settings.RecurseFolders)))
-                    {
-                        if (_settings.WatchFolders)
-                        {
-                            CreateWatchers();
-                        }
-                        else
-                        {
-                            RemoveWatchers();
-                        }
-                    }
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.ExcludePaths)))
-                    {
-                        CleanExcludedPaths(_settings.ExcludePaths);
-                    }
-
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.PortableMode)))
-                    {
-                        if (_settings.PortableMode)
-                        {
-                            GoPortable();
-                        }
-                        else
-                        {
-                            GoLocal();
-                        }
-                    }
-
-                    if (_settings.IsPropertyDirty(nameof(Settings.Culture)))
-                    {
-                        if (_settings.Culture == "default")
-                        {
-                            LocalizeDictionary.Instance.Culture = CultureInfo.CurrentCulture;
-                        }
-                        else
-                        {
-                            LocalizeDictionary.Instance.Culture = new CultureInfo(_settings.Culture);
-                        }
-                    }
-
-                    _settings.SetPristine();
-
-                    ServiceLocator.SetSettings(_settings);
-
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show($"{e.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-
+            _navigatorService.Goto("settings");
         }
 
 
@@ -1152,14 +1057,14 @@ namespace Diffusion.Toolkit
         {
             if (_settings.ImagePaths.Any())
             {
-                if (await _messagePopupManager.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
+                if (await ServiceLocator.MessageService.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {
                     await Scan();
                 }
             }
             else
             {
-                await _messagePopupManager.ShowMedium("You have not setup any image folders. You will not be able to search for anything yet.\r\n\r\nAdd one or more folders first, then click the Scan Folders for new images icon in the toolbar.", "Setup", PopupButtons.OK);
+                await ServiceLocator.MessageService.ShowMedium("You have not setup any image folders.\r\n\r\nAdd one or more folders first, then click the Scan Folders for new images icon in the toolbar.", "Setup", PopupButtons.OK);
             }
         }
 
@@ -1168,64 +1073,64 @@ namespace Diffusion.Toolkit
 
 
     public class Hashes
-{
-    public Dictionary<string, HashInfo> hashes { get; set; }
-}
-
-public class HashInfo
-{
-    public double mtime { get; set; }
-    public string sha256 { get; set; }
-}
-
-static class WindowExtensions
-{
-    [StructLayout(LayoutKind.Sequential)]
-    struct RECT
     {
-        public int Left;
-        public int Top;
-        public int Right;
-        public int Bottom;
+        public Dictionary<string, HashInfo> hashes { get; set; }
     }
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
-
-    public static double ActualTop(this Window window)
+    public class HashInfo
     {
-        switch (window.WindowState)
+        public double mtime { get; set; }
+        public string sha256 { get; set; }
+    }
+
+    static class WindowExtensions
+    {
+        [StructLayout(LayoutKind.Sequential)]
+        struct RECT
         {
-            case WindowState.Normal:
-                return window.Top;
-            case WindowState.Minimized:
-                return window.RestoreBounds.Top;
-            case WindowState.Maximized:
-                {
-                    RECT rect;
-                    GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
-                    return rect.Top;
-                }
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
         }
-        return 0;
-    }
-    public static double ActualLeft(this Window window)
-    {
-        switch (window.WindowState)
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+
+        public static double ActualTop(this Window window)
         {
-            case WindowState.Normal:
-                return window.Left;
-            case WindowState.Minimized:
-                return window.RestoreBounds.Left;
-            case WindowState.Maximized:
-                {
-                    RECT rect;
-                    GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
-                    return rect.Left;
-                }
+            switch (window.WindowState)
+            {
+                case WindowState.Normal:
+                    return window.Top;
+                case WindowState.Minimized:
+                    return window.RestoreBounds.Top;
+                case WindowState.Maximized:
+                    {
+                        RECT rect;
+                        GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
+                        return rect.Top;
+                    }
+            }
+            return 0;
         }
-        return 0;
+        public static double ActualLeft(this Window window)
+        {
+            switch (window.WindowState)
+            {
+                case WindowState.Normal:
+                    return window.Left;
+                case WindowState.Minimized:
+                    return window.RestoreBounds.Left;
+                case WindowState.Maximized:
+                    {
+                        RECT rect;
+                        GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
+                        return rect.Left;
+                    }
+            }
+            return 0;
+        }
     }
-}
 }

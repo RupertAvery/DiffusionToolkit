@@ -7,12 +7,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Diffusion.Database;
 using Model = Diffusion.Common.Model;
 using Path = System.IO.Path;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
-using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -21,13 +19,12 @@ namespace Diffusion.Toolkit.Pages
     /// </summary>
     public partial class Models : Page
     {
-        private readonly Toolkit.Settings _settings;
+        private Toolkit.Settings _settings => ServiceLocator.Settings;
 
         private ModelsModel _model;
 
-        public Models(IOptions<DataStore> dataStoreOptions, Toolkit.Settings settings)
+        public Models()
         {
-            _settings = settings;
 
             InitializeComponent();
 

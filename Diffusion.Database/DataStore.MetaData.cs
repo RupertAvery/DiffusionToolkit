@@ -238,7 +238,7 @@ namespace Diffusion.Database
 
         string SqlEscape(string value)
         {
-            return value.Replace("'", "''");
+            return value.Replace("'", "''").Replace("\0", "\\0");
         }
 
         long SqlDateTime(DateTime value)

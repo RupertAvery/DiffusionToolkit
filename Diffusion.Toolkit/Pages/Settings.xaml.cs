@@ -14,22 +14,25 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Database;
-using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Services;
-using Diffusion.Civitai.Models;
 
 namespace Diffusion.Toolkit.Pages
 {
+
     /// <summary>
     /// Interaction logic for Settings.xaml
     /// </summary>
     public partial class Settings : Page
     {
         private SettingsModel _model = new SettingsModel();
+        public Toolkit.Settings _settings => ServiceLocator.Settings;
+
+        private List<FolderChange> _folderChanges = new List<FolderChange>();
 
         private DataStore _dataStore => ServiceLocator.DataStore;
 
@@ -38,50 +41,78 @@ namespace Diffusion.Toolkit.Pages
             return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
         }
 
-        public Settings(Window window, NavigatorService navigatorService, Toolkit.Settings settings)
+        public Settings(Window window)
         {
             _window = window;
             InitializeComponent();
 
             _model.PropertyChanged += ModelOnPropertyChanged;
-            _model.ImagePaths = new ObservableCollection<string>(settings.ImagePaths);
-            _model.ExcludePaths = new ObservableCollection<string>(settings.ExcludePaths);
-            _model.ModelRootPath = settings.ModelRootPath;
-            _model.FileExtensions = settings.FileExtensions;
-            _model.PageSize = settings.PageSize;
-            _model.Theme = settings.Theme;
-            _model.WatchFolders = settings.WatchFolders;
-            _model.AutoRefresh = settings.AutoRefresh;
-            _model.CheckForUpdatesOnStartup = settings.CheckForUpdatesOnStartup;
-            _model.ScanForNewImagesOnStartup = settings.ScanForNewImagesOnStartup;
-            _model.AutoTagNSFW = settings.AutoTagNSFW;
-            _model.NSFWTags = string.Join("\r\n", settings.NSFWTags);
-            _model.HashCache = settings.HashCache;
-            _model.PortableMode = settings.PortableMode;
-            _model.RecurseFolders = settings.RecurseFolders;
+            
+            InitializeSettings();
+            LoadCultures();
 
-            _model.UseBuiltInViewer = settings.UseBuiltInViewer.GetValueOrDefault(true);
-            _model.OpenInFullScreen = settings.OpenInFullScreen.GetValueOrDefault(true);
-            _model.UseSystemDefault = settings.UseSystemDefault.GetValueOrDefault(false);
-            _model.UseCustomViewer = settings.UseCustomViewer.GetValueOrDefault(false);
-            _model.CustomCommandLine = settings.CustomCommandLine;
-            _model.CustomCommandLineArgs = settings.CustomCommandLineArgs;
-            _model.SlideShowDelay = settings.SlideShowDelay;
-            _model.ScrollNavigation = settings.ScrollNavigation;
-            _model.AdvanceOnTag = settings.AutoAdvance;
+            _model.SetPristine();
 
-            _model.StoreMetadata = settings.StoreMetadata;
-            _model.StoreWorkflow = settings.StoreWorkflow;
-            _model.ScanUnavailable = settings.ScanUnavailable;
-            _model.ExternalApplications = new ObservableCollection<ExternalApplicationModel>(settings.ExternalApplications.Select(d => new ExternalApplicationModel()
+            DataContext = _model;
+        }
+
+        private void InitializeSettings()
+        {
+            InitializeFolders();
+
+            _model.CheckForUpdatesOnStartup = _settings.CheckForUpdatesOnStartup;
+            _model.ScanForNewImagesOnStartup = _settings.ScanForNewImagesOnStartup;
+
+            _model.WatchFolders = _settings.WatchFolders;
+            _model.AutoRefresh = _settings.AutoRefresh;
+
+            _model.ModelRootPath = _settings.ModelRootPath;
+            _model.FileExtensions = _settings.FileExtensions;
+
+            _model.PageSize = _settings.PageSize;
+            _model.UseBuiltInViewer = _settings.UseBuiltInViewer.GetValueOrDefault(true);
+            _model.OpenInFullScreen = _settings.OpenInFullScreen.GetValueOrDefault(true);
+            _model.UseSystemDefault = _settings.UseSystemDefault.GetValueOrDefault(false);
+            _model.UseCustomViewer = _settings.UseCustomViewer.GetValueOrDefault(false);
+            _model.CustomCommandLine = _settings.CustomCommandLine;
+            _model.CustomCommandLineArgs = _settings.CustomCommandLineArgs;
+            _model.SlideShowDelay = _settings.SlideShowDelay;
+            _model.ScrollNavigation = _settings.ScrollNavigation;
+            _model.AdvanceOnTag = _settings.AutoAdvance;
+
+            _model.AutoTagNSFW = _settings.AutoTagNSFW;
+            _model.NSFWTags = string.Join("\r\n", _settings.NSFWTags);
+            
+            _model.HashCache = _settings.HashCache;
+            _model.PortableMode = _settings.PortableMode;
+            
+            _model.StoreMetadata = _settings.StoreMetadata;
+            _model.StoreWorkflow = _settings.StoreWorkflow;
+            _model.ScanUnavailable = _settings.ScanUnavailable;
+
+            _model.ExternalApplications = new ObservableCollection<ExternalApplicationModel>(_settings.ExternalApplications.Select(d => new ExternalApplicationModel()
             {
                 CommandLineArgs = d.CommandLineArgs,
                 Name = d.Name,
                 Path = d.Path
             }));
 
-            _model.Culture = settings.Culture;
+            _model.Theme = _settings.Theme;
+            _model.Culture = _settings.Culture;
+            _model.SetPristine();
+        }
 
+        private void InitializeFolders()
+        {
+            _model.ImagePaths = new ObservableCollection<string>(_settings.ImagePaths);
+            _model.ExcludePaths = new ObservableCollection<string>(_settings.ExcludePaths);
+            _model.RecurseFolders = _settings.RecurseFolders;
+            _model.SetFoldersPristine();
+            _folderChanges.Clear();
+        }
+
+        private void LoadCultures()
+        {
             var cultures = new List<Langauge>
             {
                 new ("Default", "default"),
@@ -112,37 +143,31 @@ namespace Diffusion.Toolkit.Pages
 
             _model.Cultures = new ObservableCollection<Langauge>(cultures);
 
-            _model.SetPristine();
-
-            navigatorService.OnNavigate += NavigatorServiceOnOnNavigate;
-
-            DataContext = _model;
-        }
-
-        private void NavigatorServiceOnOnNavigate(object? sender, NavigateEventArgs e)
-        {
-            if (e.CurrentUrl == "settings")
-            {
-                ApplySettings();
-            }
         }
 
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(SettingsModel.Theme))
+            switch (e.PropertyName)
             {
-                ThemeManager.ChangeTheme(_model.Theme);
-            }
-            if (e.PropertyName == nameof(SettingsModel.SlideShowDelay))
-            {
-                if (_model.SlideShowDelay < 1)
+                case nameof(SettingsModel.Theme):
+                    ThemeManager.ChangeTheme(_model.Theme);
+                    break;
+                case nameof(SettingsModel.Culture):
+                    _settings.Culture = _model.Culture;
+                    break;
+                case nameof(SettingsModel.SlideShowDelay):
                 {
-                    _model.SlideShowDelay = 1;
-                }
-                if (_model.SlideShowDelay > 100)
-                {
-                    _model.SlideShowDelay = 100;
+                    if (_model.SlideShowDelay < 1)
+                    {
+                        _model.SlideShowDelay = 1;
+                    }
+                    if (_model.SlideShowDelay > 100)
+                    {
+                        _model.SlideShowDelay = 100;
+                    }
+
+                    break;
                 }
             }
         }
@@ -155,23 +180,37 @@ namespace Diffusion.Toolkit.Pages
             dialog.IsFolderPicker = true;
             if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
-                if (_model.ImagePaths.Any(d => dialog.FileName.StartsWith(d + "\\")))
+                var path = dialog.FileName;
+
+                if (_model.ImagePaths.Any(d => path.StartsWith(d + "\\", StringComparison.OrdinalIgnoreCase)))
                 {
                     MessageBox.Show(this._window,
-                        "The selected folder is already on the path of one of the included folders",
+                        "The selected folder is already included the path of one of the existing folders",
                         "Add folder", MessageBoxButton.OK,
                         MessageBoxImage.Information);
                     return;
                 }
-                else if (_model.ImagePaths.Any(d => d.StartsWith(dialog.FileName)))
+                else if (_model.ImagePaths.Any(d => d.Equals(path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+                else if (_model.ImagePaths.Any(d => d.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
                 {
                     MessageBox.Show(this._window,
-                        "One of the included folders is on the path of the selected folder! It is recommended that you remove it.",
+                        "One or more of the existing folders is included the path of the selected folder",
                         "Add folder", MessageBoxButton.OK,
                         MessageBoxImage.Warning);
+                    return;
                 }
 
-                _model.ImagePaths.Add(dialog.FileName);
+                _model.ImagePaths.Add(path);
+                _folderChanges.Add(new FolderChange()
+                {
+                    ChangeType = ChangeType.Add,
+                    Path = path,
+                });
+                _model.SetFoldersDirty();
+
             }
 
         }
@@ -185,7 +224,14 @@ namespace Diffusion.Toolkit.Pages
 
             if (result == MessageBoxResult.Yes)
             {
+                var path = _model.ImagePaths[_model.SelectedIndex];
                 _model.ImagePaths.RemoveAt(_model.SelectedIndex);
+                _folderChanges.Add(new FolderChange()
+                {
+                    ChangeType = ChangeType.Remove,
+                    Path = path,
+                });
+                _model.SetFoldersDirty();
             }
         }
 
@@ -318,55 +364,7 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public void ApplySettings()
-        {
-            var settings = ServiceLocator.Settings;
-
-            if (_model.IsDirty)
-            {
-                settings.SetPristine();
-                settings.ImagePaths = _model.ImagePaths.ToList();
-                settings.ExcludePaths = _model.ExcludePaths.ToList();
-                settings.ModelRootPath = _model.ModelRootPath;
-                settings.FileExtensions = _model.FileExtensions;
-                settings.Theme = _model.Theme;
-                settings.PageSize = _model.PageSize;
-                settings.WatchFolders = _model.WatchFolders;
-                settings.AutoRefresh = _model.AutoRefresh;
-
-                settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
-                settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
-                settings.AutoTagNSFW = _model.AutoTagNSFW;
-                settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
-                settings.HashCache = _model.HashCache;
-                settings.PortableMode = _model.PortableMode;
-                settings.RecurseFolders = _model.RecurseFolders;
-
-                settings.UseBuiltInViewer = _model.UseBuiltInViewer;
-                settings.OpenInFullScreen = _model.OpenInFullScreen;
-                settings.UseSystemDefault = _model.UseSystemDefault;
-                settings.UseCustomViewer = _model.UseCustomViewer;
-                settings.CustomCommandLine = _model.CustomCommandLine;
-                settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
-                settings.SlideShowDelay = _model.SlideShowDelay;
-                settings.ScrollNavigation = _model.ScrollNavigation;
-                settings.AutoAdvance = _model.AdvanceOnTag;
-
-                settings.StoreMetadata = _model.StoreMetadata;
-                settings.StoreWorkflow = _model.StoreWorkflow;
-                settings.ScanUnavailable = _model.ScanUnavailable;
-                settings.ExternalApplications = _model.ExternalApplications.Select(d => new ExternalApplication()
-                {
-                    CommandLineArgs = d.CommandLineArgs,
-                    Name = d.Name,
-                    Path = d.Path
-                }).ToList();
-
-                settings.Culture = _model.Culture;
-            }
-
-        }
-
+     
         private void BrowseExternalApplicationPath_OnClick(object sender, RoutedEventArgs e)
         {
             //var button = (Button)sender;
@@ -432,6 +430,110 @@ namespace Diffusion.Toolkit.Pages
                 }
             }
         }
+
+        private void ChangeFolderPath_OnClick(object sender, RoutedEventArgs e)
+        {
+            using var dialog = new CommonOpenFileDialog();
+            dialog.IsFolderPicker = true;
+            dialog.EnsurePathExists = false;
+            var oldPath = _model.ImagePaths[_model.SelectedIndex];
+
+            dialog.InitialDirectory = oldPath;
+
+            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
+            {
+                var newPath = dialog.FileName;
+                if (oldPath != newPath)
+                {
+                    _model.ImagePaths[_model.SelectedIndex] = newPath;
+                    _folderChanges.Add(new FolderChange()
+                    {
+                        ChangeType = ChangeType.ChangePath,
+                        Path = oldPath,
+                        NewPath = newPath
+                    });
+                    _model.SetFoldersDirty();
+                }
+            }
+        }
+
+        private void RevertFolders_OnClick(object sender, RoutedEventArgs e)
+        {
+            InitializeFolders();
+        }
+
+        private void ApplyChanges_OnClick(object sender, RoutedEventArgs e)
+        {
+            ApplySettings();
+
+
+            if (_model.IsFoldersDirty)
+            {
+                Task.Run(async ()=>
+                {
+                    await ServiceLocator.FolderService.ApplyFolderChanges(_folderChanges);
+                    _folderChanges.Clear();
+                    _model.SetFoldersPristine();
+                });
+            }
+
+            _model.SetPristine();
+        }
+
+        private void RevertChanges_OnClick(object sender, RoutedEventArgs e)
+        {
+            InitializeSettings();
+        }
+
+
+        public void ApplySettings()
+        {
+            if (_model.IsDirty)
+            {
+                _settings.SetPristine();
+                _settings.ImagePaths = _model.ImagePaths.ToList();
+                _settings.ExcludePaths = _model.ExcludePaths.ToList();
+                _settings.ModelRootPath = _model.ModelRootPath;
+                _settings.FileExtensions = _model.FileExtensions;
+                _settings.Theme = _model.Theme;
+                _settings.PageSize = _model.PageSize;
+                _settings.WatchFolders = _model.WatchFolders;
+                _settings.AutoRefresh = _model.AutoRefresh;
+
+                _settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;
+                _settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;
+                _settings.AutoTagNSFW = _model.AutoTagNSFW;
+                _settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+                _settings.HashCache = _model.HashCache;
+                _settings.PortableMode = _model.PortableMode;
+                _settings.RecurseFolders = _model.RecurseFolders;
+
+                _settings.UseBuiltInViewer = _model.UseBuiltInViewer;
+                _settings.OpenInFullScreen = _model.OpenInFullScreen;
+                _settings.UseSystemDefault = _model.UseSystemDefault;
+                _settings.UseCustomViewer = _model.UseCustomViewer;
+                _settings.CustomCommandLine = _model.CustomCommandLine;
+                _settings.CustomCommandLineArgs = _model.CustomCommandLineArgs;
+                _settings.SlideShowDelay = _model.SlideShowDelay;
+                _settings.ScrollNavigation = _model.ScrollNavigation;
+                _settings.AutoAdvance = _model.AdvanceOnTag;
+
+                _settings.StoreMetadata = _model.StoreMetadata;
+                _settings.StoreWorkflow = _model.StoreWorkflow;
+                _settings.ScanUnavailable = _model.ScanUnavailable;
+                _settings.ExternalApplications = _model.ExternalApplications.Select(d => new ExternalApplication()
+                {
+                    CommandLineArgs = d.CommandLineArgs,
+                    Name = d.Name,
+                    Path = d.Path
+                }).ToList();
+
+                _settings.Culture = _model.Culture;
+
+            }
+        }
+
+
     }
 
 

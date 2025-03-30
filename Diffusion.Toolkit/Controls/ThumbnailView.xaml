@@ -272,7 +272,7 @@
         </ListView>
 
         <Grid  Background="#80000000" Visibility="{Binding IsBusy, Converter={StaticResource boolToVis}}">
-            <fa:ImageAwesome Opacity="0.5" Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{StaticResource ForegroundBrush}" />
+            <fa:ImageAwesome Opacity="0.5" Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{DynamicResource ForegroundBrush}" />
         </Grid>
 
 

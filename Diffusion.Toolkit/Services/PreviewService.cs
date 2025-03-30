@@ -27,7 +27,7 @@ public class PreviewService
     {
         if (_previewWindow == null)
         {
-            _previewWindow = new PreviewWindow(ServiceLocator.DataStore, ServiceLocator.MainModel);
+            _previewWindow = new PreviewWindow();
             _previewWindow.Owner = _owner;
             _previewWindow.Closed += PreviewWindowOnClosed;
             _previewWindow.LoadImage(thumbnail);

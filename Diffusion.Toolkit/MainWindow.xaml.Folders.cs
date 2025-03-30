@@ -15,7 +15,7 @@ namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
-        private void InitFolders()
+        private async Task InitFolders()
         {
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
 
@@ -36,10 +36,11 @@ namespace Diffusion.Toolkit
 
             _model.ReloadFoldersCommand = new RelayCommand<object>((o) =>
             {
-                LoadFolders();
+                _ = ServiceLocator.FolderService.LoadFolders();
             });
 
-            LoadFolders();
+            _ = ServiceLocator.FolderService.LoadFolders();
+
         }
 
         static bool IsValidFolderName(string folderName)
@@ -191,7 +192,7 @@ namespace Diffusion.Toolkit
 
             }
         }
-        
+
         private void RenameFolder(FolderViewModel folder, string source, string dest)
         {
             if (folder.Children != null)
@@ -213,10 +214,7 @@ namespace Diffusion.Toolkit
         {
             var images = _dataStore.GetAllPathImages(source).ToList();
 
-            foreach (var watcher in _watchers)
-            {
-                watcher.EnableRaisingEvents = false;
-            }
+            ServiceLocator.FolderService.DisableWatchers();
 
             Dispatcher.Invoke(() =>
             {
@@ -253,7 +251,7 @@ namespace Diffusion.Toolkit
                     _model.TotalProgress--;
                 }
             }
-            
+
             ServiceLocator.ProgressService.CompleteTask();
             ServiceLocator.ProgressService.SetStatus("");
 
@@ -261,26 +259,9 @@ namespace Diffusion.Toolkit
 
             //await _search.ReloadMatches();
 
-            foreach (var watcher in _watchers)
-            {
-                watcher.EnableRaisingEvents = true;
-            }
-
+            ServiceLocator.FolderService.EnableWatchers();
         }
 
-        private void LoadFolders()
-        {
-            var folders = _settings.ImagePaths;
 
-            _model.Folders = new ObservableCollection<FolderViewModel>(folders.Select(path => new FolderViewModel()
-            {
-                HasChildren = true,
-                Visible = true,
-                Depth = 0,
-                Name = path,
-                Path = path,
-                IsUnavailable = !Directory.Exists(path)
-            }));
-        }
     }
 }

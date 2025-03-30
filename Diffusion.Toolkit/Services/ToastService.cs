@@ -10,12 +10,11 @@ public class ToastService
 {
     private readonly Queue<Toast> _toastMessages = new Queue<Toast>();
     private readonly Popup _popup;
-    private readonly Dispatcher _dispatcher;
-
-    public ToastService(Popup popup, Dispatcher dispatcher)
+    private Dispatcher _dispatcher => ServiceLocator.Dispatcher;
+    private Settings _settings => ServiceLocator.Settings;
+    public ToastService(Popup popup)
     {
         _popup = popup;
-        _dispatcher = dispatcher;
     }
 
     public void DismissToast()
@@ -29,7 +28,7 @@ public class ToastService
 
     private void DisplayToast()
     {
-        if (ServiceLocator.Settings.ShowNotifications)
+        if (_settings.ShowNotifications)
         {
             _dispatcher.Invoke(() =>
             {
