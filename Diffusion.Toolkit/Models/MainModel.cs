@@ -661,6 +661,7 @@ public class MainModel : BaseNotify
         set => SetField(ref _reloadFoldersCommand, value);
     }
 
+    public ICommand ScanFolderCommand { get; set; }
     public ICommand CreateFolderCommand { get; set; }
     public ICommand RenameFolderCommand { get; set; }
     public ICommand DeleteFolderCommand { get; set; }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Diffusion.Toolkit.Services;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Navigation;
 
@@ -18,6 +19,8 @@ public class FolderViewModel : BaseNotify
     private bool _isSelected;
     private string _name;
     private bool _isUnavailable;
+
+    public MainModel MainModel => ServiceLocator.MainModel;
 
     public FolderState State
     {

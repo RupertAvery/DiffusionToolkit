@@ -19,6 +19,11 @@ namespace Diffusion.Toolkit
         {
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
 
+            _model.ScanFolderCommand = new RelayCommand<object>((o) =>
+            {
+                ScanFolder();
+            });
+
             _model.CreateFolderCommand = new RelayCommand<object>((o) =>
             {
                 ShowCreateFolderDialog();
@@ -109,6 +114,32 @@ namespace Diffusion.Toolkit
                 }
 
             }
+        }
+
+        private async void ScanFolder()
+        {
+            var currentFolder = _model.CurrentFolder!;
+
+            await Task.Run(async () =>
+            {
+                if (await ServiceLocator.ProgressService.TryStartTask())
+                {
+                    try
+                    {
+                        var filesToScan = new List<string>();
+
+                        filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(currentFolder.Path, new HashSet<string>(), ServiceLocator.ProgressService.CancellationToken));
+
+                        var (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filesToScan, false, _settings.StoreMetadata, _settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
+
+                        ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
+                    }
+                    finally
+                    {
+                        ServiceLocator.ProgressService.CompleteTask();
+                    }
+                }
+            });
         }
 
         private async void ShowCreateFolderDialog()

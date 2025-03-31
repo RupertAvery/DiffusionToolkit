@@ -1,394 +1,394 @@
 ﻿<UserControl x:Class="Diffusion.Toolkit.Controls.FilterControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
-             xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
-             xmlns:fa="http://schemas.fontawesome.io/icons/"
-             xmlns:lex="http://wpflocalizeextension.codeplex.com"
-             xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
-             lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
-             lex:LocalizeDictionary.Separation="."
-             lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
-             d:DataContext="{d:DesignInstance local:FilterControlModel, IsDesignTimeCreatable=True}"
-             mc:Ignorable="d" 
-             d:DesignHeight="720" d:DesignWidth="600">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <converters:IsValueBoolConverter x:Key="isValueBool"></converters:IsValueBoolConverter>
-            <converters:IsStrValueBoolConverter x:Key="isStrValueBool"></converters:IsStrValueBoolConverter>
-            <converters:NotBoolConverter x:Key="notBool"></converters:NotBoolConverter>
-            <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityCollapsedConverter>
-        </ResourceDictionary>
-    </UserControl.Resources>
-    <Grid x:Name="MainGrid" Margin="0,0,0,10" DataContext="{Binding Filter, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}">
-        <TabControl Background="{x:Null}">
-            <TabItem Header="Metadata">
-                <ScrollViewer Width="765" >
-                    <StackPanel Margin="10">
-                        <Grid Margin="0,0,0,5" >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UsePrompt}" VerticalContentAlignment="Center">Prompt</CheckBox>
-                            <TextBox x:Name="PromptTextBox" 
-                        Text="{Binding Prompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
-                         Height="60"
-                         ToolTip="Separate terms with commas"
-                         HorizontalScrollBarVisibility="Disabled"
-                         VerticalScrollBarVisibility="Auto"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                         ></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UsePromptEx}" VerticalContentAlignment="Center">Exclude Prompt</CheckBox>
-                            <TextBox x:Name="PromptExTextBox" 
-                         Text="{Binding PromptEx}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
-                         Height="60"
-                         ToolTip="Separate terms with commas"
-                         HorizontalScrollBarVisibility="Disabled"
-                         VerticalScrollBarVisibility="Auto"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                ></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseNegativePrompt}" VerticalContentAlignment="Center">Negative Prompt</CheckBox>
-                            <TextBox Text="{Binding NegativePrompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
-                         Height="60"
-                         ToolTip="Separate terms with commas"
-                         HorizontalScrollBarVisibility="Disabled"
-                         VerticalScrollBarVisibility="Auto"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                         ></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseNegativePromptEx}" VerticalContentAlignment="Center">Exclude Negative</CheckBox>
-                            <TextBox Text="{Binding NegativePromptEx}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
-                         Height="60"
-                         ToolTip="Separate terms with commas"
-                         HorizontalScrollBarVisibility="Disabled"
-                         VerticalScrollBarVisibility="Auto"
-                         TextWrapping="Wrap"
-                         AcceptsReturn="True"
-                ></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseSteps}" VerticalContentAlignment="Center">Steps</CheckBox>
-                            <TextBox Text="{Binding Steps}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
-                         ToolTip="Separate multiple values with commas"
-                         ></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseSampler}" VerticalContentAlignment="Center">Sampler</CheckBox>
-                            <TextBox Text="{Binding Sampler}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
-                         ToolTip="Separate multiple values with commas"
-                         ></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseCFGScale}" VerticalContentAlignment="Center">CFG Scale</CheckBox>
-                            <TextBox Text="{Binding CFGScale}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
-                         ToolTip="Separate multiple values with commas"
-                         ></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseSeed}" VerticalContentAlignment="Center">Seed</CheckBox>
-                            <StackPanel Orientation="Horizontal" Grid.Column="1" >
-                                <TextBox Text="{Binding SeedStart}" KeyDown="UIElement_OnKeyDown" Height="20" Width="100"></TextBox>
-                                <Label>to</Label>
-                                <TextBox Text="{Binding SeedEnd}" KeyDown="UIElement_OnKeyDown" Height="20" Width="100"></TextBox>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseSize}" VerticalContentAlignment="Center">Size</CheckBox>
-                            <StackPanel Orientation="Horizontal" Grid.Column="1" >
-                                <TextBox Text="{Binding Width}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
-                                <Label>x</Label>
-                                <TextBox Text="{Binding Height}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
-                                <Label>(Use ? for wildcard)</Label>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseModelHash}" VerticalContentAlignment="Center">Model Hash</CheckBox>
-                            <TextBox Text="{Binding ModelHash}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseModelName}" VerticalContentAlignment="Center">Model Name</CheckBox>
-                            <ComboBox IsEditable="True" ItemsSource="{Binding Models, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" 
-                          Text="{Binding ModelName}" KeyDown="UIElement_OnKeyDown" 
-                          SelectionChanged="Selector_OnSelectionChanged"
-                          Grid.Column="1" Height="20">
-                            </ComboBox>
-                        </Grid>
-                        <!--<Grid Margin="0,0,0,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="130"/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <CheckBox IsChecked="{Binding UseBatchSize}" VerticalContentAlignment="Center">Batch size</CheckBox>
-                <TextBox Text="{Binding BatchSize}" Grid.Column="1" Height="20"></TextBox>
+       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+       xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
+       xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+       xmlns:fa="http://schemas.fontawesome.io/icons/"
+       xmlns:lex="http://wpflocalizeextension.codeplex.com"
+       xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
+       lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
+       lex:LocalizeDictionary.Separation="."
+       lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
+       d:DataContext="{d:DesignInstance local:FilterControlModel, IsDesignTimeCreatable=True}"
+       mc:Ignorable="d" 
+       d:DesignHeight="720" d:DesignWidth="600">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <converters:IsValueBoolConverter x:Key="isValueBool"></converters:IsValueBoolConverter>
+      <converters:IsStrValueBoolConverter x:Key="isStrValueBool"></converters:IsStrValueBoolConverter>
+      <converters:NotBoolConverter x:Key="notBool"></converters:NotBoolConverter>
+      <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityCollapsedConverter>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid x:Name="MainGrid" Margin="0,0,0,10" DataContext="{Binding Filter, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}">
+    <TabControl Background="{x:Null}">
+      <TabItem Header="{lex:Loc Filter.Metadata}">
+        <ScrollViewer Width="765" >
+          <StackPanel Margin="10">
+            <Grid Margin="0,0,0,5" >
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UsePrompt}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Prompt}"></CheckBox>
+              <TextBox x:Name="PromptTextBox" 
+            Text="{Binding Prompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
+             Height="60"
+             ToolTip="Separate terms with commas"
+             HorizontalScrollBarVisibility="Disabled"
+             VerticalScrollBarVisibility="Auto"
+             TextWrapping="Wrap"
+             AcceptsReturn="True"
+             ></TextBox>
             </Grid>
             <Grid Margin="0,0,0,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="130"/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <CheckBox IsChecked="{Binding UseBatchPos}" VerticalContentAlignment="Center">Batch pos</CheckBox>
-                <TextBox Text="{Binding BatchPos}" Grid.Column="1" Height="20"></TextBox>
-            </Grid>-->
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox Name="chkAesthetic" IsChecked="{Binding UseAestheticScore}" VerticalContentAlignment="Center">Aesthetic Score</CheckBox>
-                            <StackPanel Orientation="Horizontal" Grid.Column="1">
-                                <RadioButton IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='='}" Margin="0,0,10,0" VerticalContentAlignment="Center">=</RadioButton>
-                                <RadioButton IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&lt;='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">&lt;=</RadioButton>
-                                <RadioButton IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&gt;='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">&gt;=</RadioButton>
-                                <RadioButton IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='!='}"   Margin="0,0,10,0" VerticalContentAlignment="Center">!=</RadioButton>
-                                <TextBox IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Text="{Binding AestheticScore}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50" Margin="0,0,10,0" ></TextBox>
-                                <CheckBox Name="chkNoAestheticScore"
-                              IsChecked="{Binding NoAestheticScore}"
-                              VerticalContentAlignment="Center">No Score</CheckBox>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox Name="chkRating" IsChecked="{Binding UseRating}" VerticalContentAlignment="Center">Rating</CheckBox>
-                            <StackPanel Orientation="Horizontal" Grid.Column="1">
-                                <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='='}" Margin="0,0,10,0" VerticalContentAlignment="Center">=</RadioButton>
-                                <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&lt;='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">&lt;=</RadioButton>
-                                <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&gt;='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">&gt;=</RadioButton>
-                                <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='!='}"   Margin="0,0,10,0" VerticalContentAlignment="Center">!=</RadioButton>
-                                <TextBox IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Text="{Binding Rating}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50" Margin="0,0,10,0" ></TextBox>
-                                <CheckBox IsChecked="{Binding Unrated}"
-                              VerticalContentAlignment="Center"
-                              Name="chkUnratedCheckbox">Unrated</CheckBox>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UsePath}" VerticalContentAlignment="Center">Path</CheckBox>
-                            <TextBox Text="{Binding Path}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseCreationDate}" VerticalContentAlignment="Center">Creation Date</CheckBox>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <DatePicker SelectedDate="{Binding Start}" ></DatePicker>
-                                <Label>to</Label>
-                                <DatePicker SelectedDate="{Binding End}" ></DatePicker>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseNSFW}" VerticalContentAlignment="Center">NSFW</CheckBox>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="NSFW" IsChecked="{Binding NSFW, Mode=TwoWay, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0">True</RadioButton>
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="NSFW" IsChecked="{Binding NSFW, Mode=TwoWay, Converter={StaticResource isValueBool}, ConverterParameter=false}" 
-                    >False</RadioButton>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseForDeletion}" VerticalContentAlignment="Center">For Deletion</CheckBox>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="ForDeletion" IsChecked="{Binding ForDeletion, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0">True</RadioButton>
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="ForDeletion" IsChecked="{Binding ForDeletion, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseFavorite}" VerticalContentAlignment="Center">Favorite</CheckBox>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="Favorite" IsChecked="{Binding Favorite, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0">True</RadioButton>
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="Favorite" IsChecked="{Binding Favorite, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseNoMetadata}" VerticalContentAlignment="Center">No Metadata</CheckBox>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="NoMetadata" IsChecked="{Binding NoMetadata, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0">True</RadioButton>
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="NoMetadata" IsChecked="{Binding NoMetadata, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseInAlbum}" VerticalContentAlignment="Center">In Album</CheckBox>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="InAlbum" IsChecked="{Binding InAlbum, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0">True</RadioButton>
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="InAlbum" IsChecked="{Binding InAlbum, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
-                            </StackPanel>
-                        </Grid>
-                        <Grid Margin="0,0,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="130"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseUnavailable}" VerticalContentAlignment="Center">Unavailable</CheckBox>
-                            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="Unavailable" IsChecked="{Binding Unavailable, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0">True</RadioButton>
-                                <RadioButton Click="ButtonBase_OnClick" GroupName="Unavailable" IsChecked="{Binding Unavailable, Converter={StaticResource isValueBool}, ConverterParameter=false}" >False</RadioButton>
-                            </StackPanel>
-                        </Grid>
-                    </StackPanel>
-                </ScrollViewer>
-            </TabItem>
-            <TabItem Header="Workflow">
-                <Grid Width="765">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="30"/>
-                        <RowDefinition Height="400"/>
-                        <RowDefinition Height="30"/>
-                    </Grid.RowDefinitions>
-                    <Grid Margin="5,0,5,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="50"/>
-                            <ColumnDefinition Width="150"/>
-                            <ColumnDefinition Width="90"/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UsePromptEx}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.ExcludePrompt}"></CheckBox>
+              <TextBox x:Name="PromptExTextBox" 
+             Text="{Binding PromptEx}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
+             Height="60"
+             ToolTip="Separate terms with commas"
+             HorizontalScrollBarVisibility="Disabled"
+             VerticalScrollBarVisibility="Auto"
+             TextWrapping="Wrap"
+             AcceptsReturn="True"
+        ></TextBox>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseNegativePrompt}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.NegativePrompt}"></CheckBox>
+              <TextBox Text="{Binding NegativePrompt}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
+             Height="60"
+             ToolTip="Separate terms with commas"
+             HorizontalScrollBarVisibility="Disabled"
+             VerticalScrollBarVisibility="Auto"
+             TextWrapping="Wrap"
+             AcceptsReturn="True"
+             ></TextBox>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseNegativePromptEx}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.ExcludeNegative}"></CheckBox>
+              <TextBox Text="{Binding NegativePromptEx}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" 
+             Height="60"
+             ToolTip="Separate terms with commas"
+             HorizontalScrollBarVisibility="Disabled"
+             VerticalScrollBarVisibility="Auto"
+             TextWrapping="Wrap"
+             AcceptsReturn="True"
+        ></TextBox>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseSteps}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Steps}"></CheckBox>
+              <TextBox Text="{Binding Steps}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
+             ToolTip="Separate multiple values with commas"
+             ></TextBox>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseSampler}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Sampler}"></CheckBox>
+              <TextBox Text="{Binding Sampler}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
+             ToolTip="Separate multiple values with commas"
+             ></TextBox>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseCFGScale}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.CFGScale}"></CheckBox>
+              <TextBox Text="{Binding CFGScale}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
+             ToolTip="Separate multiple values with commas"
+             ></TextBox>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseSeed}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Seed}"></CheckBox>
+              <StackPanel Orientation="Horizontal" Grid.Column="1" >
+                <TextBox Text="{Binding SeedStart}" KeyDown="UIElement_OnKeyDown" Height="20" Width="100"></TextBox>
+                <Label>to</Label>
+                <TextBox Text="{Binding SeedEnd}" KeyDown="UIElement_OnKeyDown" Height="20" Width="100"></TextBox>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseSize}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Size}"></CheckBox>
+              <StackPanel Orientation="Horizontal" Grid.Column="1" >
+                <TextBox Text="{Binding Width}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
+                <Label>x</Label>
+                <TextBox Text="{Binding Height}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
+                <Label Content="{lex:Loc Filter.Metadata.SizeWildCard}"></Label>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseModelHash}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.ModelHash}"></CheckBox>
+              <TextBox Text="{Binding ModelHash}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseModelName}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.ModelName}"></CheckBox>
+              <ComboBox IsEditable="True" ItemsSource="{Binding Models, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}}" 
+             Text="{Binding ModelName}" KeyDown="UIElement_OnKeyDown" 
+             SelectionChanged="Selector_OnSelectionChanged"
+             Grid.Column="1" Height="20">
+              </ComboBox>
+            </Grid>
+            <!--<Grid Margin="0,0,0,5">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="130"/>
+          <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <CheckBox IsChecked="{Binding UseBatchSize}" VerticalContentAlignment="Center">Batch size</CheckBox>
+        <TextBox Text="{Binding BatchSize}" Grid.Column="1" Height="20"></TextBox>
+      </Grid>
+      <Grid Margin="0,0,0,5">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="130"/>
+          <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <CheckBox IsChecked="{Binding UseBatchPos}" VerticalContentAlignment="Center">Batch pos</CheckBox>
+        <TextBox Text="{Binding BatchPos}" Grid.Column="1" Height="20"></TextBox>
+      </Grid>-->
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox Name="chkAesthetic" IsChecked="{Binding UseAestheticScore}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.AestheticScore}"></CheckBox>
+              <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <RadioButton IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='='}" Margin="0,0,10,0" VerticalContentAlignment="Center">=</RadioButton>
+                <RadioButton IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&lt;='}" Margin="0,0,10,0" VerticalContentAlignment="Center">&lt;=</RadioButton>
+                <RadioButton IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&gt;='}" Margin="0,0,10,0" VerticalContentAlignment="Center">&gt;=</RadioButton>
+                <RadioButton IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="AestheticScore" IsChecked="{Binding AestheticScoreOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='!='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">!=</RadioButton>
+                <TextBox IsEnabled="{Binding NoAestheticScore, Converter={StaticResource notBool}}" Text="{Binding AestheticScore}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50" Margin="0,0,10,0" ></TextBox>
+                <CheckBox Name="chkNoAestheticScore"
+               IsChecked="{Binding NoAestheticScore}"
+               VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.NoScore}"></CheckBox>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox Name="chkRating" IsChecked="{Binding UseRating}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Rating}"></CheckBox>
+              <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='='}" Margin="0,0,10,0" VerticalContentAlignment="Center">=</RadioButton>
+                <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&lt;='}" Margin="0,0,10,0" VerticalContentAlignment="Center">&lt;=</RadioButton>
+                <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='&gt;='}" Margin="0,0,10,0" VerticalContentAlignment="Center">&gt;=</RadioButton>
+                <RadioButton IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Click="ButtonBase_OnClick" GroupName="Rating" IsChecked="{Binding RatingOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='!='}"  Margin="0,0,10,0" VerticalContentAlignment="Center">!=</RadioButton>
+                <TextBox IsEnabled="{Binding Unrated, Converter={StaticResource notBool}}" Text="{Binding Rating}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50" Margin="0,0,10,0" ></TextBox>
+                <CheckBox IsChecked="{Binding Unrated}"
+               VerticalContentAlignment="Center"
+               Name="chkUnratedCheckbox" Content="{lex:Loc Filter.Metadata.Unrated}"></CheckBox>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UsePath}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Path}"></CheckBox>
+              <TextBox Text="{Binding Path}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseCreationDate}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.CreatedDate}"></CheckBox>
+              <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <DatePicker SelectedDate="{Binding Start}" ></DatePicker>
+                <Label>to</Label>
+                <DatePicker SelectedDate="{Binding End}" ></DatePicker>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseNSFW}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.NSFW}"></CheckBox>
+              <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <RadioButton Click="ButtonBase_OnClick" GroupName="NSFW" IsChecked="{Binding NSFW, Mode=TwoWay, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0" Content="{lex:Loc Filter.Metadata.True}"></RadioButton>
+                <RadioButton Click="ButtonBase_OnClick" GroupName="NSFW" IsChecked="{Binding NSFW, Mode=TwoWay, Converter={StaticResource isValueBool}, ConverterParameter=false}" 
+           Content="{lex:Loc Filter.Metadata.False}"></RadioButton>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseForDeletion}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.ForDeletion}"></CheckBox>
+              <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <RadioButton Click="ButtonBase_OnClick" GroupName="ForDeletion" IsChecked="{Binding ForDeletion, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0" Content="{lex:Loc Filter.Metadata.True}"></RadioButton>
+                <RadioButton Click="ButtonBase_OnClick" GroupName="ForDeletion" IsChecked="{Binding ForDeletion, Converter={StaticResource isValueBool}, ConverterParameter=false}" Content="{lex:Loc Filter.Metadata.False}"></RadioButton>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseFavorite}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Favorite}"></CheckBox>
+              <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <RadioButton Click="ButtonBase_OnClick" GroupName="Favorite" IsChecked="{Binding Favorite, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0" Content="{lex:Loc Filter.Metadata.True}"></RadioButton>
+                <RadioButton Click="ButtonBase_OnClick" GroupName="Favorite" IsChecked="{Binding Favorite, Converter={StaticResource isValueBool}, ConverterParameter=false}" Content="{lex:Loc Filter.Metadata.False}"></RadioButton>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseNoMetadata}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.NoMetadata}"></CheckBox>
+              <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <RadioButton Click="ButtonBase_OnClick" GroupName="NoMetadata" IsChecked="{Binding NoMetadata, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0" Content="{lex:Loc Filter.Metadata.True}"></RadioButton>
+                <RadioButton Click="ButtonBase_OnClick" GroupName="NoMetadata" IsChecked="{Binding NoMetadata, Converter={StaticResource isValueBool}, ConverterParameter=false}" Content="{lex:Loc Filter.Metadata.False}"></RadioButton>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseInAlbum}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.InAlbum}"></CheckBox>
+              <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <RadioButton Click="ButtonBase_OnClick" GroupName="InAlbum" IsChecked="{Binding InAlbum, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0" Content="{lex:Loc Filter.Metadata.True}"></RadioButton>
+                <RadioButton Click="ButtonBase_OnClick" GroupName="InAlbum" IsChecked="{Binding InAlbum, Converter={StaticResource isValueBool}, ConverterParameter=false}" Content="{lex:Loc Filter.Metadata.False}"></RadioButton>
+              </StackPanel>
+            </Grid>
+            <Grid Margin="0,0,0,5">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="130"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <CheckBox IsChecked="{Binding UseUnavailable}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Unavailable}"></CheckBox>
+              <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <RadioButton Click="ButtonBase_OnClick" GroupName="Unavailable" IsChecked="{Binding Unavailable, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0" Content="{lex:Loc Filter.Metadata.True}"></RadioButton>
+                <RadioButton Click="ButtonBase_OnClick" GroupName="Unavailable" IsChecked="{Binding Unavailable, Converter={StaticResource isValueBool}, ConverterParameter=false}" Content="{lex:Loc Filter.Metadata.False}"></RadioButton>
+              </StackPanel>
+            </Grid>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+      <TabItem Header="{lex:Loc Filter.Workflow}">
+        <Grid Width="765">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="400"/>
+            <RowDefinition Height="30"/>
+          </Grid.RowDefinitions>
+          <Grid Margin="5,0,5,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="20"/>
+              <ColumnDefinition Width="50"/>
+              <ColumnDefinition Width="150"/>
+              <ColumnDefinition Width="90"/>
+              <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
 
-                        <Label Grid.Column="2" Margin="0,0,0,0">Property</Label>
-                        <Label Grid.Column="4" Margin="0,0,0,0">Value</Label>
-                    </Grid>
-                    <ScrollViewer Grid.Row="1" Padding="5,0,5,5">
-                        <ItemsControl ItemsSource="{Binding NodeFilters}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="20"/>
-                                            <ColumnDefinition Width="50"/>
-                                            <ColumnDefinition Width="150"/>
-                                            <ColumnDefinition Width="90"/>
-                                            <ColumnDefinition/>
-                                            <ColumnDefinition Width="20"/>
-                                        </Grid.ColumnDefinitions>
-                                        <CheckBox IsChecked="{Binding IsActive}" VerticalAlignment="Center"></CheckBox>
-                                        <ComboBox ItemsSource="{Binding DataContext.NodeOperations, ElementName=MainGrid}" 
-                                                      Visibility="{Binding IsFirst, Converter={StaticResource invBoolToVis}}"
-                                                      Grid.Column="1" 
-                                                      DisplayMemberPath="Name" 
-                                                      SelectedValuePath="Value" 
-                                                      SelectedValue="{Binding Operation}">
-                                            <ComboBox.Style>
-                                                <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
-                                                    <Setter Property="SelectedIndex" Value="0"/>
-                                                </Style>
-                                            </ComboBox.Style>
-                                        </ComboBox>
-                                        <TextBox 
-                                                Text="{Binding Property}"
-                                                Margin="5,0,5,0"
-                                                Grid.Column="2"
-                                                KeyDown="Property_OnKeyDown"
-                                                HorizontalScrollBarVisibility="Disabled"
-                                                VerticalScrollBarVisibility="Auto"
-                                            ></TextBox>
-                                        <ComboBox ItemsSource="{Binding DataContext.NodePropertyComparisons, ElementName=MainGrid}" 
-                                                      Grid.Column="3" 
-                                                      DisplayMemberPath="Name" 
-                                                      SelectedValuePath="Value" 
-                                                      SelectedValue="{Binding Comparison}">
-                                            <ComboBox.Style>
-                                                <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
-                                                    <Setter Property="SelectedIndex" Value="0"/>
-                                                </Style>
-                                            </ComboBox.Style>
-                                        </ComboBox>
-                                        <TextBox 
-                                                Text="{Binding Value}"
-                                                KeyDown="Value_OnKeyDown"
-                                                Margin="5,0,0,0"
-                                                Grid.Column="4"
-                                                HorizontalScrollBarVisibility="Disabled"
-                                                VerticalScrollBarVisibility="Auto"
-                                            ></TextBox>
-                                        <Button Style="{StaticResource StaticButton}" Grid.Column="5" Command="{Binding RemoveCommand}" CommandParameter="{Binding .}" >
-                                            <fa:FontAwesome Icon="Close"></fa:FontAwesome>
-                                        </Button>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                    <Button Grid.Row="2" Click="AddFilter_OnClick">Add Filter</Button>
-                </Grid>
-            </TabItem>
-        </TabControl>
+            <Label Grid.Column="2" Margin="0,0,0,0" Content="{lex:Loc Filter.Workflow.Property}"></Label>
+            <Label Grid.Column="4" Margin="0,0,0,0" Content="{lex:Loc Filter.Workflow.Value}"></Label>
+          </Grid>
+          <ScrollViewer Grid.Row="1" Padding="5,0,5,5">
+            <ItemsControl ItemsSource="{Binding NodeFilters}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                  <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="20"/>
+                      <ColumnDefinition Width="50"/>
+                      <ColumnDefinition Width="150"/>
+                      <ColumnDefinition Width="90"/>
+                      <ColumnDefinition/>
+                      <ColumnDefinition Width="20"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox IsChecked="{Binding IsActive}" VerticalAlignment="Center"></CheckBox>
+                    <ComboBox ItemsSource="{Binding DataContext.NodeOperations, ElementName=MainGrid}" 
+                           Visibility="{Binding IsFirst, Converter={StaticResource invBoolToVis}}"
+                           Grid.Column="1" 
+                           DisplayMemberPath="Name" 
+                           SelectedValuePath="Value" 
+                           SelectedValue="{Binding Operation}">
+                      <ComboBox.Style>
+                        <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
+                          <Setter Property="SelectedIndex" Value="0"/>
+                        </Style>
+                      </ComboBox.Style>
+                    </ComboBox>
+                    <TextBox 
+                        Text="{Binding Property}"
+                        Margin="5,0,5,0"
+                        Grid.Column="2"
+                        KeyDown="Property_OnKeyDown"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                      ></TextBox>
+                    <ComboBox ItemsSource="{Binding DataContext.NodePropertyComparisons, ElementName=MainGrid}" 
+                           Grid.Column="3" 
+                           DisplayMemberPath="Name" 
+                           SelectedValuePath="Value" 
+                           SelectedValue="{Binding Comparison}">
+                      <ComboBox.Style>
+                        <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Type ComboBox}}">
+                          <Setter Property="SelectedIndex" Value="0"/>
+                        </Style>
+                      </ComboBox.Style>
+                    </ComboBox>
+                    <TextBox 
+                        Text="{Binding Value}"
+                        KeyDown="Value_OnKeyDown"
+                        Margin="5,0,0,0"
+                        Grid.Column="4"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                      ></TextBox>
+                    <Button Style="{StaticResource StaticButton}" Grid.Column="5" Command="{Binding RemoveCommand}" CommandParameter="{Binding .}" >
+                      <fa:FontAwesome Icon="Close"></fa:FontAwesome>
+                    </Button>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+          <Button Grid.Row="2" Click="AddFilter_OnClick" Content="{lex:Loc Filter.Workflow.AddFilter}"></Button>
+        </Grid>
+      </TabItem>
+    </TabControl>
 
 
-    </Grid>
+  </Grid>
 </UserControl>

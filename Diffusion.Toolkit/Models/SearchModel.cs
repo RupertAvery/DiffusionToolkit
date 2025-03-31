@@ -6,6 +6,7 @@ using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
+using Diffusion.Toolkit.Services;
 using Filter = Diffusion.Database.Filter;
 using NodeFilter = Diffusion.Database.NodeFilter;
 
@@ -35,7 +36,6 @@ public class SearchModel : BaseNotify
     private ICommand _searchCommand;
     private string _searchText;
 
-    private int _imageCount;
     private int _page;
     private bool _isEmpty;
     private int _pages;
@@ -53,7 +53,6 @@ public class SearchModel : BaseNotify
     private ICommand? _showDropDown;
     private ICommand? _hideDropDown;
     private ICommand? _copyFiles;
-    private bool _nsfwBlur;
     private ICommand _showFilter;
     private ICommand _hideFilter;
     private ICommand _clearSearch;
@@ -68,12 +67,7 @@ public class SearchModel : BaseNotify
     private ViewMode _currentViewMode;
     private string _folderPath;
     private ICommand _goUp;
-    private ICommand _addAlbumCommand;
-    private ICommand _addToAlbumCommand;
     private string _album;
-    private ICommand _removeFromAlbumCommand;
-    private ICommand _removeAlbumCommand;
-    private ICommand _renameAlbumCommand;
     private ObservableCollection<Album> _albums;
     private ICommand _pageChangedCommand;
     private IEnumerable<OptionValue> _sortOptions;
@@ -87,7 +81,6 @@ public class SearchModel : BaseNotify
 
     public SearchModel()
     {
-        _mainModel = new MainModel();
         _images = new ObservableCollection<ImageEntry>();
         _searchHistory = new ObservableCollection<string>();
         _currentImage = new ImageViewModel();
@@ -104,26 +97,26 @@ public class SearchModel : BaseNotify
         SearchSettings = new SearchSettings();
     }
 
-    public SearchModel(MainModel mainModel)
-    {
-        _mainModel = mainModel;
-        _images = new ObservableCollection<ImageEntry>();
-        _searchHistory = new ObservableCollection<string>();
-        _currentImage = new ImageViewModel();
-        _filter = new FilterControlModel();
-        _imageOpacity = 1;
-        _isEmpty = true;
-        //_resultStatus = "Type anything to begin";
-        _searchHint = "Search for the answer to the the question of life, the universe, and everything";
-        _sortBy = "Date Created";
-        _sortDirection = "Z-A";
-        _isFilterVisible = false;
-        MetadataSection = new MetadataSection();
-        NavigationSection = new NavigationSection();
-        SearchSettings = new SearchSettings();
-    }
+    //public SearchModel(MainModel mainModel)
+    //{
+    //    _mainModel = mainModel;
+    //    _images = new ObservableCollection<ImageEntry>();
+    //    _searchHistory = new ObservableCollection<string>();
+    //    _currentImage = new ImageViewModel();
+    //    _filter = new FilterControlModel();
+    //    _imageOpacity = 1;
+    //    _isEmpty = true;
+    //    //_resultStatus = "Type anything to begin";
+    //    _searchHint = "Search for the answer to the the question of life, the universe, and everything";
+    //    _sortBy = "Date Created";
+    //    _sortDirection = "Z-A";
+    //    _isFilterVisible = false;
+    //    MetadataSection = new MetadataSection();
+    //    NavigationSection = new NavigationSection();
+    //    SearchSettings = new SearchSettings();
+    //}
 
-    public MainModel MainModel => _mainModel;
+    public MainModel MainModel => ServiceLocator.MainModel;
 
     public ObservableCollection<ImageEntry>? Images
     {

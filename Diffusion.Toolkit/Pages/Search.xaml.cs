@@ -206,7 +206,7 @@ namespace Diffusion.Toolkit.Pages
             heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[0], HeightChanged);
             heightDescriptor.AddValueChanged(PreviewGrid.RowDefinitions[2], HeightChanged2);
 
-            _model = new SearchModel(ServiceLocator.MainModel);
+            _model = new SearchModel();
             //_model.DataStore = _dataStoreOptions;
 
             ServiceLocator.SearchService = new SearchService(_model.Filter, _model.SearchSettings);

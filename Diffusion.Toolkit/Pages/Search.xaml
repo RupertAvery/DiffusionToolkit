@@ -27,6 +27,7 @@
     <Page.Resources>
         <ResourceDictionary>
             <common:BindingProxy x:Key="Proxy" Data="{Binding MainModel}" />
+            <common:BindingProxy x:Key="SearchProxy" Data="{Binding .}" />
             <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
             <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
@@ -264,25 +265,29 @@
                                                         Drop="DropImagesOnFolder">
                                                         <Grid.ContextMenu>
                                                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                                <MenuItem Command="{Binding MainModel.CreateFolderCommand}"
+                                                                <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ScanFolderCommand}"
                                                                           CommandParameter="{Binding .}"
-                                                                          Header="New Folder"></MenuItem>
+                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Rescan}"></MenuItem>
+                                                                <Separator></Separator>
+                                                                <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.CreateFolderCommand}"
+                                                                          CommandParameter="{Binding .}"
+                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.CreateFolder}"></MenuItem>
                                                                 <Separator></Separator>
                                                                 <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Add to Album"></MenuItem>-->
                                                                 <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Send to Recycle Bin"></MenuItem>-->
                                                                 <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameFolderCommand}" 
                                                                           CommandParameter="{Binding .}"
-                                                                          IsEnabled="{Binding NavigationSection.FoldersSection.CanRename}" 
-                                                                          Header="Rename"></MenuItem>
+                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanRename}" 
+                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Rename}"></MenuItem>
                                                                 <Separator></Separator>
                                                                 <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.DeleteFolderCommand}" 
                                                                           CommandParameter="{Binding .}"
-                                                                          IsEnabled="{Binding NavigationSection.FoldersSection.CanDelete}" 
-                                                                          Header="Delete"></MenuItem>
+                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanDelete}" 
+                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Delete}"></MenuItem>
                                                                 <Separator></Separator>
                                                                 <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowInExplorerCommand}" 
                                                                           CommandParameter="{Binding .}"
-                                                                          Header="Show in Explorer"></MenuItem>
+                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.ShowInExplorer}"></MenuItem>
                                                             </ContextMenu>
                                                         </Grid.ContextMenu>
                                                         <Grid.Resources>
@@ -419,8 +424,8 @@
                                                                 Click="Album_OnClick" RenderTransformOrigin="0.179,0.476">
                                                             <Button.ContextMenu>
                                                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                                    <MenuItem Header="Rename Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameAlbumCommand}" CommandParameter="{Binding .}"></MenuItem>
-                                                                    <MenuItem Header="Remove Album" Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveAlbumCommand}" CommandParameter="{Binding .}"></MenuItem>
+                                                                    <MenuItem Header="{lex:Loc Search.Navigation.Albums.ContextMenu.Rename}" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameAlbumCommand}" CommandParameter="{Binding .}"></MenuItem>
+                                                                    <MenuItem Header="{lex:Loc Search.Navigation.Albums.ContextMenu.Remove}" Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveAlbumCommand}" CommandParameter="{Binding .}"></MenuItem>
                                                                 </ContextMenu>
                                                             </Button.ContextMenu>
                                                             <Button.Template>
