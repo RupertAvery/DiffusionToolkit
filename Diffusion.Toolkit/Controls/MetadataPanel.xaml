@@ -67,6 +67,32 @@
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding NegativePrompt}"/>
                         </local:AccordionControl>
 
+                        <local:AccordionControl x:Name="ModelMetadata" 
+                                                Margin="0,0,0,5"
+                                                State="{Binding MetadataSection.ModelState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.ModelName}">
+                            <local:AccordionControl.ButtonAreaContent>
+                                <Grid Background="{x:Null}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="80"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Content="{lex:Loc Metadata.ModelHash}"/>
+                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding SearchModelCommand}" Content="{lex:Loc Metadata.Buttons.SearchHash}"/>
+                                </Grid>
+                            </local:AccordionControl.ButtonAreaContent>
+                            <Grid Background="{x:Null}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="80"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="0" FontSize="14" BorderThickness="0"
+                                         IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"/>
+                                <TextBox Grid.Column="1" FontSize="14" BorderThickness="0" IsReadOnly="True" Padding="5" Background="Transparent" Text="{Binding ModelHash}"/>
+                            </Grid>
+                        </local:AccordionControl>
+
                         <local:AccordionControl x:Name="SeedMetadata" 
                                                    Margin="0,0,0,5"
                                                    State="{Binding MetadataSection.SeedState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"   HeaderBackground="#80000000" Header="{lex:Loc Metadata.Seed}">
@@ -129,32 +155,6 @@
                             <TextBox Background="#00000000" FontSize="14" BorderThickness="0"
                                      IsReadOnly="True"
                                      Padding="5" TextWrapping="WrapWithOverflow" Text="{Binding OtherParameters}"/>
-                        </local:AccordionControl>
-
-                        <local:AccordionControl x:Name="ModelMetadata" 
-                                                   Margin="0,0,0,5"
-                                                   State="{Binding MetadataSection.ModelState, RelativeSource={RelativeSource AncestorLevel=1, Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"  HeaderBackground="#80000000" Header="{lex:Loc Metadata.ModelName}">
-                            <local:AccordionControl.ButtonAreaContent>
-                                <Grid Background="{x:Null}">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition/>
-                                        <ColumnDefinition Width="100"/>
-                                        <ColumnDefinition Width="80"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Label Grid.Column="1" Style="{DynamicResource SmallCaps}" Content="{lex:Loc Metadata.ModelHash}"/>
-                                    <Button Style="{DynamicResource BorderlessButton}" Grid.Column="2" Command="{Binding SearchModelCommand}" Content="{lex:Loc Metadata.Buttons.SearchHash}"/>
-                                </Grid>
-                            </local:AccordionControl.ButtonAreaContent>
-                            <Grid Background="{x:Null}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition/>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="80"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="0" FontSize="14" BorderThickness="0"
-                                         IsReadOnly="True" Padding="5" Background="Transparent" TextWrapping="WrapWithOverflow" Text="{Binding ModelName}"/>
-                                <TextBox Grid.Column="1" FontSize="14" BorderThickness="0" IsReadOnly="True" Padding="5" Background="Transparent" Text="{Binding ModelHash}"/>
-                            </Grid>
                         </local:AccordionControl>
 
                         <local:AccordionControl x:Name="PathMetadata" 
