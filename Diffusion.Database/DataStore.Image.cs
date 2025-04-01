@@ -590,6 +590,8 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
+            // TODO: Remove nodes
+
             var whereClause = string.Join(" AND ", watchedFolders.Select(f => $"PATH NOT LIKE '{f}\\%'"));
 
             //first remove matching entries from AlbumImage

@@ -87,14 +87,14 @@ public class MainModel : BaseNotify
         _status = "Ready";
         _isPreviewVisible = true;
         _messagePopupModel = new MessagePopupModel();
-        _albums = new ObservableCollection<AlbumModel>()
-        {
-            new AlbumModel()
-            {
-                Name = "Album #12345",
-                ImageCount = 12345
-            }
-        };
+        //_albums = new ObservableCollection<AlbumModel>()
+        //{
+        //    new AlbumModel()
+        //    {
+        //        Name = "Album #12345",
+        //        ImageCount = 12345
+        //    }
+        //};
     }
 
     public Page Page

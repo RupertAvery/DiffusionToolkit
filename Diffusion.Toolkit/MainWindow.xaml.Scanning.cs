@@ -333,7 +333,7 @@ namespace Diffusion.Toolkit
             var result = await _messagePopupManager.ShowCustom(message, "Clean Removed Folders", PopupButtons.YesNo, 500, 250);
             if (result == PopupResult.Yes)
             {
-                CleanRemovedFoldersInternal();
+                await CleanRemovedFoldersInternal();
             }
         }
 
@@ -365,8 +365,10 @@ namespace Diffusion.Toolkit
             {
                 album.IsTicked = false;
             }
+            ServiceLocator.MainModel.SelectedAlbumsCount = 0;
+            ServiceLocator.MainModel.HasSelectedAlbums = false;
 
-            _model.HasSelectedAlbums = false;
+            ServiceLocator.SearchService.ExecuteSearch();
         }
 
         private void ClearModels()

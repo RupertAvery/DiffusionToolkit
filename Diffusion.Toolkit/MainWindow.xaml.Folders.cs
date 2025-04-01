@@ -15,7 +15,7 @@ namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
-        private async Task InitFolders()
+        private void InitFolders()
         {
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
 

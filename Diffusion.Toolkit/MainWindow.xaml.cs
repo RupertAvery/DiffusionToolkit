@@ -33,6 +33,7 @@ using Diffusion.Toolkit.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Common;
+using ModelViewModel = Diffusion.Toolkit.Models.ModelViewModel;
 
 namespace Diffusion.Toolkit
 {
@@ -100,6 +101,8 @@ namespace Diffusion.Toolkit
 
 
                 _model = new MainModel();
+                _model.CurrentProgress = 0;
+                _model.TotalProgress = 100;
 
                 ServiceLocator.MainModel = _model;
                 ServiceLocator.Dispatcher = Dispatcher;
@@ -578,12 +581,12 @@ namespace Diffusion.Toolkit
                 (handle) => { Dispatcher.Invoke(() => { ((MessagePopupHandle)handle).CloseAsync(); }); }
             );
 
-            var total = _dataStore.GetTotal();
+            //var total = _dataStore.GetTotal();
 
-            var text = GetLocalizedText("Main.Status.ImagesInDatabase").Replace("{count}", $"{total:n0}");
+            //var text = GetLocalizedText("Main.Status.ImagesInDatabase").Replace("{count}", $"{total:n0}");
 
-            _model.Status = text;
-            _model.TotalProgress = 100;
+            //_model.Status = text;
+            //_model.TotalProgress = 100;
 
             _models = new Pages.Models();
 
@@ -754,58 +757,37 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Loading models");
 
-
+            // TODO: Check for slowdowns
             LoadAlbums();
             LoadModels();
             LoadImageModels();
             InitFolders();
 
-
             Logger.Log($"{_modelsCollection.Count} models loaded");
 
             if (_settings.CheckForUpdatesOnStartup)
             {
-                var checker = new UpdateChecker();
-
-                Logger.Log($"Checking for latest version");
-                try
+                Task.Run(async () =>
                 {
-                    var hasUpdate = await checker.CheckForUpdate();
+                    var checker = new UpdateChecker();
 
-                    if (hasUpdate)
+                    Logger.Log($"Checking for latest version");
+                    try
                     {
-                        var result = await _messagePopupManager.Show(GetLocalizedText("Main.Update.UpdateAvailable"), "Diffusion Toolkit", PopupButtons.YesNo);
-                        if (result == PopupResult.Yes)
+                        var hasUpdate = await checker.CheckForUpdate();
+
+                        if (hasUpdate)
                         {
-                            CallUpdater();
+                            var result = await _messagePopupManager.Show(GetLocalizedText("Main.Update.UpdateAvailable"), "Diffusion Toolkit", PopupButtons.YesNo);
+                            if (result == PopupResult.Yes)
+                            {
+                                CallUpdater();
+                            }
                         }
                     }
-                }
-                catch (Exception exception)
-                {
-                    await _messagePopupManager.Show(exception.Message, "Update error", PopupButtons.OK);
-                }
-
-            }
-
-            if (!isFirstTime && _settings.ScanForNewImagesOnStartup)
-            {
-                Logger.Log($"Scanning for new images");
-
-
-                _ = Task.Run(async () =>
-                {
-                    if (await ServiceLocator.ProgressService.TryStartTask())
+                    catch (Exception exception)
                     {
-                        try
-                        {
-                            await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
-                        }
-                        finally
-                        {
-                            ServiceLocator.ProgressService.CompleteTask();
-                            ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                        }
+                        await _messagePopupManager.Show(exception.Message, "Update error", PopupButtons.OK);
                     }
                 });
             }
@@ -818,19 +800,32 @@ namespace Diffusion.Toolkit
                 {
                     _ = Scan(true);
                 }
-                //else
-                //{
-                //    _ = TryScanFolders();
-                //}
+                else if (_settings.ScanForNewImagesOnStartup)
+                {
+                    Logger.Log($"Scanning for new images");
+
+                    _ = Task.Run(async () =>
+                    {
+                        if (await ServiceLocator.ProgressService.TryStartTask())
+                        {
+                            try
+                            {
+                                await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
+                            }
+                            finally
+                            {
+                                ServiceLocator.ProgressService.CompleteTask();
+                                ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
+                            }
+                        }
+                    });
+                }
+
             }
 
             Logger.Log($"Init completed");
 
-            //_previewWindow = new PreviewWindow();
-            //_previewWindow.ShowInTaskbar = false;
-            //_previewWindow.Owner = this;
-            //_previewWindow.Show();
-            _ = Cleanup();
+            // Cleanup();
         }
 
         private async Task Cleanup()
