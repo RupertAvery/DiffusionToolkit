@@ -41,7 +41,6 @@ namespace Diffusion.Toolkit
             {
                 SetField(ref _step, value);
                 OnPropertyChanged("NotStart");
-                OnPropertyChanged("NextButton");
             }
         }
 
@@ -79,20 +78,6 @@ namespace Diffusion.Toolkit
                         return false;
                     default:
                         return true;
-                }
-            }
-        }
-
-        public string NextButton
-        {
-            get
-            {
-                switch (Step)
-                {
-                    case 4:
-                        return "Finish";
-                    default:
-                        return "Next";
                 }
             }
         }

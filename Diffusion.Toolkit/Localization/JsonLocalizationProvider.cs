@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Windows;
 using WPFLocalizeExtension.Providers;
 
@@ -51,7 +52,7 @@ namespace Diffusion.Toolkit.Localization
 
         public object GetLocalizedObject(string key, DependencyObject target, CultureInfo culture)
         {
-            var currentCulture = Settings.Instance?.Culture ?? "en-US";
+            var currentCulture = Settings.Instance?.Culture ?? Thread.CurrentThread.CurrentCulture.Name;
 
             //File.AppendAllText("C:\\Temp\\DiffusionToolkit.log", key + "\r\n");
 

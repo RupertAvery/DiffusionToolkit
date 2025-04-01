@@ -83,6 +83,9 @@ namespace Diffusion.Toolkit
 
                 _configuration = new Configuration<Settings>(settingsPath, isPortable);
 
+                //Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("ja-JP");
+                //Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("ja-JP");
+
                 InitializeComponent();
 
                 AppDomain currentDomain = AppDomain.CurrentDomain;
@@ -508,6 +511,7 @@ namespace Diffusion.Toolkit
                 }
 
             }
+
 
 
             _settings.PropertyChanged += (s, args) =>

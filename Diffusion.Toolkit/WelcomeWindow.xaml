@@ -22,7 +22,7 @@
     <Window.Resources>
         <ResourceDictionary>
             <converters:ValueVisibilityConverter x:Key="ValueVisible"></converters:ValueVisibilityConverter>
-            <local:WelcomeModel x:Key="SampleData" Step="2">
+            <local:WelcomeModel x:Key="SampleData" Step="1">
             </local:WelcomeModel>
         </ResourceDictionary>
     </Window.Resources>
@@ -36,14 +36,15 @@
         </Grid.RowDefinitions>
         <Grid Margin="10" Visibility="{Binding Step, Converter={StaticResource ValueVisible}, ConverterParameter=1}">
             <StackPanel Background="Transparent">
-                <Label FontSize="24" FontWeight="DemiBold">Welcome to Diffusion Toolkit!</Label>
-                <Label FontSize="18">Let's get you started!</Label>
+                <Label FontSize="24" FontWeight="DemiBold" Content="{lex:Loc Welcome.Title}"></Label>
+                <Label FontSize="18" Content="{lex:Loc Welcome.Subtitle}"></Label>
             </StackPanel>
         </Grid>
         <Grid Margin="10" Visibility="{Binding Step, Converter={StaticResource ValueVisible}, ConverterParameter=2}">
             <StackPanel Grid.Row="0">
-                <Label FontSize="18" FontWeight="DemiBold">Select the folders you want to scan</Label>
-                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap">These folders will be watched for new content and will be scanned recursively. You can change these settings later.</TextBlock>
+                <Label FontSize="18" FontWeight="DemiBold" Content="{lex:Loc Welcome.Folders.Title}"></Label>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap" Text="{lex:Loc Welcome.Folders.Subtitle}"></TextBlock>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5,10" TextWrapping="Wrap" Text="{lex:Loc Welcome.Common.ChangeSettingsLater}"></TextBlock>
                 <Grid Height="120" VerticalAlignment="Top" Margin="5,5,5,15">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
@@ -73,28 +74,23 @@
         </Grid>
         <Grid Margin="10" Visibility="{Binding Step, Converter={StaticResource ValueVisible}, ConverterParameter=3}">
             <StackPanel Grid.Row="0">
-                <Label FontSize="18" FontWeight="DemiBold">Select additional metadata for searching</Label>
-                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap">
-                    By default Diffusion Toolkit will store basic supported metadata. You may chose to store additional metadata as needed.
+                <Label FontSize="18" FontWeight="DemiBold" Content="{lex:Loc Welcome.Metadata.Title}"></Label>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap" Text="{lex:Loc Welcome.Metadata.Subtitle}">
                 </TextBlock>
-                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5" TextWrapping="Wrap">
-                    Check this option if you use ComfyUI and you want to search in ComfyUI Node Properties. 
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5" TextWrapping="Wrap" Text="{lex:Loc Welcome.Metadata.ComfyUI}">
                 </TextBlock>
                 <CheckBox IsChecked="{Binding StoreWorkflow}" Margin="20,15,0,15" Content="{lex:Loc Settings.Metadata.StoreWorkflow}"></CheckBox>
-                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5" TextWrapping="Wrap">
-                    Check this option if you want to store the raw metadata and use it for searching. You will need to enable Raw Metadata Search in the Search Bar Settings.
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5" TextWrapping="Wrap" Text="{lex:Loc Welcome.Metadata.RawMetadata}">
                 </TextBlock>
                 <CheckBox IsChecked="{Binding StoreMetadata}" Margin="20,15,0,15" Content="{lex:Loc Settings.Metadata.StoreMetadata}"></CheckBox>
                 <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5" TextWrapping="Wrap" Text="{lex:Loc Settings.Metadata.Warning}"></TextBlock>
-                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5,10" TextWrapping="Wrap">You can change these settings later.</TextBlock>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" Margin="5,10" TextWrapping="Wrap" Text="{lex:Loc Welcome.Common.ChangeSettingsLater}"></TextBlock>
             </StackPanel>
         </Grid>
         <Grid Margin="10" Visibility="{Binding Step, Converter={StaticResource ValueVisible}, ConverterParameter=4}">
             <StackPanel Grid.Row="0">
-                <Label FontSize="18" FontWeight="DemiBold">All set!</Label>
-                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap">
-                    Diffusion Toolkit will now scan your folders.  You can begin searching and viewing images as soon as any images have been scanned.
-                    Press CTRL+F5 or hold CTRL and click the Refresh button to reload search results.
+                <Label FontSize="18" FontWeight="DemiBold" Content="{lex:Loc Welcome.Complete.Title}"></Label>
+                <TextBlock Foreground="{DynamicResource ForegroundBrush}" FontSize="12" Margin="5" TextWrapping="Wrap" Text="{lex:Loc Welcome.Complete.Subtitle}">
                 </TextBlock>
             </StackPanel>
         </Grid>
@@ -103,8 +99,19 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Click="Back_OnClick" IsEnabled="{Binding NotStart}">Back</Button>
-            <Button Grid.Column="1" Click="Next_OnClick" Content="{Binding NextButton}"></Button>
+            <Button Grid.Column="0" Click="Back_OnClick" IsEnabled="{Binding NotStart}" Content="{lex:Loc Common.Buttons.Back}"></Button>
+            <Button Grid.Column="1" Click="Next_OnClick">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+                        <Setter Property="Content" Value="{lex:Loc Common.Buttons.Next}"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Step}" Value="4">
+                                <Setter Property="Content" Value="{lex:Loc Common.Buttons.Finish}"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
     </Grid>
 </local:BorderlessWindow>

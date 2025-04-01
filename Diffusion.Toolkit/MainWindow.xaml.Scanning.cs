@@ -37,11 +37,9 @@ namespace Diffusion.Toolkit
         {
             if (_settings.ImagePaths.Any())
             {
-                var message = "This will update the metadata of ALL existing files in the database with current metadata in actual files.\r\n\r\n" +
-                              "You only need to do this if you've updated the metadata in the files since they were added or if they contain metadata that an older version of this program didn't store.\r\n\r\n" +
-                              "Are you sure you want to continue?";
+                var message = GetLocalizedText("Menu.Tools.RebuildMetadata.Message");
 
-                var result = await _messagePopupManager.ShowCustom(message, "Rebuild Metadata", PopupButtons.YesNo, 500, 400);
+                var result = await _messagePopupManager.ShowMedium(message, GetLocalizedText("Menu.Tools.RebuildMetadata.Title"), PopupButtons.YesNo);
                 if (result == PopupResult.Yes)
                 {
                     await Rebuild();
@@ -67,7 +65,7 @@ namespace Diffusion.Toolkit
                             _ = Task.Delay(10000).ContinueWith(t =>
                             {
                                 ServiceLocator.SearchService.ExecuteSearch();
-                                ServiceLocator.MessageService.Show("You may now view your images while we continue to scan your folders in the background", "Welcome to Diffusion Toolkit", PopupButtons.OK);
+                                ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
                             });
                         }
 
