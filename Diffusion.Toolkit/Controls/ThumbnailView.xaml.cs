@@ -254,11 +254,10 @@ namespace Diffusion.Toolkit.Controls
             Point pt = e.GetPosition(ThumbnailListView);
             var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
             if (item == null) return;
-            if (item.VisualHit is FrameworkElement { DataContext: ImageEntry })
+            if (item.VisualHit is FrameworkElement { DataContext: ImageEntry { IsEmpty: false } entry })
             {
                 OpenSelected();
             }
-
         }
 
         private void ThumbnailListView_OnKeyDown(object sender, KeyEventArgs e)
@@ -720,11 +719,11 @@ namespace Diffusion.Toolkit.Controls
             {
                 var thumbnail = item.VisualHit as Thumbnail;
 
-                if (item.VisualHit is FrameworkElement { DataContext: ImageEntry } f)
+                if (item.VisualHit is FrameworkElement { DataContext: ImageEntry { IsEmpty: false } entry })
                 {
                     //currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
 
-                    SelectedImageEntry = f.DataContext as ImageEntry;
+                    SelectedImageEntry = entry;
                 }
 
                 if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border))

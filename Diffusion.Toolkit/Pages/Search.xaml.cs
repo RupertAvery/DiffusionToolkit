@@ -1120,7 +1120,7 @@ namespace Diffusion.Toolkit.Pages
                         {
                             CursorPosition.Start => _model.Images[0],
                             CursorPosition.End => _model.Images[^1],
-                            _ => _model.SelectedImageEntry
+                            _ => _model.Images[0]
                         };
                     }
                     else
