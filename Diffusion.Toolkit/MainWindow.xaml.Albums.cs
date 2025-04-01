@@ -164,11 +164,11 @@ namespace Diffusion.Toolkit
         {
             if (e.PropertyName == nameof(AlbumModel.IsTicked))
             {
-                var selectedAlbums = _model.Albums.Where(d => d.IsTicked).ToList();
-                _model.SelectedAlbumsCount = selectedAlbums.Count;
-                _model.HasSelectedAlbums = selectedAlbums.Any();
+                //var selectedAlbums = ServiceLocator.MainModel.Albums.Where(d => d.IsTicked).ToList();
+                //ServiceLocator.MainModel.SelectedAlbumsCount = selectedAlbums.Count;
+                //ServiceLocator.MainModel.HasSelectedAlbums = selectedAlbums.Any();
 
-                _search.SearchImages();
+                //ServiceLocator.SearchService.ExecuteSearch();
             }
         }
 

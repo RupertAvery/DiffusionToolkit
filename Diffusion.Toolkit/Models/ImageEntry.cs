@@ -38,6 +38,7 @@ public class ImageEntry : BaseNotify
     private IEnumerable<string> _albums;
     private bool _unavailable;
     private bool _hasError;
+    private bool _isEmpty;
 
     public ImageEntry(long batchId)
     {
@@ -57,8 +58,15 @@ public class ImageEntry : BaseNotify
     public EntryType EntryType
     {
         get => _entryType;
-        set => SetField(ref _entryType, value);
+        set
+        {
+            var updated = SetField(ref _entryType, value);
+            // Force rebinding of template selector
+            if (updated) OnPropertyChanged(nameof(Self));
+        }
     }
+
+    public ImageEntry Self => this;
 
     public string Name
     {
@@ -184,5 +192,11 @@ public class ImageEntry : BaseNotify
     {
         get => _hasError;
         set => SetField(ref _hasError, value);
+    }
+
+    public bool IsEmpty
+    {
+        get => _isEmpty;
+        set => SetField(ref _isEmpty, value);
     }
 }

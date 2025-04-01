@@ -15,11 +15,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
-using Microsoft.Extensions.Options;
-using Image = Diffusion.Database.Image;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Pages;
-using Diffusion.IO;
 
 namespace Diffusion.Toolkit.Controls
 {

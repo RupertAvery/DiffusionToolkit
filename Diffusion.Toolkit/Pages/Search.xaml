@@ -414,7 +414,7 @@
                                                             <ColumnDefinition Width="20"/>
                                                             <ColumnDefinition/>
                                                         </Grid.ColumnDefinitions>
-                                                        <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsTicked}"></CheckBox>
+                                                        <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsTicked}" Click="AlbumCheck_OnClick"></CheckBox>
                                                         <Button Grid.Column="1" Style="{StaticResource SmallButton}" 
                                                                 Tag="{Binding .}"
                                                                 AllowDrop="True" 

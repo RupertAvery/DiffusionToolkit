@@ -254,7 +254,7 @@
             </ItemsControl.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid Background="Transparent">
+                    <Grid Background="Transparent" Visibility="{Binding IsEmpty, Converter={StaticResource invBoolToVisCol}}">
                         <Grid.RowDefinitions>
                             <RowDefinition></RowDefinition>
                             <RowDefinition></RowDefinition>
@@ -262,7 +262,25 @@
                         <Border 
                                 Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                                 Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12" >
-                            <ContentControl Content="{Binding Path=.}" ContentTemplateSelector="{DynamicResource ThumbnailTemplateSelector}"/>
+                            <!--<ContentControl Content="{Binding Path=Self}" ContentTemplate="{StaticResource FileDataTemplate}" ContentTemplateSelector="{DynamicResource ThumbnailTemplateSelector}"/>-->
+                            <ContentControl Content="{Binding Path=.}">
+                                <ContentControl.Style>
+                                    <Style TargetType="ContentControl">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static toolkit:EntryType.Folder}">
+                                                <Setter Property="ContentTemplate" Value="{StaticResource FolderDataTemplate}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static toolkit:EntryType.File}">
+                                                <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static toolkit:EntryType.Album}">
+                                                <Setter Property="ContentTemplate" Value="{StaticResource AlbumDataTemplate}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ContentControl.Style>
+                            </ContentControl>
                         </Border>
                         <Label Grid.Row="1" HorizontalContentAlignment="Center" Content="{Binding Name}">
                         </Label>

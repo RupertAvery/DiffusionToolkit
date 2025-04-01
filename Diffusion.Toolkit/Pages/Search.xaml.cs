@@ -37,6 +37,7 @@ using System.Windows.Media;
 using Diffusion.Toolkit.Services;
 using Node = Diffusion.IO.Node;
 using SearchView = Diffusion.Database.SearchView;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -1022,7 +1023,7 @@ namespace Diffusion.Toolkit.Pages
                         var parser = new ComfyUIParser();
                         imageViewModel.Nodes = parser.Parse(parameters.WorkflowId, parameters.Workflow);
                     }
-                    catch 
+                    catch
                     {
                     }
 
@@ -1298,13 +1299,13 @@ namespace Diffusion.Toolkit.Pages
                 //                _model.Images?.Clear();
             });
 
-            var images = new List<ImageEntry>();
+            var foldersEntries = new List<ImageEntry>();
 
             ThumbnailLoader.Instance.StopCurrentBatch();
 
             var rId = ThumbnailLoader.Instance.StartBatch();
 
-            if (_currentModeSettings != null && _currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
+            if (QueryOptions.SearchView == SearchView.Folder && _model.Page == 1)
             {
                 IEnumerable<string> folders = Enumerable.Empty<string>();
 
@@ -1341,7 +1342,7 @@ namespace Diffusion.Toolkit.Pages
                         EntryType = EntryType.Folder
                     };
 
-                    images.Add(imageEntry);
+                    foldersEntries.Add(imageEntry);
                 }
             }
 
@@ -1362,10 +1363,11 @@ namespace Diffusion.Toolkit.Pages
                 ));
 
             var sw = new Stopwatch();
-            
+
             sw.Start();
 
             var count = 0;
+            var images = new List<ImageEntry>();
 
             foreach (var file in matches)
             {
@@ -1391,39 +1393,115 @@ namespace Diffusion.Toolkit.Pages
                 count++;
             }
 
+            var totalEntries = foldersEntries.Count + images.Count;
+
             Dispatcher.Invoke(() =>
             {
-                if (_model.Images == null || _model.Images.Count != images.Count)
+                if (_model.Images == null)
                 {
-                    _model.Images = new ObservableCollection<ImageEntry>(images);
+                    _model.Images = new ObservableCollection<ImageEntry>(foldersEntries.Concat(images));
                 }
-                else
+                else if (_model.Images.Count != totalEntries)
                 {
-                    for (var i = 0; i < images.Count; i++)
+                    if (totalEntries > _model.Images.Count)
                     {
-                        var dest = _model.Images[i];
-                        var src = images[i];
-
-                        dest.BatchId = src.BatchId;
-                        dest.Id = src.Id;
-                        dest.EntryType = src.EntryType;
-                        dest.Name = src.Name;
-                        dest.Favorite = src.Favorite;
-                        dest.ForDeletion = src.ForDeletion;
-                        dest.Rating = src.Rating;
-                        dest.Score = src.Score;
-                        dest.NSFW = src.NSFW;
-                        dest.FileName = src.FileName;
-                        dest.Path = src.Path;
-                        dest.CreatedDate = src.CreatedDate;
-                        dest.AlbumCount = src.AlbumCount;
-                        dest.Albums = src.Albums;
-                        dest.HasError = src.HasError;
-                        dest.Unavailable = src.Unavailable;
-                        dest.LoadState = LoadState.Unloaded;
-                        dest.Dispatcher = Dispatcher;
-                        dest.Thumbnail = null;
+                        var difference = totalEntries - _model.Images.Count;
+                        for (var i = 0; i < difference; i++)
+                        {
+                            _model.Images.Add(new ImageEntry(0));
+                        }
                     }
+                    else if (totalEntries < _model.Images.Count)
+                    {
+                        //_model.Images.Add(new ImageEntry(0));
+                    }
+
+
+                }
+
+
+                for (var i = 0; i < foldersEntries.Count; i++)
+                {
+                    var dest = _model.Images[i];
+                    var src = foldersEntries[i];
+
+                    dest.BatchId = src.BatchId;
+                    dest.Id = src.Id;
+                    dest.EntryType = src.EntryType;
+                    dest.Name = src.Name;
+                    dest.Favorite = src.Favorite;
+                    dest.ForDeletion = src.ForDeletion;
+                    dest.Rating = src.Rating;
+                    dest.Score = src.Score;
+                    dest.NSFW = src.NSFW;
+                    dest.FileName = src.FileName;
+                    dest.Path = src.Path;
+                    dest.CreatedDate = src.CreatedDate;
+                    dest.AlbumCount = src.AlbumCount;
+                    dest.Albums = src.Albums;
+                    dest.HasError = src.HasError;
+                    dest.Unavailable = src.Unavailable;
+                    dest.LoadState = LoadState.Unloaded;
+                    dest.Dispatcher = Dispatcher;
+                    dest.Thumbnail = null;
+                    dest.IsEmpty = false;
+                }
+
+                var offset = foldersEntries.Count;
+                
+                for (var i = 0; i < images.Count; i++)
+                {
+                    var dest = _model.Images[offset + i];
+                    var src = images[i];
+
+                    dest.BatchId = src.BatchId;
+                    dest.Id = src.Id;
+                    dest.EntryType = src.EntryType;
+                    dest.Name = src.Name;
+                    dest.Favorite = src.Favorite;
+                    dest.ForDeletion = src.ForDeletion;
+                    dest.Rating = src.Rating;
+                    dest.Score = src.Score;
+                    dest.NSFW = src.NSFW;
+                    dest.FileName = src.FileName;
+                    dest.Path = src.Path;
+                    dest.CreatedDate = src.CreatedDate;
+                    dest.AlbumCount = src.AlbumCount;
+                    dest.Albums = src.Albums;
+                    dest.HasError = src.HasError;
+                    dest.Unavailable = src.Unavailable;
+                    dest.LoadState = LoadState.Unloaded;
+                    dest.Dispatcher = Dispatcher;
+                    dest.Thumbnail = null;
+                    dest.IsEmpty = false;
+                }
+
+                offset = foldersEntries.Count + images.Count;
+
+                for (var i = offset; i < _model.Images.Count; i++)
+                {
+                    var dest = _model.Images[i];
+
+                    dest.BatchId = 0;
+                    dest.Id = 0;
+                    dest.EntryType = EntryType.File;
+                    dest.Name = "";
+                    dest.Favorite = false;
+                    dest.ForDeletion = false;
+                    dest.Rating = null;
+                    dest.Score = "";
+                    dest.NSFW = false;
+                    dest.FileName = "";
+                    dest.Path = "";
+                    dest.CreatedDate = DateTime.MinValue;
+                    dest.AlbumCount = 0;
+                    dest.Albums = Enumerable.Empty<string>();
+                    dest.HasError = false;
+                    dest.Unavailable = false;
+                    dest.LoadState = LoadState.Loaded;
+                    dest.Dispatcher = Dispatcher;
+                    dest.Thumbnail = null;
+                    dest.IsEmpty = true;
                 }
 
                 ThumbnailListView.ReloadThumbnailsView();
@@ -2050,16 +2128,29 @@ namespace Diffusion.Toolkit.Pages
 
         private void Album_OnClick(object sender, RoutedEventArgs e)
         {
-            var albumModel = ((AlbumModel)((Button)sender).DataContext);
+            var albumModel = ((AlbumModel)((FrameworkElement)sender).DataContext);
 
-            _model.MainModel.CurrentAlbum = albumModel;
+            ServiceLocator.MainModel.CurrentAlbum = albumModel;
 
-            foreach (var album in _model.MainModel.Albums)
+            foreach (var album in ServiceLocator.MainModel.Albums)
             {
                 album.IsTicked = false;
             }
 
             albumModel.IsTicked = true;
+
+            var selectedAlbums = ServiceLocator.MainModel.Albums.Where(d => d.IsTicked).ToList();
+            ServiceLocator.MainModel.SelectedAlbumsCount = selectedAlbums.Count;
+            ServiceLocator.MainModel.HasSelectedAlbums = selectedAlbums.Any();
+
+            SearchImages(null);
+        }
+
+        private void AlbumCheck_OnClick(object sender, RoutedEventArgs e)
+        {
+            var selectedAlbums = ServiceLocator.MainModel.Albums.Where(d => d.IsTicked).ToList();
+            ServiceLocator.MainModel.SelectedAlbumsCount = selectedAlbums.Count;
+            ServiceLocator.MainModel.HasSelectedAlbums = selectedAlbums.Any();
 
             SearchImages(null);
         }
