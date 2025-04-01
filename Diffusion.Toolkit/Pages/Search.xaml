@@ -244,7 +244,7 @@
                                                     <ColumnDefinition Width="26"/>
                                                     <ColumnDefinition Width="26"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Refresh.ToopTip}" Command="{Binding MainModel.ReloadFoldersCommand}">
+                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Refresh.ToolTip}" Command="{Binding MainModel.ReloadFoldersCommand}">
                                                     <fa:FontAwesome Icon="Refresh"></fa:FontAwesome>
                                                 </Button>
                                                 <!--<Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Manage.ToopTip}" Command="{Binding MainModel.ManageFoldersCommand}">

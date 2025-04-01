@@ -20,3 +20,7 @@ def update_json(file1_path, file2_path, output_path):
     print(f"Updated JSON saved to {output_path}")
 
 update_json('default.json', 'en-us.json', 'en-us.json')
+update_json('default.json', 'de-DE.json', 'de-DE.json')
+update_json('default.json', 'es-ES.json', 'es-ES.json')
+update_json('default.json', 'fr-FR.json', 'fr-FR.json')
+update_json('default.json', 'ja-JP.json', 'ja-JP.json')
