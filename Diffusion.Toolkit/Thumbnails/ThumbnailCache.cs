@@ -1,7 +1,13 @@
-﻿using System;
+﻿using SQLite;
+using System;
 using System.Collections.Concurrent;
+using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
+using Size = System.Drawing.Size;
 
 namespace Diffusion.Toolkit.Thumbnails;
 
@@ -11,18 +17,18 @@ public class CacheEntry
     public BitmapSource BitmapSource { get; set; }
 }
 
-public class ThumbnailCache
+public class ThumbnailCacheOld
 {
     private readonly int _maxItems;
     private readonly int _evictItems;
     private ConcurrentDictionary<string, CacheEntry> _cache = new ConcurrentDictionary<string, CacheEntry>();
 
     private object _lock = new object();
-    private static ThumbnailCache _instance;
+    private static ThumbnailCacheOld _instance;
 
-    public static ThumbnailCache Instance => _instance;
+    public static ThumbnailCacheOld Instance => _instance;
 
-    private ThumbnailCache(int maxItems, int evictItems)
+    private ThumbnailCacheOld(int maxItems, int evictItems)
     {
         _maxItems = maxItems;
         _evictItems = evictItems;
@@ -78,11 +84,104 @@ public class ThumbnailCache
 
     public static void CreateInstance(int maxItems, int evictItems)
     {
-        _instance = new ThumbnailCache(maxItems, evictItems);
+        _instance = new ThumbnailCacheOld(maxItems, evictItems);
     }
 
     public void Clear()
     {
         _cache.Clear();
+    }
+}
+
+public class Thumbnail
+{
+    public string Filename { get; set; }
+    public byte[] Data { get; set; }
+    public int Size { get; set; }
+}
+
+
+public class ThumbnailCache
+{
+    private static ThumbnailCache _instance;
+
+    public static ThumbnailCache Instance => _instance;
+
+    private readonly ConcurrentDictionary<string, SQLiteConnection> _connectionPool;
+
+    private ThumbnailCache()
+    {
+        _connectionPool = new ConcurrentDictionary<string, SQLiteConnection>();
+    }
+
+
+    public SQLiteConnection OpenConnection(string path)
+    {
+        var dbPath = Path.GetDirectoryName(path);
+
+        if (!_connectionPool.TryGetValue(dbPath, out var db))
+        {
+            db = new SQLiteConnection(Path.Combine(dbPath, "dt_thumbnails.db"));
+            db.CreateTable<Thumbnail>();
+            db.CreateIndex<Thumbnail>(t => t.Filename, true);
+            _connectionPool[dbPath] = db;
+        }
+
+        return db;
+    }
+
+    public bool TryGetThumbnail(string path, int size, out BitmapSource? thumbnail)
+    {
+        var db = OpenConnection(path);
+
+        var filename = Path.GetFileName(path);
+
+        var data = db.Query<Thumbnail>("SELECT Filename, Data FROM Thumbnail WHERE Filename = ? AND Size = ?", filename, size);
+
+        var result = false;
+
+        if (data.Count > 0)
+        {
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.StreamSource = new MemoryStream(data[0].Data);
+            result = true;
+            bitmap.EndInit();
+            bitmap.Freeze();
+            thumbnail = bitmap;
+        }
+        else
+        {
+            thumbnail = null;
+        }
+
+        return result;
+    }
+
+    public void AddThumbnail(string path, int size, BitmapImage bitmapImage)
+    {
+        if (File.Exists(path))
+        {
+            var db = OpenConnection(path);
+
+            var filename = Path.GetFileName(path);
+            var data = ((MemoryStream)bitmapImage.StreamSource).ToArray();
+
+            var command = db.CreateCommand("REPLACE INTO Thumbnail (Filename, Data, Size) VALUES (@Filename, @Data, @Size)");
+            command.Bind("@Filename", filename);
+            command.Bind("@Data", data);
+            command.Bind("@Size", size);
+            command.ExecuteNonQuery();
+        }
+    }
+
+
+    public static void CreateInstance(int maxItems, int evictItems)
+    {
+        _instance = new ThumbnailCache();
+    }
+
+    public void Clear()
+    {
     }
 }

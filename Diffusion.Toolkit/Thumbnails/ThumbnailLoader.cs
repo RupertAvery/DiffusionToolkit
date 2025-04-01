@@ -161,7 +161,7 @@ public class ThumbnailLoader
 
                 if (_enableCache)
                 {
-                    if (!ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path,
+                    if (!ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path, Size,
                             out BitmapSource? thumbnail))
                     {
                         // Debug.WriteLine($"Loading from disk");
@@ -180,7 +180,7 @@ public class ThumbnailLoader
                             thumbnail = GetDefaultThumbnailImmediate();
                         }
 
-                        ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
+                        ThumbnailCache.Instance.AddThumbnail(job.Data.Path, Size, (BitmapImage)thumbnail);
 
                         job.Completion(new ThumbailResult(thumbnail));
 
@@ -209,7 +209,7 @@ public class ThumbnailLoader
                         thumbnail = GetDefaultThumbnailImmediate();
                     }
 
-                    ThumbnailCache.Instance.AddThumbnail(job.Data.Path, thumbnail);
+                    ThumbnailCache.Instance.AddThumbnail(job.Data.Path, Size, thumbnail);
 
                     job.Completion(new ThumbailResult(thumbnail));
                 }
@@ -280,6 +280,25 @@ public class ThumbnailLoader
         bitmap.Freeze();
         return bitmap;
     }
+
+    //public (BitmapImage, Stream) GetThumbnailImmediateStream(string path, int width, int height, int size)
+    //{
+    //    var bitmap = new BitmapImage();
+    //    bitmap.BeginInit();
+
+    //    Stream stream = null;
+
+    //    if (File.Exists(path))
+    //    {
+    //        stream = GenerateThumbnail(path, width, height, size);
+    //    }
+
+    //    bitmap.StreamSource = stream;
+
+    //    bitmap.EndInit();
+    //    bitmap.Freeze();
+    //    return (bitmap;
+    //}
 
     public BitmapImage GetThumbnailImmediate(string path, int width, int height, int size)
     {
