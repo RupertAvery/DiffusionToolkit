@@ -186,7 +186,7 @@ namespace Diffusion.Toolkit.Controls
                         {
                             ServiceLocator.MessageService.ShowMedium($"Failed to launch the application {externalApplication.Name}.\r\n\r\nPath not found", "Error opening External Application", PopupButtons.OK);
                         }
- 
+
                     };
                     Model.OpenWithMenuItems.Add(menuItem);
                 }
@@ -420,7 +420,14 @@ namespace Diffusion.Toolkit.Controls
             {
                 //case Key.Left or Key.Right or Key.Up or Key.Down when ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1:
                 //    return;
-
+                case Key.A when (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) && !Keyboard.IsKeyDown(Key.LeftAlt) && !Keyboard.IsKeyDown(Key.RightAlt) && !Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift)):
+                    ThumbnailListView.SelectedItems.Clear();
+                    foreach (var childItem in ThumbnailListView.Items.Cast<ImageEntry>().Where(d => !d.IsEmpty))
+                    {
+                        ThumbnailListView.SelectedItems.Add(childItem);
+                    }
+                    e.Handled = true;
+                    break;
                 case Key.Left or Key.Right:
                     {
                         delta = e.Key switch

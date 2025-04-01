@@ -85,6 +85,11 @@ namespace Diffusion.Toolkit.Controls
             Model.SetPagingEnabled(Model.Page);
         }
 
+        public void ClearSelection()
+        {
+            ThumbnailListView.SelectedItems.Clear();
+        }
+
         public void ReloadThumbnailsView()
         {
             var wrapPanel = GetChildOfType<WrapPanel>(this)!;

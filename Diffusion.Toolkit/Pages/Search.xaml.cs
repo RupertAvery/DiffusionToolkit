@@ -1506,6 +1506,8 @@ namespace Diffusion.Toolkit.Pages
 
                 ThumbnailListView.ReloadThumbnailsView();
 
+                ThumbnailListView.ClearSelection();
+
                 _model.IsBusy = false;
 
                 if (_model.SelectedImageEntry != null)
