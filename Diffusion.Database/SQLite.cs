@@ -674,6 +674,8 @@ namespace SQLite
 			// Create or migrate it
 			if (existingCols.Count == 0) {
 
+				SchemaUpdated?.Invoke();
+
 				// Facilitate virtual tables a.k.a. full-text search.
 				bool fts3 = (createFlags & CreateFlags.FullTextSearch3) != 0;
 				bool fts4 = (createFlags & CreateFlags.FullTextSearch4) != 0;
@@ -830,7 +832,14 @@ namespace SQLite
 		/// <param name="unique">Whether the index should be unique</param>
 		/// <returns>Zero on success.</returns>
 		public int CreateIndex (string indexName, string tableName, string[] columnNames, bool unique = false)
-		{
+        {
+            var exists = ExecuteScalar<int>($"select count(1) from sqlite_master where type= 'index' and tbl_name = '{tableName}' and name = '{indexName}';");
+
+            if (exists == 0)
+            {
+                SchemaUpdated?.Invoke();
+            }
+
 			const string sqlFormat = "create {2} index if not exists \"{3}\" on \"{0}\"(\"{1}\")";
 			var sql = String.Format (sqlFormat, tableName, string.Join ("\", \"", columnNames), unique ? "unique" : "", indexName);
 			return Execute (sql);
@@ -952,6 +961,11 @@ namespace SQLite
 					toBeAdded.Add (p);
 				}
 			}
+
+            if (toBeAdded.Any())
+            {
+                SchemaUpdated?.Invoke();
+            }
 
 			foreach (var p in toBeAdded) {
 				var addCol = "alter table \"" + map.TableName + "\" add column " + Orm.SqlDecl (p, StoreDateTimeAsTicks, StoreTimeSpanAsTicks);
@@ -1388,7 +1402,9 @@ namespace SQLite
 			get { return _transactionDepth > 0; }
 		}
 
-		/// <summary>
+        public Action? SchemaUpdated { get; set; }
+
+        /// <summary>
 		/// Begins a new transaction. Call <see cref="Commit"/> to end the transaction.
 		/// </summary>
 		/// <example cref="System.InvalidOperationException">Throws if a transaction has already begun.</example>

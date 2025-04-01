@@ -71,9 +71,18 @@ public partial class DataStore
 
         await Task.Run(() =>
         {
-            var handle = notify?.Invoke();
+            object handle = null;
+            Action schemaUpdated = () =>
+            {
+                if (handle == null)
+                {
+                    handle = notify?.Invoke();
+                }
+            };
+
             try
             {
+                db.SchemaUpdated = schemaUpdated;
                 db.CreateTable<Image>();
                 db.CreateIndex<Image>(image => image.FolderId);
                 db.CreateIndex<Image>(image => image.Path, true);
@@ -137,7 +146,10 @@ public partial class DataStore
             }
             finally
             {
-                complete?.Invoke(handle);
+                if (handle != null)
+                {
+                    complete?.Invoke(handle);
+                }
             }
         });
 
