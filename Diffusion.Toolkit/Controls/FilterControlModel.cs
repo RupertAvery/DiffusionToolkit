@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using Diffusion.Database;
@@ -9,15 +10,18 @@ using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Controls;
 
+
+
 public class NodeFilter : BaseNotify
 {
     private string _node;
     private string _property;
     private string _value;
     private bool _isActive;
-    private string _operation;
-    private string _comparison;
+    private NodeOperation _operation;
+    private NodeComparison _comparison;
     private bool _isFirst;
+    private NameValue<NodeComparison> _selectedComparison;
 
     public bool IsActive
     {
@@ -25,7 +29,7 @@ public class NodeFilter : BaseNotify
         set => SetField(ref _isActive, value);
     }
 
-    public string Operation
+    public NodeOperation Operation
     {
         get => _operation;
         set => SetField(ref _operation, value);
@@ -44,7 +48,14 @@ public class NodeFilter : BaseNotify
     }
 
 
-    public string Comparison
+    public NameValue<NodeComparison> SelectedComparison
+    {
+        get => _selectedComparison;
+        set => SetField(ref _selectedComparison, value);
+
+    }
+
+    public NodeComparison Comparison
     {
         get => _comparison;
         set => SetField(ref _comparison, value);
@@ -131,21 +142,20 @@ public class FilterControlModel : BaseNotify
     {
         PropertyChanged += FilterControlModel_PropertyChanged;
         NodeFilters = new ObservableCollection<NodeFilter>();
-        NodeFilters.CollectionChanged += NodeFiltersOnCollectionChanged;
 
-        var nops = new List<NameValue>()
+        var nops = new List<NameValue<NodeOperation>>()
         {
-            new() { Name = "or", Value = "UNION" },
-            new() { Name = "and", Value = "INTERSECT" },
-            new() { Name = "not", Value = "EXCEPT" },
+            new() { Name = "or", Value = NodeOperation.UNION },
+            new() { Name = "and", Value = NodeOperation.INTERSECT },
+            new() { Name = "not", Value = NodeOperation.EXCEPT },
         };
 
-        var comps = new List<NameValue>()
+        var comps = new List<NameValue<NodeComparison>>()
         {
-            new() { Name = "contains", Value = "contains" },
-            new() { Name = "equals", Value = "equals" },
-            new() { Name = "starts with", Value = "startswith" },
-            new() { Name = "ends with", Value = "endswith" },
+            new() { Name = "contains", Value = NodeComparison.Contains },
+            new() { Name = "equals", Value = NodeComparison.Equals },
+            new() { Name = "starts with", Value = NodeComparison.StartsWith },
+            new() { Name = "ends with", Value = NodeComparison.EndsWith },
         };
 
         NodeOperations = nops;
@@ -156,10 +166,30 @@ public class FilterControlModel : BaseNotify
 
     private void NodeFiltersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        foreach (var nodeFilter in NodeFilters)
+        if (e.NewItems is not null)
+        {
+            RegisterNodeFilters(e.NewItems.Cast<NodeFilter>());
+        }
+    }
+
+    private void RegisterNodeFilters(IEnumerable<NodeFilter> filters)
+    {
+        foreach (var nodeFilter in filters)
         {
             nodeFilter.IsFirst = NodeFilters.IndexOf(nodeFilter) == 0;
+            nodeFilter.RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter);
+            nodeFilter.PropertyChanged += (sender, args) =>
+            {
+                if (args.PropertyName == nameof(NodeFilter.IsActive))
+                {
+                    OnPropertyChanged(nameof(IsActive));
+                }
+            };
         }
+    }
+
+    private void NodeFilterOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
     }
 
     private void FilterControlModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -175,17 +205,10 @@ public class FilterControlModel : BaseNotify
         var filter = new NodeFilter
         {
             RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
-            Operation = "Contains"
+            Operation = NodeOperation.UNION,
+            Comparison = NodeComparison.Contains
         };
-
-        filter.PropertyChanged += (sender, args) =>
-        {
-            if (args.PropertyName == nameof(NodeFilter.IsActive))
-            {
-                OnPropertyChanged(nameof(IsActive));
-            }
-        };
-
+        
         NodeFilters.Add(filter);
     }
 
@@ -196,16 +219,9 @@ public class FilterControlModel : BaseNotify
             Node = node,
             Property = property,
             Value = value,
-            RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
-            Operation = "Contains"
-        };
+            Operation = NodeOperation.UNION,
+            Comparison = NodeComparison.Contains
 
-        filter.PropertyChanged += (sender, args) =>
-        {
-            if (args.PropertyName == nameof(NodeFilter.IsActive))
-            {
-                OnPropertyChanged(nameof(IsActive));
-            }
         };
 
         NodeFilters.Add(filter);
@@ -216,37 +232,21 @@ public class FilterControlModel : BaseNotify
         var filter = new NodeFilter
         {
             Property = property,
-            RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
-            Operation = "Contains"
-        };
-
-        filter.PropertyChanged += (sender, args) =>
-        {
-            if (args.PropertyName == nameof(NodeFilter.IsActive))
-            {
-                OnPropertyChanged(nameof(IsActive));
-            }
+            Operation = NodeOperation.UNION,
+            Comparison = NodeComparison.Contains
         };
 
         NodeFilters.Add(filter);
     }
 
-    public void AddNodeFilter(string property, string value)
+    public void AddNodeFilterEquals(string property, string value)
     {
         var filter = new NodeFilter
         {
             Property = property,
             Value = value,
-            RemoveCommand = new RelayCommand<NodeFilter>(RemoveNodeFilter),
-            Operation = "equals"
-        };
-
-        filter.PropertyChanged += (sender, args) =>
-        {
-            if (args.PropertyName == nameof(NodeFilter.IsActive))
-            {
-                OnPropertyChanged(nameof(IsActive));
-            }
+            Operation = NodeOperation.UNION,
+            Comparison = NodeComparison.Equals
         };
 
         NodeFilters.Add(filter);
@@ -637,7 +637,12 @@ public class FilterControlModel : BaseNotify
     public ObservableCollection<NodeFilter> NodeFilters
     {
         get => _nodeFilters;
-        set => SetField(ref _nodeFilters, value);
+        set
+        {
+            SetField(ref _nodeFilters, value);
+            RegisterNodeFilters(_nodeFilters);
+            _nodeFilters.CollectionChanged += NodeFiltersOnCollectionChanged;
+        }
     }
 
     public void Clear()
@@ -706,13 +711,13 @@ public class FilterControlModel : BaseNotify
     }
 
 
-    public IEnumerable<NameValue>? NodeOperations { get; set; }
-    public IEnumerable<NameValue>? NodePropertyComparisons { get; set; }
+    public IEnumerable<NameValue<NodeOperation>>? NodeOperations { get; set; }
+    public IEnumerable<NameValue<NodeComparison>>? NodePropertyComparisons { get; set; }
 
 }
 
-public class NameValue
+public class NameValue<T>
 {
     public string Name { get; set; }
-    public string Value { get; set; }
+    public T Value { get; set; }
 }

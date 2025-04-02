@@ -56,7 +56,7 @@ public class SearchService
 
     public void AddNodeFilter(string property, string value)
     {
-        Filter.AddNodeFilter(property, value);
+        Filter.AddNodeFilterEquals(property, value);
     }
 
     public void AddDefaultSearchProperty(string property)

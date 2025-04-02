@@ -12,7 +12,7 @@ namespace Diffusion.Toolkit
     {
         private async Task<bool> CheckIfQueryEmpty(string title)
         {
-            if (_search.IsQueryEmpty())
+            if (_search.QueryOptions.IsEmpty)
             {
                 await _messagePopupManager.Show("Query cannot be empty", title, PopupButtons.OK);
                 return false;
@@ -51,7 +51,7 @@ namespace Diffusion.Toolkit
 
         private IEnumerable<ImageView> GetSearchResults()
         {
-            return _search.UseFilter ? _dataStore.Search(_search.Filter, _search.QueryOptions, _search.Sorting) : _dataStore.Search(_search.QueryOptions, _search.Sorting);
+            return !_search.Filter.IsEmpty ? _dataStore.Search(_search.Filter, _search.QueryOptions, _search.Sorting) : _dataStore.Search(_search.QueryOptions, _search.Sorting);
         }
 
         private async void RemoveFromDatabase()
@@ -192,13 +192,6 @@ namespace Diffusion.Toolkit
             });
         }
 
-        private async void SaveQuery()
-        {
-            if (!await CheckIfQueryEmpty("Save Query/Filter"))
-            {
-                return;
-            }
-        }
 
         private async void AddAllToAlbum()
         {

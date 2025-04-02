@@ -83,8 +83,9 @@ namespace Diffusion.Toolkit
 
                 _configuration = new Configuration<Settings>(settingsPath, isPortable);
 
-                //Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("ja-JP");
-                //Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("ja-JP");
+
+                //Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
+                //Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("fr-FR");
 
                 InitializeComponent();
 
@@ -140,7 +141,6 @@ namespace Diffusion.Toolkit
                 _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
                 _model.ResetLayout = new RelayCommand<object>((o) => ResetLayout());
 
-                _model.SaveQuery = new RelayCommand<object>((o) => SaveQuery());
                 _model.RescanResults = new RelayCommand<object>((o) => RescanResults());
                 _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
                 _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
@@ -167,6 +167,7 @@ namespace Diffusion.Toolkit
                 _model.ShowInExplorerCommand = new RelayCommand<FolderViewModel>((p) => ShowInExplorer(p));
 
                 InitAlbums();
+                InitQueries();
 
                 _model.Refresh = new RelayCommand<object>((o) => Refresh());
 
@@ -761,8 +762,8 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Loading models");
 
-            // TODO: Check for slowdowns
             LoadAlbums();
+            LoadQueries();
             LoadModels();
             LoadImageModels();
             InitFolders();

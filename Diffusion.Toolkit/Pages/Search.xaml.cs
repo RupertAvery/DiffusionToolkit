@@ -230,8 +230,6 @@ namespace Diffusion.Toolkit.Pages
             {
                 _model.IsFilterVisible = false;
                 _model.Filter.Clear();
-
-                UseFilter = false;
                 SearchImages(null);
             });
 
@@ -290,7 +288,6 @@ namespace Diffusion.Toolkit.Pages
             _model.FilterCommand = new RelayCommand<object>((o) =>
             {
                 _model.IsFilterVisible = false;
-                UseFilter = true;
                 SearchImages(null);
             });
 
@@ -697,8 +694,6 @@ namespace Diffusion.Toolkit.Pages
             return result;
         }
 
-        public bool UseFilter { get; private set; }
-
         private (float ScaledSize, string FormattedSize) ToIECPrefix(long size)
         {
             float fsize = size;
@@ -724,7 +719,7 @@ namespace Diffusion.Toolkit.Pages
             return (fsize, ssize);
         }
 
-        public void SearchImages(object obj)
+        public void SearchImages(QueryOptions? queryOptions, bool focus = false)
         {
             if (!ServiceLocator.Settings.ImagePaths.Any())
             {
@@ -748,24 +743,83 @@ namespace Diffusion.Toolkit.Pages
                 var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
                 var models = _model.MainModel.ImageModels.Where(d => d.IsTicked).Select(d => new ModelInfo { Name = d.Name, Hash = d.Hash, HashV2 = d.Hashv2 }).ToList();
 
-                QueryOptions = new QueryOptions()
+                if (queryOptions != null)
                 {
-                    AlbumIds = albums,
-                    Models = models,
-                    Folder = _currentModeSettings.CurrentFolderPath,
-                    SearchNodes = _model.SearchSettings.SearchNodes,
-                    SearchAllProperties = _model.SearchSettings.SearchAllProperties,
-                    SearchRawData = _model.SearchSettings.SearchRawData,
-                    HideNSFW = _model.MainModel.HideNSFW,
-                    HideDeleted = _model.MainModel.HideDeleted,
-                    HideUnavailable = _model.MainModel.HideUnavailable,
-                    ComfyQueryOptions = new ComfyQueryOptions()
-                    {
-                        SearchProperties = _model.SearchSettings.GetNodePropertiesList()
-                    }
-                };
+                    QueryOptions = queryOptions;
 
-                QueryOptions.UseFilter = UseFilter;
+                    ServiceLocator.MainModel.SelectedAlbumsCount = queryOptions.AlbumIds.Count;
+
+                    foreach (var album in ServiceLocator.MainModel.Albums)
+                    {
+                        album.IsTicked = queryOptions.AlbumIds.Contains(album.Id);
+                    }
+
+
+
+                    _model.MainModel.HideNSFW = queryOptions.HideNSFW;
+                    _model.MainModel.HideDeleted = queryOptions.HideDeleted;
+                    _model.MainModel.HideUnavailable = queryOptions.HideUnavailable;
+
+                    switch (queryOptions.SearchView)
+                    {
+                        case SearchView.Search:
+                            _currentModeSettings.ViewMode = ViewMode.Search;
+                            _currentModeSettings.IsFavorite = false;
+                            _currentModeSettings.IsMarkedForDeletion = false;
+                            break;
+                        case SearchView.Folder:
+                            _currentModeSettings.ViewMode = ViewMode.Folder;
+                            _currentModeSettings.CurrentFolderPath = queryOptions.Folder;
+                            _currentModeSettings.IsFavorite = false;
+                            _currentModeSettings.IsMarkedForDeletion = false;
+                            break;
+                        case SearchView.Favorites:
+                            _currentModeSettings.ViewMode = ViewMode.Search;
+                            _currentModeSettings.IsFavorite = true;
+                            _currentModeSettings.IsMarkedForDeletion = false;
+                            break;
+                        case SearchView.Deleted:
+                            _currentModeSettings.ViewMode = ViewMode.Search;
+                            _currentModeSettings.IsFavorite = false;
+                            _currentModeSettings.IsMarkedForDeletion = true;
+                            break;
+                    }
+
+                    _model.SearchSettings.SearchNodes = queryOptions.SearchNodes;
+                    _model.SearchSettings.SearchAllProperties = queryOptions.SearchAllProperties;
+                    _model.SearchSettings.SearchRawData = queryOptions.SearchRawData;
+
+                    if (queryOptions.ComfyQueryOptions.SearchProperties != null)
+                    {
+                        _model.SearchSettings.IncludeNodeProperties = string.Join("\r\n", queryOptions.ComfyQueryOptions.SearchProperties);
+                    }
+
+                    _model.Filter = queryOptions.Filter.AsModel();
+
+                    _model.SearchText = queryOptions.Query;
+                }
+                else
+                {
+                    QueryOptions = new QueryOptions()
+                    {
+                        AlbumIds = albums,
+                        Models = models,
+                        Folder = _currentModeSettings.CurrentFolderPath,
+                        SearchNodes = _model.SearchSettings.SearchNodes,
+                        SearchAllProperties = _model.SearchSettings.SearchAllProperties,
+                        SearchRawData = _model.SearchSettings.SearchRawData,
+                        HideNSFW = _model.MainModel.HideNSFW,
+                        HideDeleted = _model.MainModel.HideDeleted,
+                        HideUnavailable = _model.MainModel.HideUnavailable,
+                        ComfyQueryOptions = new ComfyQueryOptions()
+                        {
+                            SearchProperties = _model.SearchSettings.GetNodePropertiesList()
+                        }
+                    };
+
+                }
+
+                QueryOptions.Query = _model.SearchText;
                 QueryOptions.Filter = _model.Filter.AsFilter();
 
 
@@ -786,30 +840,25 @@ namespace Diffusion.Toolkit.Pages
                 Task.Run(() =>
                 {
 
-                    if (!UseFilter)
+                    if (!IsNullOrEmpty(QueryOptions.Query))
                     {
-                        if (!IsNullOrEmpty(_model.SearchText))
+                        if (_model.SearchHistory.Count == 0 || (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != QueryOptions.Query))
                         {
-                            if (_model.SearchHistory.Count == 0 || (_model.SearchHistory.Count > 0 && _model.SearchHistory[0] != _model.SearchText))
+
+                            Dispatcher.Invoke(() =>
                             {
-
-                                Dispatcher.Invoke(() =>
+                                if (_model.SearchHistory.Count + 1 > 25)
                                 {
-                                    if (_model.SearchHistory.Count + 1 > 25)
-                                    {
-                                        _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
-                                    }
+                                    _model.SearchHistory.RemoveAt(_model.SearchHistory.Count - 1);
+                                }
 
-                                    _model.SearchHistory.Insert(0, _model.SearchText);
-                                });
+                                _model.SearchHistory.Insert(0, QueryOptions.Query);
+                            });
 
-                                _currentModeSettings.History = _model.SearchHistory.ToList();
-                            }
+                            _currentModeSettings.History = _model.SearchHistory.ToList();
                         }
 
-                        _currentModeSettings.LastQuery = _model.SearchText;
-                        QueryOptions.Query = _model.SearchText;
-
+                        _currentModeSettings.LastQuery = QueryOptions.Query;
                     }
 
                     (count, size) = ServiceLocator.DataStore.CountAndFileSizeEx(QueryOptions);
@@ -860,7 +909,7 @@ namespace Diffusion.Toolkit.Pages
                         ThumbnailListView.SetPagingEnabled();
                     });
 
-                    ReloadMatches(new ReloadOptions() { Focus = (string)obj != "ManualSearch" });
+                    ReloadMatches(new ReloadOptions() { Focus = focus });
 
                 })
                 .ContinueWith(d =>
@@ -880,7 +929,9 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
+
         public QueryOptions QueryOptions { get; private set; }
+
         public Sorting Sorting { get; private set; }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -1448,7 +1499,7 @@ namespace Diffusion.Toolkit.Pages
                 }
 
                 var offset = foldersEntries.Count;
-                
+
                 for (var i = 0; i < images.Count; i++)
                 {
                     var dest = _model.Images[offset + i];
@@ -1520,238 +1571,6 @@ namespace Diffusion.Toolkit.Pages
 
 
             Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
-        }
-
-        private async Task LoadMatchesAsync()
-        {
-            Dispatcher.Invoke(() =>
-            {
-                _model.IsBusy = true;
-                _model.Images.Clear();
-            });
-
-            var images = new List<ImageEntry>();
-
-            ThumbnailLoader.Instance.StopCurrentBatch();
-            var rId = ThumbnailLoader.Instance.StartBatch();
-
-            if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.Page == 1)
-            {
-                IEnumerable<string> folders = Enumerable.Empty<string>();
-
-                if (_currentModeSettings.CurrentFolderPath == null)
-                {
-                    folders = ServiceLocator.Settings.ImagePaths;
-                }
-                else
-                {
-                    folders = new[]
-                    {
-                        Path.Combine(_currentModeSettings.CurrentFolderPath.Split(Path.DirectorySeparatorChar)[0..^1])
-                    }.Concat(Directory.GetDirectories(_currentModeSettings.CurrentFolderPath));
-                }
-
-                foreach (var folder in folders)
-                {
-                    var imageEntry = new ImageEntry(rId)
-                    {
-                        Id = 0,
-                        Path = folder,
-                        FileName = Path.GetFileName(folder),
-                        Name = Path.GetFileName(folder),
-                        EntryType = EntryType.Folder
-                    };
-
-                    images.Add(imageEntry);
-                    //Dispatcher.Invoke(() =>
-                    //{
-                    //    _model.Images.Add(imageEntry);
-                    //});
-
-                }
-            }
-
-            if (_currentModeSettings.ViewMode == ViewMode.Album)
-            {
-
-                if (_model.MainModel.CurrentAlbum != null)
-                {
-                    IEnumerable<Album> albums = ServiceLocator.DataStore.GetAlbums();
-
-                    foreach (var album in albums)
-                    {
-                        var imageEntry = new ImageEntry(rId)
-                        {
-                            Id = album.Id,
-                            Path = "",
-                            FileName = "",
-                            Name = album.Name,
-                            EntryType = EntryType.Album
-                        };
-
-                        images.Add(imageEntry);
-
-                        //Dispatcher.Invoke(() =>
-                        //{
-                        //    _model.Images.Add(imageEntry);
-                        //});
-
-                    }
-                }
-
-            }
-
-            var paging = new Paging()
-            {
-                PageSize = ServiceLocator.Settings.PageSize,
-                Offset = ServiceLocator.Settings.PageSize * (_model.Page - 1)
-            };
-
-            Sorting = new Sorting(_model.SortBy, _model.SortDirection);
-
-            IEnumerable<ImageView> matches = Enumerable.Empty<ImageView>();
-
-            if (UseFilter)
-            {
-                var filter = _model.Filter.AsFilter();
-                bool showImages = true;
-
-                if (_currentModeSettings.IsFavorite)
-                {
-                    filter.UseFavorite = true;
-                    filter.Favorite = true;
-                }
-                else if (_currentModeSettings.IsMarkedForDeletion)
-                {
-                    filter.ForDeletion = true;
-                    filter.UseForDeletion = true;
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                {
-                    if (_currentModeSettings.CurrentFolderPath != null)
-                    {
-                        filter.Folder = _currentModeSettings.CurrentFolderPath;
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                {
-                    if (_model.MainModel.CurrentAlbum != null)
-                    {
-                        filter.Album = _model.MainModel.CurrentAlbum.Name;
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Model)
-                {
-                    if (_model.MainModel.CurrentModel != null)
-                    {
-                        filter.ModelHash = _model.MainModel.CurrentModel.Hash;
-                    }
-                    else
-                    {
-                        showImages = false;
-                    }
-                }
-
-                if (showImages)
-                {
-                    matches = Time(() => ServiceLocator.DataStore
-                        .Search(filter,
-                            QueryOptions,
-                            Sorting,
-                            paging));
-                }
-            }
-            else
-            {
-
-                // showImages
-                if (true)
-                {
-                    matches = Time(() => ServiceLocator.DataStore
-                        .Search(QueryOptions,
-                            Sorting,
-                            paging
-                        ));
-                }
-
-            }
-
-            //var images = new List<ImageEntry>();
-
-            var sw = new Stopwatch();
-            sw.Start();
-
-
-            var count = 0;
-
-
-
-            foreach (var file in matches)
-            {
-                var imageEntry = new ImageEntry(rId)
-                {
-                    Id = file.Id,
-                    Favorite = file.Favorite,
-                    ForDeletion = file.ForDeletion,
-                    Rating = file.Rating,
-                    Score = $"{file.AestheticScore:0.0}",
-                    Path = file.Path,
-                    CreatedDate = file.CreatedDate,
-                    FileName = Path.GetFileName(file.Path),
-                    NSFW = file.NSFW,
-                    EntryType = EntryType.File,
-                    Dispatcher = Dispatcher,
-                    HasError = file.HasError
-                };
-
-                images.Add(imageEntry);
-
-                //Dispatcher.Invoke(() =>
-                //{
-                //    _model.Images.Add(imageEntry);
-                //});
-
-                //images.Add(imageEntry);
-
-
-                count++;
-            }
-
-            Dispatcher.Invoke(() =>
-            {
-                if (_model.Images == null || _model.Images.Count != images.Count)
-                {
-                    _model.Images = new ObservableCollection<ImageEntry>(images);
-                }
-                else
-                {
-                    for (var i = 0; i < images.Count; i++)
-                    {
-                        _model.Images[i] = images[i];
-                    }
-                }
-                //RefreshThumbnails();
-
-                _model.IsBusy = false;
-
-            });
-
-
-            sw.Stop();
-
-
-            Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
-
-
-
         }
 
         public void RefreshThumbnails()
@@ -2010,18 +1829,6 @@ namespace Diffusion.Toolkit.Pages
 
         public Filter Filter => _model.Filter.AsFilter();
 
-        public bool IsQueryEmpty()
-        {
-            return QueryOptions.SearchView == SearchView.Search &&
-                   (
-                       QueryOptions.AlbumIds.Count == 0 &&
-                       (
-                           (UseFilter && Filter.IsEmpty) ||
-                           (!UseFilter && (_model.SearchText == null || _model.SearchText.Trim().Length == 0))
-                        )
-                   );
-        }
-
         private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -2268,6 +2075,24 @@ namespace Diffusion.Toolkit.Pages
             {
                 CloseSearchSettings();
             }
+        }
+
+        private void Query_OnClick(object sender, RoutedEventArgs e)
+        {
+            var queryModel = ((QueryModel)((FrameworkElement)sender).DataContext);
+
+            ServiceLocator.MainModel.CurrentQuery = queryModel;
+
+            foreach (var query in ServiceLocator.MainModel.Queries)
+            {
+                query.IsSelected = false;
+            }
+
+            queryModel.IsSelected = true;
+
+            var q = ServiceLocator.DataStore.GetQuery(queryModel.Id);
+
+            SearchImages(q);
         }
     }
 

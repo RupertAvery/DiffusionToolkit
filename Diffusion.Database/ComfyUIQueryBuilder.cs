@@ -88,7 +88,7 @@ public static class ComfyUIQueryBuilder
         //var tokens = CSVParser.Parse(node.Value);
         var operation = node.Operation;
 
-        var comparison = node.Comparison.ToLower();
+        var comparison = node.Comparison;
 
         var value = node.Value;
         var escape = "";
@@ -103,19 +103,19 @@ public static class ComfyUIQueryBuilder
 
         switch (comparison)
         {
-            case "contains":
+            case NodeComparison.Contains:
                 value = $"%{value}%";
                 toper = "LIKE";
                 break;
-            case "startswith":
+            case NodeComparison.StartsWith:
                 value = $"{value}%";
                 toper = "LIKE";
                 break;
-            case "endswith":
+            case NodeComparison.EndsWith:
                 value = $"%{value}";
                 toper = "LIKE";
                 break;
-            case "equals":
+            case NodeComparison.Equals:
                 value = $"{value}";
                 toper = "=";
                 break;
@@ -140,7 +140,7 @@ public static class ComfyUIQueryBuilder
         var prop = node.Property.Replace("*", "%").Trim();
 
         return (
-            operation,
+            operation.ToString(),
             "SELECT DISTINCT cmfyn.ImageId AS Id FROM Node cmfyn  " +
             "INNER JOIN NodeProperty cmfyp ON cmfyp.NodeId = cmfyn.Id " +
             "WHERE " +

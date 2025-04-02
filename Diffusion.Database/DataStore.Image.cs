@@ -1,13 +1,5 @@
 ﻿using SQLite;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Diffusion.Database
 {
@@ -27,24 +19,10 @@ namespace Diffusion.Database
 
         public void DeleteImage(int id)
         {
-            using var db = OpenConnection();
-            
-            var query = "DELETE FROM AlbumImage WHERE ImageId = @Id";
-
-            var command = db.CreateCommand(query);
-            command.Bind("@Id", id);
-
-            command.ExecuteNonQuery();
-
-            query = "DELETE FROM Image WHERE Id = @Id";
-
-            command = db.CreateCommand(query);
-            command.Bind("@Id", id);
-
-            command.ExecuteNonQuery();
+            RemoveImages(new[] { id });
         }
 
-        private void InsertIds(SQLiteConnection db, string table, IEnumerable<int> ids)
+        private string InsertIds(SQLiteConnection db, string table, IEnumerable<int> ids)
         {
             var dropTableQuery = $"DROP TABLE IF EXISTS {table}";
             var dropCommand = db.CreateCommand(dropTableQuery);
@@ -61,6 +39,34 @@ namespace Diffusion.Database
 
             var insertCommand = db.CreateCommand(insertQuery.ToString());
             insertCommand.ExecuteNonQuery();
+
+            return $"(SELECT Id FROM {table})";
+        }
+
+        private string InsertIds(SQLiteConnection db, string table, string whereClause, Dictionary<string, object>? bindings = null)
+        {
+            var dropTableQuery = $"DROP TABLE IF EXISTS {table}";
+            var dropCommand = db.CreateCommand(dropTableQuery);
+            dropCommand.ExecuteNonQuery();
+
+            var tempTableQuery = $"CREATE TEMP TABLE {table} (Id INT)";
+            var tempCommand = db.CreateCommand(tempTableQuery);
+            tempCommand.ExecuteNonQuery();
+
+            var insertQuery = $"INSERT INTO {table} SELECT Id FROM Image WHERE {whereClause}";
+            var insertCommand = db.CreateCommand(insertQuery);
+
+            if (bindings != null)
+            {
+                foreach (var binding in bindings)
+                {
+                    insertCommand.Bind(binding.Key, binding.Value);
+                }
+            }
+
+            insertCommand.ExecuteNonQuery();
+
+            return $"(SELECT Id FROM {table})";
         }
 
         public void RemoveImages(IEnumerable<int> ids)
@@ -69,21 +75,21 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            InsertIds(db, "DeletedIds", ids);
+            var deletedIds = InsertIds(db, "DeletedIds", ids);
 
-            var propsQuery = "DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN (SELECT Id FROM DeletedIds))";
+            var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
             var propsCommand = db.CreateCommand(propsQuery);
             propsCommand.ExecuteNonQuery();
 
-            var nodesQuery = "DELETE FROM Node WHERE ImageId IN (SELECT Id FROM DeletedIds)";
+            var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
             var nodesCommand = db.CreateCommand(nodesQuery);
             nodesCommand.ExecuteNonQuery();
 
-            var albumQuery = "DELETE FROM AlbumImage WHERE ImageId IN (SELECT Id FROM DeletedIds)";
+            var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
             var albumCommand = db.CreateCommand(albumQuery);
             albumCommand.ExecuteNonQuery();
 
-            var query = "DELETE FROM Image WHERE Id IN (SELECT Id FROM DeletedIds)";
+            var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
             var command = db.CreateCommand(query);
             command.ExecuteNonQuery();
 
@@ -127,7 +133,7 @@ namespace Diffusion.Database
             using var db = OpenConnection();
 
             var count = db.ExecuteScalar<int>("SELECT COUNT(*) FROM Image WHERE PATH LIKE ? || '%'", path);
-            
+
             db.Close();
 
             return count;
@@ -137,7 +143,7 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var images =  db.Query<ImagePath>("SELECT Id, FolderId, Path FROM Image WHERE FolderId = ?", folderId);
+            var images = db.Query<ImagePath>("SELECT Id, FolderId, Path FROM Image WHERE FolderId = ?", folderId);
 
             foreach (var image in images)
             {
@@ -432,7 +438,7 @@ namespace Diffusion.Database
             var command = db.CreateCommand(query.ToString());
             var returnIds = command.ExecuteQuery<ReturnId>();
 
-            foreach(var item in images.Zip(returnIds))
+            foreach (var item in images.Zip(returnIds))
             {
                 item.First.Id = item.Second.Id;
             }
@@ -503,7 +509,7 @@ namespace Diffusion.Database
             using var db = OpenConnection();
 
             var dirName = Path.GetDirectoryName(path);
-            
+
             if (!folderIdCache.TryGetValue(dirName, out var folderId))
             {
                 folderId = AddOrUpdateFolder(db, dirName);
@@ -590,22 +596,31 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            // TODO: Remove nodes
-
             var whereClause = string.Join(" AND ", watchedFolders.Select(f => $"PATH NOT LIKE '{f}\\%'"));
 
-            //first remove matching entries from AlbumImage
-            var albumImageQuery = $"DELETE FROM AlbumImage WHERE ImageId IN (SELECT Id FROM Image WHERE {whereClause})";
-            var albumImageQueryResult = db.Execute(albumImageQuery);
+            var deletedIds = InsertIds(db, "DeletedIds", whereClause);
 
-            var query = $"DELETE FROM Image WHERE {whereClause}";
-            var result = db.Execute(query);
+            var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
+            var propsCommand = db.CreateCommand(propsQuery);
+            propsCommand.ExecuteNonQuery();
+
+            var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
+            var nodesCommand = db.CreateCommand(nodesQuery);
+            nodesCommand.ExecuteNonQuery();
+
+            var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
+            var albumCommand = db.CreateCommand(albumQuery);
+            albumCommand.ExecuteNonQuery();
+
+            var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
+            var command = db.CreateCommand(query);
+            var images = command.ExecuteNonQuery();
 
             db.Commit();
 
             db.Close();
 
-            return result;
+            return images;
         }
 
         public int ChangeFolderPath(string path, string newPath)
@@ -614,24 +629,19 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            var dropTableQuery = $"DROP TABLE IF EXISTS UpdatedIds";
-            var dropCommand = db.CreateCommand(dropTableQuery);
-            dropCommand.ExecuteNonQuery();
+            var updatedIds = InsertIds(db, "UpdatedIds", "PATH LIKE @Path || '\\%'", new Dictionary<string, object>() { { "@Path", path } });
 
-            var tempTableQuery = $"CREATE TEMP TABLE UpdatedIds (Id INT)";
-            var tempCommand = db.CreateCommand(tempTableQuery);
-            tempCommand.ExecuteNonQuery();
-
-            var insertQuery = "INSERT INTO UpdatedIds SELECT Id FROM Image WHERE PATH LIKE @Path || '\\%'";
-            var insertCommand = db.CreateCommand(insertQuery);
-            insertCommand.Bind("@Path", path);
-            insertCommand.ExecuteNonQuery();
-
-            var updateQuery = "UPDATE Image SET Path = @NewPath || SUBSTR(Path, length(@Path) + 1) WHERE Id IN (SELECT Id FROM UpdatedIds)";
+            var updateQuery = $"UPDATE Image SET Path = @NewPath || SUBSTR(Path, length(@Path) + 1) WHERE Id IN {updatedIds}";
             var updateCommand = db.CreateCommand(updateQuery);
             updateCommand.Bind("@Path", path);
             updateCommand.Bind("@NewPath", newPath);
             var images = updateCommand.ExecuteNonQuery();
+
+            var updateSubQuery = "UPDATE Folder SET Path = @NewPath || SUBSTR(Path, length(@Path) + 1) WHERE PATH LIKE @Path || '\\%'";
+            var updateSubCommand = db.CreateCommand(updateSubQuery);
+            updateSubCommand.Bind("@Path", path);
+            updateSubCommand.Bind("@NewPath", newPath);
+            updateSubCommand.ExecuteNonQuery();
 
             var updateFolderQuery = "UPDATE Folder SET Path = @NewPath WHERE PATH = @Path";
             var updateFolderCommand = db.CreateCommand(updateFolderQuery);
@@ -652,32 +662,35 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            var dropTableQuery = $"DROP TABLE IF EXISTS DeletedIds";
-            var dropCommand = db.CreateCommand(dropTableQuery);
-            dropCommand.ExecuteNonQuery();
+            var deletedIds = InsertIds(db, "DeletedIds", "FolderId IN (SELECT Id FROM Folder WHERE PATH LIKE @Path || '%')", new Dictionary<string, object>() { { "@Path", path } });
 
-            var tempTableQuery = $"CREATE TEMP TABLE DeletedIds (Id INT)";
-            var tempCommand = db.CreateCommand(tempTableQuery);
-            tempCommand.ExecuteNonQuery();
 
-            var insertQuery = "INSERT INTO DeletedIds SELECT Id FROM Image WHERE FolderId IN (SELECT Id FROM Folder WHERE PATH LIKE @Path || '%')";
-            var insertCommand = db.CreateCommand(insertQuery);
-            insertCommand.Bind("@Path", path);
-            insertCommand.ExecuteNonQuery();
+            //var dropTableQuery = $"DROP TABLE IF EXISTS DeletedIds";
+            //var dropCommand = db.CreateCommand(dropTableQuery);
+            //dropCommand.ExecuteNonQuery();
 
-            var propsQuery = "DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN (SELECT Id FROM DeletedIds))";
+            //var tempTableQuery = $"CREATE TEMP TABLE DeletedIds (Id INT)";
+            //var tempCommand = db.CreateCommand(tempTableQuery);
+            //tempCommand.ExecuteNonQuery();
+
+            //var insertQuery = "INSERT INTO DeletedIds SELECT Id FROM Image WHERE FolderId IN (SELECT Id FROM Folder WHERE PATH LIKE @Path || '%')";
+            //var insertCommand = db.CreateCommand(insertQuery);
+            //insertCommand.Bind("@Path", path);
+            //insertCommand.ExecuteNonQuery();
+
+            var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
             var propsCommand = db.CreateCommand(propsQuery);
             propsCommand.ExecuteNonQuery();
 
-            var nodesQuery = "DELETE FROM Node WHERE ImageId IN (SELECT Id FROM DeletedIds)";
+            var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
             var nodesCommand = db.CreateCommand(nodesQuery);
             nodesCommand.ExecuteNonQuery();
 
-            var albumQuery = "DELETE FROM AlbumImage WHERE ImageId IN (SELECT Id FROM DeletedIds)";
+            var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
             var albumCommand = db.CreateCommand(albumQuery);
             albumCommand.ExecuteNonQuery();
 
-            var query = "DELETE FROM Image WHERE Id IN (SELECT Id FROM DeletedIds)";
+            var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
             var command = db.CreateCommand(query);
             var images = command.ExecuteNonQuery();
 

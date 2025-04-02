@@ -4,9 +4,6 @@ using Diffusion.Database;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Diffusion.Common;
-using Diffusion.Toolkit.Classes;
-using WPFLocalizeExtension.Providers;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -82,6 +79,27 @@ public class MainModel : BaseNotify
     private IEnumerable<ModelViewModel>? _imageModels;
     private IEnumerable<string> _imageModelNames;
     private ObservableCollection<FolderViewModel> _folders;
+
+
+    private FolderViewModel? _currentFolder;
+    private ICommand _resetLayout;
+    private ICommand _unavailableFilesCommand;
+    private bool _hideUnavailable;
+    private ICommand _toggleHideUnavailable;
+    private bool _autoAdvance;
+    private ICommand _toggleAutoAdvance;
+    private bool _hasSelectedAlbums;
+    private ICommand _clearModelsCommand;
+    private bool _hasSelectedModels;
+    private int _selectedAlbumsCount;
+    private int _selectedModelsCount;
+    private string _toastMessage;
+    private ICommand _showSettingsCommand;
+    private ObservableCollection<QueryModel> _queries;
+    private QueryModel? _selectedQuery;
+    private ICommand _renameQueryCommand;
+    private ICommand _removeQueryCommand;
+
     public MainModel()
     {
         _status = "Ready";
@@ -481,11 +499,26 @@ public class MainModel : BaseNotify
         set => SetField(ref _albums, value);
     }
 
+
+    public ObservableCollection<QueryModel> Queries
+    {
+        get => _queries;
+        set => SetField(ref _queries, value);
+    }
+
+    public QueryModel? SelectedQuery
+    {
+        get => _selectedQuery;
+        set => SetField(ref _selectedQuery, value);
+    }
+
     public int SelectedAlbumsCount
     {
         get => _selectedAlbumsCount;
         set => SetField(ref _selectedAlbumsCount, value);
     }
+
+
 
     public int SelectedModelsCount
     {
@@ -522,6 +555,19 @@ public class MainModel : BaseNotify
     {
         get => _removeAlbumCommand;
         set => SetField(ref _removeAlbumCommand, value);
+    }
+
+
+    public ICommand RenameQueryCommand
+    {
+        get => _renameQueryCommand;
+        set => SetField(ref _renameQueryCommand, value);
+    }
+
+    public ICommand RemoveQueryCommand
+    {
+        get => _removeQueryCommand;
+        set => SetField(ref _removeQueryCommand, value);
     }
 
 
@@ -634,20 +680,6 @@ public class MainModel : BaseNotify
 
     public Action<FolderViewModel> MoveSelectedImagesToFolder { get; set; }
 
-    private FolderViewModel? _currentFolder;
-    private ICommand _resetLayout;
-    private ICommand _unavailableFilesCommand;
-    private bool _hideUnavailable;
-    private ICommand _toggleHideUnavailable;
-    private bool _autoAdvance;
-    private ICommand _toggleAutoAdvance;
-    private bool _hasSelectedAlbums;
-    private ICommand _clearModelsCommand;
-    private bool _hasSelectedModels;
-    private int _selectedAlbumsCount;
-    private int _selectedModelsCount;
-    private string _toastMessage;
-    private ICommand _showSettingsCommand;
 
     public FolderViewModel? CurrentFolder
     {
@@ -673,4 +705,5 @@ public class MainModel : BaseNotify
         set => SetField(ref _toastMessage, value);
     }
 
+    public QueryModel CurrentQuery { get; set; }
 }

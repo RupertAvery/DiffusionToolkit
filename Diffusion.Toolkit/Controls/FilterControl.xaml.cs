@@ -85,7 +85,10 @@ namespace Diffusion.Toolkit.Controls
         public FilterControlModel Filter
         {
             get => (FilterControlModel)GetValue(FilterProperty);
-            set => SetValue(FilterProperty, value);
+            set
+            {
+                SetValue(FilterProperty, value);
+            }
         }
 
         public FilterControl()

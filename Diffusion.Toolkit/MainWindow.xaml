@@ -101,8 +101,8 @@
                 <MenuItem Header="{lex:Loc Menu.Albums.Sort}" Click="SortAlbums_OnClick"/>
             </MenuItem>-->
             <MenuItem Header="{lex:Loc Menu.Search}">
-                <!--<MenuItem Header="{lex:Loc Menu.Search.Save}" Command="{Binding SaveQuery}"/>
-                <Separator></Separator>-->
+                <MenuItem Header="{lex:Loc Menu.Search.Save}" Command="{Binding SaveQuery}"/>
+                <Separator></Separator>
                 <MenuItem Header="{lex:Loc Menu.Search.AutoTagNSFW}" Command="{Binding AutoTagNSFW}"/>
                 <MenuItem Header="{lex:Loc Menu.Search.AddAllToAlbum}" Command="{Binding AddAllToAlbum}"/>
                 <MenuItem Header="{lex:Loc Menu.Search.MarkAllForDeletion}" Command="{Binding MarkAllForDeletion}"/>

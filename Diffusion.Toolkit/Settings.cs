@@ -103,6 +103,7 @@ public class Settings : SettingsContainer, IScanOptions
     private bool _scanUnavailable;
     private bool _showNotifications;
     private List<ExternalApplication> _externalApplications;
+    private string _sortQueriesBy;
 
     public Settings() : this(false)
     {
@@ -121,9 +122,12 @@ public class Settings : SettingsContainer, IScanOptions
         UseBuiltInViewer = true;
         OpenInFullScreen = true;
         CustomCommandLineArgs = "%1";
-        SortAlbumsBy = "Name";
         Culture = "default";
+
+        SortAlbumsBy = "Name";
         SortBy = "Date Created";
+        SortQueriesBy = "Name";
+        
         SortDirection = "Z-A";
         MetadataSection = new MetadataSectionSettings();
         MetadataSection.Attach(this);
@@ -492,6 +496,12 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _externalApplications;
         set => UpdateValue(ref _externalApplications, value);
+    }
+
+    public string SortQueriesBy
+    {
+        get => _sortQueriesBy;
+        set => UpdateValue(ref _sortQueriesBy, value);
     }
 }
 

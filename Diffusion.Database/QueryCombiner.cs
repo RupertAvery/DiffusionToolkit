@@ -33,7 +33,7 @@ public static class QueryCombiner
 
     public static (string Query, IEnumerable<object> Bindings) ParseEx(QueryOptions options)
     {
-        if (options.UseFilter)
+        if (!options.Filter.IsEmpty)
         {
             return Filter(options.Filter, options);
         }

@@ -143,6 +143,12 @@ public partial class DataStore
 
                 db.CreateTable<Folder>();
                 db.CreateIndex<Folder>(folder => folder.ParentId);
+                db.CreateIndex<Folder>(folder => folder.Path, true);
+
+                db.CreateTable<Query>();
+                db.CreateIndex<Query>(query => query.Name, true);
+
+
             }
             finally
             {

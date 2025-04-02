@@ -646,6 +646,95 @@ public class MetadataSection : BaseNotify
 
 public static class SearchControlModelExtensions
 {
+    public static FilterControlModel AsModel(this Filter filter)
+    {
+        var model = new FilterControlModel();
+
+        model.UsePrompt = filter.UsePrompt;
+        model.Prompt = filter.Prompt;
+        model.UsePromptEx = filter.UsePromptEx;
+        model.PromptEx = filter.PromptEx;
+        model.UseNegativePrompt = filter.UseNegativePrompt;
+        model.NegativePrompt = filter.NegativePrompt;
+        model.UseNegativePromptEx = filter.UseNegativePromptEx;
+        model.NegativePromptEx = filter.NegativePromptEx;
+
+        model.UseSteps = filter.UseSteps;
+        model.Steps = filter.Steps;
+        model.UseSampler = filter.UseSampler;
+        model.Sampler = filter.Sampler;
+        model.UseSeed = filter.UseSeed;
+        model.SeedStart = filter.SeedStart;
+        model.SeedEnd = filter.SeedEnd;
+        model.UseCFGScale = filter.UseCFGScale;
+        model.CFGScale = filter.CFGScale;
+        model.UseSize = filter.UseSize;
+        model.Width = filter.Width;
+        model.Height = filter.Height;
+        model.UseModelHash = filter.UseModelHash;
+        model.ModelHash = filter.ModelHash;
+        model.UseModelName = filter.UseModelName;
+        model.ModelName = filter.ModelName;
+
+        model.UseFavorite = filter.UseFavorite;
+        model.Favorite = filter.Favorite;
+        model.UseRating = filter.UseRating;
+        model.RatingOp = filter.RatingOp;
+        model.Rating = filter.Rating;
+        model.Unrated = filter.Unrated;
+        model.UseNSFW = filter.UseNSFW;
+        model.NSFW = filter.NSFW;
+
+        model.UseForDeletion = filter.UseForDeletion;
+        model.ForDeletion = filter.ForDeletion;
+
+        model.UseBatchSize = filter.UseBatchSize;
+        model.BatchSize = filter.BatchSize;
+
+        model.UseBatchPos = filter.UseBatchPos;
+        model.BatchPos = filter.BatchPos;
+
+        model.NoAestheticScore = filter.NoAestheticScore;
+        model.UseAestheticScore = filter.UseAestheticScore;
+        model.AestheticScoreOp = filter.AestheticScoreOp;
+        model.AestheticScore = filter.AestheticScore;
+
+        model.UsePath = filter.UsePath;
+        model.Path = filter.Path;
+
+        model.UseCreationDate = filter.UseCreationDate;
+        model.Start = filter.Start;
+        model.End = filter.End;
+
+        model.UseHyperNet = filter.UseHyperNet;
+        model.HyperNet = filter.HyperNet;
+
+        model.UseHyperNetStr = filter.UseHyperNetStr;
+        model.HyperNetStrOp = filter.HyperNetStrOp;
+        model.HyperNetStr = filter.HyperNetStr;
+
+        model.UseNoMetadata = filter.UseNoMetadata;
+        model.NoMetadata = filter.NoMetadata;
+
+        model.UseInAlbum = filter.UseInAlbum;
+        model.InAlbum = filter.InAlbum;
+
+        model.UseUnavailable = filter.UseUnavailable;
+        model.Unavailable = filter.Unavailable;
+
+        model.NodeFilters = new ObservableCollection<Controls.NodeFilter>(filter.NodeFilters.Select(d => new Controls.NodeFilter()
+        {
+            IsActive = d.IsActive,
+            Operation = d.Operation,
+            Node = d.Node,
+            Property = d.Property,
+            Comparison = d.Comparison,
+            Value = d.Value,
+        }));
+
+        return model;
+    }
+
     public static Filter AsFilter(this FilterControlModel model)
     {
         var filter = new Filter();

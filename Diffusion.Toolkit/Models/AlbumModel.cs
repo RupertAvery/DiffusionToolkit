@@ -7,6 +7,7 @@ public class AlbumModel : BaseNotify, IAlbumInfo
 {
     private bool _isTicked;
     private bool _isSelected;
+
     public int Id { get; set; }
     public string Name { get; set; }
     public int Order { get; set; }

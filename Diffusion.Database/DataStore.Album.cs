@@ -215,9 +215,9 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            InsertIds(db, "SelectedIds", imageIds);
+            var selectedIds = InsertIds(db, "SelectedIds", imageIds);
 
-            var query = $"DELETE FROM {nameof(AlbumImage)}  WHERE AlbumId = @AlbumId AND ImageId IN (SELECT Id FROM SelectedIds)";
+            var query = $"DELETE FROM {nameof(AlbumImage)}  WHERE AlbumId = @AlbumId AND ImageId IN {selectedIds}";
 
             var command = db.CreateCommand(query);
             command.Bind("@AlbumId", albumId);

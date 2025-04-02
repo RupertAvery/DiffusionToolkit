@@ -44,26 +44,26 @@ public class Filter
 
     public bool UseBatchPos { get; set; }
     public int BatchPos { get; set; }
-        
+
     public bool UseAestheticScore { get; set; }
     public bool NoAestheticScore { get; set; }
     public string AestheticScoreOp { get; set; }
     public double? AestheticScore { get; set; }
-        
+
     public bool UsePath { get; set; }
     public string Path { get; set; }
-        
+
     public bool UseCreationDate { get; set; }
     public DateTime? Start { get; set; }
     public DateTime? End { get; set; }
 
     public bool UseHyperNet { get; set; }
     public string HyperNet { get; set; }
-        
+
     public bool UseHyperNetStr { get; set; }
     public string HyperNetStrOp { get; set; }
     public double HyperNetStr { get; set; }
-        
+
     public bool UseNoMetadata { get; set; }
     public bool NoMetadata { get; set; }
 
@@ -92,10 +92,15 @@ public class Filter
                             UseHyperNet ||
                             UseHyperNetStr ||
                             UseNoMetadata ||
-                            UseAlbum || 
+                            UseAlbum ||
                             UseFolder ||
-                            UseInAlbum || 
-                            UseUnavailable);
+                            UseInAlbum ||
+                            UseUnavailable ||
+                            (NodeFilters == null ||
+                            NodeFilters.All(d => !d.IsActive)) ||
+                            (AlbumIds == null ||
+                             AlbumIds.Count == 0)
+                            );
 
     public bool UseFolder => !string.IsNullOrEmpty(Folder);
     public string? Folder { get; set; }
@@ -110,13 +115,28 @@ public class Filter
     public IReadOnlyCollection<int>? AlbumIds { get; set; }
 }
 
+public enum NodeOperation
+{
+    INTERSECT,
+    UNION,
+    EXCEPT
+}
+
+public enum NodeComparison
+{
+    Contains,
+    StartsWith,
+    EndsWith,
+    Equals
+}
+
 public class NodeFilter
 {
     public bool IsActive { get; set; }
-    public string Operation { get; set; }
+    public NodeOperation Operation { get; set; }
     public string Node { get; set; }
     public string Property { get; set; }
-    public string Comparison { get; set; }
+    public NodeComparison Comparison { get; set; }
     public string Value { get; set; }
 
 }
