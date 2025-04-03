@@ -304,10 +304,12 @@ namespace Diffusion.Database
                 nameof(Image.Id),
                 nameof(Image.CustomTags),
                 nameof(Image.Rating),
-                nameof(Image.Favorite),
-                nameof(Image.ForDeletion),
-                nameof(Image.NSFW),
-                nameof(Image.Unavailable),
+                // Make sure these values are populated with 0
+                // so DO NOT Exclude them
+                //nameof(Image.Favorite),
+                //nameof(Image.ForDeletion),
+                //nameof(Image.NSFW),
+                //nameof(Image.Unavailable),
                 nameof(Image.Workflow)
             };
 
