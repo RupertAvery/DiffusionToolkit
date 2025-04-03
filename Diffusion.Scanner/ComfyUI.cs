@@ -14,11 +14,17 @@ namespace Diffusion.IO
         {
             var hash = Id.GetHashCode();
 
-            hash = (hash * 397) ^ Name.GetHashCode();
-
-            foreach (var input in Inputs)
+            if(Name != null)
             {
-                hash = (hash * 397) ^ input.Name.GetHashCode();
+                hash = (hash * 397) ^ Name.GetHashCode();
+            }
+
+            if (Inputs != null)
+            {
+                foreach (var input in Inputs)
+                {
+                    hash = (hash * 397) ^ input.Name.GetHashCode();
+                }
             }
 
             return hash;

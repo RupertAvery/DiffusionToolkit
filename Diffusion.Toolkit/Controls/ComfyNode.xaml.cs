@@ -28,73 +28,76 @@ namespace Diffusion.Toolkit.Controls
         {
             _textBoxes = new Dictionary<string, TextBox>();
 
-            foreach (var input in node.Inputs)
+            if(node.Inputs != null)
             {
-                var label = new Label()
+
+                foreach (var input in node.Inputs)
                 {
-                    DataContext = input,
-                    FontSize = 14,
-                    BorderThickness = new Thickness(0),
-                    Padding = new Thickness(5),
-                };
-                var textBox = new TextBox()
-                {
-                    DataContext = input,
-                    FontSize = 14,
-                    BorderThickness = new Thickness(1),
-                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                    TextWrapping = TextWrapping.WrapWithOverflow,
-                    IsReadOnly = true,
-                    Padding = new Thickness(5),
-                    MaxHeight = 200,
-                    Text = input.Value?.ToString()
-                };
-                var button = new Button()
-                {
-                    DataContext = input,
-                    FontSize = 12,
-                    Width = 16,
-                    Height = 16,
-                    Content = "...",
-                    ContextMenu = new ContextMenu()
+                    var label = new Label()
                     {
-                        
-                    }
-                };
-                label.SetBinding(Label.ContentProperty, "Name");
-                textBox.SetValue(Grid.ColumnProperty, 1);
-                textBox.SetBinding(TextBox.TextProperty, "Value");
-                button.SetValue(Grid.ColumnProperty, 2);
-                button.Click += ButtonOnClick;
+                        DataContext = input,
+                        FontSize = 14,
+                        BorderThickness = new Thickness(0),
+                        Padding = new Thickness(5),
+                    };
+                    var textBox = new TextBox()
+                    {
+                        DataContext = input,
+                        FontSize = 14,
+                        BorderThickness = new Thickness(1),
+                        VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                        TextWrapping = TextWrapping.WrapWithOverflow,
+                        IsReadOnly = true,
+                        Padding = new Thickness(5),
+                        MaxHeight = 200,
+                        Text = input.Value?.ToString()
+                    };
+                    var button = new Button()
+                    {
+                        DataContext = input,
+                        FontSize = 12,
+                        Width = 16,
+                        Height = 16,
+                        Content = "...",
+                        ContextMenu = new ContextMenu()
+                        {
 
-                var filterMenuItem = new MenuItem() { Header = "Add to Filters" };
-                filterMenuItem.DataContext = input;
-                filterMenuItem.Click += (sender, args) =>
-                {
-                    var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
-                    var boundInput = (Input)bindingExpression.ResolvedSource;
-                    ServiceLocator.SearchService.AddNodeFilter(boundInput.Name, (string)boundInput.Value);
-                };
+                        }
+                    };
+                    label.SetBinding(Label.ContentProperty, "Name");
+                    textBox.SetValue(Grid.ColumnProperty, 1);
+                    textBox.SetBinding(TextBox.TextProperty, "Value");
+                    button.SetValue(Grid.ColumnProperty, 2);
+                    button.Click += ButtonOnClick;
 
-                var searchMenuItem = new MenuItem() { Header = "Add to Default Search" };
-                searchMenuItem.DataContext = input;
-                searchMenuItem.Click += (sender, args) =>
-                {
-                    var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
-                    var boundInput = (Input)bindingExpression.ResolvedSource;
-                    ServiceLocator.SearchService.AddDefaultSearchProperty(boundInput.Name);
-                };
+                    var filterMenuItem = new MenuItem() { Header = "Add to Filters" };
+                    filterMenuItem.DataContext = input;
+                    filterMenuItem.Click += (sender, args) =>
+                    {
+                        var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
+                        var boundInput = (Input)bindingExpression.ResolvedSource;
+                        ServiceLocator.SearchService.AddNodeFilter(boundInput.Name, (string)boundInput.Value);
+                    };
 
-                button.ContextMenu.Items.Add(filterMenuItem);
-                button.ContextMenu.Items.Add(searchMenuItem);
+                    var searchMenuItem = new MenuItem() { Header = "Add to Default Search" };
+                    searchMenuItem.DataContext = input;
+                    searchMenuItem.Click += (sender, args) =>
+                    {
+                        var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
+                        var boundInput = (Input)bindingExpression.ResolvedSource;
+                        ServiceLocator.SearchService.AddDefaultSearchProperty(boundInput.Name);
+                    };
+
+                    button.ContextMenu.Items.Add(filterMenuItem);
+                    button.ContextMenu.Items.Add(searchMenuItem);
 
 
-                var grid = new Grid()
-                {
-                    DataContext = node,
-                    Margin = new Thickness(0, 2, 0, 2),
-                    Background = new SolidColorBrush(Colors.Transparent),
-                    ColumnDefinitions =
+                    var grid = new Grid()
+                    {
+                        DataContext = node,
+                        Margin = new Thickness(0, 2, 0, 2),
+                        Background = new SolidColorBrush(Colors.Transparent),
+                        ColumnDefinitions =
                     {
                         new ColumnDefinition()
                         {
@@ -106,19 +109,21 @@ namespace Diffusion.Toolkit.Controls
                             Width = new GridLength(16)
                         },
                     },
-                    Children = {
+                        Children = {
                         label,
                         textBox,
                         button
                     }
-                };
+                    };
 
-                _textBoxes.Add(input.Name, textBox);
+                    _textBoxes.Add(input.Name, textBox);
 
-                InputsPanel.Children.Add(grid);
+                    InputsPanel.Children.Add(grid);
+                }
+
+                Id = node.GetHashCode();
             }
 
-            Id = node.GetHashCode();
         }
 
 

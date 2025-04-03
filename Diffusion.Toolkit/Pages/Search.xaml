@@ -477,9 +477,9 @@
                                                     <ColumnDefinition />
                                                     <ColumnDefinition Width="26"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.SortQueries.ToolTip}" Command="{Binding MainModel.SortAlbumCommand}">
+                                                <!--<Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Albums.Buttons.SortQueries.ToolTip}" Command="{Binding MainModel.SortAlbumCommand}">
                                                     <fa:FontAwesome Icon="Sort"></fa:FontAwesome>
-                                                </Button>
+                                                </Button>-->
                                             </Grid>
                                         </controls:AccordionControl.ButtonAreaContent>
 

@@ -1,5 +1,6 @@
 ﻿using SQLite;
 using System.Text;
+using Diffusion.Common;
 
 namespace Diffusion.Database
 {
@@ -190,8 +191,26 @@ namespace Diffusion.Database
 
             var properties = typeof(Image).GetProperties().Where(p => !exclude.Contains(p.Name)).ToList();
 
-            //var querySet = new StringBuilder();
-            //var command = db.CreateCommand(query);
+            var setProperties = properties.Where(p => p.Name != nameof(Image.Path)).ToList();
+
+            var query = new StringBuilder("UPDATE Image SET ");
+            var setList = new List<string>();
+
+            foreach (var property in setProperties)
+            {
+                if (property.Name == nameof(Image.NSFW))
+                {
+                    setList.Add($"{property.Name} = ? OR {property.Name}");
+                }
+                else
+                {
+                    setList.Add($"{property.Name} = ?");
+                }
+            }
+
+            query.Append(string.Join(", ", setList));
+            query.Append(" WHERE Path = ? RETURNING Id;");
+            var updateQuery = query.ToString();
 
             foreach (var image in images)
             {
@@ -210,85 +229,35 @@ namespace Diffusion.Database
 
                 image.FolderId = id;
 
+                var values = new List<object>();
 
-                //foreach (var property in properties)
-                //{
-                //    command.Bind($"@{property.Name}", property.GetValue(image));
-                //}
-
-                var query = "UPDATE Image SET ";
-                var setList = new List<string>();
-
-                foreach (var property in properties.Where(p => p.Name != nameof(Image.Path)))
+                foreach (var property in setProperties)
                 {
                     var value = property.GetValue(image);
-
-                    if (property.Name == nameof(Image.NSFW))
-                    {
-                        setList.Add($"{property.Name} = {SqlBoolean((bool)value)} OR {property.Name}");
-                    }
-                    else
-                    {
-                        if (value != null)
-                        {
-                            if (property.PropertyType == typeof(string))
-                            {
-                                setList.Add($"{property.Name} = '{SqlEscape(value.ToString())}'");
-                            }
-                            else if (property.PropertyType == typeof(DateTime))
-                            {
-                                setList.Add($"{property.Name} = {SqlDateTime((DateTime)value)}");
-                            }
-                            else if (property.PropertyType == typeof(bool))
-                            {
-                                setList.Add($"{property.Name} = {SqlBoolean((bool)value)}");
-                            }
-                            else
-                            {
-                                setList.Add($"{property.Name} = {value}");
-                            }
-                        }
-                        else
-                        {
-                            setList.Add($"{property.Name} = NULL");
-                        }
-                    }
+                    values.Add(value);
                 }
 
-                query += string.Join(", ", setList);
+                values.Add(image.Path);
 
-                //query += $" WHERE Path = '{SqlEscape(image.Path)}'";
-                query += $" WHERE Path = @Path";
-
-                query += " RETURNING Id;";
-
-                //Debug.WriteLine(query);
-
-                //querySet.Append(query);
-
-                //updated += command.ExecuteNonQuery();
-
-                //var squery = $"SELECT * FROM Image WHERE Path = @Path";
-                //var scommand = db.CreateCommand(squery);
-                //scommand.Bind("@Path", image.Path);
-                //var sids = scommand.ExecuteQuery<Image>();
-
-
-                var command = db.CreateCommand(query);
-                command.Bind("@Path", image.Path);
-                var ids = command.ExecuteQuery<ReturnId>();
-
-                image.Id = ids[0].Id;
+                try
+                {
+                    var command = db.CreateCommand(updateQuery, values.ToArray());
+                    var ids = command.ExecuteQuery<ReturnId>();
+                    image.Id = ids[0].Id;
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e.Message);
+                    Logger.Log(e.StackTrace);
+                    Logger.Log(updateQuery);
+                    Logger.Log(string.Join("\r\n", values));
+                    throw;
+                }
 
                 updated += 1;
-
             }
-
-
-
-            //updated += ids.Count;
-
-            //db.Commit();
+            
+            db.Close();
 
             return updated;
         }
@@ -329,16 +298,17 @@ namespace Diffusion.Database
             db.BeginTransaction();
 
             var fieldList = new List<string>();
-            var paramList = new List<string>();
 
             var exclude = new string[]
             {
                 nameof(Image.Id),
-                //nameof(Image.CustomTags),
-                //nameof(Image.Rating),
-                //nameof(Image.Favorite),
-                //nameof(Image.ForDeletion),
-                //nameof(Image.NSFW)
+                nameof(Image.CustomTags),
+                nameof(Image.Rating),
+                nameof(Image.Favorite),
+                nameof(Image.ForDeletion),
+                nameof(Image.NSFW),
+                nameof(Image.Unavailable),
+                nameof(Image.Workflow)
             };
 
             exclude = exclude.Except(includeProperties).ToArray();
@@ -348,16 +318,14 @@ namespace Diffusion.Database
             foreach (var property in properties)
             {
                 fieldList.Add($"{property.Name}");
-                //paramList.Add($"@{property.Name}");
             }
+
+            var propertySet = $"({string.Join(",", properties.Select(p => "?"))})";
 
             var query = new StringBuilder($"INSERT INTO Image ({string.Join(", ", fieldList)}) VALUES ");
 
-            //var query =
-            //    $"INSERT INTO Image ({string.Join(", ", fieldList)}) VALUES " +
-            //    $"({string.Join(", ", paramList)}) " +
-            //    $"ON CONFLICT (Path) DO NOTHING ";
-
+            var valueGroups = new List<string>();
+            var values = new List<object>();
 
             foreach (var image in images)
             {
@@ -376,52 +344,18 @@ namespace Diffusion.Database
 
                 image.FolderId = id;
 
-
-                //foreach (var property in properties)
-                //{
-                //    command.Bind($"@{property.Name}", property.GetValue(image));
-                //}
-                query.Append("(");
                 foreach (var property in properties)
                 {
                     var value = property.GetValue(image);
 
-                    if (value != null)
-                    {
-                        if (property.PropertyType == typeof(string))
-                        {
-                            query.Append($"'{SqlEscape(value.ToString())}',");
-                        }
-                        else if (property.PropertyType == typeof(DateTime))
-                        {
-                            query.Append($"{SqlDateTime((DateTime)value)},");
-                        }
-                        else if (property.PropertyType == typeof(bool))
-                        {
-                            query.Append($"{SqlBoolean((bool)value)},");
-                        }
-                        else
-                        {
-                            query.Append($"{value},");
-                        }
-                    }
-                    else
-                    {
-                        query.Append($"NULL,");
-                    }
+                    values.Add(value);
                 }
 
-                query.Remove(query.Length - 1, 1);
-                query.Append("),");
-
-                //command.ExecuteNonQuery();
-
-                //var sql = "select last_insert_rowid();";
-
-                //var pcommand = db.CreateCommand(sql);
-
-                //image.Id = pcommand.ExecuteScalar<int>();
+                valueGroups.Add(propertySet);
             }
+
+            query.Append(string.Join(", ", valueGroups));
+            query.Append(" ON CONFLICT (Path) DO NOTHING RETURNING Id;");
 
             if (cancellationToken.IsCancellationRequested)
             {
@@ -429,18 +363,24 @@ namespace Diffusion.Database
                 return;
             }
 
-            query.Remove(query.Length - 1, 1);
-
-            query.Append(" ON CONFLICT (Path) DO NOTHING ");
-
-            query.Append("RETURNING Id ");
-
-            var command = db.CreateCommand(query.ToString());
-            var returnIds = command.ExecuteQuery<ReturnId>();
-
-            foreach (var item in images.Zip(returnIds))
+            try
             {
-                item.First.Id = item.Second.Id;
+                var command = db.CreateCommand(query.ToString(), values.ToArray());
+
+                var returnIds = command.ExecuteQuery<ReturnId>();
+
+                foreach (var item in images.Zip(returnIds))
+                {
+                    item.First.Id = item.Second.Id;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message);
+                Logger.Log(e.StackTrace);
+                Logger.Log(query.ToString());
+                Logger.Log(string.Join("\r\n", values));
+                throw;
             }
 
             db.Commit();
