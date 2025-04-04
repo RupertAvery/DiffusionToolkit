@@ -128,7 +128,7 @@ Make sure the thumbnail view or the preview pane has the focus if the shortcuts 
 
 ## How do I view my image's metadata (PNGInfo)?
 
-With the Preview Pane visible, press I in the thumbnail view or with the Preview Pane in focus to show or hide the metadata.  You can also click the eye icon at the botton right of the Preview Pane.
+With the Preview Pane visible, press I in the thumbnail view or with the Preview Pane in focus to show or hide the metadata.  You can also click the eye icon at the bottom right of the Preview Pane.
 
 ## What is Rebuild Metadata and when should I use it?
 
