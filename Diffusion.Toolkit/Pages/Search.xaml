@@ -261,6 +261,7 @@
                                                         MouseDown="Folder_OnClick"
                                                         Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
                                                         AllowDrop="True" 
+                                                        behaviors:DTBehaviors.IsFocused="{Binding IsSelected}"
                                                         behaviors:DTBehaviors.UseIsDraggedHandlers="True"
                                                         Drop="DropImagesOnFolder">
                                                         <Grid.ContextMenu>

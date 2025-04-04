@@ -24,8 +24,6 @@ namespace Diffusion.Toolkit
 
     public partial class MainWindow
     {
-        private readonly Task _thumbailTask;
-
         static readonly CultureInfo DefaultCulture = CultureInfo.CurrentCulture;
 
         private async void OnActivated(object? sender, EventArgs e)
@@ -310,7 +308,7 @@ namespace Diffusion.Toolkit
             {
                 _isClosing = true;
 
-                ThumbnailLoader.Instance.Stop();
+                ServiceLocator.ThumbnailService.Stop();
 
                 //var changes = _settingsPage.ApplySettings();
 

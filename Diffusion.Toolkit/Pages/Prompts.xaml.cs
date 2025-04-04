@@ -36,7 +36,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (this == args.TargetPage && !_isLoaded)
                 {
-                    ReloadPrompts();
+                    LoadPrompts();
                     _isLoaded = true;
                 }
             };
@@ -71,7 +71,7 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.Key == Key.Enter)
             {
-                Dispatcher.Invoke(() => { LoadPrompts(); });
+                LoadPrompts();
             }
         }
 
@@ -79,30 +79,36 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.Key == Key.Enter)
             {
-                Dispatcher.Invoke(() => { LoadNegativePrompts(); });
+                LoadNegativePrompts();
             }
         }
 
         private void LoadPrompts()
         {
-            _model.Prompts = new ObservableCollection<UsedPrompt>(_dataStore.SearchPrompts(_model.PromptQuery, _model.FullTextPrompt, _model.PromptDistance));
+            Task.Run(() =>
+            {
+                _model.IsBusy = true;
+                var prompts = _dataStore.SearchPrompts(_model.PromptQuery, _model.FullTextPrompt, _model.PromptDistance);
+                _model.Prompts = new ObservableCollection<UsedPrompt>(prompts);
+                _model.IsBusy = false;
+            });
         }
 
         private void LoadNegativePrompts()
         {
-            _model.NegativePrompts = new ObservableCollection<UsedPrompt>(_dataStore.SearchNegativePrompts(_model.NegativePromptQuery, _model.NegativeFullTextPrompt, _model.NegativePromptDistance));
+            Task.Run(() =>
+            {
+                _model.IsBusy = true;
+                var prompts = _dataStore.SearchNegativePrompts(_model.NegativePromptQuery, _model.NegativeFullTextPrompt, _model.NegativePromptDistance);
+                _model.NegativePrompts = new ObservableCollection<UsedPrompt>(prompts);
+                _model.IsBusy = false;
+            });
         }
 
         public void ReloadPrompts()
         {
-            Task.Run(() =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    LoadPrompts();
-                    LoadNegativePrompts();
-                });
-            });
+            
+            //LoadNegativePrompts();
         }
 
         public void LoadImages()
@@ -181,9 +187,9 @@ namespace Diffusion.Toolkit.Pages
 
             var images = new List<ImageEntry>();
 
-            ThumbnailLoader.Instance.StopCurrentBatch();
+            ServiceLocator.ThumbnailService.StopCurrentBatch();
 
-            var rId = ThumbnailLoader.Instance.StartBatch();
+            var rId = ServiceLocator.ThumbnailService.StartBatch();
 
 
             IEnumerable<ImageView> matches = Enumerable.Empty<ImageView>();

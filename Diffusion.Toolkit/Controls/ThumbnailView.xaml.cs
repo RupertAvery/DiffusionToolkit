@@ -113,7 +113,7 @@ namespace Diffusion.Toolkit.Controls
             Model.RemoveEntryCommand = new RelayCommand<object>(o => RemoveEntry());
             Model.CopyCommand = new RelayCommand<object>(o => CopySelected());
             Model.MoveCommand = new RelayCommand<object>(o => MoveSelected());
-            Model.RescanCommand = new RelayCommand<object>(o => RescanSelected());
+            Model.RescanCommand = new AsyncCommand<object>(o => RescanSelected());
 
             Model.NextPage = new RelayCommand<object>((o) => GoNextPage(null));
             Model.PrevPage = new RelayCommand<object>((o) => GoPrevPage(null));
@@ -128,25 +128,29 @@ namespace Diffusion.Toolkit.Controls
             //_model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
             Model.OpenWithMenuItems = new ObservableCollection<Control>();
 
-            ServiceLocator.Settings.PropertyChanged += (sender, args) =>
+            if (ServiceLocator.Settings != null)
             {
-                if (args.PropertyName == nameof(Settings.ExternalApplications))
+                ServiceLocator.Settings.PropertyChanged += (sender, args) =>
                 {
-                    BuildOpenWIthContextMenu();
-                }
-            };
+                    if (args.PropertyName == nameof(Settings.ExternalApplications))
+                    {
+                        BuildOpenWithContextMenu();
+                    }
+                };
+            }
 
-            BuildOpenWIthContextMenu();
+            BuildOpenWithContextMenu();
 
             _debounceRedrawThumbnails = Utility.Debounce(() => Dispatcher.Invoke(() => ReloadThumbnailsView()));
 
             Init();
         }
 
-        private void BuildOpenWIthContextMenu()
+        private void BuildOpenWithContextMenu()
         {
             Model.OpenWithMenuItems = new ObservableCollection<Control>();
-            if (ServiceLocator.Settings.ExternalApplications != null)
+
+            if (ServiceLocator.Settings?.ExternalApplications != null)
             {
                 foreach (var externalApplication in ServiceLocator.Settings.ExternalApplications)
                 {
@@ -197,28 +201,16 @@ namespace Diffusion.Toolkit.Controls
 
         private readonly Action _debounceRedrawThumbnails;
 
-        private void RescanSelected()
+        private async Task RescanSelected()
         {
-            var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
-            Task.Run(async () =>
+            if (await ServiceLocator.ProgressService.TryStartTask())
             {
-                if (await ServiceLocator.ProgressService.TryStartTask())
-                {
+                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
-                    try
-                    {
-                        ServiceLocator.ScanningService.ScanFiles(imageEntries.Select(s => s.Path).ToList(), true, ServiceLocator.Settings.StoreMetadata, ServiceLocator.Settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
-                        ServiceLocator.SearchService.ExecuteSearch();
-                    }
-                    finally
-                    {
-                        ServiceLocator.ProgressService.CompleteTask();
-                        var status = GetLocalizedText("Actions.Scanning.Completed");
-                        ServiceLocator.ProgressService.SetStatus(status);
-                    }
-                }
-            });
+                await ServiceLocator.MetadataScannerService.QueueBatchAsync(imageEntries.Select(s => s.Path), ServiceLocator.ProgressService.CancellationToken);
+            }
+
         }
 
 

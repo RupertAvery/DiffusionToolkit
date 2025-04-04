@@ -20,6 +20,8 @@ public class ResultsView : BaseNotify
     private ICommand _pageChangedCommand;
     private ICommand _copyFiles;
     private ICommand _openCommand;
+    private bool _isBusy;
+    private bool _isPromptsBusy;
 
     public ResultsView()
     {
@@ -34,7 +36,17 @@ public class ResultsView : BaseNotify
         set => SetField(ref _images, value);
     }
 
-    public bool IsBusy { get; set; }
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetField(ref _isBusy, value);
+    }
+
+    public bool IsPromptsBusy
+    {
+        get => _isPromptsBusy;
+        set => SetField(ref _isPromptsBusy, value);
+    }
 
     public MainModel MainModel => ServiceLocator.MainModel;
 

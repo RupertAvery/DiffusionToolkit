@@ -4,6 +4,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using Diffusion.Toolkit.Pages;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -119,7 +120,7 @@ namespace Diffusion.Toolkit.Controls
                 {
                     if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
                     {
-                        imageEntry.QueueLoadThumbnail();
+                        ServiceLocator.ThumbnailService.QueueImage(imageEntry);
                     }
                 }
 

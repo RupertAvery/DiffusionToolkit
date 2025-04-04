@@ -593,6 +593,7 @@ public class MainModel : BaseNotify
     private string _activeView;
     private Settings _settings;
     private ICommand _reloadFoldersCommand;
+    private int _progressTarget;
 
     public ModelViewModel? CurrentModel
     {

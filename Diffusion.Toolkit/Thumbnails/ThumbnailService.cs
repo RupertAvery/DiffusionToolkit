@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Diffusion.Toolkit.Services;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +8,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Resources;
 using System.Windows.Threading;
 
@@ -32,9 +34,9 @@ public class ThumbailResult
 
 }
 
-public class ThumbnailLoader
+public class ThumbnailService
 {
-    private static ThumbnailLoader? _instance;
+    private static ThumbnailService? _instance;
     private readonly Channel<Job<ThumbnailJob, ThumbailResult>> _channel = Channel.CreateUnbounded<Job<ThumbnailJob, ThumbailResult>>();
     private readonly int _degreeOfParallelism = 2;
 
@@ -42,7 +44,7 @@ public class ThumbnailLoader
 
     private Stream _defaultStream;
 
-    private ThumbnailLoader()
+    public ThumbnailService()
     {
 
         _defaultStream = new MemoryStream();
@@ -59,6 +61,41 @@ public class ThumbnailLoader
             }
         }
     }
+
+    private Dispatcher _dispatcher => ServiceLocator.Dispatcher;
+
+
+    public void QueueImage(ImageEntry image)
+    {
+        image.LoadState = LoadState.Loading;
+
+        var job = new ThumbnailJob()
+        {
+            BatchId = image.BatchId,
+            EntryType = image.EntryType,
+            Path = image.Path,
+            Height = image.Height,
+            Width = image.Width
+        };
+
+        _ = QueueAsync(job, (d) =>
+        {
+            image.LoadState = LoadState.Loaded;
+
+            if (d.Success)
+            {
+                _dispatcher.Invoke(() => { image.Thumbnail = d.Image; });
+            }
+            else
+            {
+                _dispatcher.Invoke(() => { image.Unavailable = true; });
+            }
+
+            //Debug.WriteLine($"Finished job {job.RequestId}");
+            //OnPropertyChanged(nameof(Thumbnail));
+        });
+    }
+
 
     public int Size
     {
@@ -83,13 +120,6 @@ public class ThumbnailLoader
         }
     }
 
-    public static void CreateInstance()
-    {
-        _instance = new ThumbnailLoader();
-    }
-
-    public static ThumbnailLoader Instance => _instance;
-
     public void Stop()
     {
         cancellationTokenSource.Cancel();
@@ -106,11 +136,11 @@ public class ThumbnailLoader
         {
             consumers.Add(ProcessTaskAsync(cancellationTokenSource.Token));
         }
-        
+
         return Task.WhenAll(consumers);
     }
 
-    public Task StartRun()
+    public Task StartAsync()
     {
         cancellationTokenSource = new CancellationTokenSource();
 

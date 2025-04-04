@@ -116,30 +116,40 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private async void ScanFolder()
+        private async Task ScanFolder()
         {
-            var currentFolder = _model.CurrentFolder!;
-
-            await Task.Run(async () =>
+            if (await ServiceLocator.ProgressService.TryStartTask())
             {
-                if (await ServiceLocator.ProgressService.TryStartTask())
-                {
-                    try
-                    {
-                        var filesToScan = new List<string>();
+                var currentFolder = _model.CurrentFolder!;
 
-                        filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(currentFolder.Path, new HashSet<string>(), ServiceLocator.ProgressService.CancellationToken));
+                var filesToScan = new List<string>();
 
-                        var (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filesToScan, false, _settings.StoreMetadata, _settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
+                var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
 
-                        ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
-                    }
-                    finally
-                    {
-                        ServiceLocator.ProgressService.CompleteTask();
-                    }
-                }
-            });
+                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(currentFolder.Path, new HashSet<string>(), cancellationToken));
+
+                await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
+            }
+            //await Task.Run(async () =>
+            //{
+            //    if (await ServiceLocator.ProgressService.TryStartTask())
+            //    {
+            //        try
+            //        {
+            //            var filesToScan = new List<string>();
+
+            //            filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(currentFolder.Path, new HashSet<string>(), ServiceLocator.ProgressService.CancellationToken));
+
+            //            var (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filesToScan, false, _settings.StoreMetadata, _settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
+
+            //            ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
+            //        }
+            //        finally
+            //        {
+            //            ServiceLocator.ProgressService.CompleteTask();
+            //        }
+            //    }
+            //});
         }
 
         private async void ShowCreateFolderDialog()

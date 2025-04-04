@@ -244,6 +244,7 @@ namespace Diffusion.Database
                     var command = db.CreateCommand(updateQuery, values.ToArray());
                     var ids = command.ExecuteQuery<ReturnId>();
                     image.Id = ids[0].Id;
+                    updated += 1;
                 }
                 catch (Exception e)
                 {
@@ -254,7 +255,6 @@ namespace Diffusion.Database
                     throw;
                 }
 
-                updated += 1;
             }
             
             db.Close();
@@ -291,11 +291,13 @@ namespace Diffusion.Database
             return id.Value;
         }
 
-        public void AddImages(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, int> folderIdCache, CancellationToken cancellationToken)
+        public int AddImages(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, int> folderIdCache, CancellationToken cancellationToken)
         {
             using var db = OpenConnection();
 
             db.BeginTransaction();
+
+            int added = 0;
 
             var fieldList = new List<string>();
 
@@ -362,7 +364,7 @@ namespace Diffusion.Database
             if (cancellationToken.IsCancellationRequested)
             {
                 db.Rollback();
-                return;
+                return 0;
             }
 
             try
@@ -375,6 +377,8 @@ namespace Diffusion.Database
                 {
                     item.First.Id = item.Second.Id;
                 }
+
+                added = returnIds.Count;
             }
             catch (Exception e)
             {
@@ -386,6 +390,8 @@ namespace Diffusion.Database
             }
 
             db.Commit();
+
+            return added;
         }
 
         public IEnumerable<Folder> GetFolders()
@@ -636,8 +642,8 @@ namespace Diffusion.Database
             var command = db.CreateCommand(query);
             var images = command.ExecuteNonQuery();
 
-            var deletFolderQuery = "DELETE FROM Folder WHERE PATH = @Path";
-            var deleteFolderCommand = db.CreateCommand(deletFolderQuery);
+            var deleteFolderQuery = "DELETE FROM Folder WHERE PATH = @Path";
+            var deleteFolderCommand = db.CreateCommand(deleteFolderQuery);
             deleteFolderCommand.Bind("@Path", path);
             deleteFolderCommand.ExecuteNonQuery();
 
@@ -646,6 +652,15 @@ namespace Diffusion.Database
             db.Close();
 
             return images;
+        }
+
+        public bool ImageExists(string path)
+        {
+            var db = OpenReadonlyConnection();
+
+            var result = db.ExecuteScalar<int>("SELECT COUNT(1) FROM Image WHERE Path = ?", path);
+
+            return result > 0;
         }
     }
 }

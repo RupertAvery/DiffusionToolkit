@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -23,6 +24,24 @@ public class ProgressService
 
     public ProgressService()
     {
+    }
+
+    public async Task StartTask()
+    {
+        await _syncLock.WaitAsync();
+        try
+        {
+            if (!ServiceLocator.MainModel.IsBusy)
+            {
+                _progressCancellationTokenSource = new CancellationTokenSource();
+
+                _dispatcher.Invoke(() => { ServiceLocator.MainModel.IsBusy = true; });
+            }
+        }
+        finally
+        {
+            _syncLock.Release();
+        }
     }
 
     public async Task<bool> TryStartTask()
@@ -91,6 +110,37 @@ public class ProgressService
         });
     }
 
+    public void ResetTotal()
+    {
+        _dispatcher.Invoke(() =>
+        {
+            ServiceLocator.MainModel.TotalProgress = 0;
+        });
+    }
+
+
+
+    public void AddTotal(int count)
+    {
+        _dispatcher.Invoke(() =>
+        {
+            ServiceLocator.MainModel.TotalProgress += count;
+        });
+    }
+
+    public void AddProgress(int count)
+    {
+        _dispatcher.Invoke(() =>
+        {
+            ServiceLocator.MainModel.CurrentProgress += count;
+            //if (ServiceLocator.MainModel.CurrentProgress == ServiceLocator.MainModel.ProgressTarget)
+            //{
+            //    ClearProgress();
+            //    CompleteTask();
+            //}
+        });
+    }
+
     public void SetProgress(int value, string? statusFormat = null)
     {
         _dispatcher.Invoke(() =>
@@ -119,5 +169,4 @@ public class ProgressService
             ServiceLocator.MainModel.Status = status;
         });
     }
-
 }

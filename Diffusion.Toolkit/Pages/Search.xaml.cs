@@ -305,7 +305,7 @@ namespace Diffusion.Toolkit.Pages
 
                     _model.FolderPath = _currentModeSettings.CurrentFolderPath;
 
-                    ExpandToPath(_model.FolderPath);
+                    await ExpandToPath(_model.FolderPath);
 
                     SearchImages(null);
                 }
@@ -540,9 +540,9 @@ namespace Diffusion.Toolkit.Pages
             DataContext = _model;
 
 
-            ThumbnailListView.OnExpandToFolder = entry =>
+            ThumbnailListView.OnExpandToFolder = (entry) =>
             {
-                ExpandToPath(Path.GetDirectoryName(entry.Path));
+                _ = ExpandToPath(Path.GetDirectoryName(entry.Path));
             };
 
 
@@ -1352,9 +1352,9 @@ namespace Diffusion.Toolkit.Pages
 
             var foldersEntries = new List<ImageEntry>();
 
-            ThumbnailLoader.Instance.StopCurrentBatch();
+            ServiceLocator.ThumbnailService.StopCurrentBatch();
 
-            var rId = ThumbnailLoader.Instance.StartBatch();
+            var rId = ServiceLocator.ThumbnailService.StartBatch();
 
             if (QueryOptions.SearchView == SearchView.Folder && _model.Page == 1)
             {
@@ -1579,7 +1579,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 foreach (var image in _model.Images)
                 {
-                    image.QueueLoadThumbnail();
+                    ServiceLocator.ThumbnailService.QueueImage(image);
                 }
             }
         }

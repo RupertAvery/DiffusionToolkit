@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Jpeg;
@@ -6,28 +7,25 @@ using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
 using System.Globalization;
+using System.Reflection.Metadata.Ecma335;
 using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
-using System.Linq;
-using System.IO;
 using System.Text;
-using System.Xml.Linq;
 
 namespace Diffusion.IO;
 
 public class Metadata
 {
-    private static Dictionary<string, List<string>> DirectoryTextFileCache = new Dictionary<string, List<string>>();
+    private static ConcurrentDictionary<string, List<string>> DirectoryTextFileCache = new ConcurrentDictionary<string, List<string>>();
 
     public static List<string> GetDirectoryTextFileCache(string path)
     {
-        if (!DirectoryTextFileCache.TryGetValue(path, out var files))
+        var files = Dir.GetFiles(path, "*.txt").ToList();
+        // TODO: Fix possible duplicate path
+        return DirectoryTextFileCache.AddOrUpdate(path, files, (a, b) =>
         {
-            files = Dir.GetFiles(path, "*.txt").ToList();
-            DirectoryTextFileCache.Add(path, files);
-        }
-
-        return files;
+            return b.Concat(files).Distinct().ToList();
+        });
     }
 
     public enum MetaFormat
@@ -88,7 +86,22 @@ public class Metadata
 
         try
         {
-            fileParameters = Metadata.ReadFromFileInternal(file);
+            bool failed = false;
+            int retry = 0;
+            do
+            {
+                try
+                {
+                    fileParameters = Metadata.ReadFromFileInternal(file);
+                    failed = false;
+                }
+                catch (IOException) when (retry < 3)
+                {
+                    failed = true;
+                    Thread.Sleep(100);
+                    retry++;
+                }
+            } while (failed);
         }
         catch (Exception e)
         {
@@ -118,7 +131,7 @@ public class Metadata
 
         var ext = Path.GetExtension(file).ToLowerInvariant();
 
-        using var stream = File.OpenRead(file);
+        using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         var fileType = GetFileType(stream);
 
@@ -1167,45 +1180,53 @@ public class Metadata
                     foreach (var keyValue in subParts)
                     {
                         var kvp = keyValue.Split(new[] { ':' });
-                        switch (kvp[0].Trim())
+                        try
                         {
-                            case "Steps":
-                                fileParameters.Steps = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Sampler":
-                                fileParameters.Sampler = kvp[1].Trim();
-                                break;
-                            case "CFG scale":
-                                fileParameters.CFGScale = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Seed":
-                                fileParameters.Seed = long.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Size":
-                                var size = kvp[1].Split(new[] { 'x' });
-                                fileParameters.Width = int.Parse(size[0].Trim(), CultureInfo.InvariantCulture);
-                                fileParameters.Height = int.Parse(size[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Model hash":
-                                fileParameters.ModelHash = kvp[1].Trim();
-                                break;
-                            case "Model":
-                                fileParameters.Model = kvp[1].Trim();
-                                break;
-                            case "Batch size":
-                                fileParameters.BatchSize = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Hypernet":
-                                fileParameters.HyperNetwork = kvp[1].Trim();
-                                break;
-                            case "Hypernet strength":
-                                fileParameters.HyperNetworkStrength = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "aesthetic_score":
-                            case "Score":
-                                fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
+                            switch (kvp[0].Trim())
+                            {
+                                case "Steps":
+                                    fileParameters.Steps = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Sampler":
+                                    fileParameters.Sampler = kvp[1].Trim();
+                                    break;
+                                case "CFG scale":
+                                    fileParameters.CFGScale = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Seed":
+                                    fileParameters.Seed = long.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Size":
+                                    var size = kvp[1].Split(new[] { 'x' });
+                                    fileParameters.Width = int.Parse(size[0].Trim(), CultureInfo.InvariantCulture);
+                                    fileParameters.Height = int.Parse(size[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Model hash":
+                                    fileParameters.ModelHash = kvp[1].Trim();
+                                    break;
+                                case "Model":
+                                    fileParameters.Model = kvp[1].Trim();
+                                    break;
+                                case "Batch size":
+                                    fileParameters.BatchSize = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Hypernet":
+                                    fileParameters.HyperNetwork = kvp[1].Trim();
+                                    break;
+                                case "Hypernet strength":
+                                    fileParameters.HyperNetworkStrength = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "aesthetic_score":
+                                case "Score":
+                                    fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                            }
                         }
+                        catch (Exception)
+                        {
+
+                        }
+                      
                     }
 
                     state = 3;

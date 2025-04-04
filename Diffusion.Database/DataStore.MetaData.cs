@@ -1,7 +1,5 @@
 ﻿using System.Text;
-using Diffusion.IO;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
+using SQLite;
 using ComfyUINode = Diffusion.IO.Node;
 
 namespace Diffusion.Database
@@ -193,19 +191,32 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
+            AddNodesInternal(db, nodes);
+
+            db.Commit();
+        }
+
+        private void AddNodesInternal(SQLiteConnection db, IEnumerable<ComfyUINode> nodes)
+        {
             var nodeQuery = new StringBuilder($"INSERT INTO {nameof(Node)} (ImageId, NodeId, Name) VALUES ");
+
+            var nodeValues = new List<object>();
+            var nodeHolders = new List<string>();
 
             foreach (var node in nodes)
             {
                 var image = (Image)node.ImageRef;
-                nodeQuery.Append($"({image.Id}, '{node.Id}', '{node.Name}'),");
+                nodeValues.Add(image.Id);
+                nodeValues.Add(node.Id);
+                nodeValues.Add(node.Name);
+                nodeHolders.Add("(?,?,?)");
             }
 
-            nodeQuery.Remove(nodeQuery.Length - 1, 1);
+            nodeQuery.Append(string.Join(",", nodeHolders));
 
             nodeQuery.Append(" RETURNING Id;");
 
-            var nodeCommand = db.CreateCommand(nodeQuery.ToString());
+            var nodeCommand = db.CreateCommand(nodeQuery.ToString(), nodeValues.ToArray());
 
             var nodeIds = nodeCommand.ExecuteQuery<ReturnId>();
 
@@ -214,41 +225,36 @@ namespace Diffusion.Database
                 node.First.RefId = node.Second.Id;
             }
 
-            var propertyQuery = new StringBuilder($"INSERT INTO {nameof(NodeProperty)} (NodeId, Name, Value) VALUES ");
-
-
-            foreach (var property in nodes.SelectMany(n => n.Inputs.Select(p => new NodeProperty()
+            var nodeProperties = nodes.SelectMany(n => n.Inputs.Select(p => new NodeProperty()
             {
                 NodeId = n.RefId,
                 Name = p.Name,
                 Value = p.Value.ToString()
-            })))
+            }));
+
+            // Break up large workflows into smaller chunks
+            foreach (var chunk in nodeProperties.Chunk(100))
             {
-                propertyQuery.Append($"({property.NodeId}, '{property.Name}', '{SqlEscape(property.Value)}'),");
+                var chunkSet = chunk.ToList();
+
+                var propertyQuery = new StringBuilder($"INSERT INTO {nameof(NodeProperty)} (NodeId, Name, Value) VALUES ");
+
+                var propertyValues = new List<object>();
+                var propertyHolders = new List<string>();
+
+                foreach (var property in chunkSet)
+                {
+                    propertyValues.Add(property.NodeId);
+                    propertyValues.Add(property.Name);
+                    propertyValues.Add(property.Value);
+                    propertyHolders.Add("(?, ?, ?)");
+                }
+
+                propertyQuery.Append(string.Join(",", propertyHolders));
+
+                var propertyCommand = db.CreateCommand(propertyQuery.ToString(), propertyValues.ToArray());
+                propertyCommand.ExecuteNonQuery();
             }
-
-            propertyQuery.Remove(propertyQuery.Length - 1, 1);
-
-            var propertyCommand = db.CreateCommand(propertyQuery.ToString());
-            propertyCommand.ExecuteNonQuery();
-
-            db.Commit();
-        }
-
-
-        string SqlEscape(string value)
-        {
-            return value.Replace("'", "''").Replace("\0", "\\0");
-        }
-
-        long SqlDateTime(DateTime value)
-        {
-            return value.Ticks;
-        }
-
-        int SqlBoolean(bool value)
-        {
-            return value ? 1 : 0;
         }
 
         public class ReturnId
@@ -262,6 +268,15 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
+            DeleteNodesInternal(db, nodes);
+
+            AddNodesInternal(db, nodes);
+
+            db.Commit();
+        }
+
+        private void DeleteNodesInternal(SQLiteConnection db, IReadOnlyCollection<ComfyUINode> nodes)
+        {
             var imageIds = nodes.Select(d => (Image)d.ImageRef).Select(d => d.Id).Distinct();
 
             InsertIds(db, "DeletedIds", imageIds);
@@ -273,56 +288,6 @@ namespace Diffusion.Database
             var delNodeQuery = $"DELETE FROM {nameof(Node)} WHERE ImageId IN (SELECT Id FROM DeletedIds)";
             var delNodeCommand = db.CreateCommand(delNodeQuery);
             delNodeCommand.ExecuteNonQuery();
-
-            var nodeQuery = new StringBuilder($"INSERT INTO {nameof(Node)} (ImageId, NodeId, Name) VALUES ");
-
-            var values = new List<string>();
-
-            foreach (var node in nodes)
-            {
-                var image = (Image)node.ImageRef;
-                values.Add($"({image.Id}, '{node.Id}', '{node.Name}')");
-            }
-
-            nodeQuery.Append(string.Join(",", values));
-
-            nodeQuery.Append(" RETURNING Id;");
-
-            var nodeCommand = db.CreateCommand(nodeQuery.ToString());
-
-            var nodeIds = nodeCommand.ExecuteQuery<ReturnId>();
-
-            foreach (var node in nodes.Zip(nodeIds))
-            {
-                node.First.RefId = node.Second.Id;
-            }
-
-            values.Clear();
-
-            var nodeProperties = nodes.SelectMany(n => n.Inputs.Select(p => new NodeProperty()
-            {
-                NodeId = n.RefId,
-                Name = p.Name,
-                Value = p.Value.ToString()
-            }));
-
-            // Break up large workflows into smaller chunks
-            foreach (var chunk in nodeProperties.Chunk(1000))
-            {
-                var propertyQuery = new StringBuilder($"INSERT INTO {nameof(NodeProperty)} (NodeId, Name, Value) VALUES ");
-
-                foreach (var property in chunk)
-                {
-                    values.Add($"({property.NodeId}, '{property.Name}', '{SqlEscape(property.Value)}')");
-                }
-
-                propertyQuery.Append(string.Join(",", values));
-
-                var propertyCommand = db.CreateCommand(propertyQuery.ToString());
-                propertyCommand.ExecuteNonQuery();
-            }
-
-            db.Commit();
         }
     }
 }

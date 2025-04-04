@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Thumbnails;
 
 namespace Diffusion.Toolkit;
@@ -119,51 +120,6 @@ public class ImageEntry : BaseNotify
     public LoadState LoadState { get; set; }
 
     public Dispatcher? Dispatcher { get; set; }
-
-    public void QueueLoadThumbnail()
-    {
-        LoadState = LoadState.Loading;
-
-        var job = new ThumbnailJob()
-        {
-            BatchId = BatchId,
-            EntryType = _entryType,
-            Path = Path,
-            Height = Height,
-            Width = Width
-        };
-
-        _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
-        {
-            LoadState = LoadState.Loaded;
-
-            if (d.Success)
-            {
-                if (Dispatcher != null)
-                {
-                    Dispatcher.Invoke(() => { Thumbnail = d.Image; });
-                }
-                else
-                {
-                    Thumbnail = d.Image;
-                }
-            }
-            else
-            {
-                if (Dispatcher != null)
-                {
-                    Dispatcher.Invoke(() => { Unavailable = true; });
-                }
-                else
-                {
-                    Unavailable = true;
-                }
-            }
-
-            //Debug.WriteLine($"Finished job {job.RequestId}");
-            //OnPropertyChanged(nameof(Thumbnail));
-        });
-    }
 
     public bool Unavailable
     {

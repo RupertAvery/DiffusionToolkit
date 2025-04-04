@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Common;
 using Diffusion.Toolkit.Behaviors;
 
 namespace Diffusion.Toolkit.Pages
@@ -17,7 +18,7 @@ namespace Diffusion.Toolkit.Pages
     public partial class Search
     {
 
-        private void ExpandToPath(string path)
+        private async Task ExpandToPath(string path)
         {
             var root = _model.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
 
@@ -27,7 +28,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (currentNode.State == FolderState.Collapsed)
                 {
-                    ToggleFolder(currentNode);
+                    await ToggleFolder(currentNode);
                 }
 
                 if (currentNode.Children != null)
@@ -61,25 +62,39 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        private void Expander_Click(object sender, RoutedEventArgs e)
+        private async void Expander_Click(object sender, RoutedEventArgs e)
         {
-            var folder = ((Button)sender).DataContext as FolderViewModel;
+            try
+            {
+                var folder = ((Button)sender).DataContext as FolderViewModel;
 
-            ToggleFolder(folder);
+                await ToggleFolder(folder);
 
-            e.Handled = true;
+                e.Handled = true;
+            }
+            catch (Exception exception)
+            {
+                Logger.Log(exception.Message);
+            }
         }
 
-        private void Expander_OnMouseDown(object sender, MouseButtonEventArgs e)
+        private async void Expander_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
-
-            if (!folder.IsUnavailable)
+            try
             {
-                ToggleFolder(folder);
-            }
+                var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
-            e.Handled = true;
+                if (!folder.IsUnavailable)
+                {
+                    await ToggleFolder(folder);
+                }
+
+                e.Handled = true;
+            }
+            catch (Exception exception)
+            {
+                Logger.Log(exception.Message);
+            }
         }
 
         private void Folder_OnClick(object sender, MouseButtonEventArgs e)
@@ -124,7 +139,7 @@ namespace Diffusion.Toolkit.Pages
             SetMode("folders");
 
             _model.FolderPath = folder.Path;
-            _currentModeSettings.CurrentFolderPath= folder.Path;
+            _currentModeSettings.CurrentFolderPath = folder.Path;
 
             SearchImages(null);
         }
@@ -152,19 +167,19 @@ namespace Diffusion.Toolkit.Pages
             });
         }
 
-        private void Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
+        private async Task Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var folder = ((FolderViewModel)((Button)sender).DataContext);
 
             if (!folder.IsUnavailable)
             {
-                ToggleFolder(folder);
+                await ToggleFolder(folder);
             }
 
             e.Handled = true;
         }
 
-        private void ToggleFolder(FolderViewModel folder)
+        private async Task ToggleFolder(FolderViewModel folder)
         {
             if (folder.State == FolderState.Collapsed)
             {
@@ -172,7 +187,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (subFolders == null)
                 {
-                    Task.Run(() =>
+                    await Task.Run(() =>
                     {
                         Dispatcher.Invoke(() =>
                         {
@@ -191,7 +206,7 @@ namespace Diffusion.Toolkit.Pages
                             }
                         });
                     });
-                   
+
                 }
                 else
                 {

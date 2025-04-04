@@ -11,6 +11,9 @@ namespace Diffusion.Toolkit.Services;
 
 public class ServiceLocator
 {
+    private static ThumbnailService _thumbnailService;
+    private static DatabaseWriterService? _databaseWriterService;
+    private static MetadataScannerService? _metadataScannerService;
     private static FolderService _folderService;
     private static MessageService _messageServuce;
     private static ProgressService _progressService;
@@ -22,7 +25,7 @@ public class ServiceLocator
     private static ThumbnailNavigationService? _thumbnailNavigationService;
     private static SearchService? _searchService;
     private static ThumbnailCache? _thumbnailCache;
-    private static ThumbnailLoader? _thumbnailLoader;
+    private static ThumbnailService? _thumbnailLoader;
     private static TaggingService? _taggingService;
     private static NotificationService? _notificationService;
     private static ScanningService? _scanningService;
@@ -30,13 +33,13 @@ public class ServiceLocator
     public static DataStore? DataStore => _dataStore;
     public static ThumbnailCache? ThumbnailCache => _thumbnailCache;
     public static Settings? Settings => _settings;
-    public static ThumbnailLoader? ThumbnailLoader => _thumbnailLoader;
+    public static ThumbnailService? ThumbnailLoader => _thumbnailLoader;
     public static ToastService ToastService { get; set; }
     public static Dispatcher Dispatcher { get; set; }
 
-    public static void SetThumbnailLoader(ThumbnailLoader thumbnailLoader)
+    public static void SetThumbnailLoader(ThumbnailService thumbnailService)
     {
-        _thumbnailLoader = thumbnailLoader;
+        _thumbnailLoader = thumbnailService;
     }
 
     public static void SetThumbnailCache(ThumbnailCache thumbnailCache)
@@ -91,7 +94,7 @@ public class ServiceLocator
         get { return _scanningService ??= new ScanningService(); }
     }
 
-    public static MainModel MainModel { get; set; }
+    public static MainModel? MainModel { get; set; }
 
     public static FolderService FolderService
     {
@@ -108,6 +111,22 @@ public class ServiceLocator
     {
         get;
         set;
+    }
+
+    public static MetadataScannerService MetadataScannerService
+    {
+        get { return _metadataScannerService ??= new MetadataScannerService(); }
+    }
+
+
+    public static DatabaseWriterService DatabaseWriterService
+    {
+        get { return _databaseWriterService ??= new DatabaseWriterService(); }
+    }
+
+    public static ThumbnailService ThumbnailService
+    {
+        get { return _thumbnailService ??= new ThumbnailService(); }
     }
 }
 

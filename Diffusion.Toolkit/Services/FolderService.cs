@@ -10,24 +10,10 @@ using System.Windows;
 using System.Windows.Threading;
 using Diffusion.Database;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Thumbnails;
 
 namespace Diffusion.Toolkit.Services
 {
-    public enum ChangeType
-    {
-        Add,
-        Remove,
-        ChangePath,
-    }
-
-    public class FolderChange
-    {
-        public string Path { get; set; }
-        public string NewPath { get; set; }
-        public ChangeType ChangeType { get; set; }
-    }
-
-
     public class FolderService
     {
         private Settings _settings => ServiceLocator.Settings!;
@@ -112,44 +98,62 @@ namespace Diffusion.Toolkit.Services
 
             if (addedFolders.Any())
             {
-                await Task.Run(async () =>
+                var filesToScan = new List<string>();
+
+                // TODO: what if there is already a task running?
+
+                await ServiceLocator.ProgressService.StartTask();
+
+                var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
+
+                foreach (var folder in addedFolders)
                 {
-                    if (await ServiceLocator.ProgressService.TryStartTask())
-                    {
-                        try
-                        {
-                            var filesToScan = new List<string>();
+                    filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder, new HashSet<string>(), cancellationToken));
+                }
+                
+                await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
 
-                            foreach (var folder in addedFolders)
-                            {
-                                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder, new HashSet<string>(), ServiceLocator.ProgressService.CancellationToken));
-                            }
+                //await Task.Run(async () =>
+                //{
+                //    if (await ServiceLocator.ProgressService.TryStartTask())
+                //    {
+                //        try
+                //        {
+                //            var filesToScan = new List<string>();
 
-                            var (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filesToScan, false, _settings.StoreMetadata, _settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
+                //            foreach (var folder in addedFolders)
+                //            {
+                //                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder, new HashSet<string>(), ServiceLocator.ProgressService.CancellationToken));
+                //            }
 
-                            ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
-                        }
-                        finally
-                        {
-                            ServiceLocator.ProgressService.CompleteTask();
-                        }
-                    }
-                });
+                //            await  ServiceLocator.MetadataScannerService.QueueAsync(filesToScan);
+
+                //            //var (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filesToScan, false, _settings.StoreMetadata, _settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
+
+                //            //ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
+                //        }
+                //        finally
+                //        {
+                //            ServiceLocator.ProgressService.CompleteTask();
+                //        }
+                //    }
+                //});
             }
         }
 
         private readonly List<FileSystemWatcher> _watchers = new List<FileSystemWatcher>();
-        private List<string>? _detectedFiles;
-        private Timer? t = null;
-        private object _lock = new object();
-
 
 
         private void WatcherOnCreated(object sender, FileSystemEventArgs e)
         {
             if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                QueueFile(e.FullPath);
+                ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
+                {
+                    _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken);
+
+                });
+
             }
         }
 
@@ -159,7 +163,11 @@ namespace Diffusion.Toolkit.Services
 
             if (wasTmp && _settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                QueueFile(e.FullPath);
+                ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
+                {
+                    _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken);
+                });
+
             }
         }
 
@@ -206,71 +214,29 @@ namespace Diffusion.Toolkit.Services
             _watchers.Clear();
         }
 
-        private void QueueFile(string path)
-        {
-            lock (_lock)
-            {
-                if (File.Exists(path))
-                {
-                    var attr = File.GetAttributes(path);
-
-                    if (attr.HasFlag(FileAttributes.Directory))
-                        return;
-
-                    if (t == null)
-                    {
-                        _detectedFiles = new List<string>();
-                        t = new Timer(ProcessQueueCallback, null, 2000, Timeout.Infinite);
-                    }
-                    else
-                    {
-                        t.Change(2000, Timeout.Infinite);
-                    }
-                    _detectedFiles.Add(path);
-                }
-            }
-        }
-
-        private int addedTotal = 0;
-
         private void ProcessQueueCallback(object? state)
         {
-            int added;
-            long elapsed;
+            //Dispatcher.Invoke(() =>
+            //{
+            //    var currentWindow = Application.Current.Windows.OfType<Window>().First();
+            //    if (currentWindow.IsActive)
+            //    {
+            //        ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
+            //    }
+            //    else
+            //    {
+            //        lock (_lock)
+            //        {
+            //            addedTotal += added;
+            //        }
+            //    }
+            //});
 
-            lock (_lock)
-            {
-                t?.Dispose();
-                t = null;
-
-                var filteredFiles = _detectedFiles.Where(f => !_settings.ExcludePaths.Any(p => f.StartsWith(p))).ToList();
-
-                (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filteredFiles, false, _settings.StoreMetadata, _settings.StoreWorkflow, CancellationToken.None);
-            }
-
-            if (added > 0)
-            {
-                //Dispatcher.Invoke(() =>
-                //{
-                //    var currentWindow = Application.Current.Windows.OfType<Window>().First();
-                //    if (currentWindow.IsActive)
-                //    {
-                //        ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
-                //    }
-                //    else
-                //    {
-                //        lock (_lock)
-                //        {
-                //            addedTotal += added;
-                //        }
-                //    }
-                //});
-
-                //if (_settings.AutoRefresh)
-                //{
-                //    _search.ReloadMatches(null);
-                //}
-            }
+            //if (_settings.AutoRefresh)
+            //{
+            //    _search.ReloadMatches(null);
+            //}
+            //}
         }
     }
 }

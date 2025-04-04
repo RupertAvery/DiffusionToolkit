@@ -116,7 +116,10 @@ namespace Diffusion.Toolkit.Controls
             _scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
             SizeChanged += OnSizeChanged;
 
-            ServiceLocator.MainModel.PropertyChanged += MainModelOnPropertyChanged;
+            if (ServiceLocator.MainModel != null)
+            {
+                ServiceLocator.MainModel.PropertyChanged += MainModelOnPropertyChanged;
+            }
         }
 
         private void OnSizeChanged(object sender, SizeChangedEventArgs e)

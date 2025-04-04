@@ -58,28 +58,35 @@ namespace Diffusion.Toolkit
             {
                 if (await ServiceLocator.ProgressService.TryStartTask())
                 {
-                    try
+                    if (isFirstTime)
                     {
-                        if (isFirstTime)
+                        _ = Task.Delay(10000).ContinueWith(t =>
                         {
-                            _ = Task.Delay(10000).ContinueWith(t =>
-                            {
-                                ServiceLocator.SearchService.ExecuteSearch();
-                                ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
-                            });
-                        }
+                            ServiceLocator.SearchService.ExecuteSearch();
+                            ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
+                        });
+                    }
 
-                        var result = await ServiceLocator.ScanningService.ScanWatchedFolders(false, true, ServiceLocator.ProgressService.CancellationToken);
-                        if (result && _search != null)
-                        {
-                            _search.SearchImages();
-                        }
-                    }
-                    finally
-                    {
-                        ServiceLocator.ProgressService.CompleteTask();
-                        ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                    }
+                    await ServiceLocator.ScanningService.ScanWatchedFolders(false, true, ServiceLocator.ProgressService.CancellationToken);
+
+                    //try
+                    //{
+                    //    if (isFirstTime)
+                    //    {
+                    //        _ = Task.Delay(10000).ContinueWith(t =>
+                    //        {
+                    //            ServiceLocator.SearchService.ExecuteSearch();
+                    //            ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
+                    //        });
+                    //    }
+
+                    //    await ServiceLocator.ScanningService.ScanWatchedFolders(false, true, ServiceLocator.ProgressService.CancellationToken);
+                    //}
+                    //finally
+                    //{
+                    //    ServiceLocator.ProgressService.CompleteTask();
+                    //    ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
+                    //}
                 }
 
             });
@@ -91,19 +98,16 @@ namespace Diffusion.Toolkit
             {
                 if (await ServiceLocator.ProgressService.TryStartTask())
                 {
-                    try
-                    {
-                        var result = await ServiceLocator.ScanningService.ScanWatchedFolders(true, true, ServiceLocator.ProgressService.CancellationToken);
-                        if (result)
-                        {
-                            _search.SearchImages();
-                        }
-                    }
-                    finally
-                    {
-                        ServiceLocator.ProgressService.CompleteTask();
-                        ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                    }
+                    await ServiceLocator.ScanningService.ScanWatchedFolders(true, true, ServiceLocator.ProgressService.CancellationToken);
+                    //try
+                    //{
+                    //    await ServiceLocator.ScanningService.ScanWatchedFolders(true, true, ServiceLocator.ProgressService.CancellationToken);
+                    //}
+                    //finally
+                    //{
+                    //    ServiceLocator.ProgressService.CompleteTask();
+                    //    ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
+                    //}
                 }
 
             });

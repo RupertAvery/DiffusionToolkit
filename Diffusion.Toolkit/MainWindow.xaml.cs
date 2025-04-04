@@ -96,7 +96,7 @@ namespace Diffusion.Toolkit
 
                 Logger.Log($"Creating Thumbnail loader");
 
-                ThumbnailLoader.CreateInstance();
+ 
 
                 _navigatorService = new NavigatorService(this);
                 _navigatorService.OnNavigate += OnNavigate;
@@ -183,7 +183,6 @@ namespace Diffusion.Toolkit
 
                 _model.PropertyChanged += ModelOnPropertyChanged;
 
-                _thumbailTask = ThumbnailLoader.Instance.StartRun();
 
 
                 this.Loaded += OnLoaded;
@@ -412,7 +411,7 @@ namespace Diffusion.Toolkit
         private void SetThumbnailSize(int size)
         {
             _settings.ThumbnailSize = size;
-            ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
+            ServiceLocator.ThumbnailService.Size = _settings.ThumbnailSize;
             _model.ThumbnailSize = _settings.ThumbnailSize;
             _search.SetThumbnailSize(_settings.ThumbnailSize);
             _prompts.SetThumbnailSize(_settings.ThumbnailSize);
@@ -673,7 +672,6 @@ namespace Diffusion.Toolkit
             _prompts = new Prompts(_navigatorService);
             _settingsPage = new Pages.Settings(this);
 
-            ThumbnailLoader.Instance.Size = _settings.ThumbnailSize;
 
             _model.ThumbnailSize = _settings.ThumbnailSize;
 
@@ -770,9 +768,15 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"{_modelsCollection.Count} models loaded");
 
+            Logger.Log($"Starting Services...");
+
+            ServiceLocator.ThumbnailService.Size = _settings.ThumbnailSize;
+
+            _ = ServiceLocator.ThumbnailService.StartAsync();
+
             if (_settings.CheckForUpdatesOnStartup)
             {
-                Task.Run(async () =>
+                _ = Task.Run(async () =>
                 {
                     var checker = new UpdateChecker();
 
@@ -813,20 +817,22 @@ namespace Diffusion.Toolkit
                     {
                         if (await ServiceLocator.ProgressService.TryStartTask())
                         {
-                            try
-                            {
-                                await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
-                            }
-                            finally
-                            {
-                                ServiceLocator.ProgressService.CompleteTask();
-                                ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                            }
+
+                            await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
+                            //try
+                            //{
+                            //}
+                            //finally
+                            //{
+                            //    //ServiceLocator.ProgressService.CompleteTask();
+                            //    //ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
+                            //}
                         }
                     });
                 }
 
             }
+
 
             Logger.Log($"Init completed");
 

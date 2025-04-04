@@ -69,7 +69,7 @@ public class ScanningService
                 }
             }
         });
-       
+
     }
 
     private int CheckFilesUnavailable(List<ImagePath> folderImages, HashSet<string> folderImagesHashSet, CancellationToken cancellationToken)
@@ -139,7 +139,7 @@ public class ScanningService
         return await Task.Run(() => MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), _settings.ExcludePaths, cancellationToken).ToList());
     }
 
-    public async Task<bool> ScanWatchedFolders(bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
+    public async Task ScanWatchedFolders(bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
     {
 
         bool foldersUnavailable = false;
@@ -152,8 +152,6 @@ public class ScanningService
 
         try
         {
-            //var existingImages = _dataStore.GetImagePaths().ToList();
-
             var filesToScan = new List<string>();
 
             var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
@@ -212,35 +210,113 @@ public class ScanningService
                 }
             }
 
-            long elapsedTime = 0;
+            await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
 
-            if (!cancellationToken.IsCancellationRequested)
-            {
-                (added, elapsedTime) = ScanFiles(filesToScan, updateImages, _settings.StoreMetadata, _settings.StoreWorkflow, cancellationToken);
-            }
-
-            if ((added + unavailable == 0 && reportIfNone) || added + unavailable > 0)
-            {
-                Report(added, unavailable, elapsedTime, updateImages, foldersUnavailable, foldersRestored);
-            }
         }
         catch (Exception ex)
         {
             await ServiceLocator.MessageService.ShowMedium(ex.Message,
                 "Scan Error", PopupButtons.OK);
         }
-        finally
+    }
+
+
+    public (Image, IReadOnlyCollection<IO.Node>) ProcessFile(FileParameters file, bool storeMetadata, bool storeWorkflow)
+    {
+        var newNodes = new List<IO.Node>();
+
+        var fileInfo = new FileInfo(file.Path);
+
+        var image = new Image()
         {
-            ServiceLocator.ProgressService.ClearProgress();
+            Prompt = file.Prompt,
+            NegativePrompt = file.NegativePrompt,
+            Path = file.Path,
+            FileName = fileInfo.Name,
+            Width = file.Width,
+            Height = file.Height,
+            ModelHash = file.ModelHash,
+            Model = file.Model,
+            Steps = file.Steps,
+            Sampler = file.Sampler,
+            CFGScale = file.CFGScale,
+            Seed = file.Seed,
+            BatchPos = file.BatchPos,
+            BatchSize = file.BatchSize,
+            CreatedDate = fileInfo.CreationTime,
+            ModifiedDate = fileInfo.LastWriteTime,
+            AestheticScore = file.AestheticScore,
+            HyperNetwork = file.HyperNetwork,
+            HyperNetworkStrength = file.HyperNetworkStrength,
+            ClipSkip = file.ClipSkip,
+            FileSize = file.FileSize,
+            NoMetadata = file.NoMetadata,
+            WorkflowId = file.WorkflowId,
+            HasError = file.HasError
+        };
+
+        if (storeMetadata)
+        {
+            image.Workflow = file.Workflow;
         }
 
+        if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
+        {
+            image.HyperNetworkStrength = 1;
+        }
 
-        return added + unavailable > 0;
+        if (_settings.AutoTagNSFW)
+        {
+            if (_settings.NSFWTags.Any(t => image.Prompt != null && image.Prompt.ToLower().Contains(t.Trim().ToLower())))
+            {
+                image.NSFW = true;
+            }
+        }
+
+        if (storeWorkflow && file.Nodes is { Count: > 0 })
+        {
+            foreach (var fileNode in file.Nodes)
+            {
+                fileNode.ImageRef = image;
+            }
+
+            newNodes.AddRange(file.Nodes);
+        }
+
+        return (image, newNodes);
+    }
+
+    public int UpdateImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, int> folderIdCache, bool storeWorkflow, CancellationToken cancellationToken)
+    {
+        var updated = _dataStore.UpdateImagesByPath(images, includeProperties, folderIdCache, cancellationToken);
+
+        if (storeWorkflow && nodes.Any())
+        {
+            _dataStore.UpdateNodes(nodes, cancellationToken);
+        }
+
+        return updated;
+    }
+
+    public int AddImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, int> folderIdCache, bool storeWorkflow, CancellationToken cancellationToken)
+    {
+        var added = _dataStore.AddImages(images, includeProperties, folderIdCache, cancellationToken);
+
+        if (storeWorkflow && nodes.Any())
+        {
+            _dataStore.AddNodes(nodes, cancellationToken);
+        }
+
+        return added;
     }
 
 
     public (int, long) ScanFiles(IList<string> filesToScan, bool updateImages, bool storeMetadata, bool storeWorkflow, CancellationToken cancellationToken)
     {
+        //foreach (var file in filesToScan)
+        //{
+        //    _ = ServiceLocator.MetadataScannerService.QueueAsync(file);
+        //}
 
         try
         {
@@ -282,122 +358,108 @@ public class ScanningService
 
                 scanned++;
 
-                var fileInfo = new FileInfo(file.Path);
+          
 
-                var image = new Image()
-                {
-                    Prompt = file.Prompt,
-                    NegativePrompt = file.NegativePrompt,
-                    Path = file.Path,
-                    FileName = fileInfo.Name,
-                    Width = file.Width,
-                    Height = file.Height,
-                    ModelHash = file.ModelHash,
-                    Model = file.Model,
-                    Steps = file.Steps,
-                    Sampler = file.Sampler,
-                    CFGScale = file.CFGScale,
-                    Seed = file.Seed,
-                    BatchPos = file.BatchPos,
-                    BatchSize = file.BatchSize,
-                    CreatedDate = fileInfo.CreationTime,
-                    ModifiedDate = fileInfo.LastWriteTime,
-                    AestheticScore = file.AestheticScore,
-                    HyperNetwork = file.HyperNetwork,
-                    HyperNetworkStrength = file.HyperNetworkStrength,
-                    ClipSkip = file.ClipSkip,
-                    FileSize = file.FileSize,
-                    NoMetadata = file.NoMetadata,
-                    WorkflowId = file.WorkflowId,
-                    HasError = file.HasError
-                };
+                // var (image, nodes) = ProcessFile(file, storeMetadata, storeWorkflow);
 
-                if (storeMetadata)
-                {
-                    image.Workflow = file.Workflow;
-                }
+                //var fileInfo = new FileInfo(file.Path);
 
-                if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
-                {
-                    file.HyperNetworkStrength = 1;
-                }
+                //var image = new Image()
+                //{
+                //    Prompt = file.Prompt,
+                //    NegativePrompt = file.NegativePrompt,
+                //    Path = file.Path,
+                //    FileName = fileInfo.Name,
+                //    Width = file.Width,
+                //    Height = file.Height,
+                //    ModelHash = file.ModelHash,
+                //    Model = file.Model,
+                //    Steps = file.Steps,
+                //    Sampler = file.Sampler,
+                //    CFGScale = file.CFGScale,
+                //    Seed = file.Seed,
+                //    BatchPos = file.BatchPos,
+                //    BatchSize = file.BatchSize,
+                //    CreatedDate = fileInfo.CreationTime,
+                //    ModifiedDate = fileInfo.LastWriteTime,
+                //    AestheticScore = file.AestheticScore,
+                //    HyperNetwork = file.HyperNetwork,
+                //    HyperNetworkStrength = file.HyperNetworkStrength,
+                //    ClipSkip = file.ClipSkip,
+                //    FileSize = file.FileSize,
+                //    NoMetadata = file.NoMetadata,
+                //    WorkflowId = file.WorkflowId,
+                //    HasError = file.HasError
+                //};
 
-                if (_settings.AutoTagNSFW)
-                {
-                    if (_settings.NSFWTags.Any(t => image.Prompt != null && image.Prompt.ToLower().Contains(t.Trim().ToLower())))
-                    {
-                        image.NSFW = true;
-                    }
-                }
+                //if (storeMetadata)
+                //{
+                //    image.Workflow = file.Workflow;
+                //}
 
-                newImages.Add(image);
+                //if (!string.IsNullOrEmpty(file.HyperNetwork) && !file.HyperNetworkStrength.HasValue)
+                //{
+                //    image.HyperNetworkStrength = 1;
+                //}
 
-                if (storeWorkflow && file.Nodes is { Count: > 0 })
-                {
-                    foreach (var fileNode in file.Nodes)
-                    {
-                        fileNode.ImageRef = image;
-                    }
+                //if (_settings.AutoTagNSFW)
+                //{
+                //    if (_settings.NSFWTags.Any(t => image.Prompt != null && image.Prompt.ToLower().Contains(t.Trim().ToLower())))
+                //    {
+                //        image.NSFW = true;
+                //    }
+                //}
 
-                    newNodes.AddRange(file.Nodes);
-                }
+                //if (storeWorkflow && file.Nodes is { Count: > 0 })
+                //{
+                //    foreach (var fileNode in file.Nodes)
+                //    {
+                //        fileNode.ImageRef = image;
+                //    }
 
-                if (newImages.Count == 100)
-                {
-                    if (updateImages)
-                    {
-                        added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
-                        if (storeWorkflow && newNodes.Any())
-                        {
-                            _dataStore.UpdateNodes(newNodes, cancellationToken);
-                        }
-                    }
-                    else
-                    {
-                        _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                        if (storeWorkflow && newNodes.Any())
-                        {
-                            _dataStore.AddNodes(newNodes, cancellationToken);
-                        }
+                //    newNodes.AddRange(file.Nodes);
+                //}
 
-                        added += newImages.Count;
-                    }
+                //newImages.Add(image);
+                //newNodes.AddRange(nodes);
 
-                    newNodes.Clear();
-                    newImages.Clear();
-                }
+                //if (newImages.Count == 100)
+                //{
+                //    if (updateImages)
+                //    {
+                //        added += UpdateImages(newImages, newNodes, includeProperties, folderIdCache, storeWorkflow, cancellationToken);
+                //    }
+                //    else
+                //    {
+                //        added += AddImages(newImages, newNodes, includeProperties, folderIdCache, storeWorkflow, cancellationToken);
+                //    }
 
-                if (scanned % 33 == 0)
-                {
-                    ServiceLocator.ProgressService.SetProgress(scanned, scanning);
-                }
+                //    newNodes.Clear();
+                //    newImages.Clear();
+                //}
+
+                //if (scanned % 33 == 0)
+                //{
+                //    ServiceLocator.ProgressService.SetProgress(scanned, scanning);
+                //}
             }
 
-            if (newImages.Count > 0)
-            {
-                if (updateImages)
-                {
-                    added += _dataStore.UpdateImagesByPath(newImages, includeProperties, folderIdCache, cancellationToken);
-                    if (storeWorkflow && newNodes.Any())
-                    {
-                        _dataStore.UpdateNodes(newNodes, cancellationToken);
-                    }
-                }
-                else
-                {
-                    _dataStore.AddImages(newImages, includeProperties, folderIdCache, cancellationToken);
-                    if (storeWorkflow && newNodes.Any())
-                    {
-                        _dataStore.AddNodes(newNodes, cancellationToken);
-                    }
-
-                    added += newImages.Count;
-                }
-            }
-
+            //if (newImages.Count > 0)
+            //{
+            //    if (updateImages)
+            //    {
+            //        added += UpdateImages(newImages, newNodes, includeProperties, folderIdCache, storeWorkflow, cancellationToken);
+            //    }
+            //    else
+            //    {
+            //        added += AddImages(newImages, newNodes, includeProperties, folderIdCache, storeWorkflow, cancellationToken);
+            //    }
+            //}
 
             stopwatch.Stop();
+
             var elapsedTime = stopwatch.ElapsedMilliseconds / 1000;
+            
             return (added, elapsedTime);
         }
         catch (Exception e)
