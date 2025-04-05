@@ -10,6 +10,7 @@ using Diffusion.Toolkit.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
+using Diffusion.Common;
 using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls

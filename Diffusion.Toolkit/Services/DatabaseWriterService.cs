@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Diffusion.Common;
 using Diffusion.Database;
 using Diffusion.IO;
-using static SQLite.SQLite3;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -25,11 +23,36 @@ public class StartResult<T>
 
 public class DatabaseWriterService
 {
+    private Channel<RecordJob> _queueChannel = Channel.CreateUnbounded<RecordJob>();
     private Channel<RecordJob> _updateChannel;
     private Channel<RecordJob> _addChannel;
 
     private CancellationTokenSource _cancellationTokenSource;
     private Settings _settings => ServiceLocator.Settings!;
+    private Action<int> _debounceQueueNotification;
+    private int _queueTotal = 0;
+
+    public DatabaseWriterService()
+    {
+        _debounceQueueNotification = Utility.Debounce<int>((a) =>
+        {
+            var diff = a - _queueTotal;
+            ServiceLocator.ToastService.Toast($"Added {diff} new images", "");
+            _queueTotal = a;
+        }, 2000);
+    }
+
+    public async Task QueueAsync(FileParameters fileParameters, bool storeMetadata, bool storeWorkflow)
+    {
+        var job = new RecordJob()
+        {
+            FileParameters = fileParameters,
+            StoreMetadata = storeMetadata,
+            StoreWorkflow = storeWorkflow
+        };
+
+        await _queueChannel.Writer.WriteAsync(job);
+    }
 
     public async Task QueueAddAsync(FileParameters fileParameters, bool storeMetadata, bool storeWorkflow)
     {
@@ -64,6 +87,17 @@ public class DatabaseWriterService
     private bool _isStarted;
     private bool _isCompleted = false;
     private Task<DatabaseWriteReport> _currentTask;
+
+    private bool _queueRunning;
+
+    public void StartQueueAsync(CancellationToken token)
+    {
+        if (!_queueRunning)
+        {
+            Task.Run(async () => await ProcessQueueTaskAsync(token));
+            _queueRunning = true;
+        }
+    }
 
     public StartResult<DatabaseWriteReport> StartAsync(CancellationToken token)
     {
@@ -131,6 +165,77 @@ public class DatabaseWriterService
         var count = _addChannel.Reader.Count + _updateChannel.Reader.Count;
         ServiceLocator.ProgressService.SetStatus($"Scanning: {ServiceLocator.MainModel.CurrentProgress} of {ServiceLocator.MainModel.TotalProgress}");
     }
+
+
+    private async Task<int> ProcessQueueTaskAsync(CancellationToken token)
+    {
+        var folderIdCache = new Dictionary<string, int>();
+
+        var newImages = new List<Image>();
+        var newNodes = new List<IO.Node>();
+
+        var includeProperties = new List<string>();
+
+        if (_settings.AutoTagNSFW)
+        {
+            includeProperties.Add(nameof(Image.NSFW));
+        }
+
+        if (_settings.StoreMetadata)
+        {
+            includeProperties.Add(nameof(Image.Workflow));
+        }
+
+        int added = 0;
+
+        while (await _queueChannel.Reader.WaitToReadAsync(token))
+        {
+            var job = await _queueChannel.Reader.ReadAsync(token);
+
+            var fp = job.FileParameters;
+
+            try
+            {
+                try
+                {
+                    var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, _settings.StoreMetadata, _settings.StoreWorkflow);
+
+                    newImages.Add(image);
+                    newNodes.AddRange(nodes);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex.Message);
+                }
+
+                if (newImages.Count == 33 || _queueChannel.Reader.Count == 0)
+                {
+                    await _lock.WaitAsync(token);
+
+                    try
+                    {
+                        added += ServiceLocator.ScanningService.AddImages(newImages, newNodes, includeProperties, folderIdCache, _settings.StoreWorkflow, token);
+                        _debounceQueueNotification(added);
+                    }
+                    finally
+                    {
+                        _lock.Release();
+                    }
+
+                    newNodes.Clear();
+                    newImages.Clear();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message);
+            }
+        }
+
+        return added;
+    }
+
 
     private async Task<int> ProcessAddTaskAsync(CancellationToken token)
     {
