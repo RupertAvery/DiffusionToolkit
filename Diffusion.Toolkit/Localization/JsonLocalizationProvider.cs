@@ -5,6 +5,8 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Windows;
+using Diffusion.Common;
+using Diffusion.Toolkit.Configuration;
 using WPFLocalizeExtension.Providers;
 
 namespace Diffusion.Toolkit.Localization

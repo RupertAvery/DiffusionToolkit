@@ -8,7 +8,24 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Diffusion.Civitai;
 using Diffusion.Civitai.Models;
+using Diffusion.Common;
 using Diffusion.Database;
+using SQLite;
+
+var dbPath = @"C:\Users\ruper\AppData\Roaming\DiffusionToolkit\Backup-20240420-020535.db";
+
+
+//var ds = new DataStore(dbPath);
+//await ds.Create(null, null);
+
+//DataStore.EnsureFolderExists(new SQLiteConnection(dbPath), "D:\\Backup\\final\\character\\asuka");
+
+
+
+return;
+
+//var migrations = new Migrations(new SQLiteConnection(dbPath), Settings.Instance);
+//migrations.RupertAvery20250405_0001_FixFolders();
 
 
 using var civitai = new CivitaiClient();

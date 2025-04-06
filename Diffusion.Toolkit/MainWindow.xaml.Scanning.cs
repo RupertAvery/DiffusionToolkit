@@ -15,7 +15,7 @@ namespace Diffusion.Toolkit
     {
         private async Task RescanTask(object o)
         {
-            if (_settings.ImagePaths.Any())
+            if (ServiceLocator.FolderService.HasRootFolders)
             {
                 _ = Scan().ContinueWith((t) =>
                 {
@@ -35,7 +35,7 @@ namespace Diffusion.Toolkit
 
         private async Task RebuildTask(object o)
         {
-            if (_settings.ImagePaths.Any())
+            if (ServiceLocator.FolderService.HasRootFolders)
             {
                 var message = GetLocalizedText("Menu.Tools.RebuildMetadata.Message");
 
@@ -138,7 +138,7 @@ namespace Diffusion.Toolkit
             var images = _dataStore.GetImagePaths().ToList();
             var folders = _dataStore.GetFolders();
 
-            var folderIdCache = folders.ToDictionary(f => f.Path, f => f.Id);
+            var folderCache = folders.ToDictionary(f => f.Path);
 
             Dispatcher.Invoke(() =>
             {
@@ -153,9 +153,9 @@ namespace Diffusion.Toolkit
 
                 var skip = false;
 
-                if (folderIdCache.TryGetValue(dirName, out var folderId))
+                if (folderCache.TryGetValue(dirName, out var folder))
                 {
-                    if (image.FolderId == folderId)
+                    if (image.FolderId == folder.Id)
                     {
                         skip = true;
                     }
@@ -163,7 +163,7 @@ namespace Diffusion.Toolkit
 
                 if (!skip)
                 {
-                    _dataStore.UpdateImageFolderId(image.Id, image.Path, folderIdCache);
+                    _dataStore.UpdateImageFolderId(image.Id, image.Path, folderCache);
                     updated++;
                 }
 
@@ -202,7 +202,7 @@ namespace Diffusion.Toolkit
 
             var moved = 0;
 
-            var folderIdCache = new Dictionary<string, int>();
+            var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
 
             foreach (var image in images)
             {
@@ -257,7 +257,7 @@ namespace Diffusion.Toolkit
                     }
                     else
                     {
-                        _dataStore.MoveImage(image.Id, newPath, folderIdCache);
+                        _dataStore.MoveImage(image.Id, newPath, folderCache);
                     }
 
                     var moved1 = moved;
@@ -300,7 +300,7 @@ namespace Diffusion.Toolkit
             var result = await _messagePopupManager.ShowCustom(message, "Remove Excluded Images", PopupButtons.YesNo, 500, 250);
             if (result == PopupResult.Yes)
             {
-                var total = CleanExcludedPaths(_settings.ExcludePaths);
+                var total = CleanExcludedPaths(ServiceLocator.FolderService.ExcludedPaths);
 
                 ServiceLocator.ToastService.Toast($"{total} images removed from database", "");
             }
@@ -343,7 +343,7 @@ namespace Diffusion.Toolkit
         {
             await Task.Run(() =>
             {
-                var total = _dataStore.CleanRemovedFolders(_settings.ImagePaths);
+                var total = _dataStore.CleanRemovedFolders();
 
                 if (total > 0)
                 {

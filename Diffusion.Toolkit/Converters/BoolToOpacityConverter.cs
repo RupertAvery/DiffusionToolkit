@@ -17,3 +17,16 @@ public class BoolToOpacityConverter : IValueConverter
         throw new NotImplementedException();
     }
 }
+
+public class InvBoolToOpacityConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return (bool)value ? 1.0d : 0.25d;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException();
+    }
+}

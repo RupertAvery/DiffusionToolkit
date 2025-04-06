@@ -1,4 +1,5 @@
-﻿using SQLite;
+﻿using Diffusion.Database.Models;
+using SQLite;
 
 namespace Diffusion.Database;
 
@@ -30,7 +31,7 @@ public partial class DataStore
         DatabasePath = databasePath;
     }
 
-    public async Task Create(Func<object> notify, Action<object> complete)
+    public async Task Create(object settings, Func<object> notify, Action<object> complete)
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
 
@@ -51,7 +52,7 @@ public partial class DataStore
         db.LoadExtension("extensions\\path0.dll");
 
 
-        var migrations = new Migrations(db);
+        var migrations = new Migrations(db, settings);
 
         if (migrations.RequiresMigration(MigrationType.Pre))
         {
@@ -84,6 +85,7 @@ public partial class DataStore
             {
                 db.SchemaUpdated = schemaUpdated;
                 db.CreateTable<Image>();
+                db.CreateIndex<Image>(image => image.RootFolderId);
                 db.CreateIndex<Image>(image => image.FolderId);
                 db.CreateIndex<Image>(image => image.Path, true);
                 db.CreateIndex<Image>(image => image.FileName);
@@ -144,6 +146,9 @@ public partial class DataStore
                 db.CreateTable<Folder>();
                 db.CreateIndex<Folder>(folder => folder.ParentId);
                 db.CreateIndex<Folder>(folder => folder.Path, true);
+                db.CreateIndex<Folder>(folder => folder.Archived);
+                db.CreateIndex<Folder>(folder => folder.Unavailable);
+                db.CreateIndex<Folder>(folder => folder.Excluded);
 
                 db.CreateTable<Query>();
                 db.CreateIndex<Query>(query => query.Name, true);

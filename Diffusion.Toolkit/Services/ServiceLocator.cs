@@ -3,7 +3,9 @@ using System.Windows.Forms;
 using System.Windows;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Thumbnails;
 

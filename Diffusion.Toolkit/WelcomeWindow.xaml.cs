@@ -9,6 +9,7 @@ using System.Windows.Input;
 using System.Windows.Navigation;
 using Diffusion.Common;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Configuration;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Diffusion.Toolkit

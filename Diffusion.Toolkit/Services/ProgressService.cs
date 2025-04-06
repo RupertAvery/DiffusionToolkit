@@ -34,9 +34,14 @@ public class ProgressService
             if (!ServiceLocator.MainModel.IsBusy)
             {
                 _progressCancellationTokenSource = new CancellationTokenSource();
-
-                _dispatcher.Invoke(() => { ServiceLocator.MainModel.IsBusy = true; });
             }
+
+            //if (!ServiceLocator.MainModel.IsBusy)
+            //{
+            //    _progressCancellationTokenSource = new CancellationTokenSource();
+
+            //    _dispatcher.Invoke(() => { ServiceLocator.MainModel.IsBusy = true; });
+            //}
         }
         finally
         {

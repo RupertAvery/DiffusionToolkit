@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit
 {

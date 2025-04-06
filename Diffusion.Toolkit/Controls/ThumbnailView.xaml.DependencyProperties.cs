@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
-using Diffusion.Database;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
@@ -12,6 +11,7 @@ using System.Linq;
 using System.Windows.Controls;
 using Diffusion.Common;
 using Diffusion.Toolkit.Services;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit.Controls
 {

@@ -12,11 +12,29 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Common;
 using Diffusion.Toolkit.Behaviors;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Pages
 {
     public partial class Search
     {
+        private async Task ExcludeFolder(int id, bool excluded, bool recursive = false)
+        {
+            await Task.Run(async () =>
+            {
+                ServiceLocator.DataStore.SetFolderExcluded(id, excluded, recursive);
+                await ServiceLocator.FolderService.LoadFolders();
+            });
+        }
+
+        private async Task ArchiveFolder(int id, bool archived, bool recursive = false)
+        {
+            await Task.Run(async () =>
+            {
+                ServiceLocator.DataStore.SetFolderArchived(id, archived, recursive);
+                await ServiceLocator.FolderService.LoadFolders();
+            });
+        }
 
         private async Task ExpandToPath(string path)
         {
@@ -109,39 +127,48 @@ namespace Diffusion.Toolkit.Pages
 
         public void OpenFolder(FolderViewModel folder)
         {
-            if (_currentModeSettings.CurrentFolderPath == folder.Path)
-                return;
-
-            var subFolders = folder.Children;
-
-            if (subFolders == null)
+            try
             {
-                if (folder.IsUnavailable) return;
-                subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
-                folder.HasChildren = subFolders.Any();
-                folder.Children = subFolders;
+
+                if (_currentModeSettings.CurrentFolderPath == folder.Path)
+                    return;
+
+                var subFolders = folder.Children;
+
+                if (subFolders == null)
+                {
+                    if (folder.IsUnavailable) return;
+                    subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
+                    folder.HasChildren = subFolders.Any();
+                    folder.Children = subFolders;
+                }
+
+                if (_model.MainModel.CurrentFolder != null)
+                {
+                    _model.MainModel.CurrentFolder.IsSelected = false;
+                }
+
+                _model.MainModel.CurrentFolder = folder;
+
+                folder.IsSelected = true;
+
+                _model.NavigationSection.FoldersSection.CanDelete = folder.Depth > 0;
+                _model.NavigationSection.FoldersSection.CanRename = folder.Depth > 0;
+
+                _model.MainModel.ActiveView = "Folders";
+
+                SetMode("folders");
+
+                _model.FolderPath = folder.Path;
+                _currentModeSettings.CurrentFolderPath = folder.Path;
+
+                SearchImages(null);
+            }
+            catch (Exception e)
+            {
+                _model.IsBusy = false;
             }
 
-            if (_model.MainModel.CurrentFolder != null)
-            {
-                _model.MainModel.CurrentFolder.IsSelected = false;
-            }
-
-            _model.MainModel.CurrentFolder = folder;
-
-            folder.IsSelected = true;
-
-            _model.NavigationSection.FoldersSection.CanDelete = folder.Depth > 0;
-            _model.NavigationSection.FoldersSection.CanRename = folder.Depth > 0;
-
-            _model.MainModel.ActiveView = "Folders";
-
-            SetMode("folders");
-
-            _model.FolderPath = folder.Path;
-            _currentModeSettings.CurrentFolderPath = folder.Path;
-
-            SearchImages(null);
         }
 
         private IEnumerable<FolderViewModel> GetSubFolders(FolderViewModel folder)
@@ -151,20 +178,41 @@ namespace Diffusion.Toolkit.Pages
                 return Enumerable.Empty<FolderViewModel>();
             }
 
+
+      
+
+            var subfolders = ServiceLocator.DataStore.GetSubfolders(folder.Id);
+
+            var subViews = subfolders.Select(sub => new FolderViewModel()
+            {
+                Id = sub.Id,
+                Parent = folder,
+                HasChildren = true,
+                Visible = true,
+                Depth = folder.Depth + 1,
+                Name = Path.GetFileName(sub.Path),
+                Path = sub.Path,
+                IsArchived = sub.Archived,
+                IsUnavailable = sub.Unavailable,
+                IsExcluded = sub.Excluded,
+            }).ToList();
+
+            var lookup = subViews.Select(p => p.Path).ToHashSet();
+
             var directories = Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
             {
                 IgnoreInaccessible = true
-            });
-
-            return directories.Select(path => new FolderViewModel()
+            }).Where(path => !lookup.Contains(path)).Select(sub => new FolderViewModel()
             {
                 Parent = folder,
                 HasChildren = true,
                 Visible = true,
                 Depth = folder.Depth + 1,
-                Name = path.EndsWith("\\") ? "Root" : Path.GetFileName(path),
-                Path = path,
+                Name = Path.GetFileName(sub),
+                Path = sub,
             });
+
+            return subViews.Concat(directories).OrderBy(d => d.Name);
         }
 
         private async Task Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)

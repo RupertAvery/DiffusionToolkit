@@ -1,6 +1,5 @@
 ﻿using Diffusion.Common;
 using Diffusion.Toolkit.Classes;
-using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Themes;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -19,6 +18,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Database;
+using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Pages
@@ -30,7 +31,7 @@ namespace Diffusion.Toolkit.Pages
     public partial class Settings : Page
     {
         private SettingsModel _model = new SettingsModel();
-        public Toolkit.Settings _settings => ServiceLocator.Settings;
+        public Configuration.Settings _settings => ServiceLocator.Settings;
 
         private List<FolderChange> _folderChanges = new List<FolderChange>();
 
@@ -104,8 +105,8 @@ namespace Diffusion.Toolkit.Pages
 
         private void InitializeFolders()
         {
-            _model.ImagePaths = new ObservableCollection<string>(_settings.ImagePaths);
-            _model.ExcludePaths = new ObservableCollection<string>(_settings.ExcludePaths);
+            _model.ImagePaths = new ObservableCollection<string>(ServiceLocator.FolderService.RootFolders.Select(d => d.Path));
+            _model.ExcludePaths = new ObservableCollection<string>(ServiceLocator.FolderService.ExcludedFolders.Select(d => d.Path));
             _model.RecurseFolders = _settings.RecurseFolders;
             _model.SetFoldersPristine();
             _folderChanges.Clear();
@@ -206,6 +207,7 @@ namespace Diffusion.Toolkit.Pages
                 _model.ImagePaths.Add(path);
                 _folderChanges.Add(new FolderChange()
                 {
+                    FolderType = FolderType.Watched,
                     ChangeType = ChangeType.Add,
                     Path = path,
                 });
@@ -228,6 +230,7 @@ namespace Diffusion.Toolkit.Pages
                 _model.ImagePaths.RemoveAt(_model.SelectedIndex);
                 _folderChanges.Add(new FolderChange()
                 {
+                    FolderType = FolderType.Watched,
                     ChangeType = ChangeType.Remove,
                     Path = path,
                 });
@@ -242,7 +245,9 @@ namespace Diffusion.Toolkit.Pages
             dialog.IsFolderPicker = true;
             if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
-                if (_model.ImagePaths.All(d => !dialog.FileName.StartsWith(d)))
+                var path = dialog.FileName;
+
+                if (_model.ImagePaths.All(d => !path.StartsWith(d)))
                 {
                     MessageBox.Show(this._window,
                         "The selected folder must be on the path of one of the included folders",
@@ -250,8 +255,13 @@ namespace Diffusion.Toolkit.Pages
                         MessageBoxImage.Information);
                     return;
                 }
-
-                _model.ExcludePaths.Add(dialog.FileName);
+                _folderChanges.Add(new FolderChange()
+                {
+                    FolderType = FolderType.Excluded,
+                    ChangeType = ChangeType.Add,
+                    Path = path,
+                });
+                _model.ExcludePaths.Add(path);
             }
 
         }
@@ -265,7 +275,15 @@ namespace Diffusion.Toolkit.Pages
 
             if (result == MessageBoxResult.Yes)
             {
+                var path = _model.ExcludePaths[_model.ExcludedSelectedIndex];
                 _model.ExcludePaths.RemoveAt(_model.ExcludedSelectedIndex);
+
+                _folderChanges.Add(new FolderChange()
+                {
+                    FolderType = FolderType.Excluded,
+                    ChangeType = ChangeType.Remove,
+                    Path = path,
+                });
             }
         }
 
@@ -491,8 +509,11 @@ namespace Diffusion.Toolkit.Pages
             if (_model.IsDirty)
             {
                 _settings.SetPristine();
+                
+                // TODO: Remove, these are no longer used
                 _settings.ImagePaths = _model.ImagePaths.ToList();
                 _settings.ExcludePaths = _model.ExcludePaths.ToList();
+                
                 _settings.ModelRootPath = _model.ModelRootPath;
                 _settings.FileExtensions = _model.FileExtensions;
                 _settings.Theme = _model.Theme;

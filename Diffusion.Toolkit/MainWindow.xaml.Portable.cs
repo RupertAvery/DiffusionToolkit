@@ -4,6 +4,7 @@ using Diffusion.Toolkit.Services;
 using System;
 using System.IO;
 using System.Windows;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit
 {

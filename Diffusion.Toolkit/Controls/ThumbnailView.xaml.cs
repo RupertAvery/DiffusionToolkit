@@ -13,11 +13,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Pages;
 using Diffusion.Common;
+using Diffusion.Toolkit.Localization;
+using Settings = Diffusion.Toolkit.Configuration.Settings;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit.Controls
 {

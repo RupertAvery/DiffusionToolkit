@@ -1,6 +1,6 @@
 ﻿using SQLite;
 
-namespace Diffusion.Database;
+namespace Diffusion.Database.Models;
 
 public class Model
 {

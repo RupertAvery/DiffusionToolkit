@@ -1,4 +1,4 @@
-﻿using Diffusion.Database;
+﻿using Diffusion.Database.Models;
 using System.Collections.Generic;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;

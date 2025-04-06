@@ -8,7 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Database.Models;
+using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Thumbnails;
 
@@ -27,14 +30,19 @@ namespace Diffusion.Toolkit.Services
 
         }
 
-        private void CleanupFolderChanges(IEnumerable<FolderChange> folderChanges)
+        private void ApplyDBFolderChanges(IEnumerable<FolderChange> folderChanges)
         {
             var removed = 0;
             var updated = 0;
+            var added = 0;
 
-            foreach (var folderChange in folderChanges)
+            foreach (var folderChange in folderChanges.Where(d => d.FolderType == FolderType.Watched))
             {
-                if (folderChange.ChangeType == ChangeType.Remove)
+                if (folderChange.ChangeType == ChangeType.Add)
+                {
+                    added += _dataStore.AddRootFolder(folderChange.Path, folderChange.Recursive);
+                }
+                else if (folderChange.ChangeType == ChangeType.Remove)
                 {
                     removed += _dataStore.RemoveFolder(folderChange.Path);
                 }
@@ -43,35 +51,105 @@ namespace Diffusion.Toolkit.Services
                     updated += _dataStore.ChangeFolderPath(folderChange.Path, folderChange.NewPath);
                 }
             }
+
+
+            foreach (var folderChange in folderChanges.Where(d => d.FolderType == FolderType.Excluded))
+            {
+                if (folderChange.ChangeType == ChangeType.Add)
+                {
+                    _dataStore.SetFolderExcluded(folderChange.Path, true, false);
+                }
+                else if (folderChange.ChangeType == ChangeType.Remove)
+                {
+                    _dataStore.SetFolderExcluded(folderChange.Path, true, false);
+                }
+                //else if (folderChange.ChangeType == ChangeType.ChangePath)
+                //{
+                //    updated += _dataStore.ChangeFolderPath(folderChange.Path, folderChange.NewPath);
+                //}
+            }
         }
 
+        public bool HasRootFolders
+        {
+            get
+            {
+                return ServiceLocator.DataStore.GetRootFolders().Any();
+            }
+        }
+
+        public IEnumerable<Folder> RootFolders
+        {
+            get
+            {
+                return ServiceLocator.DataStore.GetRootFolders();
+            }
+        }
+
+        //public IEnumerable<Folder> GetRootFolders()
+        //{
+        //    return ServiceLocator.DataStore.GetRootFolders();
+        //}
+
+        private void UpdateFolder(FolderViewModel folderView, Dictionary<int, Folder> lookup)
+        {
+            if (lookup.TryGetValue(folderView.Id, out var folder))
+            {
+                folderView.IsArchived = !folderView.IsArchived;
+                folderView.IsUnavailable = folder.Unavailable;
+                folderView.IsExcluded = folder.Excluded;
+                //if (folderView.Children is { Count: > 0 })
+                //{
+                //    foreach (var child in folderView.Children)
+                //    {
+                //        UpdateFolder(child, lookup);
+                //    }
+                //}
+            }
+        }
 
         public async Task LoadFolders()
         {
-            var folders = _settings.ImagePaths;
+            var folders = ServiceLocator.DataStore.GetFolders().ToList();
+
+            var lookup = folders.ToDictionary(d => d.Id);
 
             _dispatcher.Invoke(() =>
             {
-                ServiceLocator.MainModel.Folders = new ObservableCollection<FolderViewModel>(folders.Select(path => new FolderViewModel()
+                if (ServiceLocator.MainModel.Folders == null || ServiceLocator.MainModel.Folders.Count == 0)
                 {
-                    HasChildren = true,
-                    Visible = true,
-                    Depth = 0,
-                    Name = path,
-                    Path = path,
-                    IsUnavailable = !Directory.Exists(path)
-                }));
+                    ServiceLocator.MainModel.Folders = new ObservableCollection<FolderViewModel>(folders.Where(d => d.IsRoot).Select(folder => new FolderViewModel()
+                    {
+                        Id = folder.Id,
+                        HasChildren = true,
+                        Visible = true,
+                        Depth = 0,
+                        Name = Path.GetFileName(folder.Path),
+                        Path = folder.Path,
+                        IsArchived = folder.Archived,
+                        IsExcluded = folder.Excluded,
+                        IsUnavailable = !Directory.Exists(folder.Path),
+                    }));
+                }
+                else
+                {
+                    foreach (var folder in ServiceLocator.MainModel.Folders)
+                    {
+                        UpdateFolder(folder, lookup);
+                    }
+                }
             });
 
             await ServiceLocator.ScanningService.CheckUnavailableFolders();
 
         }
 
+
         public async Task ApplyFolderChanges(IEnumerable<FolderChange> folderChanges)
         {
             var addedFolders = new List<string>();
 
-            CleanupFolderChanges(folderChanges);
+            ApplyDBFolderChanges(folderChanges);
 
             foreach (var folderChange in folderChanges)
             {
@@ -110,7 +188,7 @@ namespace Diffusion.Toolkit.Services
                 {
                     filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder, new HashSet<string>(), cancellationToken));
                 }
-                
+
                 await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
 
                 //await Task.Run(async () =>
@@ -148,12 +226,29 @@ namespace Diffusion.Toolkit.Services
         {
             if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
+                if (!ServiceLocator.FolderService.IsExcludedFile(e.FullPath))
                 {
-                    _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken);
-                });
-
+                    ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
+                    {
+                        _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken);
+                    });
+                }
             }
+        }
+
+        public IEnumerable<Folder> ExcludedFolders => ServiceLocator.DataStore.GetExcludedFolders()
+            .Concat(ServiceLocator.DataStore.GetArchivedFolders());
+
+        public IEnumerable<string> ExcludedPaths => ExcludedFolders.Select(d => d.Path);
+
+        private bool IsExcludedFile(string path)
+        {
+            var directory = Path.GetDirectoryName(path);
+            return ExcludedPaths.Any(d => d.Equals(directory, StringComparison.OrdinalIgnoreCase));
+        }
+        private bool IsExcluded(string path)
+        {
+            return ExcludedPaths.Any(d => d.Equals(path, StringComparison.OrdinalIgnoreCase));
         }
 
         private void WatcherOnRenamed(object sender, RenamedEventArgs e)
@@ -162,17 +257,16 @@ namespace Diffusion.Toolkit.Services
 
             if (wasTmp && _settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
+                if (!ServiceLocator.FolderService.IsExcludedFile(e.FullPath))
                 {
-                    _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken);
-                });
-
+                    ServiceLocator.ProgressService.StartTask().ContinueWith(t => { _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken); });
+                }
             }
         }
 
         public void CreateWatchers()
         {
-            foreach (var path in _settings.ImagePaths)
+            foreach (var path in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
             {
                 if (Directory.Exists(path))
                 {

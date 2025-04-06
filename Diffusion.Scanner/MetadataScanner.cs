@@ -5,7 +5,7 @@ namespace Diffusion.IO
 {
     public class MetadataScanner
     {
-        public static IEnumerable<string> GetFiles(string path, string extensions, bool recursive, CancellationToken cancellationToken)
+        public static IEnumerable<string> GetFiles(string path, string extensions, bool recursive, HashSet<string> excludePaths, CancellationToken cancellationToken)
         {
             var files = Enumerable.Empty<string>();
 
@@ -20,7 +20,7 @@ namespace Diffusion.IO
                     }
                     try
                     {
-                        var dirFiles = EnumerateFilesRecursively(path, $"*{extension}", cancellationToken);
+                        var dirFiles = EnumerateFilesRecursively(path, $"*{extension}", excludePaths, cancellationToken);
 
                         //var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
                         //{
@@ -42,8 +42,11 @@ namespace Diffusion.IO
         }
 
 
-        public static IEnumerable<string> EnumerateFilesRecursively(string path, string extension, CancellationToken cancellationToken)
+        public static IEnumerable<string> EnumerateFilesRecursively(string path, string extension, HashSet<string> excludePaths, CancellationToken cancellationToken)
         {
+            if(excludePaths.Contains(path))
+                yield break;
+
             var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
             {
                 IgnoreInaccessible = true
@@ -85,7 +88,7 @@ namespace Diffusion.IO
                     break;
                 }
 
-                var childDirFiles = EnumerateFilesRecursively(dir, extension, cancellationToken);
+                var childDirFiles = EnumerateFilesRecursively(dir, extension, excludePaths, cancellationToken);
 
                 foreach (var file in childDirFiles)
                 {
@@ -98,7 +101,7 @@ namespace Diffusion.IO
             }
         }
 
-        public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, IEnumerable<string>? excludePaths, CancellationToken cancellationToken)
+        public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, HashSet<string> excludePaths, CancellationToken cancellationToken)
         {
             var files = Enumerable.Empty<string>();
 
@@ -113,7 +116,7 @@ namespace Diffusion.IO
                     }
                     try
                     {
-                        var dirFiles = EnumerateFilesRecursively(path, $"*{extension}", cancellationToken);
+                        var dirFiles = EnumerateFilesRecursively(path, $"*{extension}", excludePaths, cancellationToken);
 
                         //var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
                         //{

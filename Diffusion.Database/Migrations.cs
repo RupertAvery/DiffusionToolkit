@@ -1,17 +1,22 @@
-﻿using System.Reflection;
-using System.Xml.Linq;
+﻿using System.IO;
+using System.Reflection;
+using System.Runtime;
 using Diffusion.Common;
+using Diffusion.Database.Models;
 using SQLite;
+using static Dapper.SqlMapper;
 
 namespace Diffusion.Database;
 
 public class Migrations
 {
     private readonly SQLiteConnection _db;
+    private readonly object _settings;
 
-    public Migrations(SQLiteConnection db)
+    public Migrations(SQLiteConnection db, object settings)
     {
         _db = db;
+        _settings = settings;
         db.CreateTable<Migration>();
     }
 
@@ -63,7 +68,7 @@ public class Migrations
 
                     var sql = (string)methodInfo.Invoke(this, null)!;
 
-                  
+
 
                     if (sql != null)
                     {
@@ -92,7 +97,7 @@ public class Migrations
                     }
 
 
-               
+
 
                     Logger.Log($"Executed Migration {name}");
                 }
@@ -157,6 +162,10 @@ public class Migrations
         return "DROP INDEX IF EXISTS 'Image_Path';";
     }
 
+
+
+
+
     [Migrate]
     private string RupertAvery20240102_0001_LoadFileNamesFromPaths()
     {
@@ -196,4 +205,148 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
     //{
     //    return "PRAGMA journal_mode=WAL";
     //}
+
+    private class FolderTemp : Folder
+    {
+        public string ParentPath { get; set; }
+    }
+
+    [Migrate(MigrationType.Post)]
+    private string RupertAvery20250405_0001_FixFolders()
+    {
+        var assembly = Assembly.GetEntryAssembly();
+
+        var type = assembly.GetType("Diffusion.Toolkit.Configuration.Settings");
+
+        var rootProperty = type.GetProperty("ImagePaths");
+
+        var rootPaths = (List<string>)rootProperty.GetValue(_settings);
+
+        var excludeProperty = type.GetProperty("ExcludePaths");
+
+        var excludePaths = (List<string>)excludeProperty.GetValue(_settings);
+
+        if (rootPaths != null && rootPaths.Any())
+        {
+
+            foreach (var path in rootPaths)
+            {
+                _db.ExecuteScalar<int>("INSERT OR IGNORE INTO Folder (ParentId, Path, Unavailable, Archived, IsRoot) VALUES (0, ?, 0, 0, 0) RETURNING Id", path);
+            }
+
+            var folders = _db.Query<FolderTemp>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder");
+
+            foreach (var folder in folders)
+            {
+                folder.ParentPath = folder.Path.Substring(0, folder.Path.LastIndexOf('\\'));
+            }
+
+            foreach (var folder in folders)
+            {
+                var children = folders.Where(d => d.ParentPath == folder.Path);
+                foreach (var child in children)
+                {
+                    child.ParentId = folder.Id;
+                }
+            }
+
+            Logger.Log("Updating Folder ParentIds");
+
+            foreach (var folder in folders)
+            {
+                _db.Execute("UPDATE Folder SET ParentId = ?, IsRoot = ?, Unavailable = 0, Archived = 0 WHERE Id = ?", folder.ParentId, folder.IsRoot, folder.Id);
+            }
+
+            var orphanedFolders = _db.Query<FolderTemp>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder f WHERE ParentId = 0 AND IsRoot = 0");
+
+            Logger.Log($"Found {orphanedFolders.Count} orphaned folders");
+
+            foreach (var folder in orphanedFolders)
+            {
+                folder.ParentPath = folder.Path.Substring(0, folder.Path.LastIndexOf('\\'));
+            }
+
+            var parents = orphanedFolders.Select(d => d.ParentPath).Distinct();
+
+            var folderCache = _db.Query<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder").ToDictionary(d => d.Path);
+
+            Logger.Log($"Creating parent folders");
+
+            foreach (var folder in parents)
+            {
+                Logger.Log($"Creating {folder}");
+
+                try
+                {
+                    if (DataStore.EnsureFolderExists(_db, folder, folderCache, out var folderId))
+                    {
+                        var children = orphanedFolders.Where(d => d.ParentPath == folder);
+
+                        foreach (var child in children)
+                        {
+                            _db.Execute("UPDATE Folder SET ParentId = ? WHERE Id = ?", folderId, child.Id);
+                        }
+                    }
+                    else
+                    {
+                        Logger.Log($"Root folder not found for {folder}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e.Message);
+                }
+
+            }
+
+            var cleanup = @"DELETE FROM Folder WHERE Id IN 
+(
+     SELECT f.Id FROM Folder f 
+     LEFT JOIN Image i ON f.Id = i.FolderId
+     WHERE ParentId = 0
+     GROUP BY f.Id
+     HAVING COUNT(i.Id) = 0
+)";
+
+            var count = _db.Execute(cleanup);
+
+            Logger.Log($"Removed {count} empty orphaned folders");
+
+
+            if (excludePaths != null && excludePaths.Any())
+            {
+
+                Logger.Log($"Migrating excluded paths");
+
+                _db.Execute("UPDATE Folder SET Excluded = 0");
+
+                foreach (var folder in excludePaths)
+                {
+                    Logger.Log($"Creating {folder}");
+
+                    try
+                    {
+                        if (DataStore.EnsureFolderExists(_db, folder, folderCache, out var folderId))
+                        {
+                            Logger.Log($"Setting {folder} as Excluded");
+                            _db.Execute("UPDATE Folder SET Excluded = 1 WHERE Id = ?", folderId);
+                        }
+                        else
+                        {
+                            Logger.Log($"Root folder not found for {folder}");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(e.Message);
+                    }
+
+                }
+            }
+        }
+
+
+        // Return empty statement so that nothing happens
+        return ";";
+    }
 }

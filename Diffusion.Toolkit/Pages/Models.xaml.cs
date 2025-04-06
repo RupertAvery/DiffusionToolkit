@@ -19,7 +19,7 @@ namespace Diffusion.Toolkit.Pages
     /// </summary>
     public partial class Models : Page
     {
-        private Toolkit.Settings _settings => ServiceLocator.Settings;
+        private Configuration.Settings _settings => ServiceLocator.Settings;
 
         private ModelsModel _model;
 

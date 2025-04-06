@@ -9,7 +9,6 @@
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
         xmlns:lex="http://wpflocalizeextension.codeplex.com"
-        xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
         xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
         lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
         lex:LocalizeDictionary.Separation="."

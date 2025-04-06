@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using Diffusion.Database;
+using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit

@@ -25,19 +25,22 @@ using System.Collections.Specialized;
 using System.Text.Json;
 using System.Threading;
 using Diffusion.IO;
-using Image = Diffusion.Database.Image;
+using Image = Diffusion.Database.Models.Image;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
-using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Themes;
 using static System.Net.WebRequestMethods;
 using WPFLocalizeExtension.Engine;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Diffusion.Common;
+using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 using Node = Diffusion.IO.Node;
 using SearchView = Diffusion.Database.SearchView;
 using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
+using Diffusion.Database.Models;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -54,6 +57,7 @@ namespace Diffusion.Toolkit.Pages
         public bool Focus { get; set; }
         public Action? OnCompleted { get; set; }
         public CursorPosition CursorPosition { get; set; }
+        public bool IsEmpty { get; set; }
     }
 
     public class ModeSettings
@@ -721,7 +725,7 @@ namespace Diffusion.Toolkit.Pages
 
         public void SearchImages(QueryOptions? queryOptions, bool focus = false)
         {
-            if (!ServiceLocator.Settings.ImagePaths.Any())
+            if (!ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Any())
             {
                 MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -909,14 +913,14 @@ namespace Diffusion.Toolkit.Pages
                         ThumbnailListView.SetPagingEnabled();
                     });
 
-                    ReloadMatches(new ReloadOptions() { Focus = focus });
-
+                    ReloadMatches(new ReloadOptions() { Focus = focus, IsEmpty = count == 0 });
                 })
                 .ContinueWith(d =>
                 {
                     if (d.IsFaulted)
                     {
                         ServiceLocator.MessageService.ShowMessage(d.Exception.Message, "An error occured while searching");
+                        _model.IsBusy = false;
                     }
                 });
 
@@ -1159,28 +1163,39 @@ namespace Diffusion.Toolkit.Pages
         {
             Task.Run(() =>
             {
-                LoadMatches();
-                ThumbnailListView.ResetView(options);
                 Dispatcher.Invoke(() =>
                 {
-                    options?.OnCompleted?.Invoke();
-
-                    if (options is not null && _model.Images is { Count: > 0 })
-                    {
-                        _model.SelectedImageEntry = options.CursorPosition switch
-                        {
-                            CursorPosition.Start => _model.Images[0],
-                            CursorPosition.End => _model.Images[^1],
-                            _ => _model.Images[0]
-                        };
-                    }
-                    else
-                    {
-                        _model.SelectedImageEntry = null;
-                    }
-
+                    _model.IsBusy = true;
                 });
 
+                try
+                {
+                    LoadMatches();
+                    ThumbnailListView.ResetView(options);
+                    Dispatcher.Invoke(() =>
+                    {
+                        options?.OnCompleted?.Invoke();
+
+                        if (options is not null && _model.Images is { Count: > 0 })
+                        {
+                            _model.SelectedImageEntry = options.CursorPosition switch
+                            {
+                                CursorPosition.Start => _model.Images[0],
+                                CursorPosition.End => _model.Images[^1],
+                                _ => _model.Images[0]
+                            };
+                        }
+                        else
+                        {
+                            _model.SelectedImageEntry = null;
+                        }
+
+                    });
+                }
+                finally
+                {
+                    _model.IsBusy = false;
+                }               
 
             });
         }
@@ -1344,11 +1359,6 @@ namespace Diffusion.Toolkit.Pages
 
         private void LoadMatches()
         {
-            Dispatcher.Invoke(() =>
-            {
-                _model.IsBusy = true;
-                //                _model.Images?.Clear();
-            });
 
             var foldersEntries = new List<ImageEntry>();
 
@@ -1362,7 +1372,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (_currentModeSettings.CurrentFolderPath == null)
                 {
-                    folders = ServiceLocator.Settings.ImagePaths;
+                    folders = ServiceLocator.FolderService.RootFolders.Select(d => d.Path);
                 }
                 else
                 {
@@ -1374,7 +1384,7 @@ namespace Diffusion.Toolkit.Pages
                         return;
                     }
 
-                    if (!ServiceLocator.Settings.ImagePaths.Contains(_currentModeSettings.CurrentFolderPath))
+                    if (!ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Contains(_currentModeSettings.CurrentFolderPath))
                     {
                         folders = folders.Concat(new[] { ".." });
                     }
@@ -1457,6 +1467,7 @@ namespace Diffusion.Toolkit.Pages
                     if (totalEntries > _model.Images.Count)
                     {
                         var difference = totalEntries - _model.Images.Count;
+
                         for (var i = 0; i < difference; i++)
                         {
                             _model.Images.Add(new ImageEntry(0));
@@ -1558,8 +1569,6 @@ namespace Diffusion.Toolkit.Pages
                 ThumbnailListView.ReloadThumbnailsView();
 
                 ThumbnailListView.ClearSelection();
-
-                _model.IsBusy = false;
 
                 if (_model.SelectedImageEntry != null)
                 {

@@ -1,11 +1,11 @@
-﻿using Diffusion.Toolkit.Localization;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Diffusion.Toolkit.Localization;
 
 namespace Diffusion.Toolkit.Controls;
 

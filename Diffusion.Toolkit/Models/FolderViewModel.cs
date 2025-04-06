@@ -18,9 +18,12 @@ public class FolderViewModel : BaseNotify
     private bool _visible;
     private bool _isSelected;
     private string _name;
-    private bool _isUnavailable;
+    private bool _isArchived;
+    private bool _isExcluded;
 
     public MainModel MainModel => ServiceLocator.MainModel;
+
+    public int Id { get; set; }
 
     public FolderState State
     {
@@ -61,8 +64,22 @@ public class FolderViewModel : BaseNotify
 
     public bool IsUnavailable
     {
-        get => _isUnavailable;
-        set => SetField(ref _isUnavailable, value);
+        get => _isArchived;
+        set => SetField(ref _isArchived, value);
+    }
+
+
+    public bool IsArchived
+    {
+        get => _isArchived;
+        set => SetField(ref _isArchived, value);
+    }
+
+
+    public bool IsExcluded
+    {
+        get => _isExcluded;
+        set => SetField(ref _isExcluded, value);
     }
 
     public override bool Equals(object? obj)

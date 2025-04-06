@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Diffusion.Database;
+using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit

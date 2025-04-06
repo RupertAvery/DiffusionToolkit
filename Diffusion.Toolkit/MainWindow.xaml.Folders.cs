@@ -19,24 +19,41 @@ namespace Diffusion.Toolkit
         {
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
 
-            _model.ScanFolderCommand = new RelayCommand<object>((o) =>
+            _model.ScanFolderCommand = new RelayCommand<FolderViewModel>((o) =>
             {
-                ScanFolder();
+                ScanFolder(o);
             });
 
-            _model.CreateFolderCommand = new RelayCommand<object>((o) =>
+            _model.CreateFolderCommand = new RelayCommand<FolderViewModel>((o) =>
             {
-                ShowCreateFolderDialog();
+                ShowCreateFolderDialog(o);
             });
 
-            _model.RenameFolderCommand = new RelayCommand<object>((o) =>
+            _model.RenameFolderCommand = new RelayCommand<FolderViewModel>((o) =>
             {
-                ShowRenameFolderDialog();
+                ShowRenameFolderDialog(o);
             });
 
-            _model.DeleteFolderCommand = new RelayCommand<object>((o) =>
+            _model.DeleteFolderCommand = new RelayCommand<FolderViewModel>((o) =>
             {
-                ShowDeleteFolderDialog();
+                ShowDeleteFolderDialog(o);
+            });
+
+            _model.ArchiveFolderCommand = new RelayCommand<FolderViewModel>((o) =>
+            {
+                ServiceLocator.DataStore.SetFolderArchived(o.Id, !o.IsArchived, false);
+                ServiceLocator.FolderService.LoadFolders();
+            });
+
+            _model.ArchiveFolderRecursiveCommand = new RelayCommand<FolderViewModel>((o) =>
+            {
+                ServiceLocator.DataStore.SetFolderArchived(o.Id, !o.IsArchived, true);
+                ServiceLocator.FolderService.LoadFolders();
+            });
+
+            _model.ExcludeFolderCommand = new RelayCommand<FolderViewModel>((o) =>
+            {
+                ServiceLocator.DataStore.SetFolderExcluded(o.Id, !o.IsExcluded, false);
             });
 
             _model.ReloadFoldersCommand = new RelayCommand<object>((o) =>
@@ -89,7 +106,7 @@ namespace Diffusion.Toolkit
             _model.Folders.Remove(folder);
         }
 
-        private async void ShowDeleteFolderDialog()
+        private async void ShowDeleteFolderDialog(FolderViewModel folder)
         {
             var currentFolder = _model.CurrentFolder!;
 
@@ -116,7 +133,7 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private async Task ScanFolder()
+        private async Task ScanFolder(FolderViewModel folder)
         {
             if (await ServiceLocator.ProgressService.TryStartTask())
             {
@@ -152,7 +169,7 @@ namespace Diffusion.Toolkit
             //});
         }
 
-        private async void ShowCreateFolderDialog()
+        private async void ShowCreateFolderDialog(FolderViewModel folder)
         {
             var (result, text) = await _messagePopupManager.ShowInput("Enter a name for the new folder", "New folder");
 
@@ -180,7 +197,7 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private async void ShowRenameFolderDialog()
+        private async void ShowRenameFolderDialog(FolderViewModel folder)
         {
             var currentFolder = _model.CurrentFolder!;
 
@@ -265,7 +282,7 @@ namespace Diffusion.Toolkit
 
             var moved = 0;
 
-            var folderIdCache = new Dictionary<string, int>();
+            var folderCache = ServiceLocator.FolderService.RootFolders.ToDictionary(d => d.Path);
 
             foreach (var image in images)
             {
@@ -274,10 +291,10 @@ namespace Diffusion.Toolkit
 
                 if (image.Path != newPath)
                 {
-                    _dataStore.MoveImage(db, image.Id, newPath, folderIdCache);
+                    _dataStore.MoveImage(db, image.Id, newPath, folderCache);
 
                     var moved1 = moved;
-                    if (moved % 113 == 0)
+                    if (moved % 33 == 0)
                     {
                         image.Path = newPath;
 

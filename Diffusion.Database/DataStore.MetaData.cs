@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Diffusion.Database.Models;
 using SQLite;
 using ComfyUINode = Diffusion.IO.Node;
 

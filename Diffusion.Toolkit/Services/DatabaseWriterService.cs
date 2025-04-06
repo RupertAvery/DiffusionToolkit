@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Diffusion.Common;
-using Diffusion.Database;
+using Diffusion.Database.Models;
 using Diffusion.IO;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -162,15 +164,12 @@ public class DatabaseWriterService
 
     private void UpdateStatus()
     {
-        var count = _addChannel.Reader.Count + _updateChannel.Reader.Count;
         ServiceLocator.ProgressService.SetStatus($"Scanning: {ServiceLocator.MainModel.CurrentProgress} of {ServiceLocator.MainModel.TotalProgress}");
     }
 
 
     private async Task<int> ProcessQueueTaskAsync(CancellationToken token)
     {
-        var folderIdCache = new Dictionary<string, int>();
-
         var newImages = new List<Image>();
         var newNodes = new List<IO.Node>();
 
@@ -185,6 +184,8 @@ public class DatabaseWriterService
         {
             includeProperties.Add(nameof(Image.Workflow));
         }
+
+        var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
 
         int added = 0;
 
@@ -214,7 +215,7 @@ public class DatabaseWriterService
 
                     try
                     {
-                        added += ServiceLocator.ScanningService.AddImages(newImages, newNodes, includeProperties, folderIdCache, _settings.StoreWorkflow, token);
+                        added += ServiceLocator.ScanningService.AddImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
                         _debounceQueueNotification(added);
                     }
                     finally
@@ -224,6 +225,20 @@ public class DatabaseWriterService
 
                     newNodes.Clear();
                     newImages.Clear();
+                }
+
+                if (!ServiceLocator.MainModel.IsBusy)
+                {
+                    var path = job.FileParameters.Path;
+                    if (path.Length > 100)
+                    {
+                        path = "...\\" + path[path.LastIndexOf("\\", 100, StringComparison.Ordinal)..];
+                    }
+                    else if (path.Length > 70)
+                    {
+                        path = "...\\" + path[path.LastIndexOf("\\", 70, StringComparison.Ordinal)..];
+                    }
+                    ServiceLocator.ProgressService.SetStatus($"Scanning: {path}");
                 }
 
             }
@@ -239,7 +254,6 @@ public class DatabaseWriterService
 
     private async Task<int> ProcessAddTaskAsync(CancellationToken token)
     {
-        var folderIdCache = new Dictionary<string, int>();
 
         var newImages = new List<Image>();
         var newNodes = new List<IO.Node>();
@@ -257,6 +271,8 @@ public class DatabaseWriterService
         }
 
         int added = 0;
+
+        var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
 
         while (await _addChannel.Reader.WaitToReadAsync(token))
         {
@@ -284,7 +300,7 @@ public class DatabaseWriterService
 
                     try
                     {
-                        added += ServiceLocator.ScanningService.AddImages(newImages, newNodes, includeProperties, folderIdCache, _settings.StoreWorkflow, token);
+                        added += ServiceLocator.ScanningService.AddImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
                         ServiceLocator.ProgressService.AddProgress(newImages.Count);
                         UpdateStatus();
                     }
@@ -309,8 +325,6 @@ public class DatabaseWriterService
 
     private async Task<int> ProcessUpdateTaskAsync(CancellationToken token)
     {
-        var folderIdCache = new Dictionary<string, int>();
-
         var newImages = new List<Image>();
         var newNodes = new List<IO.Node>();
 
@@ -325,6 +339,8 @@ public class DatabaseWriterService
         {
             includeProperties.Add(nameof(Image.Workflow));
         }
+
+        var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
 
         int updated = 0;
 
@@ -355,7 +371,7 @@ public class DatabaseWriterService
 
                     try
                     {
-                        updated += ServiceLocator.ScanningService.UpdateImages(newImages, newNodes, includeProperties, folderIdCache, _settings.StoreWorkflow, token);
+                        updated += ServiceLocator.ScanningService.UpdateImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
                         ServiceLocator.ProgressService.AddProgress(newImages.Count);
                         UpdateStatus();
                     }

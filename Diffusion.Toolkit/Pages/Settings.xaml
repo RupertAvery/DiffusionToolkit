@@ -5,7 +5,6 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Diffusion.Toolkit.Pages"
       xmlns:lex="http://wpflocalizeextension.codeplex.com"
-      xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
       xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
       xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
       xmlns:system="clr-namespace:System;assembly=System.Runtime"

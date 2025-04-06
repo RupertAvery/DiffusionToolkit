@@ -16,14 +16,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Diffusion.Common;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Controls
 {
-    public enum AccordionState
-    {
-        Expanded,
-        Collapsed
-    }
 
     /// <summary>
     /// Interaction logic for AccordionControl.xaml

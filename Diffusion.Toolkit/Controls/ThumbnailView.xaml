@@ -8,7 +8,6 @@
              xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
-             xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
              xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
              lex:LocalizeDictionary.Separation="."

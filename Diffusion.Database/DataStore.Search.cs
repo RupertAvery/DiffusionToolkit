@@ -1,4 +1,5 @@
 ﻿using Diffusion.Common;
+using Diffusion.Database.Models;
 using System;
 
 namespace Diffusion.Database

@@ -3,7 +3,9 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
@@ -41,7 +43,7 @@ namespace Diffusion.Toolkit
 
         private void LoadImagePaths(bool showUnavailable)
         {
-            var paths = _settings.ImagePaths.Select(p => new ImageFileItem()
+            var paths = ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Select(p => new ImageFileItem()
             {
                 Path = p,
                 IsUnavailable = !Directory.Exists(p)

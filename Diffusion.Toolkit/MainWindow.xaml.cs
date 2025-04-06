@@ -33,7 +33,7 @@ using Diffusion.Toolkit.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Common;
-using ModelViewModel = Diffusion.Toolkit.Models.ModelViewModel;
+using Settings = Diffusion.Toolkit.Configuration.Settings;
 
 namespace Diffusion.Toolkit
 {
@@ -581,9 +581,10 @@ namespace Diffusion.Toolkit
 
 
             await dataStore.Create(
+                _settings,
                 () => Dispatcher.Invoke(() => _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database")),
                 (handle) => { Dispatcher.Invoke(() => { ((MessagePopupHandle)handle).CloseAsync(); }); }
-            );
+                );
 
             //var total = _dataStore.GetTotal();
 
@@ -621,9 +622,9 @@ namespace Diffusion.Toolkit
 
                     if (_settings.RecurseFolders.GetValueOrDefault(true))
                     {
-                        foreach (var imagePath in _settings.ImagePaths)
+                        foreach (var folder in ServiceLocator.FolderService.RootFolders)
                         {
-                            if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
+                            if (path.StartsWith(folder.Path, true, CultureInfo.InvariantCulture))
                             {
                                 isInPath = true;
                                 break;
@@ -645,7 +646,7 @@ namespace Diffusion.Toolkit
                     {
                         // If recursion is turned off, the path must specifically equal one of the diffusion folders
 
-                        foreach (var imagePath in _settings.ImagePaths)
+                        foreach (var imagePath in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
                         {
                             if (path.Equals(imagePath, StringComparison.InvariantCultureIgnoreCase))
                             {
@@ -801,7 +802,7 @@ namespace Diffusion.Toolkit
                 });
             }
 
-            if (_settings.ImagePaths.Any())
+            if (ServiceLocator.FolderService.HasRootFolders)
             {
                 _search.SearchImages(null);
 
@@ -1061,7 +1062,7 @@ namespace Diffusion.Toolkit
 
         private async Task TryScanFolders()
         {
-            if (_settings.ImagePaths.Any())
+            if (ServiceLocator.FolderService.HasRootFolders)
             {
                 if (await ServiceLocator.MessageService.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {

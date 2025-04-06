@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Diffusion.Common;
 using Diffusion.IO;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -33,6 +34,7 @@ public class MetadataScannerService
             {
                 ServiceLocator.ProgressService.CompleteTask();
                 ServiceLocator.ProgressService.ClearProgress();
+                ServiceLocator.ProgressService.SetStatus("");
             });
         }
 

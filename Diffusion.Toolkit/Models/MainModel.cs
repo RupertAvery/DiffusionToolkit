@@ -4,6 +4,8 @@ using Diffusion.Database;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Common;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -217,6 +219,7 @@ public class MainModel : BaseNotify
         get => _status;
         set => SetField(ref _status, value);
     }
+
     public bool IsBusy
     {
         get => _isBusy;
@@ -698,6 +701,12 @@ public class MainModel : BaseNotify
     public ICommand CreateFolderCommand { get; set; }
     public ICommand RenameFolderCommand { get; set; }
     public ICommand DeleteFolderCommand { get; set; }
+    public ICommand ArchiveFolderCommand { get; set; }
+    public ICommand ArchiveFolderRecursiveCommand { get; set; }
+    public ICommand ExcludeFolderCommand { get; set; }
+
+    
+
     public ICommand ToggleNavigationPane { get; set; }
     public ICommand ShowInExplorerCommand { get; set; }
     public string ToastMessage
