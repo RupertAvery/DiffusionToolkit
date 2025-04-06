@@ -1,33 +1,3 @@
-# Diffusion Toolkit
-
-Tired of dragging your images into PNG-Info to see the metadata?  Annoyed at how slow navigating through Explorer is to view your images? Wish you could search for your images by prompt?
-
-Diffusion Toolkit (https://github.com/RupertAvery/DiffusionToolkit) is an image metadata-indexer and viewer for AI-generated images. It aims to help you organize, search and sort your ever-growing collection.
-
-[![Organize your AI Images](https://img.youtube.com/vi/r7J3n1LjojE/hqdefault.jpg)](https://www.youtube.com/watch?v=r7J3n1LjojE&ab_channel=BillMeeks)
-
-# Installation
-
-* [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/latest
-) (Windows)
-* Requires [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) 
-
-Look for **> Assets** under the latest release, expand it, then grab the zip file **Diffusion.Toolkit.v1.x.zip**.
-
-# Features
-
-* Support for many image generators (A1111, InvokeAI, NovelAI, RuinedFooocus, partial ComfyUI support)
-* Scans and indexes your images in a database for lightning-fast search
-* Search images by metadata (Prompt, seed, model, etc...)
-* Custom metadata (stored in database, not in image) 
-    * Favorite
-    * Rating (1-10)
-    * NSFW
-* Organize your images 
-    * Albums
-    * Folder View
-* Drag and Drop from Diffusion Toolkit to another app
-
 # What's New in v1.6
 
 ## Important Changes

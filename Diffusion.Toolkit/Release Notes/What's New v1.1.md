@@ -1,16 +1,3 @@
-I'm really excited for this release because of 2 things:
-
-1) Borderless windows
-2) Image viewer
-
-The image viewer is just the preview popout, but, without the preview being popped out.  It has a couple of improvements however, most notably being  launching when opening an image from the thumbnail, and much better zoom.
-
-The Borderless windows even makes it look like a Real App now!
-
-Those aren't the only updates though, scroll down and see what else this release has in store for you.
-
-Enjoy!
-
 # Diffusion Toolkit Release v1.1
 
 Diffusion Toolkit is an image metadata-indexer and viewer for AI-generated images.  It scans your 50,000 image collection in seconds and lets you search them by prompt, seed, hash and more.

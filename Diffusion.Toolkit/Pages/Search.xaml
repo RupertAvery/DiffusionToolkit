@@ -321,16 +321,36 @@
                                                             <ColumnDefinition Width="15"/>
                                                             <ColumnDefinition Width="*"/>
                                                             <ColumnDefinition Width="15"/>
-                                                            <ColumnDefinition Width="15"/>
                                                         </Grid.ColumnDefinitions>
                                                         <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
                                                         <Grid Grid.Column="2" Background="Transparent"  PreviewMouseLeftButtonDown="Expander_OnMouseDown">
                                                             <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"  />
                                                         </Grid>
                                                         <TextBlock Foreground="{DynamicResource ForegroundBrush}" Grid.Column="3" HorizontalAlignment="Left" FontFamily="Calibri" TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left" PreviewMouseDown="Folder_OnClick"></TextBlock>
-                                                        <TextBlock Grid.Column="4" Text="{Binding IsArchived}"></TextBlock>
-                                                        <!--<fa:FontAwesome Grid.Column="4" Icon="Archive" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="{Binding IsArchived, Converter={StaticResource InvBoolToOpacityConverter}, Mode=OneWay}" Foreground="{DynamicResource ForegroundBrush}"></fa:FontAwesome>-->
-                                                        <fa:FontAwesome Grid.Column="5" Icon="Ban" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="{Binding IsExcluded, Converter={StaticResource InvBoolToOpacityConverter}, Mode=OneWay}" Foreground="{DynamicResource ForegroundBrush}"></fa:FontAwesome>
+                                                        <fa:FontAwesome Grid.Column="4" Icon="Lock" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ForegroundBrush}">
+                                                            <fa:FontAwesome.Resources>
+                                                                <Style TargetType="fa:FontAwesome">
+                                                                    <Setter Property="Opacity" Value="0.25"></Setter>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=IsArchived, Mode=OneWay}" Value="True">
+                                                                            <Setter  Property="Opacity" Value="1"></Setter>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </fa:FontAwesome.Resources>
+                                                        </fa:FontAwesome>
+                                                        <!--<fa:FontAwesome Grid.Column="5" Icon="Ban" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                            <fa:FontAwesome.Resources>
+                                                                <Style TargetType="fa:FontAwesome">
+                                                                    <Setter Property="Opacity" Value="0.25"></Setter>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=IsArchived, Mode=OneWay}" Value="True">
+                                                                            <Setter  Property="Opacity" Value="1"></Setter>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </fa:FontAwesome.Resources>
+                                                        </fa:FontAwesome>-->
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>

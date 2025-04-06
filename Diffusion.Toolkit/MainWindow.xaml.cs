@@ -96,7 +96,7 @@ namespace Diffusion.Toolkit
 
                 Logger.Log($"Creating Thumbnail loader");
 
- 
+
 
                 _navigatorService = new NavigatorService(this);
                 _navigatorService.OnNavigate += OnNavigate;
@@ -461,6 +461,7 @@ namespace Diffusion.Toolkit
             ServiceLocator.SetDataStore(dataStore);
 
             var isFirstTime = false;
+            IReadOnlyList<string> newFolders = null;
 
             if (!_configuration.Exists())
             {
@@ -473,6 +474,8 @@ namespace Diffusion.Toolkit
                 var welcome = new WelcomeWindow(_settings);
                 welcome.Owner = this;
                 welcome.ShowDialog();
+
+                newFolders = welcome.SelectedPaths;
 
                 if (_settings.IsDirty())
                 {
@@ -802,38 +805,55 @@ namespace Diffusion.Toolkit
                 });
             }
 
-            if (ServiceLocator.FolderService.HasRootFolders)
+            if (isFirstTime)
             {
-                _search.SearchImages(null);
-
-                if (isFirstTime)
+                // Automatically scans images...
+                await ServiceLocator.FolderService.ApplyFolderChanges(newFolders.Select(d => new FolderChange()
                 {
-                    _ = Scan(true);
-                }
-                else if (_settings.ScanForNewImagesOnStartup)
+                    ChangeType = ChangeType.Add,
+                    FolderType = FolderType.Watched,
+                    Path = d,
+                }));
+
+                // Wait for a bit, then show thumbnails
+                _ = Task.Delay(10000).ContinueWith(t =>
                 {
-                    Logger.Log($"Scanning for new images");
-
-                    _ = Task.Run(async () =>
-                    {
-                        if (await ServiceLocator.ProgressService.TryStartTask())
-                        {
-
-                            await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
-                            //try
-                            //{
-                            //}
-                            //finally
-                            //{
-                            //    //ServiceLocator.ProgressService.CompleteTask();
-                            //    //ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                            //}
-                        }
-                    });
-                }
-
+                    ServiceLocator.SearchService.ExecuteSearch();
+                    ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
+                });
             }
+            else
+            {
+                if (ServiceLocator.FolderService.HasRootFolders)
+                {
+                    if (_settings.ScanForNewImagesOnStartup)
+                    {
+                        Logger.Log($"Scanning for new images");
 
+                        _ = Task.Run(async () =>
+                        {
+                            if (await ServiceLocator.ProgressService.TryStartTask())
+                            {
+
+                                await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
+                                //try
+                                //{
+                                //}
+                                //finally
+                                //{
+                                //    //ServiceLocator.ProgressService.CompleteTask();
+                                //    //ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
+                                //}
+                            }
+                        });
+                    }
+                    else
+                    {
+                        _search.SearchImages(null);
+                    }
+
+                }
+            }
 
             Logger.Log($"Init completed");
 

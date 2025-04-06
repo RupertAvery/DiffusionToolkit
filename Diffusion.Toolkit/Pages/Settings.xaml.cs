@@ -228,12 +228,11 @@ namespace Diffusion.Toolkit.Pages
             {
                 var path = _model.ImagePaths[_model.SelectedIndex];
                 _model.ImagePaths.RemoveAt(_model.SelectedIndex);
-                _folderChanges.Add(new FolderChange()
-                {
-                    FolderType = FolderType.Watched,
-                    ChangeType = ChangeType.Remove,
-                    Path = path,
-                });
+
+                //var change = _folderChanges.Where(d => d.Path == path).First();
+
+                //_folderChanges.Remove(change);
+
                 _model.SetFoldersDirty();
             }
         }

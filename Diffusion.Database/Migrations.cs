@@ -322,7 +322,7 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
 
                 foreach (var folder in excludePaths)
                 {
-                    Logger.Log($"Creating {folder}");
+                    Logger.Log($"Excluding {folder}");
 
                     try
                     {

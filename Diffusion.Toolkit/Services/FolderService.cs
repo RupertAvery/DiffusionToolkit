@@ -27,7 +27,32 @@ namespace Diffusion.Toolkit.Services
 
         public FolderService()
         {
+            ServiceLocator.DataStore.DataChanged += DataChangedEventHandler;
+        }
 
+        private void DataChangedEventHandler(object? sender, DataChangedEventArgs e)
+        {
+            if (e.EntityType == EntityType.Folder)
+            {
+                switch (e.SourceType)
+                {
+                    case SourceType.Item:
+                        if (e.Property is "Excluded")
+                        {
+                            _isExcludedFoldersDirty = true;
+                        }
+                        else if (e.Property is "Archived")
+                        {
+                            _isArchivedFoldersDirty = true;
+                        }
+                        break;
+                    case SourceType.Collection:
+                        _isExcludedFoldersDirty = true;
+                        _isArchivedFoldersDirty = true;
+                        _isFoldersDirty = true;
+                        break;
+                }
+            }
         }
 
         private void ApplyDBFolderChanges(IEnumerable<FolderChange> folderChanges)
@@ -74,15 +99,23 @@ namespace Diffusion.Toolkit.Services
         {
             get
             {
-                return ServiceLocator.DataStore.GetRootFolders().Any();
+                return RootFolders.Any();
             }
         }
 
-        public IEnumerable<Folder> RootFolders
+        private bool _isFoldersDirty = true;
+        private IReadOnlyCollection<Folder> _folders;
+
+        public IReadOnlyCollection<Folder> RootFolders
         {
             get
             {
-                return ServiceLocator.DataStore.GetRootFolders();
+                if (_isFoldersDirty)
+                {
+                    _folders = ServiceLocator.DataStore.GetRootFolders().ToList();
+                    _isFoldersDirty = false;
+                }
+                return _folders;
             }
         }
 
@@ -95,7 +128,7 @@ namespace Diffusion.Toolkit.Services
         {
             if (lookup.TryGetValue(folderView.Id, out var folder))
             {
-                folderView.IsArchived = !folderView.IsArchived;
+                folderView.IsArchived = folder.Archived;
                 folderView.IsUnavailable = folder.Unavailable;
                 folderView.IsExcluded = folder.Excluded;
                 //if (folderView.Children is { Count: > 0 })
@@ -143,6 +176,49 @@ namespace Diffusion.Toolkit.Services
             await ServiceLocator.ScanningService.CheckUnavailableFolders();
 
         }
+
+
+        public ObservableCollection<FolderViewModel> GetSubFolders(FolderViewModel folder)
+        {
+            if (!Directory.Exists(folder.Path))
+            {
+                return new ObservableCollection<FolderViewModel>();
+            }
+
+            var subfolders = ServiceLocator.DataStore.GetSubfolders(folder.Id);
+
+            var subViews = subfolders.Select(sub => new FolderViewModel()
+            {
+                Id = sub.Id,
+                Parent = folder,
+                HasChildren = true,
+                Visible = true,
+                Depth = folder.Depth + 1,
+                Name = Path.GetFileName(sub.Path),
+                Path = sub.Path,
+                IsArchived = sub.Archived,
+                IsUnavailable = sub.Unavailable,
+                IsExcluded = sub.Excluded,
+            }).ToList();
+
+            var lookup = subViews.Select(p => p.Path).ToHashSet();
+
+            var directories = Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
+            {
+                IgnoreInaccessible = true
+            }).Where(path => !lookup.Contains(path)).Select(sub => new FolderViewModel()
+            {
+                Parent = folder,
+                HasChildren = true,
+                Visible = true,
+                Depth = folder.Depth + 1,
+                Name = Path.GetFileName(sub),
+                Path = sub,
+            });
+
+            return new ObservableCollection<FolderViewModel>(subViews.Concat(directories).OrderBy(d => d.Name));
+        }
+
 
 
         public async Task ApplyFolderChanges(IEnumerable<FolderChange> folderChanges)
@@ -226,7 +302,7 @@ namespace Diffusion.Toolkit.Services
         {
             if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                if (!ServiceLocator.FolderService.IsExcludedFile(e.FullPath))
+                if (!ServiceLocator.FolderService.IsExcludedOrArchivedFile(e.FullPath))
                 {
                     ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
                     {
@@ -236,19 +312,65 @@ namespace Diffusion.Toolkit.Services
             }
         }
 
-        public IEnumerable<Folder> ExcludedFolders => ServiceLocator.DataStore.GetExcludedFolders()
-            .Concat(ServiceLocator.DataStore.GetArchivedFolders());
+        private bool _isExcludedFoldersDirty = true;
 
-        public IEnumerable<string> ExcludedPaths => ExcludedFolders.Select(d => d.Path);
+        IReadOnlyCollection<Folder> _excludedFolders;
 
-        private bool IsExcludedFile(string path)
+        public IReadOnlyCollection<Folder> ExcludedFolders
+        {
+            get
+            {
+                if (_isExcludedFoldersDirty)
+                {
+                    _excludedFolders = ServiceLocator.DataStore.GetExcludedFolders().ToList();
+                    _excludedOrArchivedFolderPaths = ServiceLocator.DataStore.GetExcludedFolders().Concat(ServiceLocator.DataStore.GetArchivedFolders()).Select(d => d.Path).ToHashSet();
+
+                    _isExcludedFoldersDirty = false;
+                }
+
+                return _excludedFolders;
+            }
+        }
+
+        private bool _isArchivedFoldersDirty = true;
+
+        IReadOnlyCollection<Folder> _archivedFolders;
+
+        public IReadOnlyCollection<Folder> ArchivedFolders
+        {
+            get
+            {
+                if (_isArchivedFoldersDirty)
+                {
+                    _archivedFolders = ServiceLocator.DataStore.GetArchivedFolders().ToList();
+                    _excludedOrArchivedFolderPaths = ServiceLocator.DataStore.GetExcludedFolders().Concat(ServiceLocator.DataStore.GetArchivedFolders()).Select(d => d.Path).ToHashSet();
+
+                    _isArchivedFoldersDirty = false;
+                }
+
+                return _archivedFolders;
+            }
+        }
+
+
+        private HashSet<string> _excludedOrArchivedFolderPaths;
+        public HashSet<string> ExcludedOrArchivedFolderPaths
+        {
+            get
+            {
+                return _excludedOrArchivedFolderPaths;
+            }
+        }
+
+        private bool IsExcludedOrArchivedFile(string path)
         {
             var directory = Path.GetDirectoryName(path);
-            return ExcludedPaths.Any(d => d.Equals(directory, StringComparison.OrdinalIgnoreCase));
+            return ExcludedOrArchivedFolderPaths.Contains(directory);
         }
-        private bool IsExcluded(string path)
+
+        private bool IsExcludedOrArchivedFolder(string path)
         {
-            return ExcludedPaths.Any(d => d.Equals(path, StringComparison.OrdinalIgnoreCase));
+            return ExcludedOrArchivedFolderPaths.Contains(path);
         }
 
         private void WatcherOnRenamed(object sender, RenamedEventArgs e)
@@ -257,7 +379,7 @@ namespace Diffusion.Toolkit.Services
 
             if (wasTmp && _settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
             {
-                if (!ServiceLocator.FolderService.IsExcludedFile(e.FullPath))
+                if (!ServiceLocator.FolderService.IsExcludedOrArchivedFile(e.FullPath))
                 {
                     ServiceLocator.ProgressService.StartTask().ContinueWith(t => { _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken); });
                 }

@@ -138,7 +138,7 @@ namespace Diffusion.Toolkit.Pages
                 if (subFolders == null)
                 {
                     if (folder.IsUnavailable) return;
-                    subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
+                    subFolders = ServiceLocator.FolderService.GetSubFolders(folder);
                     folder.HasChildren = subFolders.Any();
                     folder.Children = subFolders;
                 }
@@ -171,50 +171,6 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
-        private IEnumerable<FolderViewModel> GetSubFolders(FolderViewModel folder)
-        {
-            if (!Directory.Exists(folder.Path))
-            {
-                return Enumerable.Empty<FolderViewModel>();
-            }
-
-
-      
-
-            var subfolders = ServiceLocator.DataStore.GetSubfolders(folder.Id);
-
-            var subViews = subfolders.Select(sub => new FolderViewModel()
-            {
-                Id = sub.Id,
-                Parent = folder,
-                HasChildren = true,
-                Visible = true,
-                Depth = folder.Depth + 1,
-                Name = Path.GetFileName(sub.Path),
-                Path = sub.Path,
-                IsArchived = sub.Archived,
-                IsUnavailable = sub.Unavailable,
-                IsExcluded = sub.Excluded,
-            }).ToList();
-
-            var lookup = subViews.Select(p => p.Path).ToHashSet();
-
-            var directories = Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
-            {
-                IgnoreInaccessible = true
-            }).Where(path => !lookup.Contains(path)).Select(sub => new FolderViewModel()
-            {
-                Parent = folder,
-                HasChildren = true,
-                Visible = true,
-                Depth = folder.Depth + 1,
-                Name = Path.GetFileName(sub),
-                Path = sub,
-            });
-
-            return subViews.Concat(directories).OrderBy(d => d.Name);
-        }
-
         private async Task Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var folder = ((FolderViewModel)((Button)sender).DataContext);
@@ -239,7 +195,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
+                            subFolders = ServiceLocator.FolderService.GetSubFolders(folder);
                             folder.HasChildren = subFolders.Any();
                             folder.Children = subFolders;
 
@@ -315,39 +271,39 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public void RefreshFolder(FolderViewModel model)
+        public void RefreshFolder(FolderViewModel targetFolder)
         {
-            var subFolders = GetSubFolders(model).ToList();
+            var subFolders = ServiceLocator.FolderService.GetSubFolders(targetFolder).ToList();
 
             // TODO: prevent updating of state and MainModel.Folders if no visual update is required
 
-            if (model.HasChildren)
+            if (targetFolder.HasChildren)
             {
-                var addedFolders = subFolders.Except(model.Children);
-                var removedFolders = model.Children.Except(subFolders);
+                var addedFolders = subFolders.Except(targetFolder.Children);
+                var removedFolders = targetFolder.Children.Except(subFolders);
 
-                var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+                var insertPoint = _model.MainModel.Folders.IndexOf(targetFolder) + 1;
 
                 foreach (var folder in addedFolders)
                 {
-                    model.Children.Add(folder);
+                    targetFolder.Children.Add(folder);
                     _model.MainModel.Folders.Insert(insertPoint, folder);
                 }
 
                 foreach (var folder in removedFolders)
                 {
-                    model.Children.Remove(folder);
+                    targetFolder.Children.Remove(folder);
                     _model.MainModel.Folders.Remove(folder);
                 }
 
-                model.HasChildren = subFolders.Any();
+                targetFolder.HasChildren = subFolders.Any();
             }
             else
             {
-                model.HasChildren = subFolders.Any();
-                model.Children = new ObservableCollection<FolderViewModel>(subFolders);
+                targetFolder.HasChildren = subFolders.Any();
+                targetFolder.Children = new ObservableCollection<FolderViewModel>(subFolders);
 
-                var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+                var insertPoint = _model.MainModel.Folders.IndexOf(targetFolder) + 1;
 
                 foreach (var folder in subFolders)
                 {
@@ -356,9 +312,9 @@ namespace Diffusion.Toolkit.Pages
 
             }
 
-            if (model.HasChildren)
+            if (targetFolder.HasChildren)
             {
-                model.State = FolderState.Expanded;
+                targetFolder.State = FolderState.Expanded;
             }
         }
 

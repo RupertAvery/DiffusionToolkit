@@ -1,13 +1,3 @@
-If you tried to update via the Updater, and you got "**Could not find Diffusion.Updater.dll**", please update manually for now, this version should fix the issue for future updates.
-
-This latest release has a few important improvements and a couple of bugfixes, notably the inability to **select any text in the preview info**.
-
-A feature to allow **drag-moving** aside from drag-copying has been added to the thumbnail, please read the update below as it contains information on how your images will be handled.
-
-Thumbnail loading is now much faster, thanks to reduced binding in the thumbnail XAML.  It finally makes paging much faster, almost no delay with 100 thumbnails per page.
-
-Thanks for all the bug submissions!
-
 # Diffusion Toolkit Release v1.2
 
 Diffusion Toolkit is an image metadata-indexer and viewer for AI-generated images.  It scans your 50,000 image collection in seconds and lets you search them by prompt, seed, hash and more.

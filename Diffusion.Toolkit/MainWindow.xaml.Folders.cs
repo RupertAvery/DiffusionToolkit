@@ -137,13 +137,11 @@ namespace Diffusion.Toolkit
         {
             if (await ServiceLocator.ProgressService.TryStartTask())
             {
-                var currentFolder = _model.CurrentFolder!;
-
                 var filesToScan = new List<string>();
 
                 var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
 
-                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(currentFolder.Path, new HashSet<string>(), cancellationToken));
+                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder.Path, new HashSet<string>(), cancellationToken));
 
                 await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
             }

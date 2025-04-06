@@ -447,7 +447,7 @@ namespace Diffusion.Toolkit
 
                 double currentDPIScaleFactor = SystemHelper.GetCurrentDPIScaleFactor();
                 Rectangle workingArea = screen.WorkingArea;
-                MaxHeight = (workingArea.Height + 16) / currentDPIScaleFactor;
+                MaxHeight = double.PositiveInfinity;  //(workingArea.Height + 16) / currentDPIScaleFactor;
                 MaxWidth = double.PositiveInfinity;
 
                 if (WindowState != WindowState.Maximized)

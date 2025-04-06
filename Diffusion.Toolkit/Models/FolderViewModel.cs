@@ -1,6 +1,7 @@
 ﻿using Diffusion.Toolkit.Services;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Navigation;
 
 namespace Diffusion.Toolkit.Models;
@@ -20,6 +21,7 @@ public class FolderViewModel : BaseNotify
     private string _name;
     private bool _isArchived;
     private bool _isExcluded;
+    private bool _isUnavailable;
 
     public MainModel MainModel => ServiceLocator.MainModel;
 
@@ -64,15 +66,19 @@ public class FolderViewModel : BaseNotify
 
     public bool IsUnavailable
     {
-        get => _isArchived;
-        set => SetField(ref _isArchived, value);
+        get => _isUnavailable;
+        set => SetField(ref _isUnavailable, value);
     }
 
 
     public bool IsArchived
     {
         get => _isArchived;
-        set => SetField(ref _isArchived, value);
+        set
+        {
+            SetField(ref _isArchived, value);
+            Debug.WriteLine(Path + " Updated to " + value);
+        }
     }
 
 

@@ -52,21 +52,12 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private Task Scan(bool isFirstTime = false)
+        private Task Scan()
         {
             return Task.Run(async () =>
             {
                 if (await ServiceLocator.ProgressService.TryStartTask())
                 {
-                    if (isFirstTime)
-                    {
-                        _ = Task.Delay(10000).ContinueWith(t =>
-                        {
-                            ServiceLocator.SearchService.ExecuteSearch();
-                            ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
-                        });
-                    }
-
                     await ServiceLocator.ScanningService.ScanWatchedFolders(false, true, ServiceLocator.ProgressService.CancellationToken);
 
                     //try
@@ -292,6 +283,7 @@ namespace Diffusion.Toolkit
 
         }
 
+        // TODO: When will this be called?
         private async void CleanExcludedPaths()
         {
             var message = "This will remove any remaining images in excluded folders from the database. The images on disk will not be deleted.\r\n\r\n" +
@@ -300,7 +292,7 @@ namespace Diffusion.Toolkit
             var result = await _messagePopupManager.ShowCustom(message, "Remove Excluded Images", PopupButtons.YesNo, 500, 250);
             if (result == PopupResult.Yes)
             {
-                var total = CleanExcludedPaths(ServiceLocator.FolderService.ExcludedPaths);
+                var total = CleanExcludedPaths(ServiceLocator.FolderService.ExcludedFolders.Select(d => d.Path));
 
                 ServiceLocator.ToastService.Toast($"{total} images removed from database", "");
             }

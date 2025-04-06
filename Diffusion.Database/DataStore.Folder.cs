@@ -5,6 +5,26 @@ using Diffusion.Database.Models;
 
 namespace Diffusion.Database
 {
+    public enum EntityType
+    {
+        Image,
+        Album,
+        Folder,
+    }
+
+    public enum SourceType
+    {
+        Item,
+        Collection,
+    }
+
+    public class DataChangedEventArgs : EventArgs
+    {
+        public EntityType EntityType { get; set; }
+        public SourceType SourceType { get; set; }
+        public string Property { get; set; }
+    }
+
     public partial class DataStore
     {
         private string DirectoryTreeCTE => @"WITH RECURSIVE
@@ -14,6 +34,8 @@ namespace Diffusion.Database
 		UNION ALL
 		SELECT f.Id, f.ParentId, f.Path, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
 	)";
+
+        public EventHandler<DataChangedEventArgs> DataChanged;
 
         public void SetFolderExcluded(string path, bool excluded, bool recursive)
         {
@@ -29,6 +51,13 @@ namespace Diffusion.Database
             }
 
             db.Close();
+
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Item,
+                Property = "Excluded"
+            });
         }
 
         public void SetFolderExcluded(int id, bool excluded, bool recursive)
@@ -42,6 +71,13 @@ namespace Diffusion.Database
             db.Execute(query, excluded, id);
 
             db.Close();
+
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Item,
+                Property = "Excluded"
+            });
         }
 
         public void SetFolderUnavailable(int id, bool unavailable, bool recursive)
@@ -55,6 +91,13 @@ namespace Diffusion.Database
             db.Execute(query, unavailable, id);
 
             db.Close();
+
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Item,
+                Property = "Unavailable"
+            });
         }
 
         public void SetFolderArchived(int id, bool archived, bool recursive)
@@ -68,17 +111,29 @@ namespace Diffusion.Database
             db.Execute(query, archived, id);
 
             db.Close();
+
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Item,
+                Property = "Archived"
+            });
         }
 
         // TODO: Per-folder Recursive?
         public int AddRootFolder(string path, bool recursive)
         {
             using var db = OpenConnection();
-
-            var id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, 0, 0, 0, 1)", path);
+            // ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot
+            var id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 0, 1)", path);
 
             db.Close();
 
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Collection
+            });
             return id;
         }
 
@@ -87,6 +142,12 @@ namespace Diffusion.Database
             using var db = OpenConnection();
 
             db.Execute("DELETE FROM Folder WHERE Id = ?", id);
+
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Collection
+            });
 
             db.Close();
         }
@@ -252,6 +313,14 @@ namespace Diffusion.Database
             command.ExecuteNonQuery();
 
             db.Commit();
+
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Item,
+                Property = "Unavailable"
+            });
+
         }
 
 
@@ -354,6 +423,12 @@ namespace Diffusion.Database
             db.Commit();
 
             db.Close();
+
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Collection,
+            });
 
             return images;
         }
