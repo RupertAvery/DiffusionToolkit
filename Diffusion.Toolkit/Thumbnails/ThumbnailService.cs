@@ -51,15 +51,15 @@ public class ThumbnailService
 
         _enableCache = true;
 
-        StreamResourceInfo sri = Application.GetResourceStream(new Uri("Images/thumbnail.png", UriKind.Relative));
-        if (sri != null)
-        {
-            using (Stream s = sri.Stream)
-            {
-                sri.Stream.CopyTo(_defaultStream);
-                _defaultStream.Position = 0;
-            }
-        }
+        //StreamResourceInfo sri = Application.GetResourceStream(new Uri("Images/thumbnail.png", UriKind.Relative));
+        //if (sri != null)
+        //{
+        //    using (Stream s = sri.Stream)
+        //    {
+        //        sri.Stream.CopyTo(_defaultStream);
+        //        _defaultStream.Position = 0;
+        //    }
+        //}
     }
 
     private Dispatcher _dispatcher => ServiceLocator.Dispatcher;
@@ -329,6 +329,22 @@ public class ThumbnailService
     //    bitmap.Freeze();
     //    return (bitmap;
     //}
+
+    public (int, int) GetBitmapSize(string path)
+    {
+        using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            BitmapDecoder decoder = BitmapDecoder.Create(
+                stream,
+                BitmapCreateOptions.DelayCreation,
+                BitmapCacheOption.None);
+
+            int width = decoder.Frames[0].PixelWidth;
+            int height = decoder.Frames[0].PixelHeight;
+
+            return (width, height);
+        }
+    }
 
     public BitmapImage GetThumbnailImmediate(string path, int width, int height, int size)
     {

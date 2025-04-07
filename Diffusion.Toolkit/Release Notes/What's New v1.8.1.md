@@ -85,8 +85,7 @@ You can now change the path of a root folder and all the images under it. This o
 
 TODO: 
 
-* Add copy path to Preview
-* Add external applications to Preview
+* Fix selection on page change 
 * Check if Rebuild Metadata uses Archived folders
 * Handle Folder unavailable when search results (in database, not on disk)
   * Clear results
@@ -106,5 +105,6 @@ TODO:
 * Make sure Folder Refresh will restore unavailable folders AND all the images under them
   * calls CheckUnavailableFolders DONE
 
-
+* Add copy path to Preview
+* Add external applications to Preview
 * Broken Keydown / auto-page in thumbnail - FIXED

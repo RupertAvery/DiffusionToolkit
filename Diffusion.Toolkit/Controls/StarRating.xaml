@@ -1,0 +1,149 @@
+﻿<UserControl x:Class="Diffusion.Toolkit.Controls.StarRating"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
+             xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
+             xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+             mc:Ignorable="d" 
+            
+             d:DesignHeight="60" d:DesignWidth="400">
+    <UserControl.Resources>
+        <converters:CompareToValueOpacityConverter x:Key="CompareToValueOpacityConverter"></converters:CompareToValueOpacityConverter>
+    </UserControl.Resources>
+
+    <!--<StackPanel Orientation="Horizontal"   DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
+    </StackPanel>-->
+
+    <!--behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+behaviors:DTBehaviors.IsMouseOverParameter="10"-->
+
+    <Grid Background="{x:Null}" DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
+          MouseLeave="Ratings_OnMouseLeave">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+            <ColumnDefinition Width="32"/>
+        </Grid.ColumnDefinitions>
+        <Image Grid.Column="0" Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=1}"
+               Tag="1"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="1" Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=2}"
+               Tag="2"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="2" Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=3}"
+               Tag="3"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="3" Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=4}"
+               Tag="4"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="4" Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=5}"
+               Tag="5"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="5"  Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=6}"
+               Tag="6"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="6" Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=7}"
+               Tag="7"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="7" Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=8}"
+               Tag="8"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="8" Height="32" Width="32" Source="../Icons/star-32.png"
+               Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=9}"
+               Tag="9"
+               PreviewMouseMove="Ratings_OnMouseMove"
+               MouseDown="Ratings_OnMouseDown"
+        >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+        <Image Grid.Column="9" Height="32" Width="32" Source="../Icons/star-32.png"
+                Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=10}"
+                Tag="10"
+                PreviewMouseMove="Ratings_OnMouseMove"
+                MouseDown="Ratings_OnMouseDown"
+            >
+            <Image.Effect>
+                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+            </Image.Effect>
+        </Image>
+
+    </Grid>
+</UserControl>

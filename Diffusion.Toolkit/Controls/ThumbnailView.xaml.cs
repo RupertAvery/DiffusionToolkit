@@ -774,6 +774,9 @@ namespace Diffusion.Toolkit.Controls
                         case CursorPosition.End:
                             ShowItem(Model.Images.Count - 1, reloadOptions.Focus);
                             break;
+                        case CursorPosition.Unspecified:
+                            ShowItem(0, reloadOptions.Focus);
+                            break;
                     }
                 }
             });

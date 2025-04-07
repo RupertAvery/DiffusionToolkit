@@ -34,13 +34,13 @@ public class InvBoolToOpacityConverter : IValueConverter
 
 public class CompareToValueOpacityConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value == null) return 0.25d;
+        if (value == null || parameter == null) return 0.25d;
         return (int)value >= int.Parse((string)parameter) ? 1.0d : 0.25d;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotImplementedException();
     }

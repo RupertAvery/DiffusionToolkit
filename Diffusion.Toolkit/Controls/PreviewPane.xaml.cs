@@ -182,6 +182,7 @@ namespace Diffusion.Toolkit.Controls
 
         private Cursor handCursor;
         private Cursor grabCursor;
+        private Action<int, int?> _rate;
 
 
         public MainModel MainModel => ServiceLocator.MainModel;
@@ -315,25 +316,6 @@ namespace Diffusion.Toolkit.Controls
             this.UpdateLayout();
         }
 
-        private static Key[] _ratings = new[]
-        {
-            Key.D1,
-            Key.D2,
-            Key.D3,
-            Key.D4,
-            Key.D5,
-            Key.D6,
-            Key.D7,
-            Key.D8,
-            Key.D9,
-            Key.D0,
-        };
-
-        public Action<int, bool> NSFW { get; set; }
-        public Action<int, bool> Favorite { get; set; }
-        public Action<int, int?> Rate { get; set; }
-        public Action<int, bool> Delete { get; set; }
-
         private void ScrollViewer_OnKeyDown(object sender, KeyEventArgs e)
         {
             //if (e.Key == Key.I && e.KeyboardDevice.Modifiers == ModifierKeys.None)
@@ -349,18 +331,18 @@ namespace Diffusion.Toolkit.Controls
             {
                 case Key.X or Key.Delete when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                     Image.ForDeletion = !Image.ForDeletion;
-                    Delete?.Invoke(Image.Id, Image.ForDeletion);
+                    ServiceLocator.TaggingService.ForDeletion(this, Image.Id, Image.ForDeletion);
                     break;
                 case Key.N when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                     Image.NSFW = !Image.NSFW;
-                    NSFW?.Invoke(Image.Id, Image.NSFW);
+                    ServiceLocator.TaggingService.NSFW(this, Image.Id, Image.NSFW);
                     break;
                 case Key.F when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                     Image.Favorite = !Image.Favorite;
-                    Favorite?.Invoke(Image.Id, Image.Favorite);
+                    ServiceLocator.TaggingService.Favorite(this, Image.Id, Image.Favorite);
                     break;
                 case Key.OemTilde:
-                    Rate?.Invoke(Image.Id, null);
+                    ServiceLocator.TaggingService.Rate(this, Image.Id, null);
                     break;
                 case >= Key.D0 and <= Key.D9 when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                 {
@@ -385,7 +367,7 @@ namespace Diffusion.Toolkit.Controls
 
                     Image.Rating = rating;
 
-                    Rate?.Invoke(Image.Id, rating);
+                    ServiceLocator.TaggingService.Rate(this, Image.Id, rating);
                     break;
                 }
                 case Key.D0 when e.KeyboardDevice.Modifiers == ModifierKeys.Control:
@@ -488,20 +470,5 @@ namespace Diffusion.Toolkit.Controls
         //{
         //    ScrollViewer.Cursor = handCursor;
         //}
-        private void Ratings_OnMouseLeave(object sender, MouseEventArgs e)
-        {
-            Image.Rating = originalRating;
-        }
-
-        private void Ratings_OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var parameterValue = DTBehaviors.GetIsMouseOverParameter((DependencyObject)sender);
-
-            var rating = int.Parse((string)parameterValue);
-
-            Image.Rating = rating;
-            originalRating = rating;
-            Rate?.Invoke(Image.Id, rating);
-        }
     }
 }

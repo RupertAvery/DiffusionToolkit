@@ -549,38 +549,12 @@ namespace Diffusion.Toolkit.Pages
                 _ = ExpandToPath(Path.GetDirectoryName(entry.Path));
             };
 
-
-            PreviewPane.NSFW = (id, b) =>
+            ServiceLocator.TaggingService.TagUpdated += (sender, arguments) =>
             {
-                ServiceLocator.DataStore.SetNSFW(id, b);
-                Update(id);
-
+                Update(arguments.Id);
                 AdvanceOnTag();
             };
 
-            PreviewPane.Favorite = (id, b) =>
-            {
-                ServiceLocator.DataStore.SetFavorite(id, b);
-                Update(id);
-
-                AdvanceOnTag();
-            };
-
-            PreviewPane.Rate = (id, b) =>
-            {
-                ServiceLocator.DataStore.SetRating(id, b);
-                Update(id);
-
-                AdvanceOnTag();
-            };
-
-            PreviewPane.Delete = (id, b) =>
-            {
-                ServiceLocator.DataStore.SetDeleted(id, b);
-                Update(id);
-
-                AdvanceOnTag();
-            };
 
             FilterPopup.Closed += (sender, args) =>
             {
@@ -1193,6 +1167,8 @@ namespace Diffusion.Toolkit.Pages
                                 CursorPosition.End => _model.Images[lastIndex],
                                 _ => _model.Images[0]
                             };
+
+                            //ThumbnailListView.SelectedImageEntry = _model.SelectedImageEntry;
                         }
                         else
                         {
@@ -1208,205 +1184,6 @@ namespace Diffusion.Toolkit.Pages
 
             });
         }
-
-        private int _startIndex = -1;
-
-        public void StartNavigateCursor()
-        {
-            if(isPaging)return;
-            if (_startIndex == -1 && _model.SelectedImageEntry != null)
-            {
-                _startIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
-            }
-        }
-
-        public void EndNavigateCursor()
-        {
-            if (isPaging) return;
-            _startIndex = -1;
-        }
-
-
-        public void Advance()
-        {
-            StartNavigateCursor();
-            NavigateCursorNext();
-        }
-
-        private bool isPaging = false;
-
-        public void NavigateCursorNext()
-        {
-            if (isPaging) return;
-
-            if (_model.Images == null) return;
-
-            int currentIndex = 0;
-
-            var lastIndex = _model.Images.Count - 1;
-
-            var empty = _model.Images.FirstOrDefault(d => d.IsEmpty);
-
-            if (empty != null)
-            {
-                lastIndex = _model.Images.IndexOf(empty) - 1;
-            }
-
-            if (_model.SelectedImageEntry != null)
-            {
-                currentIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
-            }
-
-            if (currentIndex < lastIndex)
-            {
-                ThumbnailListView.ShowItem(currentIndex + 1);
-                _model.SelectedImageEntry = _model.Images[currentIndex + 1];
-                ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-            }
-            else
-            {
-                if (_startIndex == lastIndex)
-                {
-                    isPaging = true;
-
-                    var paged = ThumbnailListView.GoNextPage(() =>
-                    {
-                        _model.SelectedImageEntry = _model.Images[0];
-                        ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-                        NavigationCompleted?.Invoke(this, new EventArgs());
-
-                        _startIndex = 0;
-                        isPaging = false;
-                    });
-
-                    if (!paged)
-                    {
-                        isPaging = false;
-                    }
-
-                }
-            }
-
-        }
-
-        public void NavigateCursorPrevious()
-        {
-            if(isPaging) return;
-            if (_model.Images == null) return;
-            int currentIndex = 0;
-            if (_model.SelectedImageEntry != null)
-            {
-                currentIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
-            }
-
-            if (currentIndex > 0)
-            {
-                ThumbnailListView.ShowItem(currentIndex - 1);
-                _model.SelectedImageEntry = _model.Images[currentIndex - 1];
-                ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-            }
-            else
-            {
-                if (_startIndex == 0)
-                {
-                    isPaging = true;
-                    var paged = ThumbnailListView.GoPrevPage(() =>
-                    {
-                        var empty = _model.Images.FirstOrDefault(d => d.IsEmpty);
-                        var lastIndex = _model.Images.Count - 1;
-                        if (empty != null)
-                        {
-                            lastIndex = _model.Images.IndexOf(empty) -1;
-                        }
-
-                        _startIndex = lastIndex;
-
-                        _model.SelectedImageEntry = _model.Images[lastIndex];
-                        ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-                        NavigationCompleted?.Invoke(this, new EventArgs());
-
-                        isPaging = false;
-
-                    }, true);
-
-                    if (!paged)
-                    {
-                        isPaging = false;
-                    }
-
-                }
-            }
-
-        }
-
-        //private async Task LoadMatchesAsync()
-        //{
-        //    var rId = r.NextInt64();
-        //    ThumbnailLoader.Instance.SetCurrentRequestId(rId);
-
-        //    var query = _model.SearchText;
-
-        //    if (_currentModeSettings.IsFavorite)
-        //    {
-        //        query = $"{query} favorite: true";
-        //    }
-        //    else if (_currentModeSettings.IsMarkedForDeletion)
-        //    {
-        //        query = $"{query} delete: true";
-        //    }
-
-
-        //    var matches = Time(() => DataStore
-        //        .Search(query, _settings.PageSize,
-        //            _settings.PageSize * (_model.Page - 1),
-        //            _model.SortBy,
-        //            _model.SortDirection
-        //            ));
-
-        //    Dispatcher.Invoke(() =>
-        //    {
-        //        _model.Images.Clear();
-        //    });
-
-        //    var images = new List<ImageEntry>();
-
-        //    var sw = new Stopwatch();
-        //    sw.Start();
-
-
-        //    var count = 0;
-        //    foreach (var file in matches)
-        //    {
-        //        images.Add(new ImageEntry(rId)
-        //        {
-        //            Id = file.Id,
-        //            Favorite = file.Favorite,
-        //            ForDeletion = file.ForDeletion,
-        //            Rating = file.Rating,
-        //            Path = file.Path,
-        //            CreatedDate = file.CreatedDate,
-        //            FileName = Path.GetFileName(file.Path),
-        //            NSFW = file.NSFW
-        //        });
-
-
-        //        count++;
-        //    }
-
-        //    Dispatcher.Invoke(() =>
-        //    {
-        //        _model.Images = new ObservableCollection<ImageEntry>(images);
-        //    });
-
-        //    sw.Stop();
-
-        //    Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
-
-        //    foreach (var image in _model.Images)
-        //    {
-        //        await image.LoadThumbnail();
-        //    }
-        //}
 
         private void LoadMatches()
         {
@@ -1885,23 +1662,7 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
-        public string? Prompt => _model.SearchText;
-
         public Filter Filter => _model.Filter.AsFilter();
-
-        private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                if (_model.FolderPath != null && Directory.Exists(_model.FolderPath))
-                {
-                    throw new NotImplementedException();
-                    //_currentModeSettings.CurrentFolder = _model.FolderPath;
-
-                    SearchImages(null);
-                }
-            }
-        }
 
         public void ExtOnKeyUp(object sender, KeyEventArgs e)
         {
@@ -1914,22 +1675,6 @@ namespace Diffusion.Toolkit.Pages
                 else if (e.Key == Key.Right)
                 {
                     EndNavigateCursor();
-                }
-                else if (e.Key == Key.Delete)
-                {
-                    AdvanceOnTag();
-                }
-                else if (e.Key >= Key.D0 && e.Key <= Key.D9)
-                {
-                    AdvanceOnTag();
-                }
-                else if (e.Key == Key.F)
-                {
-                    AdvanceOnTag();
-                }
-                else if (e.Key == Key.F)
-                {
-                    AdvanceOnTag();
                 }
             }
         }
@@ -1955,7 +1700,7 @@ namespace Diffusion.Toolkit.Pages
 
         private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
-            ExtOnKeyUp(this, e);
+            //ExtOnKeyUp(this, e);
         }
 
         private void PreviewPane_OnPreviewKeyDown(object sender, KeyEventArgs e)

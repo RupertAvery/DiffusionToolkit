@@ -24,7 +24,7 @@ namespace Diffusion.Toolkit
 
         public Action<string> OnDrop { get; set; }
 
-        public Action<int> Changed { get; set; }
+        //public Action<int> Changed { get; set; }
         public Action AdvanceSlideShow { get; set; }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -46,28 +46,9 @@ namespace Diffusion.Toolkit
 
             PreviewPane.IsPopout = true;
 
-            PreviewPane.NSFW = (id, v) =>
+            ServiceLocator.TaggingService.TagUpdated += (sender, arguments) =>
             {
-                _dataStore.SetNSFW(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.Favorite = (id, v) =>
-            {
-                _dataStore.SetFavorite(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.Rate = (id, v) =>
-            {
-                _dataStore.SetRating(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.Delete = (id, v) =>
-            {
-                _dataStore.SetDeleted(id, v);
-                Changed?.Invoke(id);
+                //Changed?.Invoke(arguments.Id);
             };
 
             var mainModel = ServiceLocator.MainModel;
@@ -181,7 +162,7 @@ namespace Diffusion.Toolkit
 
         private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
-            OnPreviewKeyUp(e);
+            //OnPreviewKeyUp(e);
 
             SetFocus();
         }
@@ -195,7 +176,7 @@ namespace Diffusion.Toolkit
         {
             RestartSlideShowTimer();
 
-            OnPreviewKeyDown(e);
+            //OnPreviewKeyDown(e);
 
 
             SetFocus();

@@ -349,13 +349,15 @@ namespace Diffusion.Toolkit
 
                 _previewWindow.Owner = this;
 
+                // TODO: better implementation for StartNavigation events
                 _previewWindow.PreviewKeyUp += _search.ExtOnKeyUp;
                 _previewWindow.PreviewKeyDown += _search.ExtOnKeyDown;
 
                 _previewWindow.AdvanceSlideShow = _search.Advance;
 
                 _previewWindow.OnDrop = (s) => _search.LoadPreviewImage(s);
-                _previewWindow.Changed = (id) => _search.Update(id);
+                //_previewWindow.Changed = (id) => _search.Update(id);
+                
                 _previewWindow.Closed += (sender, args) =>
                 {
                     _search.OnCurrentImageChange = null;

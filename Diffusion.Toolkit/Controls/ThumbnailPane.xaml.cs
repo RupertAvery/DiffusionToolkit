@@ -35,13 +35,6 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(ModelProperty, value);
         }
 
-
-        public Action<IList<ImageEntry>> MoveFiles
-        {
-            get => ThumbnailListView.MoveFiles;
-            set => ThumbnailListView.MoveFiles = value;
-        }
-
         public ImageEntry SelectedImageEntry
         {
             get => (ImageEntry)GetValue(SelectedImageEntryProperty);

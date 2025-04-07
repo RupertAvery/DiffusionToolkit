@@ -623,7 +623,7 @@
                                                   HorizontalAlignment="Stretch" 
                                                   VerticalContentAlignment="Center"
                                                   Text="{Binding FolderPath, UpdateSourceTrigger=PropertyChanged}"
-                                                  KeyDown="FolderPath_OnKeyDown"
+                                                  KeyUp="FolderPath_OnKeyDown"
                                         ></TextBox>
                                     </DockPanel>
                                     <Grid Background="AntiqueWhite" Height="30" DockPanel.Dock="Top">
@@ -715,7 +715,7 @@
                     </controls:MetadataPanel>
                 </Grid>
 
-                <StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding CurrentImage}">
+                <!--<StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding CurrentImage}">
 
 
                     <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
@@ -788,7 +788,7 @@
                         <Label FontSize="18" FontWeight="Bold" Content="{Binding AestheticScore}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
                     </Border>
 
-                </StackPanel>
+                </StackPanel>-->
             </Grid>
 
 

@@ -33,13 +33,13 @@ namespace Diffusion.Toolkit.Behaviors
                 var value = GetUseIsMouseOverHandlers(d);
                 if (value)
                 {
-                    element.MouseMove += MouseMoveHandler;
+                    //element.MouseMove += MouseMoveHandler;
                     element.MouseEnter += MouseEnterHandler;
                     element.MouseLeave += MouseLeaveHandler;
                 }
                 else
                 {
-                    element.MouseMove -= MouseMoveHandler;
+                    //element.MouseMove -= MouseMoveHandler;
                     element.MouseEnter -= MouseEnterHandler;
                     element.MouseLeave -= MouseLeaveHandler;
                 }
@@ -71,24 +71,24 @@ namespace Diffusion.Toolkit.Behaviors
 
         private static void MouseEnterHandler(object sender, MouseEventArgs e)
         {
-            // var binding = GetIsMouseOverBinding((DependencyObject)sender);
+            var binding = GetIsMouseOverBinding((DependencyObject)sender);
 
-            //var bindingExpression = ((FrameworkElement)sender).GetBindingExpression(IsMouseOverBindingProperty);
-            //var boundInput = (object)bindingExpression.ResolvedSource;
-            //var boundInputType = boundInput.GetType();
-            //var boundInputProperty = boundInputType.GetProperty(bindingExpression.ResolvedSourcePropertyName);
+            var bindingExpression = ((FrameworkElement)sender).GetBindingExpression(IsMouseOverBindingProperty);
+            var boundInput = (object)bindingExpression.ResolvedSource;
+            var boundInputType = boundInput.GetType();
+            var boundInputProperty = boundInputType.GetProperty(bindingExpression.ResolvedSourcePropertyName);
 
-            //var parameterValue = GetIsMouseOverParameter((DependencyObject)sender);
+            var parameterValue = GetIsMouseOverParameter((DependencyObject)sender);
 
-            //if (parameterValue != null && boundInputProperty.PropertyType != null)
-            //{
-            //    var convertedValue = ConvertToPropertyType(parameterValue, boundInputProperty.PropertyType);
-            //    boundInputProperty.SetValue(boundInput, convertedValue);
-            //}
-            //else
-            //{
-            //    boundInputProperty.SetValue(boundInput, parameterValue);
-            //}
+            if (parameterValue != null && boundInputProperty.PropertyType != null)
+            {
+                var convertedValue = ConvertToPropertyType(parameterValue, boundInputProperty.PropertyType);
+                boundInputProperty.SetValue(boundInput, convertedValue);
+            }
+            else
+            {
+                boundInputProperty.SetValue(boundInput, parameterValue);
+            }
 
 
             SetIsMouseOver((DependencyObject)sender, true);
@@ -116,6 +116,26 @@ namespace Diffusion.Toolkit.Behaviors
 
         private static void MouseLeaveHandler(object sender, MouseEventArgs e)
         {
+            var binding = GetIsMouseOverBinding((DependencyObject)sender);
+
+            var bindingExpression = ((FrameworkElement)sender).GetBindingExpression(IsMouseOverBindingProperty);
+            var boundInput = (object)bindingExpression.ResolvedSource;
+            var boundInputType = boundInput.GetType();
+            var boundInputProperty = boundInputType.GetProperty(bindingExpression.ResolvedSourcePropertyName);
+
+            var parameterValue = GetIsMouseOverParameter((DependencyObject)sender);
+
+            if (parameterValue != null && boundInputProperty.PropertyType != null)
+            {
+                var convertedValue = ConvertToPropertyType(parameterValue, boundInputProperty.PropertyType);
+                boundInputProperty.SetValue(boundInput, convertedValue);
+            }
+            else
+            {
+                boundInputProperty.SetValue(boundInput, parameterValue);
+            }
+
+
             SetIsMouseOver((DependencyObject)sender, false);
         }
     }

@@ -18,6 +18,50 @@ namespace Diffusion.Toolkit.Pages
 {
     public partial class Search
     {
+        private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (_model.FolderPath != null && Directory.Exists(_model.FolderPath))
+                {
+                    if (ServiceLocator.FolderService.RootFolders.Select(d => d.Path)
+                        .Any(d => _model.FolderPath.StartsWith(d)))
+                    {
+                        _currentModeSettings.CurrentFolderPath = _model.FolderPath;
+                        SearchImages(null);
+                        return;
+                    }
+                }
+
+                _model.FolderPath = _currentModeSettings.CurrentFolderPath;
+
+                ((TextBox)sender).SelectionStart = _model.FolderPath.Length;
+                ((TextBox)sender).SelectionLength = 0;
+
+            }
+            // TODO: implement autocomplete
+            //else if(e.Key is >= Key.A and <= Key.Z or >= Key.D0 and <= Key.D9)
+            //{
+            //    var textbox = (TextBox)sender;
+            //    if (textbox.Text == null) return;
+            //    var subdirs = Directory.GetDirectories(_currentModeSettings.CurrentFolderPath);
+
+            //    if (textbox.Text.EndsWith("\\")) return;
+
+            //    var currentText = textbox.Text;
+
+            //    var subdir = subdirs.FirstOrDefault(d => d.StartsWith(textbox.Text));
+
+            //    if (subdir != null)
+            //    {
+            //        textbox.Text = subdir;
+
+            //        textbox.SelectionStart = currentText.Length;
+            //        textbox.SelectionLength = subdir.Length;
+            //    }
+            //}
+        }
+
         private async Task ExpandToPath(string path)
         {
             var root = _model.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
@@ -111,7 +155,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     OpenFolder(folder);
 
-                    foreach (var model in ServiceLocator.MainModel.Folders.Where(d=>d.IsSelected))
+                    foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected))
                     {
                         model.IsSelected = false;
                     }
