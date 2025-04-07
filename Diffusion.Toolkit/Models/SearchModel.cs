@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
 using Diffusion.Common;
@@ -97,6 +98,15 @@ public class SearchModel : BaseNotify
         MetadataSection = new MetadataSection();
         NavigationSection = new NavigationSection();
         SearchSettings = new SearchSettings();
+        PropertyChanged += OnPropertyChanged;
+    }
+
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CurrentImage))
+        {
+            ServiceLocator.MainModel.CurrentImage = CurrentImage;
+        }
     }
 
     //public SearchModel(MainModel mainModel)

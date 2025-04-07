@@ -1178,10 +1178,19 @@ namespace Diffusion.Toolkit.Pages
 
                         if (options is not null && _model.Images is { Count: > 0 })
                         {
+                            var empty = _model.Images.FirstOrDefault(d => d.IsEmpty);
+
+                            var lastIndex = _model.Images.Count - 1;
+
+                            if (empty != null)
+                            {
+                                lastIndex = _model.Images.IndexOf(empty) - 1;
+                            }
+
                             _model.SelectedImageEntry = options.CursorPosition switch
                             {
                                 CursorPosition.Start => _model.Images[0],
-                                CursorPosition.End => _model.Images[^1],
+                                CursorPosition.End => _model.Images[lastIndex],
                                 _ => _model.Images[0]
                             };
                         }
@@ -1195,7 +1204,7 @@ namespace Diffusion.Toolkit.Pages
                 finally
                 {
                     _model.IsBusy = false;
-                }               
+                }
 
             });
         }
@@ -1204,6 +1213,7 @@ namespace Diffusion.Toolkit.Pages
 
         public void StartNavigateCursor()
         {
+            if(isPaging)return;
             if (_startIndex == -1 && _model.SelectedImageEntry != null)
             {
                 _startIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
@@ -1212,6 +1222,7 @@ namespace Diffusion.Toolkit.Pages
 
         public void EndNavigateCursor()
         {
+            if (isPaging) return;
             _startIndex = -1;
         }
 
@@ -1222,18 +1233,31 @@ namespace Diffusion.Toolkit.Pages
             NavigateCursorNext();
         }
 
+        private bool isPaging = false;
+
         public void NavigateCursorNext()
         {
+            if (isPaging) return;
+
             if (_model.Images == null) return;
 
             int currentIndex = 0;
+
+            var lastIndex = _model.Images.Count - 1;
+
+            var empty = _model.Images.FirstOrDefault(d => d.IsEmpty);
+
+            if (empty != null)
+            {
+                lastIndex = _model.Images.IndexOf(empty) - 1;
+            }
 
             if (_model.SelectedImageEntry != null)
             {
                 currentIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
             }
 
-            if (currentIndex < _model.Images.Count - 1)
+            if (currentIndex < lastIndex)
             {
                 ThumbnailListView.ShowItem(currentIndex + 1);
                 _model.SelectedImageEntry = _model.Images[currentIndex + 1];
@@ -1241,15 +1265,24 @@ namespace Diffusion.Toolkit.Pages
             }
             else
             {
-                if (_startIndex == _model.Images.Count - 1)
+                if (_startIndex == lastIndex)
                 {
-                    ThumbnailListView.GoNextPage(() =>
+                    isPaging = true;
+
+                    var paged = ThumbnailListView.GoNextPage(() =>
                     {
                         _model.SelectedImageEntry = _model.Images[0];
                         ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
                         NavigationCompleted?.Invoke(this, new EventArgs());
+
+                        _startIndex = 0;
+                        isPaging = false;
                     });
-                    _startIndex = 0;
+
+                    if (!paged)
+                    {
+                        isPaging = false;
+                    }
 
                 }
             }
@@ -1258,6 +1291,7 @@ namespace Diffusion.Toolkit.Pages
 
         public void NavigateCursorPrevious()
         {
+            if(isPaging) return;
             if (_model.Images == null) return;
             int currentIndex = 0;
             if (_model.SelectedImageEntry != null)
@@ -1275,13 +1309,30 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (_startIndex == 0)
                 {
-                    ThumbnailListView.GoPrevPage(() =>
+                    isPaging = true;
+                    var paged = ThumbnailListView.GoPrevPage(() =>
                     {
-                        _model.SelectedImageEntry = _model.Images[^1];
+                        var empty = _model.Images.FirstOrDefault(d => d.IsEmpty);
+                        var lastIndex = _model.Images.Count - 1;
+                        if (empty != null)
+                        {
+                            lastIndex = _model.Images.IndexOf(empty) -1;
+                        }
+
+                        _startIndex = lastIndex;
+
+                        _model.SelectedImageEntry = _model.Images[lastIndex];
                         ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
                         NavigationCompleted?.Invoke(this, new EventArgs());
+
+                        isPaging = false;
+
                     }, true);
-                    _startIndex = _model.Images.Count - 1;
+
+                    if (!paged)
+                    {
+                        isPaging = false;
+                    }
 
                 }
             }

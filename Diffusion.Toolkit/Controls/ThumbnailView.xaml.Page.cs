@@ -44,7 +44,7 @@ namespace Diffusion.Toolkit.Controls
             PageChangedCommand?.Execute(args);
         }
 
-        public void GoPrevPage(Action? onCompleted, bool gotoEnd = false)
+        public bool GoPrevPage(Action? onCompleted, bool gotoEnd = false)
         {
             if (Model.Page > 1)
             {
@@ -59,11 +59,13 @@ namespace Diffusion.Toolkit.Controls
                 };
 
                 PageChangedCommand?.Execute(args);
+                return true;
             }
 
+            return false;
         }
 
-        public void GoNextPage(Action? onCompleted)
+        public bool GoNextPage(Action? onCompleted)
         {
             if (Model.Page < Model.Pages)
             {
@@ -78,7 +80,9 @@ namespace Diffusion.Toolkit.Controls
                 };
 
                 PageChangedCommand?.Execute(args);
+                return true;
             }
+            return false;
         }
 
         public void SetPagingEnabled()

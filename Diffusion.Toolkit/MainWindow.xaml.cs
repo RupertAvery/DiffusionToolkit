@@ -772,6 +772,8 @@ namespace Diffusion.Toolkit
             LoadImageModels();
             InitFolders();
 
+            ServiceLocator.ContextMenuService.Go();
+
             Logger.Log($"{_modelsCollection.Count} models loaded");
 
             Logger.Log($"Starting Services...");

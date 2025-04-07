@@ -304,14 +304,6 @@ namespace Diffusion.Toolkit.Controls
                     case nameof(CurrentImage):
                         thumbnailView.Model.CurrentImage = (ImageViewModel)e.NewValue;
                         thumbnailView.Model.CurrentImage.SearchModelCommand = new RelayCommand<object>(thumbnailView.SearchModel);
-                        thumbnailView.Model.CurrentImage.CopyPathCommand = new RelayCommand<object>(thumbnailView.CopyPath);
-                        thumbnailView.Model.CurrentImage.CopyPromptCommand = new RelayCommand<object>(thumbnailView.CopyPrompt);
-                        thumbnailView.Model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(thumbnailView.CopyNegative);
-                        //_model.CurrentImage.CopySeed = new RelayCommand<object>(CopySeed);
-                        //_model.CurrentImage.CopyHash = new RelayCommand<object>(CopyHash);
-                        thumbnailView.Model.CurrentImage.CopyOthersCommand = new RelayCommand<object>(thumbnailView.CopyOthers);
-                        thumbnailView.Model.CurrentImage.CopyParametersCommand = new RelayCommand<object>(thumbnailView.CopyParameters);
-                        thumbnailView.Model.CurrentImage.ShowInExplorerCommand = new RelayCommand<object>(thumbnailView.ShowInExplorer);
                         //_model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
                         thumbnailView.Model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => thumbnailView.DeleteSelected());
                         thumbnailView.Model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => thumbnailView.FavoriteSelected());

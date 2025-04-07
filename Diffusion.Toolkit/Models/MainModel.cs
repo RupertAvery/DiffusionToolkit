@@ -598,6 +598,7 @@ public class MainModel : BaseNotify
     private ICommand _reloadFoldersCommand;
     private int _progressTarget;
     private bool _isSettingsDirty;
+    private ObservableCollection<Control> _openWithMenuItems;
 
     public ModelViewModel? CurrentModel
     {
@@ -723,4 +724,12 @@ public class MainModel : BaseNotify
         get => _isSettingsDirty;
         set => SetField(ref _isSettingsDirty, value);
     }
+
+    public ObservableCollection<Control> OpenWithMenuItems
+    {
+        get => _openWithMenuItems;
+        set => SetField(ref _openWithMenuItems, value);
+    }
+
+    public ImageViewModel CurrentImage { get; set; }
 }

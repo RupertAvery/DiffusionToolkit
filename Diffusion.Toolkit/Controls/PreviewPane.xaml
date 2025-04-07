@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
+             xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
              mc:Ignorable="d" 
@@ -19,7 +20,8 @@
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
-
+            <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
+            <converters:CompareToValueOpacityConverter x:Key="CompareToValueOpacityConverter"></converters:CompareToValueOpacityConverter>
 
             <Style x:Key="ShowOnHover" TargetType="Grid">
                 <Setter Property="Opacity" Value="0.25"/>
@@ -29,6 +31,16 @@
                     </Trigger>
                 </Style.Triggers>
             </Style>
+
+            <Style x:Key="HoverOverStar" TargetType="Image">
+                <Setter Property="Opacity" Value="0.25"></Setter>
+                <Style.Triggers >
+                    <Trigger Property="Image.IsMouseOver" Value="True">
+                        <Setter Property="Image.Opacity" Value="1.0"></Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
@@ -75,8 +87,12 @@
             >
                 <ScrollViewer.ContextMenu>
                     <ContextMenu>
+                        <MenuItem ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
+                        <Separator></Separator>
                         <MenuItem Header="Fit to Preview" InputGestureText="CTRL+Shift+F" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
                         <MenuItem Header="Actual Size" InputGestureText="CTRL+Shift+A" Command="{Binding MainModel.ToggleActualSize}" IsChecked="{Binding MainModel.ActualSize}"></MenuItem>
+                        <Separator></Separator>
+                        <MenuItem Header="Copy Path" Command="{Binding CopyPathCommand}"></MenuItem>
                     </ContextMenu>
                     
                     <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
@@ -136,11 +152,11 @@
 
         </Grid>
 
-        <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=Image.ForDeletion, Converter={StaticResource boolToVisCol}}">
+        <!--<Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=Image.ForDeletion, Converter={StaticResource boolToVisCol}}">
             <Image.Effect>
                 <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
             </Image.Effect>
-        </Image>
+        </Image>-->
 
         <!--<Grid  Background="{x:Null}" Visibility="{Binding Image.ForDeletion, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Border BorderBrush="White" BorderThickness="2" Background="#FF000000" CornerRadius="5">
@@ -149,6 +165,136 @@
                 </StackPanel>
             </Border>
         </Grid>-->
+
+        <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight" Margin="10" DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
+                    MouseLeave="Ratings_OnMouseLeave"
+                    >
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=1}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="1"
+                   MouseDown="Ratings_OnMouseDown"
+                   >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=2}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="2"
+                   MouseDown="Ratings_OnMouseDown"
+                   >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=3}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="3"
+                   MouseDown="Ratings_OnMouseDown"
+            >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=4}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="4"
+                   MouseDown="Ratings_OnMouseDown"
+            >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=5}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="5"
+                   MouseDown="Ratings_OnMouseDown"
+            >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=6}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="6"
+                   MouseDown="Ratings_OnMouseDown"
+            >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=7}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="7"
+                   MouseDown="Ratings_OnMouseDown"
+            >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=8}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="8"
+                   MouseDown="Ratings_OnMouseDown"
+            >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=9}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="9"
+                   MouseDown="Ratings_OnMouseDown"
+            >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <Image Height="32" Width="32" Source="../Icons/star-32.png"
+                   Opacity="{Binding Rating, Converter={StaticResource CompareToValueOpacityConverter}, ConverterParameter=10}"
+                   behaviors:DTBehaviors.UseIsMouseOverHandlers="true"
+                   behaviors:DTBehaviors.IsMouseOverBinding="{Binding Rating}"
+                   behaviors:DTBehaviors.IsMouseOverParameter="10"
+                   MouseDown="Ratings_OnMouseDown"
+            >
+                <Image.Effect>
+                    <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                </Image.Effect>
+            </Image>
+
+            <!--<Border Height="40" Width="40" CornerRadius="5" Background="#90000000" Visibility="{Binding Path=AestheticScore, Converter={StaticResource strToVis}, ConverterParameter=10}">
+                <Label FontSize="18" FontWeight="Bold" Content="{Binding AestheticScore}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
+            </Border>-->
+
+        </StackPanel>
 
     </Grid>
 </UserControl>

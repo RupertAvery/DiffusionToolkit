@@ -1,6 +1,6 @@
 # What's New in v1.9.0
 
-There have been a lot of improvements in speeding up the application. Thumbnails in particular will load much faster, and are now cached to disk (see [Persistent thumbnail caching](#persistent-thumbnail-caching)).
+There have been a lot of improvements in speeding up the application. Thumbnails in particular will load much faster, as they are now cached to disk (see [Persistent thumbnail caching](#persistent-thumbnail-caching)).
 
 There have been subtle **improvements to scanning images** (aside from the ability to Archive folders to skip them entirely). A lot of work has been done to make scanning asynchronous.
 
@@ -10,25 +10,29 @@ Scans may also complete a bit faster, as now the process is pipelined into readi
 
 While this has been tested through daily use, please let me know if you experience any issues with scanning.
 
-**High DPI Monitor Support** has been added. Sort of. At least it should fix text and image blurriness on multi-monitor setups.
+**High DPI Monitor Support** has been added. Sort of. At least it should fix text and image blurriness on some multi-monitor setups, and if anyone experienced the notification popup appearing over the thumbnails, this was probably the cause.
 
 With that out of the way, lets look at some more improvements in detail.
 
 ## Improved first-time setup experience
 
-First time users will now see a wizard-style setup with limited options and more explanations.
+First-time users will now see a wizard-style setup with limited options and more explanations. They should be (mostly) translated in the included languages, but I haven't been able to test if it starts in the user's system language.
 
 ## Settings
 
-Settings has moved to a page instead of a separate Window dialog. You are now required to click **Apply Changes** at the top of the page to effect the changes in the application. This is especially important for changes to the folders, since folder changes will trigger a file scan, which may be blocked by an ongoing operation.
+**Settings** has moved to a page instead of a separate Window dialog. 
 
-**IMPORTANT!** After you update, the **ImagePaths** and **ExcludePaths** settings in `config.json` will be moved into the database and will be ignored in the future (and may probably be deleted in the next update)
+One of the effects of this is you are now required to click **Apply Changes** at the top of the page to effect the changes in the application. This is especially important for changes to the folders, since folder changes will trigger a file scan, which may be blocked by an ongoing operation.
+
+**IMPORTANT!** After you update, the **ImagePaths** and **ExcludePaths** settings in `config.json` will be moved into the database and will be ignored in the future (and may probably be deleted in the next update). This shouldn't be a problem, but just in case people might wonder why updating the path settings in JSON doesn't work anymore.
 
 ## Unavailable Images Scanning
 
+This has been available for some time, but needs some explaining.
+
 Unavailable Folders are folders that cannot be reached when the application starts. This could be caused by bad network conditions for network folders, or removable drives. Unavailable images can also be caused by removing the images from a folder manually.
 
-Previously, Scanning images would perform a mandatory check if each file existed to make sure they were in the correct state. This can slow down scanning when you have several hundred thousand images.
+Previously, Scanning would perform a mandatory check if *each and every file existed* to make sure they were in the correct state. This can slow down scanning when you have several hundred thousand images.
 
 Scanning will no longer check for unavailable images in order to speed up scanning and rebuilding metadata.
 
@@ -42,7 +46,7 @@ You can now add External applications to pass selected images to when you right-
 
 ## More Folder functionality
 
-A lot more functionality has been added to the Folders section in the Navigation Pane. 
+A lot more functionality has been added to the Folders section in the Navigation Pane.
 
 ### Rescan Individual Folders
 
@@ -65,6 +69,8 @@ Diffusion Toolkit now creates a `dt_thumbnails.db` file in every directory where
 
 This means less churn on your hard disk, which really helps for people who use disk based storage. This is also great news for people with larger images as they won't have to regenerate the thumbnails every time.
 
+Thumbnails are saved at the size you have selected, and will be replaced if you change your settings. 
+
 Note: Thumbnails are stored unencrypted in a SQLite database in JPG format, and can be viewed by anyone with a SQLite browser.
 
 ## Change Folder Path
@@ -79,9 +85,6 @@ You can now change the path of a root folder and all the images under it. This o
 
 TODO: 
 
-* CheckUnavailableFolders conflicts with some other writes
-* Make sure Folder Refresh will restore unavailable folders AND all the images under them
-  * calls CheckUnavailableFolders DONE
 * Add copy path to Preview
 * Add external applications to Preview
 * Check if Rebuild Metadata uses Archived folders
@@ -97,3 +100,11 @@ TODO:
 * Test changes to delete image stuff
 * find delete marked implementation and others
 * Handle Recursive option - how to handle images?
+
+* Broken Scroll / key auto page in preview and popout
+* CheckUnavailableFolders conflicts with some other writes
+* Make sure Folder Refresh will restore unavailable folders AND all the images under them
+  * calls CheckUnavailableFolders DONE
+
+
+* Broken Keydown / auto-page in thumbnail - FIXED

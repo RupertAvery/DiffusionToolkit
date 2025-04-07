@@ -10,6 +10,9 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Diffusion.Database;
+using Diffusion.Toolkit.Behaviors;
+using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
 using Point = System.Windows.Point;
@@ -52,6 +55,7 @@ namespace Diffusion.Toolkit.Controls
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
+        private int? originalRating;
 
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -59,7 +63,7 @@ namespace Diffusion.Toolkit.Controls
             {
                 var preview = ((PreviewPane)d);
                 preview.SetHandler((ImageViewModel)e.NewValue);
-
+                preview.originalRating = ((ImageViewModel)e.NewValue).Rating;
             }
         }
 
@@ -106,6 +110,8 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(ImageProperty, value);
         }
 
+        public ICommand CopyPathCommand { get; set; }
+
 
         private ScrollDragger _scrollDragger;
 
@@ -115,6 +121,9 @@ namespace Diffusion.Toolkit.Controls
             InitIcons();
             _scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
             SizeChanged += OnSizeChanged;
+
+
+            CopyPathCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyPath);
 
             if (ServiceLocator.MainModel != null)
             {
@@ -327,21 +336,6 @@ namespace Diffusion.Toolkit.Controls
 
         private void ScrollViewer_OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key is Key.X or Key.Delete && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                Image.ForDeletion = !Image.ForDeletion;
-                Delete?.Invoke(Image.Id, Image.ForDeletion);
-            }
-            if (e.Key == Key.N && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                Image.NSFW = !Image.NSFW;
-                NSFW?.Invoke(Image.Id, Image.NSFW);
-            }
-            if (e.Key == Key.F && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                Image.Favorite = !Image.Favorite;
-                Favorite?.Invoke(Image.Id, Image.Favorite);
-            }
             //if (e.Key == Key.I && e.KeyboardDevice.Modifiers == ModifierKeys.None)
             //{
             //    Image.IsParametersVisible = !Image.IsParametersVisible;
@@ -350,45 +344,62 @@ namespace Diffusion.Toolkit.Controls
             //{
             //    MainModel.FitToPreview = !MainModel.FitToPreview;
             //}
-            if (_ratings.Contains(e.Key) && e.KeyboardDevice.Modifiers == ModifierKeys.None)
-            {
-                int? rating = e.Key switch
-                {
-                    Key.D1 => 1,
-                    Key.D2 => 2,
-                    Key.D3 => 3,
-                    Key.D4 => 4,
-                    Key.D5 => 5,
-                    Key.D6 => 6,
-                    Key.D7 => 7,
-                    Key.D8 => 8,
-                    Key.D9 => 9,
-                    Key.D0 => 10,
-                };
 
-                if (Image.Rating == rating)
+            switch (e.Key)
+            {
+                case Key.X or Key.Delete when e.KeyboardDevice.Modifiers == ModifierKeys.None:
+                    Image.ForDeletion = !Image.ForDeletion;
+                    Delete?.Invoke(Image.Id, Image.ForDeletion);
+                    break;
+                case Key.N when e.KeyboardDevice.Modifiers == ModifierKeys.None:
+                    Image.NSFW = !Image.NSFW;
+                    NSFW?.Invoke(Image.Id, Image.NSFW);
+                    break;
+                case Key.F when e.KeyboardDevice.Modifiers == ModifierKeys.None:
+                    Image.Favorite = !Image.Favorite;
+                    Favorite?.Invoke(Image.Id, Image.Favorite);
+                    break;
+                case Key.OemTilde:
+                    Rate?.Invoke(Image.Id, null);
+                    break;
+                case >= Key.D0 and <= Key.D9 when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                 {
-                    rating = null;
+                    int? rating = e.Key switch
+                    {
+                        Key.D1 => 1,
+                        Key.D2 => 2,
+                        Key.D3 => 3,
+                        Key.D4 => 4,
+                        Key.D5 => 5,
+                        Key.D6 => 6,
+                        Key.D7 => 7,
+                        Key.D8 => 8,
+                        Key.D9 => 9,
+                        Key.D0 => 10,
+                    };
+
+                    if (Image.Rating == rating)
+                    {
+                        rating = null;
+                    }
+
+                    Image.Rating = rating;
+
+                    Rate?.Invoke(Image.Id, rating);
+                    break;
                 }
-
-                Image.Rating = rating;
-
-                Rate?.Invoke(Image.Id, rating);
-            }
-            else if (e.Key == Key.D0 && e.KeyboardDevice.Modifiers == ModifierKeys.Control)
-            {
-                ResetZoom();
-                e.Handled = true;
-            }
-            else if (e.Key == Key.OemPlus)
-            {
-                ZoomPreview(0.1);
-                e.Handled = true;
-            }
-            if (e.Key == Key.OemMinus)
-            {
-                ZoomPreview(-0.1);
-                e.Handled = true;
+                case Key.D0 when e.KeyboardDevice.Modifiers == ModifierKeys.Control:
+                    ResetZoom();
+                    e.Handled = true;
+                    break;
+                case Key.OemPlus:
+                    ZoomPreview(0.1);
+                    e.Handled = true;
+                    break;
+                case Key.OemMinus:
+                    ZoomPreview(-0.1);
+                    e.Handled = true;
+                    break;
             }
         }
 
@@ -477,5 +488,20 @@ namespace Diffusion.Toolkit.Controls
         //{
         //    ScrollViewer.Cursor = handCursor;
         //}
+        private void Ratings_OnMouseLeave(object sender, MouseEventArgs e)
+        {
+            Image.Rating = originalRating;
+        }
+
+        private void Ratings_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var parameterValue = DTBehaviors.GetIsMouseOverParameter((DependencyObject)sender);
+
+            var rating = int.Parse((string)parameterValue);
+
+            Image.Rating = rating;
+            originalRating = rating;
+            Rate?.Invoke(Image.Id, rating);
+        }
     }
 }

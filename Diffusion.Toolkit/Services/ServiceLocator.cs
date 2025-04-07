@@ -31,6 +31,7 @@ public class ServiceLocator
     private static TaggingService? _taggingService;
     private static NotificationService? _notificationService;
     private static ScanningService? _scanningService;
+    private static ContextMenuService? _contextMenuService;
 
     public static DataStore? DataStore => _dataStore;
     public static ThumbnailCache? ThumbnailCache => _thumbnailCache;
@@ -129,6 +130,11 @@ public class ServiceLocator
     public static ThumbnailService ThumbnailService
     {
         get { return _thumbnailService ??= new ThumbnailService(); }
+    }
+
+    public static ContextMenuService ContextMenuService
+    {
+        get { return _contextMenuService ??= new ContextMenuService(); }
     }
 }
 
