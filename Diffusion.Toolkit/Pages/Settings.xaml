@@ -188,11 +188,6 @@
 
                         <CheckBox IsChecked="{Binding PortableMode}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.PortableMode}"></CheckBox>
                     </StackPanel>
-                    <Grid Grid.Column="1" Margin="20,26,0,0">
-                        <StackPanel Visibility="{Binding IsFoldersDirty, Converter={StaticResource BoolToVisibilityConverter}}">
-                            <TextBlock Margin="0,0,0,10" VerticalAlignment="Top" Foreground="{DynamicResource ForegroundBrush}" Text="{lex:Loc Settings.General.HasChangedFoldersMessage}"></TextBlock>
-                        </StackPanel>
-                    </Grid>
                 </Grid>
 
             </TabItem>

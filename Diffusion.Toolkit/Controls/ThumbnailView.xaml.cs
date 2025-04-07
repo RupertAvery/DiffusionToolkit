@@ -211,7 +211,10 @@ namespace Diffusion.Toolkit.Controls
             {
                 var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
-                await ServiceLocator.MetadataScannerService.QueueBatchAsync(imageEntries.Select(s => s.Path), ServiceLocator.ProgressService.CancellationToken);
+                await ServiceLocator.MetadataScannerService.QueueBatchAsync(
+                    imageEntries.Select(s => s.Path),
+                    null,
+                    ServiceLocator.ProgressService.CancellationToken);
             }
 
         }

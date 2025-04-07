@@ -228,12 +228,15 @@
                             <fa:ImageAwesome ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,10" Height="16" Width="24" 
-                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Settings}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSettingsCommand}">
-                            <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
+                        <Grid>
+                            <Button Margin="0,5,0,10" Height="16" Width="24" 
+                                    behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Settings}"
+                                    Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSettingsCommand}">
+                                <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                </fa:ImageAwesome>
+                            </Button>
+                            <Ellipse Fill="Red" Width="8" Height="8" Margin="15,0,0,15" Visibility="{Binding IsSettingsDirty, Converter={StaticResource boolToVisCol}}"></Ellipse>
+                        </Grid>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Recycle Bin}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowMarked}">

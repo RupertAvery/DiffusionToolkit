@@ -124,13 +124,16 @@ namespace Diffusion.Toolkit.Services
         //    return ServiceLocator.DataStore.GetRootFolders();
         //}
 
-        private void UpdateFolder(FolderViewModel folderView, Dictionary<int, Folder> lookup)
+        private void UpdateFolder(FolderViewModel folderView, Dictionary<string, Folder> lookup)
         {
-            if (lookup.TryGetValue(folderView.Id, out var folder))
+            if (lookup.TryGetValue(folderView.Path, out var folder))
             {
+                folderView.Id = folder.Id;
                 folderView.IsArchived = folder.Archived;
                 folderView.IsUnavailable = folder.Unavailable;
                 folderView.IsExcluded = folder.Excluded;
+                folderView.IsScanned = true;
+
                 //if (folderView.Children is { Count: > 0 })
                 //{
                 //    foreach (var child in folderView.Children)
@@ -145,7 +148,7 @@ namespace Diffusion.Toolkit.Services
         {
             var folders = ServiceLocator.DataStore.GetFolders().ToList();
 
-            var lookup = folders.ToDictionary(d => d.Id);
+            var lookup = folders.ToDictionary(d => d.Path);
 
             _dispatcher.Invoke(() =>
             {
@@ -162,6 +165,7 @@ namespace Diffusion.Toolkit.Services
                         IsArchived = folder.Archived,
                         IsExcluded = folder.Excluded,
                         IsUnavailable = !Directory.Exists(folder.Path),
+                        IsScanned = true
                     }));
                 }
                 else
@@ -199,6 +203,7 @@ namespace Diffusion.Toolkit.Services
                 IsArchived = sub.Archived,
                 IsUnavailable = sub.Unavailable,
                 IsExcluded = sub.Excluded,
+                IsScanned = true
             }).ToList();
 
             var lookup = subViews.Select(p => p.Path).ToHashSet();
@@ -221,7 +226,7 @@ namespace Diffusion.Toolkit.Services
 
 
 
-        public async Task ApplyFolderChanges(IEnumerable<FolderChange> folderChanges)
+        public async Task ApplyFolderChanges(IEnumerable<FolderChange> folderChanges, bool confirmScan = false)
         {
             var addedFolders = new List<string>();
 
@@ -252,46 +257,30 @@ namespace Diffusion.Toolkit.Services
 
             if (addedFolders.Any())
             {
-                var filesToScan = new List<string>();
+                PopupResult result = PopupResult.Yes;
 
-                // TODO: what if there is already a task running?
-
-                await ServiceLocator.ProgressService.StartTask();
-
-                var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
-
-                foreach (var folder in addedFolders)
+                if (confirmScan)
                 {
-                    filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder, new HashSet<string>(), cancellationToken));
+                    result = await ServiceLocator.MessageService.Show("Do you want to scan your folders now?", "Settings Updated", PopupButtons.YesNo);
                 }
 
-                await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
+                if (result == PopupResult.Yes)
+                {
+                    var filesToScan = new List<string>();
 
-                //await Task.Run(async () =>
-                //{
-                //    if (await ServiceLocator.ProgressService.TryStartTask())
-                //    {
-                //        try
-                //        {
-                //            var filesToScan = new List<string>();
+                    if (await ServiceLocator.ProgressService.TryStartTask())
+                    {
+                        var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
 
-                //            foreach (var folder in addedFolders)
-                //            {
-                //                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder, new HashSet<string>(), ServiceLocator.ProgressService.CancellationToken));
-                //            }
+                        foreach (var folder in addedFolders)
+                        {
+                            filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder, new HashSet<string>(), cancellationToken));
+                        }
 
-                //            await  ServiceLocator.MetadataScannerService.QueueAsync(filesToScan);
+                        await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, null, cancellationToken);
+                    }
+                }
 
-                //            //var (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filesToScan, false, _settings.StoreMetadata, _settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
-
-                //            //ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
-                //        }
-                //        finally
-                //        {
-                //            ServiceLocator.ProgressService.CompleteTask();
-                //        }
-                //    }
-                //});
             }
         }
 
@@ -343,7 +332,6 @@ namespace Diffusion.Toolkit.Services
                 if (_isArchivedFoldersDirty)
                 {
                     _archivedFolders = ServiceLocator.DataStore.GetArchivedFolders().ToList();
-                    _excludedOrArchivedFolderPaths = ServiceLocator.DataStore.GetExcludedFolders().Concat(ServiceLocator.DataStore.GetArchivedFolders()).Select(d => d.Path).ToHashSet();
 
                     _isArchivedFoldersDirty = false;
                 }
@@ -358,6 +346,11 @@ namespace Diffusion.Toolkit.Services
         {
             get
             {
+                if (_isExcludedFoldersDirty || _isArchivedFoldersDirty || _isFoldersDirty)
+                {
+                    _excludedOrArchivedFolderPaths = ExcludedFolders.Concat(ArchivedFolders).Select(d => d.Path).ToHashSet();
+                }
+
                 return _excludedOrArchivedFolderPaths;
             }
         }
@@ -452,6 +445,13 @@ namespace Diffusion.Toolkit.Services
             //    _search.ReloadMatches(null);
             //}
             //}
+        }
+
+        public void SetFoldersDirty()
+        {
+            _isArchivedFoldersDirty = true;
+            _isExcludedFoldersDirty = true;
+            _isFoldersDirty = true;
         }
     }
 }

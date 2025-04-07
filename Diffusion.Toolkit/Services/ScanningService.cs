@@ -44,6 +44,7 @@ public class ScanningService
                     if (folder is { Unavailable: true })
                     {
                         // Restore it
+                        // TODO Tag it and it's children as available
                         _dataStore.SetFolderUnavailable(path, false);
 
                         var childImages = _dataStore.GetAllPathImages(path);
@@ -58,7 +59,7 @@ public class ScanningService
                 }
                 else
                 {
-                    // Tag it and it's children as unavailable
+                    // TODO Tag it and it's children as unavailable
                     _dataStore.SetFolderUnavailable(path, true);
 
                     var childImages = _dataStore.GetAllPathImages(path);
@@ -137,9 +138,46 @@ public class ScanningService
 
     }
 
+
+    public async Task ScanFolder(FolderViewModel folder)
+    {
+        if (await ServiceLocator.ProgressService.TryStartTask())
+        {
+            var filesToScan = new List<string>();
+
+            var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
+
+            foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected))
+            {
+                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(model.Path, new HashSet<string>(), cancellationToken));
+            }
+
+            await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan,
+                new ScanCompletionEvent()
+                {
+                    OnDatabaseWriteCompleted = () =>
+                    {
+                        if (folder.Id == 0)
+                        {
+                            ServiceLocator.FolderService.SetFoldersDirty();
+                            var dbEntity = ServiceLocator.DataStore.GetFolder(folder.Path);
+                            if (dbEntity != null)
+                            {
+                                folder.IsScanned = true;
+                                folder.Id = dbEntity.Id;
+                            }
+                        }
+                        ServiceLocator.SearchService.RefreshResults();
+                        ServiceLocator.FolderService.LoadFolders();
+                    }
+                },
+                cancellationToken);
+        }
+    }
+
     public async Task<IEnumerable<string>> GetFilesToScan(string path, HashSet<string> ignoreFiles, CancellationToken cancellationToken)
     {
-        var excludePaths = _settings.ExcludePaths.Concat(ServiceLocator.DataStore.GetArchivedFolders().Select(d => d.Path)).ToHashSet();
+        var excludePaths = ServiceLocator.FolderService.ExcludedOrArchivedFolderPaths;
 
         return await Task.Run(() => MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludePaths, cancellationToken).ToList());
     }
@@ -221,7 +259,7 @@ public class ScanningService
                 }
             }
 
-            await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
+            await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, null, cancellationToken);
 
         }
         catch (Exception ex)

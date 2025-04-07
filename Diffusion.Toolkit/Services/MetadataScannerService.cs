@@ -12,6 +12,12 @@ using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Services;
 
+public class ScanCompletionEvent
+{
+    public Action? OnMetadataCompleted { get; set; }
+    public Action? OnDatabaseWriteCompleted { get; set; }
+}
+
 public class MetadataScannerService
 {
     private Channel<FileScanJob> _channel;
@@ -24,7 +30,7 @@ public class MetadataScannerService
     private Settings _settings => ServiceLocator.Settings!;
 
 
-    public async Task QueueBatchAsync(IEnumerable<string> paths, CancellationToken cancellationToken)
+    public async Task QueueBatchAsync(IEnumerable<string> paths, ScanCompletionEvent scanCompletionEvent, CancellationToken cancellationToken)
     {
         var dt = ServiceLocator.DatabaseWriterService.StartAsync(cancellationToken);
 
@@ -32,6 +38,7 @@ public class MetadataScannerService
         {
             dt.Task.ContinueWith(d =>
             {
+                scanCompletionEvent?.OnDatabaseWriteCompleted?.Invoke();
                 ServiceLocator.ProgressService.CompleteTask();
                 ServiceLocator.ProgressService.ClearProgress();
                 ServiceLocator.ProgressService.SetStatus("");
@@ -45,6 +52,7 @@ public class MetadataScannerService
         {
             mt.Task.ContinueWith(d =>
             {
+                scanCompletionEvent?.OnMetadataCompleted?.Invoke();
                 ServiceLocator.DatabaseWriterService.Complete();
             });
         }

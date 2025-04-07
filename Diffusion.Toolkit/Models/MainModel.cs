@@ -597,6 +597,7 @@ public class MainModel : BaseNotify
     private Settings _settings;
     private ICommand _reloadFoldersCommand;
     private int _progressTarget;
+    private bool _isSettingsDirty;
 
     public ModelViewModel? CurrentModel
     {
@@ -716,4 +717,10 @@ public class MainModel : BaseNotify
     }
 
     public QueryModel CurrentQuery { get; set; }
+
+    public bool IsSettingsDirty
+    {
+        get => _isSettingsDirty;
+        set => SetField(ref _isSettingsDirty, value);
+    }
 }

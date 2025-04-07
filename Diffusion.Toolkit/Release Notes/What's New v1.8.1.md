@@ -1,4 +1,59 @@
-# What's New in v1.8.1
+# What's New in v1.9.0
+
+There have been a lot of improvements in speeding up the application. Thumbnails in particular will load much faster, and are now cached to disk (see [Persistent thumbnail caching](#persistent-thumbnail-caching)).
+
+There have been subtle **improvements to scanning images** (aside from the ability to Archive folders to skip them entirely). A lot of work has been done to make scanning asynchronous.
+
+Images dropped into any watched folders will now be scanned immediately instead of when the copying completes. You can also now drop files into watched folders while rescan is ongoing.
+
+Scans may also complete a bit faster, as now the process is pipelined into reading the metadata in multiple threads while writing to the database in a separate thread.
+
+While this has been tested through daily use, please let me know if you experience any issues with scanning.
+
+**High DPI Monitor Support** has been added. Sort of. At least it should fix text and image blurriness on multi-monitor setups.
+
+With that out of the way, lets look at some more improvements in detail.
+
+## Improved first-time setup experience
+
+First time users will now see a wizard-style setup with limited options and more explanations.
+
+## Settings
+
+Settings has moved to a page instead of a separate Window dialog. You are now required to click **Apply Changes** at the top of the page to effect the changes in the application. This is especially important for changes to the folders, since folder changes will trigger a file scan, which may be blocked by an ongoing operation.
+
+**IMPORTANT!** After you update, the **ImagePaths** and **ExcludePaths** settings in `config.json` will be moved into the database and will be ignored in the future (and may probably be deleted in the next update)
+
+## Unavailable Images Scanning
+
+Unavailable Folders are folders that cannot be reached when the application starts. This could be caused by bad network conditions for network folders, or removable drives. Unavailable images can also be caused by removing the images from a folder manually.
+
+Previously, Scanning images would perform a mandatory check if each file existed to make sure they were in the correct state. This can slow down scanning when you have several hundred thousand images.
+
+Scanning will no longer check for unavailable images in order to speed up scanning and rebuilding metadata.
+
+To scan for unavailable images, click **Tools > Scan for Unavailable images**. This will tag images as Unavailable, allowing you can hide them through the View menu. You can also restore images that were tagged as unavailable, or remove them from the database completely.
+
+Unavailable root folders will still be verified on startup to check for removable drives. Clicking on the Refresh button when the drive has been reconnected will restore the unavailable root folder and all the images under it.
+
+## External Applications
+
+You can now add External applications to pass selected images to when you right-click the thumbnails or the preview. To edit External applications, go to Settings, then click the **External Applications** tab.
+
+## More Folder functionality
+
+A lot more functionality has been added to the Folders section in the Navigation Pane. 
+
+### Rescan Individual Folders
+
+You can now rescan individual folders. To Rescan a folder, right click on it and click **Archive**
+### Archive Folders
+
+Archiving folders prevents them from being scanned for new images when you perform a rescan or a rebuild. This makes it faster to scan your new images. To archive a folder, right click on it and click **Archive**, or **Archive Tree**. The second option will archive the folder all all it's scanned children (folders that haven't been scanned yet won't be affected). You can Unarchive a folder as well.
+
+### Multi-select
+
+Hold down Ctrl to select multiple folders to archive or rescan.
 
 ## High DPI Monitor Support
 
@@ -6,44 +61,39 @@ DPI Awareness has been enabled. This might have caused issues for some users wit
 
 ## Persistent thumbnail caching
 
-Diffusion Toolkit now creates a `dt_thumbnails.db` file in every directory where an indexed image is located, the first time the image is loaded for generating thumbnails. Since thumbails are persisted, your thumbnails will now load a LOT faster, even after closing and reopening Diffusion Toolkit.
+Diffusion Toolkit now creates a `dt_thumbnails.db` file in every directory where an indexed image is located the first time the thumbnails are viewed. Since thumbails are now persisted, your thumbnails will now load a LOT faster, even after closing and reopening Diffusion Toolkit.
 
-This means less churn on your hard disk! This is also great new for people with larger images as they won't have to regenerate the thumbnails every time as before.
+This means less churn on your hard disk, which really helps for people who use disk based storage. This is also great news for people with larger images as they won't have to regenerate the thumbnails every time.
 
 Note: Thumbnails are stored unencrypted in a SQLite database in JPG format, and can be viewed by anyone with a SQLite browser.
 
 ## Change Folder Path
 
-You can now change the path of a root folder and all the images under it. This only changes the paths of the folders and images. This assumes that  the images exist in the target folder, otherwise they will be unavailable.
+You can now change the path of a root folder and all the images under it. This only changes the paths of the folders and images in the database and assumes that the images already exist in the target folder, otherwise they will be unavailable.
 
-Currently there is no built-in method to move a folder and all it's images as I will need to add logic to handle failures and retries, especially when there are a lot of images that need to be moved.
+## Others
 
-* Rescan individual folders
-   * Right-Click Folder > Rescan
-* Persistent thumbnail caching
-* Improved first-time setup experience
-* Added External Applications
-* Copy Path from Context Menu
+* **Copy Path** from Context Menu
 * Fixed crashing on when scanning on startup
-* Moved Settings to its own page
 * Better handling during shutdown
-* Scanning will no longer check for unavailable files
-   * To scan for unavailable files, use the option in the Tools menu
-   * Unavailable folders will still be checked on startup
-* 
-
 
 TODO: 
 
-Handle Folder unavailable when search results (in database, not on disk)
+* CheckUnavailableFolders conflicts with some other writes
+* Make sure Folder Refresh will restore unavailable folders AND all the images under them
+  * calls CheckUnavailableFolders DONE
+* Add copy path to Preview
+* Add external applications to Preview
+* Check if Rebuild Metadata uses Archived folders
+* Handle Folder unavailable when search results (in database, not on disk)
   * Clear results
   * Handle gracefully
-Search after Rescan
-Fix Cancel
-Fix Watched scanned files has error
-Scanning message stuck at < 100%
-Implement Save As - DONE
-Fix NOT filtering not being saved to Query - DONE?
-Test changes to delete image stuff
-find delete marked implementation and others
-Handle Recursive option - how to handle images?
+* Search after Rescan
+* Fix Cancel
+* Fix Watched scanned files has error
+* Scanning message stuck at < 100%
+* Implement Save As - DONE
+* Fix NOT filtering not being saved to Query - DONE?
+* Test changes to delete image stuff
+* find delete marked implementation and others
+* Handle Recursive option - how to handle images?

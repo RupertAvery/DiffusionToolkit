@@ -327,6 +327,8 @@ namespace Diffusion.Toolkit
             {
                 _search.ReloadMatches(null);
             }
+
+            _ = ServiceLocator.FolderService.LoadFolders();
         }
 
         private PreviewWindow? _previewWindow;
@@ -813,7 +815,7 @@ namespace Diffusion.Toolkit
                     ChangeType = ChangeType.Add,
                     FolderType = FolderType.Watched,
                     Path = d,
-                }));
+                }), confirmScan: false);
 
                 // Wait for a bit, then show thumbnails
                 _ = Task.Delay(10000).ContinueWith(t =>

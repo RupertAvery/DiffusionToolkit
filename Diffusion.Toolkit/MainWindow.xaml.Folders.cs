@@ -21,7 +21,7 @@ namespace Diffusion.Toolkit
 
             _model.ScanFolderCommand = new RelayCommand<FolderViewModel>((o) =>
             {
-                ScanFolder(o);
+                ServiceLocator.ScanningService.ScanFolder(o);
             });
 
             _model.CreateFolderCommand = new RelayCommand<FolderViewModel>((o) =>
@@ -39,16 +39,30 @@ namespace Diffusion.Toolkit
                 ShowDeleteFolderDialog(o);
             });
 
-            _model.ArchiveFolderCommand = new RelayCommand<FolderViewModel>((o) =>
+            _model.ArchiveFolderCommand = new RelayCommand<bool>((o) =>
             {
-                ServiceLocator.DataStore.SetFolderArchived(o.Id, !o.IsArchived, false);
-                ServiceLocator.FolderService.LoadFolders();
+                Task.Run(() =>
+                {
+                    var folders = ServiceLocator.MainModel.Folders.Where(d => d.IsSelected);
+                    foreach (var folder in folders)
+                    {
+                        ServiceLocator.DataStore.SetFolderArchived(folder.Id, o, false);
+                    }
+                    ServiceLocator.FolderService.LoadFolders();
+                });
             });
 
-            _model.ArchiveFolderRecursiveCommand = new RelayCommand<FolderViewModel>((o) =>
+            _model.ArchiveFolderRecursiveCommand = new RelayCommand<bool>((o) =>
             {
-                ServiceLocator.DataStore.SetFolderArchived(o.Id, !o.IsArchived, true);
-                ServiceLocator.FolderService.LoadFolders();
+                Task.Run(() =>
+                {
+                    var folders = ServiceLocator.MainModel.Folders.Where(d => d.IsSelected);
+                    foreach (var folder in folders)
+                    {
+                        ServiceLocator.DataStore.SetFolderArchived(folder.Id, o, true);
+                    }
+                    ServiceLocator.FolderService.LoadFolders();
+                });
             });
 
             _model.ExcludeFolderCommand = new RelayCommand<FolderViewModel>((o) =>
@@ -133,39 +147,6 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private async Task ScanFolder(FolderViewModel folder)
-        {
-            if (await ServiceLocator.ProgressService.TryStartTask())
-            {
-                var filesToScan = new List<string>();
-
-                var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
-
-                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(folder.Path, new HashSet<string>(), cancellationToken));
-
-                await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
-            }
-            //await Task.Run(async () =>
-            //{
-            //    if (await ServiceLocator.ProgressService.TryStartTask())
-            //    {
-            //        try
-            //        {
-            //            var filesToScan = new List<string>();
-
-            //            filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(currentFolder.Path, new HashSet<string>(), ServiceLocator.ProgressService.CancellationToken));
-
-            //            var (added, elapsed) = ServiceLocator.ScanningService.ScanFiles(filesToScan, false, _settings.StoreMetadata, _settings.StoreWorkflow, ServiceLocator.ProgressService.CancellationToken);
-
-            //            ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
-            //        }
-            //        finally
-            //        {
-            //            ServiceLocator.ProgressService.CompleteTask();
-            //        }
-            //    }
-            //});
-        }
 
         private async void ShowCreateFolderDialog(FolderViewModel folder)
         {

@@ -13,6 +13,7 @@
       xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
       xmlns:lex="http://wpflocalizeextension.codeplex.com"
       xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
+      xmlns:system="clr-namespace:System;assembly=System.Runtime"
       lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
       lex:LocalizeDictionary.Separation="."
       lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
@@ -42,6 +43,10 @@
             <converters:FolderStateVisibilityConverter x:Key="FolderStateVisibilityConverter"></converters:FolderStateVisibilityConverter>
             <converters:UnavailableConverter x:Key="UnavailableConverter"></converters:UnavailableConverter>
             <converters:InvBoolToOpacityConverter x:Key="InvBoolToOpacityConverter"></converters:InvBoolToOpacityConverter>
+            <converters:MultiBoolToVisibilityCollapsedConverter x:Key="MultiBoolToVisibilityCollapsedConverter"></converters:MultiBoolToVisibilityCollapsedConverter>
+            <converters:InvertBoolConverter x:Key="InvertBoolConverter"></converters:InvertBoolConverter>
+            <system:Boolean x:Key="FalseValue">False</system:Boolean>
+            <system:Boolean x:Key="TrueValue">True</system:Boolean>
         </ResourceDictionary>
     </Page.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -275,26 +280,38 @@
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.CreateFolder}"></MenuItem>
                                                                 <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Add to Album"></MenuItem>-->
                                                                 <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Send to Recycle Bin"></MenuItem>-->
+
                                                                 <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameFolderCommand}" 
                                                                           CommandParameter="{Binding .}"
                                                                           IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanRename}" 
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Rename}"></MenuItem>
+
                                                                 <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.DeleteFolderCommand}" 
                                                                           CommandParameter="{Binding .}"
                                                                           IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanDelete}" 
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Delete}"></MenuItem>
 
+                                                                <Separator></Separator>
+
                                                                 <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ArchiveFolderCommand}" 
-                                                                          CommandParameter="{Binding .}"
+                                                                          CommandParameter="{StaticResource TrueValue}"
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Archive}"></MenuItem>
 
                                                                 <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ArchiveFolderRecursiveCommand}" 
-                                                                          CommandParameter="{Binding .}"
+                                                                          CommandParameter="{StaticResource TrueValue}"
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.ArchiveRecursive}"></MenuItem>
 
-                                                                <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ExcludeCommand}" 
+                                                                <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ArchiveFolderCommand}" 
+                                                                          CommandParameter="{StaticResource FalseValue}"
+                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Unarchive}"></MenuItem>
+
+                                                                <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ArchiveFolderRecursiveCommand}" 
+                                                                          CommandParameter="{StaticResource FalseValue}"
+                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.UnarchiveRecursive}"></MenuItem>
+
+                                                                <!--<MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ExcludeCommand}" 
                                                                           CommandParameter="{Binding .}"
-                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Exclude}"></MenuItem>
+                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Exclude}"></MenuItem>-->
 
                                                                 <Separator></Separator>
                                                                 <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowInExplorerCommand}" 
@@ -326,7 +343,19 @@
                                                         <Grid Grid.Column="2" Background="Transparent"  PreviewMouseLeftButtonDown="Expander_OnMouseDown">
                                                             <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"  />
                                                         </Grid>
-                                                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Grid.Column="3" HorizontalAlignment="Left" FontFamily="Calibri" TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left" PreviewMouseDown="Folder_OnClick"></TextBlock>
+                                                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" Grid.Column="3" HorizontalAlignment="Left" FontFamily="Calibri" TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left" PreviewMouseDown="Folder_OnClick">
+                                                            <TextBlock.Resources>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Opacity" Value="0.25"></Setter>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Path=IsScanned, Mode=OneWay}" Value="True">
+                                                                            <Setter  Property="Opacity" Value="1"></Setter>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Resources>
+
+                                                        </TextBlock>
                                                         <fa:FontAwesome Grid.Column="4" Icon="Lock" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ForegroundBrush}">
                                                             <fa:FontAwesome.Resources>
                                                                 <Style TargetType="fa:FontAwesome">
@@ -338,19 +367,9 @@
                                                                     </Style.Triggers>
                                                                 </Style>
                                                             </fa:FontAwesome.Resources>
+
                                                         </fa:FontAwesome>
-                                                        <!--<fa:FontAwesome Grid.Column="5" Icon="Ban" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                            <fa:FontAwesome.Resources>
-                                                                <Style TargetType="fa:FontAwesome">
-                                                                    <Setter Property="Opacity" Value="0.25"></Setter>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding Path=IsArchived, Mode=OneWay}" Value="True">
-                                                                            <Setter  Property="Opacity" Value="1"></Setter>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </fa:FontAwesome.Resources>
-                                                        </fa:FontAwesome>-->
+                                                        <!--<fa:FontAwesome Grid.Column="5" Icon="Ban" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="{Binding IsExcluded, Converter={StaticResource InvBoolToOpacityConverter}, Mode=OneWay}" Foreground="{DynamicResource ForegroundBrush}"></fa:FontAwesome>-->
                                                     </Grid>
                                                 </DataTemplate>
                                             </ItemsControl.ItemTemplate>
@@ -607,6 +626,15 @@
                                                   KeyDown="FolderPath_OnKeyDown"
                                         ></TextBox>
                                     </DockPanel>
+                                    <Grid Background="AntiqueWhite" Height="30" DockPanel.Dock="Top">
+                                        <Grid.Visibility>
+                                            <MultiBinding Converter="{StaticResource MultiBoolToVisibilityCollapsedConverter}">
+                                                <Binding Path="MainModel.CurrentFolder.IsNotScanned"></Binding>
+                                                <Binding Path="IsFolderView"></Binding>
+                                            </MultiBinding>
+                                        </Grid.Visibility>
+                                        <Label Content="{lex:Loc Search.Folders.NotScanned}" Foreground="Black" VerticalContentAlignment="Center" MouseDown="NotScanned_OnMouseDown"></Label>
+                                    </Grid>
 
                                     <controls:ThumbnailView 
                                         x:Name="ThumbnailListView" 
@@ -632,7 +660,9 @@
                                         ViewMode="{Binding CurrentViewMode}"
                                         CurrentImage="{Binding CurrentImage}">
                                     </controls:ThumbnailView>
+
                                 </DockPanel>
+
 
 
                             </Grid>

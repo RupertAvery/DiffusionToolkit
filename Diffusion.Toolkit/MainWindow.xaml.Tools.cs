@@ -34,7 +34,7 @@ namespace Diffusion.Toolkit
 
                 var paths = GetSearchResults().Select(m => m.Path).ToList();
 
-                await ServiceLocator.MetadataScannerService.QueueBatchAsync(paths, cancellationToken);
+                await ServiceLocator.MetadataScannerService.QueueBatchAsync(paths, null, cancellationToken);
             }
 
 

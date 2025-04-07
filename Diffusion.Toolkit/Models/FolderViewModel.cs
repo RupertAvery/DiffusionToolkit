@@ -22,6 +22,7 @@ public class FolderViewModel : BaseNotify
     private bool _isArchived;
     private bool _isExcluded;
     private bool _isUnavailable;
+    private bool _isScanned;
 
     public MainModel MainModel => ServiceLocator.MainModel;
 
@@ -74,18 +75,29 @@ public class FolderViewModel : BaseNotify
     public bool IsArchived
     {
         get => _isArchived;
-        set
-        {
-            SetField(ref _isArchived, value);
-            Debug.WriteLine(Path + " Updated to " + value);
-        }
+        set => SetField(ref _isArchived, value);
     }
-
 
     public bool IsExcluded
     {
         get => _isExcluded;
         set => SetField(ref _isExcluded, value);
+    }
+
+
+    public bool IsScanned
+    {
+        get => _isScanned;
+        set
+        {
+            SetField(ref _isScanned, value);
+            OnPropertyChanged(nameof(IsNotScanned));
+        }
+    }
+
+    public bool IsNotScanned
+    {
+        get => !_isScanned;
     }
 
     public override bool Equals(object? obj)

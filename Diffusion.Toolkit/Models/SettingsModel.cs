@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Input;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Diffusion.Toolkit;
@@ -65,6 +67,12 @@ public class SettingsModel : BaseNotify
         SelectedIndex = -1;
         ExcludedSelectedIndex = -1;
         ExternalApplications = new ObservableCollection<ExternalApplicationModel>();
+        PropertyChanged+= OnPropertyChanged;
+    }
+
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        ServiceLocator.MainModel.IsSettingsDirty = IsDirty;
     }
 
     public ObservableCollection<string> ImagePaths

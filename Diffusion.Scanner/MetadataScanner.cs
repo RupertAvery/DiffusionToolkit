@@ -44,26 +44,26 @@ namespace Diffusion.IO
 
         public static IEnumerable<string> EnumerateFilesRecursively(string path, string extension, HashSet<string> excludePaths, CancellationToken cancellationToken)
         {
-            if(excludePaths.Contains(path))
-                yield break;
-
-            var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
+            if (!excludePaths.Contains(path))
             {
-                IgnoreInaccessible = true
-            });
+                var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
+                {
+                    IgnoreInaccessible = true
+                });
 
-            foreach (var file in dirFiles)
-            {
+                foreach (var file in dirFiles)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+                    yield return file;
+                }
+
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    break;
+                    yield break;
                 }
-                yield return file;
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                yield break;
             }
 
             IEnumerable<string> dirs = Enumerable.Empty<string>();
@@ -143,10 +143,10 @@ namespace Diffusion.IO
                     files = files.Where(f => !ignoreFiles.Contains(f));
                 }
 
-                if (recursive && excludePaths != null)
-                {
-                    files = files.Where(f => !excludePaths.Any(p => f.StartsWith(p)));
-                }
+                //if (recursive && excludePaths != null)
+                //{
+                //    files = files.Where(f => !excludePaths.Any(p => f.StartsWith(p)));
+                //}
 
             }
 

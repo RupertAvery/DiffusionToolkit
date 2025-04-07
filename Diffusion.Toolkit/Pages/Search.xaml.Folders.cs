@@ -18,24 +18,6 @@ namespace Diffusion.Toolkit.Pages
 {
     public partial class Search
     {
-        private async Task ExcludeFolder(int id, bool excluded, bool recursive = false)
-        {
-            await Task.Run(async () =>
-            {
-                ServiceLocator.DataStore.SetFolderExcluded(id, excluded, recursive);
-                await ServiceLocator.FolderService.LoadFolders();
-            });
-        }
-
-        private async Task ArchiveFolder(int id, bool archived, bool recursive = false)
-        {
-            await Task.Run(async () =>
-            {
-                ServiceLocator.DataStore.SetFolderArchived(id, archived, recursive);
-                await ServiceLocator.FolderService.LoadFolders();
-            });
-        }
-
         private async Task ExpandToPath(string path)
         {
             var root = _model.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
@@ -121,7 +103,23 @@ namespace Diffusion.Toolkit.Pages
             {
                 var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
-                OpenFolder(folder);
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.LeftCtrl))
+                {
+                    folder.IsSelected = !folder.IsSelected;
+                }
+                else
+                {
+                    OpenFolder(folder);
+
+                    foreach (var model in ServiceLocator.MainModel.Folders.Where(d=>d.IsSelected))
+                    {
+                        model.IsSelected = false;
+                    }
+
+                    folder.IsSelected = true;
+                }
+
+                e.Handled = true;
             }
         }
 
@@ -143,14 +141,7 @@ namespace Diffusion.Toolkit.Pages
                     folder.Children = subFolders;
                 }
 
-                if (_model.MainModel.CurrentFolder != null)
-                {
-                    _model.MainModel.CurrentFolder.IsSelected = false;
-                }
-
                 _model.MainModel.CurrentFolder = folder;
-
-                folder.IsSelected = true;
 
                 _model.NavigationSection.FoldersSection.CanDelete = folder.Depth > 0;
                 _model.NavigationSection.FoldersSection.CanRename = folder.Depth > 0;
@@ -319,5 +310,12 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
+        private void NotScanned_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_model.MainModel.CurrentFolder != null)
+            {
+                _ = ServiceLocator.ScanningService.ScanFolder(_model.MainModel.CurrentFolder);
+            }
+        }
     }
 }

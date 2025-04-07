@@ -368,7 +368,16 @@ public class SearchModel : BaseNotify
     public ViewMode CurrentViewMode
     {
         get => _currentViewMode;
-        set => SetField(ref _currentViewMode, value);
+        set
+        {
+            SetField(ref _currentViewMode, value);
+            OnPropertyChanged(nameof(IsFolderView));
+        }
+    }
+
+    public bool IsFolderView
+    {
+        get => _currentViewMode == ViewMode.Folder;
     }
 
 
