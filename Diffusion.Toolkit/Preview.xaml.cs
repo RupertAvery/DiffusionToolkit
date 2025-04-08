@@ -9,7 +9,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Diffusion.Toolkit.Services;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Diffusion.Toolkit
 {
@@ -153,7 +152,7 @@ namespace Diffusion.Toolkit
 
         private void PreviewPane_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) && !e.Data.GetDataPresent("DTCustomDragSource"))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 OnDrop?.Invoke(files[0]);
