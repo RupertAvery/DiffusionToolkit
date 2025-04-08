@@ -4,13 +4,11 @@ using System.Windows.Data;
 
 namespace Diffusion.Toolkit.Converters;
 
-public class InvertBoolConverter : IValueConverter
+public class NotEqualsConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value == null) return false;
-
-        return !(bool)value;
+        return !value.ToString().Equals(parameter);
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

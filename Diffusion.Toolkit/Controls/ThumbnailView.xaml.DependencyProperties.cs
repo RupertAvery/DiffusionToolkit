@@ -232,7 +232,7 @@ namespace Diffusion.Toolkit.Controls
         public static readonly DependencyProperty AlbumsProperty =
             DependencyProperty.Register(
                 name: nameof(Albums),
-                propertyType: typeof(ObservableCollection<Album>),
+                propertyType: typeof(ObservableCollection<AlbumModel>),
                 ownerType: typeof(ThumbnailView),
                 typeMetadata: new FrameworkPropertyMetadata(
                     defaultValue: null,
@@ -322,9 +322,9 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(SelectedImagesProperty, value);
         }
 
-        public ObservableCollection<Album> Albums
+        public ObservableCollection<AlbumModel> Albums
         {
-            get => (ObservableCollection<Album>)GetValue(AlbumsProperty);
+            get => (ObservableCollection<AlbumModel>)GetValue(AlbumsProperty);
             set => SetValue(AlbumsProperty, value);
         }
 

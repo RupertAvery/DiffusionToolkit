@@ -2,7 +2,8 @@
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:system="clr-namespace:System;assembly=System.Runtime"
                          xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
-                         xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors">
+                         xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
+                         xmlns:fa="http://schemas.fontawesome.io/icons/">
 
     <SolidColorBrush x:Key="ControlBackgroundBrush" Color="{DynamicResource ControlBackground}"/>
     <SolidColorBrush x:Key="PrimaryBrush" Color="{DynamicResource Background}"/>
@@ -17,6 +18,8 @@
     <SolidColorBrush x:Key="DisabledForegroundBrush" Color="{DynamicResource DisabledForeground}"/>
     <SolidColorBrush x:Key="DisabledBackgroundBrush" Color="{DynamicResource DisabledBackground}"/>
     <SolidColorBrush x:Key="PreviewBackgroundBrush" Color="{DynamicResource PreviewBackground}"/>
+
+
 
     <Style TargetType="Grid">
         <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>

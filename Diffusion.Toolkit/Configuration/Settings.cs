@@ -65,6 +65,7 @@ public class Settings : SettingsContainer, IScanOptions
     private bool _showNotifications;
     private List<ExternalApplication> _externalApplications;
     private string _sortQueriesBy;
+    private bool _showTags;
 
     public Settings() : this(false)
     {
@@ -468,4 +469,14 @@ public class Settings : SettingsContainer, IScanOptions
         get => _excludePaths;
         set => UpdateList(ref _excludePaths, value);
     }
+
+    public bool ShowTags
+    {
+        get => _showTags;
+        set => UpdateValue(ref _showTags, value);
+    }
+
+
+    public int Version { get; set; }
+
 }

@@ -26,6 +26,7 @@
     <None Remove="Icons\Dark\settings-32.png" />
     <None Remove="Icons\Dark\trash-32.png" />
     <None Remove="Icons\Dark\gallery-32.png" />
+    <None Remove="Icons\Dark\trash-solid-32.png" />
     <None Remove="Icons\error-32.png" />
     <None Remove="Icons\favorite-32.png" />
     <None Remove="Icons\filter-32.png" />
@@ -46,6 +47,7 @@
     <None Remove="Icons\Light\settings-32.png" />
     <None Remove="Icons\Light\trash-32.png" />
     <None Remove="Icons\Light\gallery-32.png" />
+    <None Remove="Icons\Light\trash-solid-32.png" />
     <None Remove="Icons\link-32.png" />
     <None Remove="Icons\models-32.png" />
     <None Remove="Icons\rebuild-32.png" />
@@ -69,6 +71,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Icons\Dark\trash-solid-32.png" />
     <Resource Include="Icons\error-32.png" />
     <EmbeddedResource Include="Localization\de-DE.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -140,6 +143,7 @@
     <Resource Include="Icons\Light\settings-32.png" />
     <Resource Include="Icons\Light\trash-32.png" />
     <Resource Include="Icons\Light\gallery-32.png" />
+    <Resource Include="Icons\Light\trash-solid-32.png" />
     <Resource Include="Icons\star-32.png" />
     <Resource Include="Icons\x-mark-16.png" />
     <Resource Include="Icons\x-mark-32.png" />

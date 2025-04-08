@@ -280,6 +280,22 @@ public class MainModel : BaseNotify
         set;
     }
 
+    private ICommand _toggleTags;
+
+    public ICommand ToggleTagsCommand
+    {
+        get => _toggleTags;
+        set => SetField(ref _toggleTags, value);
+    }
+
+    private bool _showTags;
+
+    public bool ShowTags
+    {
+        get => _showTags;
+        set => SetField(ref _showTags, value);
+    }
+
     public bool AutoAdvance
     {
         get => _autoAdvance;

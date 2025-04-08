@@ -378,6 +378,7 @@ namespace Diffusion.Toolkit
         {
             await ServiceLocator.ExternalApplicationsService.OpenWith(int.Parse(arg));
         }
+
     }
 
 }

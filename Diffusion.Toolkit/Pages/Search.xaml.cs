@@ -476,6 +476,7 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSectionSettings.ShowFolders):
                     case nameof(NavigationSectionSettings.ShowModels):
                     case nameof(NavigationSectionSettings.ShowAlbums):
+                    case nameof(NavigationSectionSettings.ShowQueries):
                         SetAccordionResizeableState();
                         break;
 
@@ -499,6 +500,9 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSection.AlbumState):
                         _settings.NavigationSection.AlbumState = _model.NavigationSection.AlbumState;
                         break;
+                    case nameof(NavigationSection.QueryState):
+                        _settings.NavigationSection.QueryState = _model.NavigationSection.QueryState;
+                        break;
 
                     case nameof(NavigationSection.FolderHeight):
                         _settings.NavigationSection.FolderHeight = _model.NavigationSection.FolderHeight;
@@ -509,6 +513,10 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSection.AlbumHeight):
                         _settings.NavigationSection.AlbumHeight = _model.NavigationSection.AlbumHeight;
                         break;
+                    case nameof(NavigationSection.QueryHeight):
+                        _settings.NavigationSection.QueryHeight = _model.NavigationSection.QueryHeight;
+                        break;
+
                         //case nameof(NavigationSection.ShowFolders):
                         //    _settings.NavigationSection.ShowFolders = _model.NavigationSection.ShowFolders;
                         //    break;
@@ -524,10 +532,12 @@ namespace Diffusion.Toolkit.Pages
             _model.NavigationSection.FolderState = _settings.NavigationSection.FolderState;
             _model.NavigationSection.ModelState = _settings.NavigationSection.ModelState;
             _model.NavigationSection.AlbumState = _settings.NavigationSection.AlbumState;
+            _model.NavigationSection.QueryHeight = _settings.NavigationSection.QueryHeight;
 
             _model.NavigationSection.FolderHeight = _settings.NavigationSection.FolderHeight;
             _model.NavigationSection.ModelHeight = _settings.NavigationSection.ModelHeight;
             _model.NavigationSection.AlbumHeight = _settings.NavigationSection.AlbumHeight;
+            _model.NavigationSection.QueryState = _settings.NavigationSection.QueryState;
 
             //_model.NavigationSection.ShowFolders = _settings.NavigationSection.ShowFolders;
             //_model.NavigationSection.ShowModels = _settings.NavigationSection.ShowModels;

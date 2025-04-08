@@ -136,6 +136,7 @@ namespace Diffusion.Toolkit
                 _model.ToggleActualSize = new RelayCommand<object>((o) => ToggleActualSize());
 
                 _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
+                _model.ToggleTagsCommand = new RelayCommand<object>((o) => ToggleTags());
 
                 _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
                 _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
@@ -243,6 +244,13 @@ namespace Diffusion.Toolkit
             _model.Settings.AutoAdvance = _model.AutoAdvance;
         }
 
+
+        private void ToggleTags()
+        {
+            _model.ShowTags = !_model.ShowTags;
+            _model.Settings.ShowTags = _model.ShowTags;
+        }
+
         private async Task UnavailableFiles(object o)
         {
             var window = new UnavailableFilesWindow();
@@ -303,6 +311,9 @@ namespace Diffusion.Toolkit
                     break;
                 case "Navigation.Albums":
                     _model.Settings.NavigationSection.ShowAlbums = !_model.Settings.NavigationSection.ShowAlbums;
+                    break;
+                case "Navigation.Queries":
+                    _model.Settings.NavigationSection.ShowQueries = !_model.Settings.NavigationSection.ShowQueries;
                     break;
             }
         }
@@ -520,6 +531,15 @@ namespace Diffusion.Toolkit
 
             }
 
+            // TODO: Find a better place to put this:
+            // Set defaults for new version features
+            if (_settings.Version < 190)
+            {
+                _settings.Version = 190;
+                _settings.ShowTags = true;
+                _settings.NavigationSection.ShowQueries = true;
+            }
+
 
 
             _settings.PropertyChanged += (s, args) =>
@@ -567,6 +587,7 @@ namespace Diffusion.Toolkit
             _model.HideDeleted = _settings.HideDeleted;
             _model.HideUnavailable = _settings.HideUnavailable;
 
+            // TODO: Get rid of globals
             QueryBuilder.HideNSFW = _model.HideNSFW;
             QueryBuilder.HideDeleted = _model.HideDeleted;
             QueryBuilder.HideUnavailable = _model.HideUnavailable;
@@ -575,6 +596,7 @@ namespace Diffusion.Toolkit
             _model.FitToPreview = _settings.FitToPreview;
             _model.ActualSize = _settings.ActualSize;
             _model.AutoAdvance = _settings.AutoAdvance;
+            _model.ShowTags = _settings.ShowTags;
 
             _model.Settings = _settings;
 

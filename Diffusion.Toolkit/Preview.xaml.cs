@@ -190,6 +190,11 @@ namespace Diffusion.Toolkit
         {
             Close();
         }
+
+        private void Play_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            StartStopSlideShow();
+        }
     }
 
 

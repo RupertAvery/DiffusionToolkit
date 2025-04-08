@@ -19,7 +19,7 @@
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         MenuWidth="300"
         TitleWidth="*"
-        ExtraButtonWidth="90"
+        ExtraButtonWidth="150"
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Window.InputBindings>
         <common:BareKeyBinding Key="I" Command="{Binding ToggleInfoCommand}"></common:BareKeyBinding>
@@ -93,6 +93,7 @@
                 <MenuItem Header="{lex:Loc Menu.View.Folders}" IsChecked="{Binding Settings.NavigationSection.ShowFolders}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Folders"/>
                 <MenuItem Header="{lex:Loc Menu.View.Models}" IsChecked="{Binding Settings.NavigationSection.ShowModels}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Models"/>
                 <MenuItem Header="{lex:Loc Menu.View.Albums}" IsChecked="{Binding Settings.NavigationSection.ShowAlbums}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Albums"/>
+                <MenuItem Header="{lex:Loc Menu.View.Queries}" IsChecked="{Binding Settings.NavigationSection.ShowQueries}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Queries"/>
                 <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.FitToPreview}" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
                 <MenuItem Header="{lex:Loc Menu.View.ActualSize}" IsChecked="{Binding ActualSize}" Command="{Binding ToggleActualSize}"  InputGestureText="Ctrl+Shift+A"/>
@@ -148,11 +149,45 @@
                 <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" Grid.Column="1">
-                <Button Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
+                <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleTagsCommand}">
+                    <fa:ImageAwesome ToolTip="Show/Hide Tags" Icon="Star" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <fa:ImageAwesome.Resources>
+                            <Style TargetType="fa:ImageAwesome">
+                                <Setter Property="Opacity" Value="0.5"></Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding ShowTags}" Value="{StaticResource TrueValue}">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </fa:ImageAwesome.Resources>
+                    </fa:ImageAwesome>
+                </Button>
+                <Button Style="{StaticResource StaticButton}" Margin="0,0,15,0" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleAutoAdvance}">
+                    <fa:ImageAwesome ToolTip="Advance on Tag" Icon="ArrowRight" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <fa:ImageAwesome.Resources>
+                            <Style TargetType="fa:ImageAwesome">
+                                <Setter Property="Opacity" Value="0.5"></Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding AutoAdvance}" Value="{StaticResource TrueValue}">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </fa:ImageAwesome.Resources>
+                    </fa:ImageAwesome>
+                </Button>
+                <Button Margin="0,0,15,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
                     <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Margin="15,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
+                <Button Margin="0,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
                     <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>

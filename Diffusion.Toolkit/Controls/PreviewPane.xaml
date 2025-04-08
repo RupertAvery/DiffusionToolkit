@@ -21,29 +21,13 @@
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
             <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
-
-            <Style x:Key="ShowOnHover" TargetType="Grid">
-                <Setter Property="Opacity" Value="0.25"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="true">
-                        <Setter Property="StackPanel.Opacity" Value="1" />
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-
-            <Style x:Key="HoverOverStar" TargetType="Image">
-                <Setter Property="Opacity" Value="0.25"></Setter>
-                <Style.Triggers >
-                    <Trigger Property="Image.IsMouseOver" Value="True">
-                        <Setter Property="Image.Opacity" Value="1.0"></Setter>
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
-
+            <converters:IfLessThanConverter x:Key="iflessThan"></converters:IfLessThanConverter>
+            <converters:IfGreaterThanConverter x:Key="ifGreaterThan"></converters:IfGreaterThanConverter>
         </ResourceDictionary>
     </UserControl.Resources>
+
     <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
-       
+
         <Grid  Background="{x:Null}" Visibility="{Binding IsLoading, Converter={StaticResource boolToVis}}">
             <fa:ImageAwesome Opacity="0.5" Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{StaticResource ForegroundBrush}" />
         </Grid>
@@ -94,7 +78,7 @@
                         <Separator></Separator>
                         <MenuItem Header="Copy Path" Command="{Binding CopyPathCommand}"></MenuItem>
                     </ContextMenu>
-                    
+
                     <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
 
                 </ScrollViewer.ContextMenu>
@@ -146,7 +130,7 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="56"/>
                     </Grid.RowDefinitions>
- 
+
                 </Grid>
             </Grid>
 
@@ -165,12 +149,59 @@
                 </StackPanel>
             </Border>
         </Grid>-->
-        <Grid Background="{x:Null}">
+        <Grid Background="{x:Null}" Visibility="{Binding MainModel.ShowTags, Converter={StaticResource boolToVis}}">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="50"/>
             </Grid.RowDefinitions>
-            <local:StarRating Grid.Row="1" x:Name="StarRating" Image="{Binding Image}"></local:StarRating>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Row="1" Grid.Column="1" Style="{StaticResource StaticButton}" HorizontalAlignment="Left" PreviewMouseDown="NavigatePrevious_OnPreviewMouseDown">
+                <fa:ImageAwesome Margin="0,4,0,0" Height="18" Icon="ArrowLeft" Foreground="{DynamicResource ForegroundBrush}">
+                    <fa:ImageAwesome.Resources>
+                        <Style TargetType="fa:ImageAwesome">
+                            <Setter Property="Opacity" Value="0.5"></Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="1.0"></Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </fa:ImageAwesome.Resources>
+                </fa:ImageAwesome>
+            </Button>
+            <local:StarRating Grid.Row="1" Grid.Column="2" x:Name="StarRating" Image="{Binding Image}">
+                <local:StarRating.Style>
+                    <Style TargetType="local:StarRating">
+                        <Setter Property="RatingSize" Value="Standard"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource iflessThan}, ConverterParameter=400}" Value="True">
+                                <Setter Property="RatingSize" Value="Compact"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </local:StarRating.Style>
+            </local:StarRating>
+            <Button Grid.Row="1" Grid.Column="3" Style="{StaticResource StaticButton}" HorizontalAlignment="Right" PreviewMouseDown="NavigateNext_OnPreviewMouseDown">
+                <fa:ImageAwesome Margin="0,4,0,0" Height="18" Icon="ArrowRight" Foreground="{DynamicResource ForegroundBrush}">
+                    <fa:ImageAwesome.Resources>
+                        <Style TargetType="fa:ImageAwesome">
+                            <Setter Property="Opacity" Value="0.5"></Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="1.0"></Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </fa:ImageAwesome.Resources>
+
+                </fa:ImageAwesome>
+            </Button>
         </Grid>
 
     </Grid>

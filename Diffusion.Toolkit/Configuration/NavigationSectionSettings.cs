@@ -7,12 +7,15 @@ public class NavigationSectionSettings : SettingsContainer
     private AccordionState _folderState;
     private AccordionState _modelState;
     private AccordionState _albumState;
+    private AccordionState _queryState;
     private bool _showFolders;
     private bool _showModels;
     private bool _showAlbums;
+    private bool _showQueries;
     private double _folderHeight;
     private double _modelHeight;
     private double _albumHeight;
+    private double _queryHeight;
     private bool _showSection;
 
     public NavigationSectionSettings()
@@ -29,6 +32,7 @@ public class NavigationSectionSettings : SettingsContainer
             ShowFolders = true;
             ShowModels = true;
             ShowAlbums = true;
+            ShowQueries = true;
         }
     }
 
@@ -50,6 +54,13 @@ public class NavigationSectionSettings : SettingsContainer
         set => UpdateValue(ref _albumState, value);
     }
 
+    public AccordionState QueryState
+    {
+        get => _queryState;
+        set => UpdateValue(ref _queryState, value);
+    }
+
+
     public double FolderHeight
     {
         get => _folderHeight;
@@ -66,6 +77,12 @@ public class NavigationSectionSettings : SettingsContainer
     {
         get => _albumHeight;
         set => UpdateValue(ref _albumHeight, value);
+    }
+
+    public double QueryHeight
+    {
+        get => _queryHeight;
+        set => UpdateValue(ref _queryHeight, value);
     }
 
     public bool ShowFolders
@@ -97,8 +114,18 @@ public class NavigationSectionSettings : SettingsContainer
             UpdateShowSection();
         }
     }
+    
+    public bool ShowQueries
+    {
+        get => _showQueries;
+        set
+        {
+            UpdateValue(ref _showQueries, value);
+            UpdateShowSection();
+        }
+    }
 
-    private bool HasVisibilePanels => _showFolders || _showModels || ShowAlbums;
+    private bool HasVisibilePanels => _showFolders || _showModels || _showAlbums || _showQueries;
 
     private void UpdateShowSection()
     {
@@ -123,6 +150,8 @@ public class NavigationSectionSettings : SettingsContainer
         get => _showSection;
         set => UpdateValue(ref _showSection, value);
     }
+
+
 
     public void Attach(Settings settings)
     {

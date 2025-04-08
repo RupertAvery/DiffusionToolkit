@@ -44,9 +44,7 @@ namespace Diffusion.Toolkit.Controls
         public Action ClearQuery { get; set; }
 
         public Action SearchImages { get; set; }
-
-        public Action<bool> ReloadMatches { get; set; }
-
+        
         public ThumbnailPane()
         {
             InitializeComponent();
@@ -79,17 +77,6 @@ namespace Diffusion.Toolkit.Controls
             Model.SearchHint = $"Search for {randomHint}";
         }
 
-        //public void SetPagingEnabled()
-        //{
-        //    ThumbnailListView.SetPagingEnabled();
-        //}
-
-        //public void ResetView(bool focus)
-        //{
-        //    ThumbnailListView.ResetView(focus);
-        //}
-
-
         private void SearchTermTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
@@ -99,11 +86,6 @@ namespace Diffusion.Toolkit.Controls
                     e.Handled = true;
                     break;
             }
-        }
-
-        private void ThumbnailListView_OnPageChangedEvent(object? sender, PageChangedEventArgs e)
-        {
-            ReloadMatches(true);
         }
     }
 }

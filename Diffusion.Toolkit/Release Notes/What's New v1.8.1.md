@@ -102,6 +102,10 @@ You can now change the path of a root folder and all the images under it. This o
 
 TODO: 
 
+UnavailableConverter crashing designer in Search.xaml?
+
+* Rescan selected (Channel has been closed) when 1 or a few images are selected
+  Race condition?
 * Fix selection on page change 
 * Check if Rebuild Metadata uses Archived folders
 * Handle Folder unavailable when search results (in database, not on disk)

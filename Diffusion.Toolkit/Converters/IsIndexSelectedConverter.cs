@@ -4,13 +4,11 @@ using System.Windows.Data;
 
 namespace Diffusion.Toolkit.Converters;
 
-public class InvertBoolConverter : IValueConverter
+public class IsIndexSelectedConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value == null) return false;
-
-        return !(bool)value;
+        return (int)value > -1;
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

@@ -4,9 +4,12 @@
              xmlns:local="clr-namespace:Diffusion.Toolkit"
              xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
              xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
+             xmlns:system="clr-namespace:System;assembly=System.Runtime"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
+            <system:Boolean x:Key="FalseValue">False</system:Boolean>
+            <system:Boolean x:Key="TrueValue">True</system:Boolean>
             <localization:JsonLocalizationProvider x:Key="LocalizationProvider"></localization:JsonLocalizationProvider>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Themes/Light.xaml"/>

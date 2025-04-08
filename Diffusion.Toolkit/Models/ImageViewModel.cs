@@ -68,6 +68,9 @@ public class ImageViewModel : BaseNotify
         CopyParametersCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyParameters);
         //ShowInExplorerCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.ShowInExplorer);
     }
+
+    public MainModel MainModel => ServiceLocator.MainModel;
+
     public int Id { get; set; }
 
     public bool IsMessageVisible

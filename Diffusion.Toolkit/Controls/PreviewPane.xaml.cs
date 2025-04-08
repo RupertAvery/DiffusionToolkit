@@ -470,5 +470,17 @@ namespace Diffusion.Toolkit.Controls
         //{
         //    ScrollViewer.Cursor = handCursor;
         //}
+
+        private void NavigatePrevious_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ServiceLocator.ThumbnailNavigationService.MovePrevious();
+            e.Handled = true;
+        }
+
+        private void NavigateNext_OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ServiceLocator.ThumbnailNavigationService.MoveNext();
+            e.Handled = true;
+        }
     }
 }
