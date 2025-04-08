@@ -374,6 +374,10 @@ namespace Diffusion.Toolkit
             }
         }
 
+        private async Task OpenWith(string? arg)
+        {
+            await ServiceLocator.ExternalApplicationsService.OpenWith(int.Parse(arg));
+        }
     }
 
 }

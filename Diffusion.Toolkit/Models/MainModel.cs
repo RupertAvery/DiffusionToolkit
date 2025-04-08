@@ -129,6 +129,12 @@ public class MainModel : BaseNotify
         set => SetField(ref _rescan, value);
     }
 
+    public ICommand OpenWithCommand
+    {
+        get => _openWithCommand;
+        set => SetField(ref _openWithCommand, value);
+    }
+
     public ICommand RemoveMarked
     {
         get => _removeMarked;
@@ -599,6 +605,7 @@ public class MainModel : BaseNotify
     private int _progressTarget;
     private bool _isSettingsDirty;
     private ObservableCollection<Control> _openWithMenuItems;
+    private ICommand _openWithCommand;
 
     public ModelViewModel? CurrentModel
     {

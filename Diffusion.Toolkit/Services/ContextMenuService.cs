@@ -37,49 +37,23 @@ public class ContextMenuService
     {
         ServiceLocator.MainModel.OpenWithMenuItems = new ObservableCollection<Control>();
 
-        if (ServiceLocator.Settings?.ExternalApplications != null)
+        if (ServiceLocator.ExternalApplicationsService.HasExternalApplications)
         {
-            foreach (var externalApplication in ServiceLocator.Settings.ExternalApplications)
+            var index = 1;
+            foreach (var externalApplication in ServiceLocator.ExternalApplicationsService.ExternalApplications)
             {
                 var menuItem = new MenuItem()
                 {
                     Header = externalApplication.Name,
+                    InputGestureText = $"Shift+{index}"
                 };
 
                 menuItem.Click += (o, eventArgs) =>
                 {
-                    //var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
-                    //var boundInput = (Input)bindingExpression.ResolvedSource;
-                    string args = "%1";
-
-                    if (!string.IsNullOrEmpty(externalApplication.CommandLineArgs))
-                    {
-                        args = externalApplication.CommandLineArgs;
-                    }
-
-                    var images = string.Join(" ", ServiceLocator.MainModel.SelectedImages.Select(d => $"\"{d.Path}\""));
-
-                    var appPath = externalApplication.Path;
-
-                    args = args.Replace("%1", images);
-
-                    if (!string.IsNullOrEmpty(appPath) && File.Exists(appPath))
-                    {
-                        var ps = new ProcessStartInfo()
-                        {
-                            FileName = appPath,
-                            Arguments = args,
-                            UseShellExecute = true
-                        };
-
-                        Process.Start(ps);
-                    }
-                    else
-                    {
-                        ServiceLocator.MessageService.ShowMedium($"Failed to launch the application {externalApplication.Name}.\r\n\r\nPath not found", "Error opening External Application", PopupButtons.OK);
-                    }
-
+                    _ = ServiceLocator.ExternalApplicationsService.OpenWith(externalApplication);
                 };
+
+                index++;
 
                 ServiceLocator.MainModel.OpenWithMenuItems.Add(menuItem);
             }

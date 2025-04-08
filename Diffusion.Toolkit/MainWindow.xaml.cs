@@ -111,6 +111,7 @@ namespace Diffusion.Toolkit
                 ServiceLocator.MainModel = _model;
                 ServiceLocator.Dispatcher = Dispatcher;
 
+                _model.OpenWithCommand = new AsyncCommand<string>(OpenWith);
                 _model.Rescan = new AsyncCommand<object>(RescanTask);
                 _model.Rebuild = new AsyncCommand<object>(RebuildTask);
                 _model.ReloadHashes = new AsyncCommand<object>(async (o) =>
