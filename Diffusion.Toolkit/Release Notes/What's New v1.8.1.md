@@ -1,12 +1,12 @@
 # What's New in v1.9.0
 
-There have been a lot of improvements in speeding up the application. Thumbnails in particular will load much faster, as they are now cached to disk (see [Persistent thumbnail caching](#persistent-thumbnail-caching)).
+There have been a lot of improvements in speeding up the application. Thumbnails in particular will load much faster, as they are now cached to disk (see [Persistent thumbnail caching](#persistent-thumbnail-caching)). Thumbnail loading, changing pages is now so quick, it's starting to actually feel like a real application and not something I work on when I'm supposed to be working on actual work.
 
-There have been subtle **improvements to scanning images** (aside from the ability to Archive folders to skip them entirely). A lot of work has been done to make scanning asynchronous.
+There have been subtle **improvements to scanning images** (aside from the ability to Archive folders to skip them entirely). A lot of work has been done to make scanning asynchronous and pipelined.
 
 Images dropped into any watched folders will now be scanned immediately instead of when the copying completes. You can also now drop files into watched folders while rescan is ongoing.
 
-Scans may also complete a bit faster, as now the process is pipelined into reading the metadata in multiple threads while writing to the database in a separate thread.
+Scans may also complete a bit faster, as now the process is pipelined using Channels, reading the metadata in multiple threads while writing to the database in a separate thread.
 
 While this has been tested through daily use, please let me know if you experience any issues with scanning.
 
@@ -40,9 +40,19 @@ To scan for unavailable images, click **Tools > Scan for Unavailable images**. T
 
 Unavailable root folders will still be verified on startup to check for removable drives. Clicking on the Refresh button when the drive has been reconnected will restore the unavailable root folder and all the images under it.
 
+## Click-to-Rate
+
+Some users have asked for the ability to click on the stars to set the Rating. This has now been implemented.
+
+to remove the rating on selected images you can now press the tilde button ~ on your keyboard. 
+
 ## External Applications
 
 You can now add External applications to pass selected images to when you right-click the thumbnails or the preview. To edit External applications, go to Settings, then click the **External Applications** tab.
+
+External epplications can be launched using the shortcut **Shift+**`<Number>` where Number is the external application index in the order it was configured. 
+
+You can select multiple files and open them in your external application if it supports being passed multiple files in the command line.
 
 ## More Folder functionality
 
@@ -50,10 +60,17 @@ A lot more functionality has been added to the Folders section in the Navigation
 
 ### Rescan Individual Folders
 
-You can now rescan individual folders. To Rescan a folder, right click on it and click **Archive**
+You can now rescan individual folders. To Rescan a folder, right click on it and click **Rescan**
+
 ### Archive Folders
 
-Archiving folders prevents them from being scanned for new images when you perform a rescan or a rebuild. This makes it faster to scan your new images. To archive a folder, right click on it and click **Archive**, or **Archive Tree**. The second option will archive the folder all all it's scanned children (folders that haven't been scanned yet won't be affected). You can Unarchive a folder as well.
+Archiving a folder excludes it from being scanned for new images during a rescan or rebuild, helping speed up the process.
+
+To archive a folder, right-click on it and select **Archive** or **Archive Tree**. The Archive Tree option will archive the selected folder along with all of its subfolders, while Archive will archive only the selected folder.
+
+You can also unarchive a folder at any time.
+
+Archived folders are indicated by an opaque lock icon on the right.
 
 ### Multi-select
 
@@ -65,15 +82,15 @@ DPI Awareness has been enabled. This might have caused issues for some users wit
 
 ## Persistent thumbnail caching
 
-Diffusion Toolkit now creates a `dt_thumbnails.db` file in every directory where an indexed image is located the first time the thumbnails are viewed. Since thumbails are now persisted, your thumbnails will now load a LOT faster, even after closing and reopening Diffusion Toolkit.
+Diffusion Toolkit now creates a `dt_thumbnails.db` file in each directory containing indexed images the first time thumbnails are viewed. With thumbnails now saved to disk, they load significantly faster—even after restarting the application.
 
-This means less churn on your hard disk, which really helps for people who use disk based storage. This is also great news for people with larger images as they won't have to regenerate the thumbnails every time.
+This reduces disk activity, which is especially helpful for users with disk-based storage. It's also great news for those working with large images, as thumbnails no longer need to be regenerated each time.
 
-Thumbnails are saved at the size you have selected, and will be replaced if you change your settings. 
+Thumbnails are stored at the size you've selected in your settings and will be updated if those settings change.
 
-Note: Thumbnails are stored unencrypted in a SQLite database in JPG format, and can be viewed by anyone with a SQLite browser.
+**Note:** Thumbnails are saved in JPG format within an unencrypted SQLite database and can be viewed using any SQLite browser.
 
-## Change Folder Path
+## Change Root Folder Path
 
 You can now change the path of a root folder and all the images under it. This only changes the paths of the folders and images in the database and assumes that the images already exist in the target folder, otherwise they will be unavailable.
 
