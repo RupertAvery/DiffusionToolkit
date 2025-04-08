@@ -1,12 +1,22 @@
 ﻿using System.Text.Json;
+using System.Xml.Linq;
 
 namespace Diffusion.IO
 {
     public class Node
     {
+        private string _name;
         public int RefId { get; set; }
         public string Id { get; set; }
-        public string Name { get; set; }
+
+        public string Name
+        {
+            get => _name;
+            set => _name = value;
+        }
+
+        public string Label => _name.Replace("_", "__");
+
         public List<Input> Inputs { get; set; }
         public object ImageRef { get; set; }
 
@@ -36,6 +46,7 @@ namespace Diffusion.IO
         public string WorkflowId { get; set; }
         public string Path { get; set; }
         public string Name { get; set; }
+        public string Label { get; set; }
         public object Value { get; set; }
 
         public Input(string workflowId, string path, string name, object value)
@@ -43,6 +54,7 @@ namespace Diffusion.IO
             WorkflowId = workflowId;
             Path = path;
             Name = name;
+            Label = name.Replace("_", "__");
             Value = value;
         }
     }

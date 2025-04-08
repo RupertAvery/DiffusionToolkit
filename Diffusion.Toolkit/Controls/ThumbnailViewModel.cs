@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls;
 
@@ -76,6 +77,8 @@ public class ThumbnailViewModel : BaseNotify
         //_resultStatus = "Type anything to begin";
         _thumbnailSize = 128;
     }
+
+    public MainModel MainModel => ServiceLocator.MainModel;
 
     public ObservableCollection<ImageEntry>? Images
     {
