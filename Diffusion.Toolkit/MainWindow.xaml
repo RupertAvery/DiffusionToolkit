@@ -30,11 +30,10 @@
         <KeyBinding Key="F4" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Key="F5" Command="{Binding Refresh}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="F5" Command="{Binding Refresh}"></KeyBinding>
-        <!--<KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D2" Command="{Binding ShowAlbums}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D3" Command="{Binding ShowSearch}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D4" Command="{Binding ShowFavorite}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D5" Command="{Binding ShowMarked}"></KeyBinding>-->
+        <KeyBinding Modifiers="Control" Key="D1" Command="{Binding GotoUrl}" CommandParameter="search/#folders"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="D2" Command="{Binding GotoUrl}" CommandParameter="search/#images"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="D3" Command="{Binding GotoUrl}" CommandParameter="search/#favorites"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="D4" Command="{Binding GotoUrl}" CommandParameter="search/#deleted"></KeyBinding>
         <KeyBinding Modifiers="Shift" Key="D1" Command="{Binding OpenWithCommand}" CommandParameter="1"></KeyBinding>
         <KeyBinding Modifiers="Shift" Key="D2" Command="{Binding OpenWithCommand}" CommandParameter="2"></KeyBinding>
         <KeyBinding Modifiers="Shift" Key="D3" Command="{Binding OpenWithCommand}" CommandParameter="3"></KeyBinding>
@@ -193,99 +192,60 @@
                 </Button>
             </StackPanel>
         </Grid>
-        <!--<ToolBar Grid.Row="1" Height="32" OverflowMode="Never">
-            <Button Command="{Binding ShowFolders}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button Command="{Binding ShowAlbums}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Albums (Ctrl+2)" Icon="FilePhotoOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button Command="{Binding ShowSearch}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Search (Ctrl+3)" Icon="Search" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button Command="{Binding ShowFavorite}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Favorites (Ctrl+4)" Icon="HeartOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button  Command="{Binding ShowMarked}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button  Command="{Binding ShowPromptsCommand}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Prompts (Ctrl+6)" Icon="FileTextOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Separator></Separator>
-            <Button Command="{Binding Rescan}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Separator></Separator>
-            <Button Command="{Binding ShowModels}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Models" Icon="PuzzlePiece" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Separator></Separator>
-            <Button Command="{Binding Settings}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Settings" Icon="Gear" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-        </ToolBar>-->
-
+     
         <Grid Grid.Row="1">
             <DockPanel>
                 <Grid Margin="0,5,10,0">
                     <StackPanel Orientation="Vertical">
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Folders}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFolders}">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#folders">
                             <fa:ImageAwesome ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Diffusions}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSearch}">
-                            <fa:ImageAwesome ToolTip="Search (Ctrl+3)" Icon="Search" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#images">
+                            <fa:ImageAwesome ToolTip="Search (Ctrl+2)" Icon="Search" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Favorites}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFavorite}">
-                            <fa:ImageAwesome ToolTip="Favorites (Ctrl+4)" Icon="HeartOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#favorites">
+                            <fa:ImageAwesome ToolTip="Favorites (Ctrl+3)" Icon="HeartOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Recycle Bin}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#deleted">
+                            <fa:ImageAwesome ToolTip="Recycle bin (Ctrl+4)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Separator BorderThickness="1" BorderBrush="{DynamicResource SecondaryBrush}"></Separator>
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Prompts}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowPromptsCommand}">
-                            <fa:ImageAwesome ToolTip="Prompts (Ctrl+6)" Icon="FileTextOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="prompts">
+                            <fa:ImageAwesome ToolTip="Prompts" Icon="FileTextOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Models}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowModels}">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="models">
                             <fa:ImageAwesome ToolTip="Models" Icon="PuzzlePiece" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
-                        <Button Margin="0,5,0,10" Height="16" Width="24" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding Rescan}">
-                            <fa:ImageAwesome ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Grid>
                             <Button Margin="0,5,0,10" Height="16" Width="24" 
                                     behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Settings}"
-                                    Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSettingsCommand}">
+                                    Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="settings">
                                 <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                                 </fa:ImageAwesome>
                             </Button>
                             <Ellipse Fill="Red" Width="8" Height="8" Margin="15,0,0,15" Visibility="{Binding IsSettingsDirty, Converter={StaticResource boolToVisCol}}"></Ellipse>
                         </Grid>
-                        <Button Margin="0,5,0,10" Height="16" Width="24" 
-                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Recycle Bin}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowMarked}">
-                            <fa:ImageAwesome ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Separator BorderThickness="1" BorderBrush="{DynamicResource SecondaryBrush}"></Separator>
+                        <Button Margin="0,5,0,10" Height="16" Width="24" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding Rescan}">
+                            <fa:ImageAwesome ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                     </StackPanel>

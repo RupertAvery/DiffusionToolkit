@@ -19,11 +19,6 @@ public class MainModel : BaseNotify
     private bool _showIcons;
     private bool _hideIcons;
     private ICommand _removeMarked;
-    private ICommand _showFavorite;
-    private ICommand _showMarked;
-    private ICommand _showLastQuery;
-    private ICommand _showModels;
-    private ICommand _showSearch;
     private int _totalProgress;
     private int _currentProgress;
     private string _status;
@@ -31,7 +26,6 @@ public class MainModel : BaseNotify
     private ICommand _cancelCommand;
     private ICommand _aboutCommand;
     private ICommand _helpCommand;
-    private MessagePopupModel _messagePopupModel;
     private ICommand _toggleInfoCommand;
     private ICommand _toggleNsfwBlurCommand;
     private ICommand _toggleHideNsfw;
@@ -39,7 +33,6 @@ public class MainModel : BaseNotify
     private bool _hideNsfw;
     private bool _hideDeleted;
     private bool _nsfwBlur;
-    private ICommand _showPromptsCommand;
     private bool _fitToPreview;
     private bool _actualSize;
     private ICommand _toggleFitToPreview;
@@ -54,8 +47,6 @@ public class MainModel : BaseNotify
     private ICommand _removeMatching;
     private ICommand _autoTagNsfw;
     private ICommand _reloadHashes;
-    private ICommand _showFolders;
-    private ICommand _showAlbums;
     private ICommand _sortAlbum;
     private ICommand _clearAlbums;
     private ICommand _refresh;
@@ -106,15 +97,6 @@ public class MainModel : BaseNotify
     {
         _status = "Ready";
         _isPreviewVisible = true;
-        _messagePopupModel = new MessagePopupModel();
-        //_albums = new ObservableCollection<AlbumModel>()
-        //{
-        //    new AlbumModel()
-        //    {
-        //        Name = "Album #12345",
-        //        ImageCount = 12345
-        //    }
-        //};
     }
 
     public Page Page
@@ -178,46 +160,10 @@ public class MainModel : BaseNotify
         set => SetField(ref _hideIcons, value);
     }
 
-    public ICommand ShowFavorite
+    public ICommand GotoUrl
     {
-        get => _showFavorite;
-        set => SetField(ref _showFavorite, value);
-    }
-
-    public ICommand ShowMarked
-    {
-        get => _showMarked;
-        set => SetField(ref _showMarked, value);
-    }
-
-    public ICommand ShowLastQuery
-    {
-        get => _showLastQuery;
-        set => SetField(ref _showLastQuery, value);
-    }
-
-    public ICommand ShowModels
-    {
-        get => _showModels;
-        set => SetField(ref _showModels, value);
-    }
-
-    public ICommand ShowSearch
-    {
-        get => _showSearch;
-        set => SetField(ref _showSearch, value);
-    }
-
-    public ICommand ShowFolders
-    {
-        get => _showFolders;
-        set => SetField(ref _showFolders, value);
-    }
-    
-    public ICommand ShowAlbums
-    {
-        get => _showAlbums;
-        set => SetField(ref _showAlbums, value);
+        get => _gotoUrl;
+        set => SetField(ref _gotoUrl, value);
     }
 
     public string Status
@@ -348,18 +294,6 @@ public class MainModel : BaseNotify
     {
         get => _hideUnavailable;
         set => SetField(ref _hideUnavailable, value);
-    }
-
-    public ICommand ShowPromptsCommand
-    {
-        get => _showPromptsCommand;
-        set => SetField(ref _showPromptsCommand, value);
-    }
-
-    public ICommand ShowSettingsCommand
-    {
-        get => _showSettingsCommand;
-        set => SetField(ref _showSettingsCommand, value);
     }
 
     public bool FitToPreview
@@ -622,6 +556,7 @@ public class MainModel : BaseNotify
     private bool _isSettingsDirty;
     private ObservableCollection<Control> _openWithMenuItems;
     private ICommand _openWithCommand;
+    private ICommand _gotoUrl;
 
     public ModelViewModel? CurrentModel
     {

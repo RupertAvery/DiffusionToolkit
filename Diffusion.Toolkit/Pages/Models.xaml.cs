@@ -17,15 +17,14 @@ namespace Diffusion.Toolkit.Pages
     /// <summary>
     /// Interaction logic for Models.xaml
     /// </summary>
-    public partial class Models : Page
+    public partial class Models : NavigationPage
     {
         private Configuration.Settings _settings => ServiceLocator.Settings;
 
         private ModelsModel _model;
 
-        public Models()
+        public Models() : base("models")
         {
-
             InitializeComponent();
 
             _model = new ModelsModel();

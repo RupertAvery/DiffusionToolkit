@@ -192,7 +192,7 @@ namespace Diffusion.Toolkit.Pages
 
                 _model.MainModel.ActiveView = "Folders";
 
-                SetMode("folders");
+                SetView("folders");
 
                 _model.FolderPath = folder.Path;
                 _currentModeSettings.CurrentFolderPath = folder.Path;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using Diffusion.Toolkit.Classes;
@@ -8,41 +9,71 @@ namespace Diffusion.Toolkit.Common;
 
 public class NavigateException : Exception
 {
-    public string Url { get; }
+    public Uri Uri { get; }
 
-    public NavigateException(string url) : base($"Invalid url: {url}")
+    public NavigateException(Uri uri) : base($"Invalid url: {uri.Url}")
     {
-        Url = url;
+        Uri = uri;
     }
 
 }
 
+public class Uri
+{
+    public string Path { get; set; }
+    public string? Fragment { get; set; }
+    public string Url { get; set; }
+
+    private static Regex uriRegex = new Regex("(?<path>([a-zA-Z0-9]+)(/([a-zA-Z0-9]+))*)(/\\#(?<fragment>[a-zA-Z0-9]+))?");
+
+    public Uri(string uri)
+    {
+        Url = uri;
+
+        var match = uriRegex.Match(uri);
+
+        Path = match.Groups["path"].Value;
+        if (match.Groups["fragment"].Success)
+        {
+            Fragment = match.Groups["fragment"].Value;
+        }
+    }
+}
+
+
 public class NavigateEventArgs
 {
-    public string? CurrentUrl { get; set; }
-    public string? TargetUrl { get; set; }
+    public Uri CurrentUri { get; set; }
+    public Uri TargetUri { get; set; }
     public Page? TargetPage { get; set; }
 }
+
+//public class NavigationRoute
+//{
+//    public string Url { get; set; }
+//    public Page Page { get; set; }
+//}
 
 public class NavigatorService : INavigatorService
 {
     public Window Host { get; }
 
-    private Dictionary<string, Page> _pages;
-    private readonly Stack<string> _history;
-    private string? _currentUrl;
+    private Dictionary<string, Page> _pages = new Dictionary<string, Page>();
+    private readonly Stack<Uri> _history;
+    private Uri? _currentUrl = null;
 
     public event EventHandler<NavigateEventArgs> OnNavigate;
 
     public NavigatorService(Window host)
     {
         Host = host;
-        _history = new Stack<string>();
+        _history = new Stack<Uri>();
     }
 
-    public void SetPages(Dictionary<string, Page> pages)
+ 
+    public void RegisterRoute(string path, Page page)
     {
-        _pages = pages;
+        _pages.Add(path, page);
     }
 
     public void Goto(string url)
@@ -56,25 +87,30 @@ public class NavigatorService : INavigatorService
 
     public void Back()
     {
-        Navigate(_history.Pop());
+        var uri = _history.Pop();
+        Navigate(uri.Url);
     }
+
 
     private void Navigate(string url)
     {
-        if (_pages.TryGetValue(url, out var page))
+        var uri = new Uri(url);
+
+
+        if (_pages.TryGetValue(uri.Path, out var page))
         {
             var args = new NavigateEventArgs()
             {
-                CurrentUrl = _currentUrl,
-                TargetUrl = url,
+                CurrentUri = _currentUrl,
+                TargetUri = uri,
                 TargetPage = page
             };
             OnNavigate?.Invoke(this, args);
-            _currentUrl = url;
+            _currentUrl = uri;
         }
         else
         {
-            throw new NavigateException(url);
+            throw new NavigateException(uri);
         }
     }
 }

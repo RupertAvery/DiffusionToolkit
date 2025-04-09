@@ -342,6 +342,7 @@ namespace Diffusion.Toolkit.Controls
                     ServiceLocator.TaggingService.Favorite(this, Image.Id, Image.Favorite);
                     break;
                 case Key.OemTilde:
+                    Image.Rating = null;
                     ServiceLocator.TaggingService.Rate(this, Image.Id, null);
                     break;
                 case >= Key.D0 and <= Key.D9 when e.KeyboardDevice.Modifiers == ModifierKeys.None:

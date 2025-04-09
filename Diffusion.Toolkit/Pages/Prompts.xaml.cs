@@ -22,18 +22,18 @@ namespace Diffusion.Toolkit.Pages
     /// <summary>
     /// Interaction logic for Prompts.xaml
     /// </summary>
-    public partial class Prompts : Page
+    public partial class Prompts : NavigationPage
     {
         private DataStore _dataStore => ServiceLocator.DataStore;
         private Configuration.Settings _settings => ServiceLocator.Settings;
         private PromptsModel _model;
         private bool _isLoaded;
 
-        public Prompts(NavigatorService navigatorService)
+        public Prompts() : base("prompts")
         {
             InitializeComponent();
 
-            navigatorService.OnNavigate += (sender, args) =>
+            ServiceLocator.NavigatorService.OnNavigate += (sender, args) =>
             {
                 if (this == args.TargetPage && !_isLoaded)
                 {

@@ -101,6 +101,8 @@ namespace Diffusion.Toolkit
                 _navigatorService = new NavigatorService(this);
                 _navigatorService.OnNavigate += OnNavigate;
 
+                ServiceLocator.SetNavigatorService(_navigatorService);
+
                 SystemEvents.UserPreferenceChanged += SystemEventsOnUserPreferenceChanged;
 
 
@@ -369,7 +371,7 @@ namespace Diffusion.Toolkit
 
                 _previewWindow.OnDrop = (s) => _search.LoadPreviewImage(s);
                 //_previewWindow.Changed = (id) => _search.Update(id);
-                
+
                 _previewWindow.Closed += (sender, args) =>
                 {
                     _search.OnCurrentImageChange = null;
@@ -465,7 +467,7 @@ namespace Diffusion.Toolkit
             else if (e.PropertyName == nameof(MainModel.CurrentAlbum))
             {
                 //Debug.WriteLine(_model.CurrentAlbum.Name);
-                //_search.SetMode("albums");
+                //_search.SetView("albums");
                 //_search.SearchImages(null);
             }
         }
@@ -635,7 +637,7 @@ namespace Diffusion.Toolkit
                 }
             };
 
-            _search = new Search(_navigatorService);
+            _search = new Search();
 
             _search.MoveFiles = (files) =>
             {
@@ -700,7 +702,7 @@ namespace Diffusion.Toolkit
                 }
             };
 
-            _prompts = new Prompts(_navigatorService);
+            _prompts = new Prompts();
             _settingsPage = new Pages.Settings(this);
 
 
@@ -715,79 +717,39 @@ namespace Diffusion.Toolkit
             _search.OnPopout = () => PopoutPreview(true, true, false);
             _search.OnCurrentImageOpen = OnCurrentImageOpen;
 
-            _model.ShowFavorite = new RelayCommand<object>((o) =>
+            _model.GotoUrl = new RelayCommand<string>((url) =>
             {
-                _navigatorService.Goto("search");
-                _model.ActiveView = "Favorites";
-                _search.ShowFavorite();
+                _navigatorService.Goto(url);
             });
 
-            _model.ShowMarked = new RelayCommand<object>((o) =>
+            _navigatorService.OnNavigate += (o, args) =>
             {
-                _navigatorService.Goto("search");
-                _model.ActiveView = "Recycle Bin";
-                _search.ShowMarked();
-            });
+                _model.ActiveView = args.TargetUri.Path.ToLower() switch
+                {
+                    "search" when args.TargetUri.Fragment != null => args.TargetUri.Fragment.ToLower() switch
+                    {
+                        "favorites" => "Favorites",
+                        "deleted" => "Recycle Bin",
+                        "images" => "Diffusions",
+                        "folders" => "Folders",
+                        "albums" => "Albums",
+                        _ => _model.ActiveView
+                    },
+                    "search" => "Diffusions",
+                    "models" => "Models",
+                    "prompts" => "Prompts",
+                    "settings" => "Settings",
+                    _ => _model.ActiveView
+                };
+            };
 
-            _model.ShowSearch = new RelayCommand<object>((o) =>
-            {
-                _navigatorService.Goto("search");
-                _model.ActiveView = "Diffusions";
-                _search.ShowSearch();
-            });
-
-            _model.ShowFolders = new RelayCommand<object>((o) =>
-            {
-                _navigatorService.Goto("search");
-                _model.ActiveView = "Folders";
-                _search.ShowFolders();
-            });
-
-            _model.ShowAlbums = new RelayCommand<object>((o) =>
-            {
-                _navigatorService.Goto("search");
-                _model.ActiveView = "Albums";
-                _search.ShowAlbums();
-            });
-
-            _model.ShowModels = new RelayCommand<object>((o) =>
-            {
-                _navigatorService.Goto("models");
-                _model.ActiveView = "Models";
-            });
-
-            _model.ShowPromptsCommand = new RelayCommand<object>((o) =>
-            {
-                _navigatorService.Goto("prompts");
-                _model.ActiveView = "Prompts";
-            });
-
-            _model.ShowSettingsCommand = new RelayCommand<object>((o) =>
-            {
-                _navigatorService.Goto("settings");
-                _model.ActiveView = "Settings";
-            });
 
             if (_settings.WatchFolders)
             {
                 ServiceLocator.FolderService.CreateWatchers();
             }
-
-
-            var pages = new Dictionary<string, Page>()
-            {
-                { "search", _search },
-                { "models", _models },
-                { "prompts", _prompts },
-                { "settings", _settingsPage },
-                //{ "config", _configPage},
-                //{ "setup", new SetupPage(_navigatorService) },
-            };
-
-            _navigatorService.SetPages(pages);
-
-            _navigatorService.Goto("search");
-            _model.ActiveView = "Diffusions";
+            
+            //_navigatorService.Goto("search");
 
             Logger.Log($"Loading models");
 
@@ -833,6 +795,8 @@ namespace Diffusion.Toolkit
                     }
                 });
             }
+
+            ServiceLocator.NavigatorService.Goto("search");
 
             if (isFirstTime)
             {

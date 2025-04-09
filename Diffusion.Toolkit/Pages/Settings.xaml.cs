@@ -28,7 +28,7 @@ namespace Diffusion.Toolkit.Pages
     /// <summary>
     /// Interaction logic for Settings.xaml
     /// </summary>
-    public partial class Settings : Page
+    public partial class Settings : NavigationPage
     {
         private SettingsModel _model = new SettingsModel();
         public Configuration.Settings _settings => ServiceLocator.Settings;
@@ -42,7 +42,7 @@ namespace Diffusion.Toolkit.Pages
             return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
         }
 
-        public Settings(Window window)
+        public Settings(Window window) : base("settings")
         {
             _window = window;
             InitializeComponent();
@@ -53,6 +53,14 @@ namespace Diffusion.Toolkit.Pages
             LoadCultures();
 
             _model.SetPristine();
+
+            ServiceLocator.NavigatorService.OnNavigate += (sender, args) =>
+            {
+                if (args.TargetUri.Path.ToLower() == "settings" && args.TargetUri.Fragment != null && args.TargetUri.Fragment.ToLowerInvariant() == "externalapplications")
+                {
+                    ExternalApplicationsTab.IsSelected = true;
+                }
+            };
 
             DataContext = _model;
         }
@@ -470,11 +478,13 @@ namespace Diffusion.Toolkit.Pages
 
         private void AddExternalApplication_OnClick(object sender, RoutedEventArgs e)
         {
-            _model.ExternalApplications.Add(new ExternalApplicationModel()
+            var newApplication = new ExternalApplicationModel()
             {
                 Name = "Application",
                 Path = ""
-            });
+            };
+            _model.ExternalApplications.Add(newApplication);
+            _model.SelectedApplication = newApplication;
         }
 
         private void MoveExternalApplicationUp_OnClick(object sender, RoutedEventArgs e)

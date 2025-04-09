@@ -1,18 +1,19 @@
-﻿<Page x:Class="Diffusion.Toolkit.Pages.Prompts"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:Diffusion.Toolkit.Models"
-      xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
-      xmlns:lex="http://wpflocalizeextension.codeplex.com"
-      lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
-      lex:LocalizeDictionary.Separation="."
-      lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
-      mc:Ignorable="d" 
-      d:DataContext="{d:DesignInstance local:PromptsModel, IsDesignTimeCreatable = True}"
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="Prompts">
+﻿<pages:NavigationPage x:Class="Diffusion.Toolkit.Pages.Prompts"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+                xmlns:local="clr-namespace:Diffusion.Toolkit.Models"
+                xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
+                xmlns:lex="http://wpflocalizeextension.codeplex.com"
+                xmlns:pages="clr-namespace:Diffusion.Toolkit.Pages"
+                lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
+                lex:LocalizeDictionary.Separation="."
+                lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
+                mc:Ignorable="d" 
+                d:DataContext="{d:DesignInstance local:PromptsModel, IsDesignTimeCreatable = True}"
+                d:DesignHeight="450" d:DesignWidth="800"
+                Title="Prompts">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -138,4 +139,4 @@
             </TabItem>
         </TabControl>
     </Grid>
-</Page>
+</pages:NavigationPage>

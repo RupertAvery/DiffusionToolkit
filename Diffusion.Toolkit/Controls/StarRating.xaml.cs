@@ -102,11 +102,20 @@ namespace Diffusion.Toolkit.Controls
         {
             var value = ((FrameworkElement)sender).Tag;
 
-            var rating = int.Parse((string)value);
+            int? rating;
+
+            rating = int.Parse((string)value);
+            
+            if (originalRating == rating)
+            {
+                rating = null;
+            }
 
             Image.Rating = rating;
             originalRating = rating;
+
             ServiceLocator.TaggingService.Rate(this, Image.Id, rating);
+
             e.Handled = true;
         }
 

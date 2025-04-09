@@ -38,6 +38,19 @@ public class MetadataScannerService
         {
             dt.Task.ContinueWith(d =>
             {
+                var message = new List<string>();
+                if (d.Result.Added > 0)
+                {
+                    message.Add($"{d.Result.Added} images added");
+                }
+                if (d.Result.Updated > 0)
+                {
+                    message.Add($"{d.Result.Updated} images updated");
+                }
+
+                var toast = string.Join("\r\n", message);
+
+                ServiceLocator.ToastService.Toast(toast, "");
                 scanCompletionEvent?.OnDatabaseWriteCompleted?.Invoke();
                 ServiceLocator.ProgressService.CompleteTask();
                 ServiceLocator.ProgressService.ClearProgress();
@@ -72,6 +85,7 @@ public class MetadataScannerService
         }
 
         ServiceLocator.ProgressService.AddTotal(i);
+
 
         _channel.Writer.Complete();
     }

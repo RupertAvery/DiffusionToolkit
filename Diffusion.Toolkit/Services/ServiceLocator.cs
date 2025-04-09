@@ -5,14 +5,17 @@ using System.Windows.Navigation;
 using System.Windows.Threading;
 using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Thumbnails;
+using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Services;
 
 public class ServiceLocator
 {
+    private static NavigatorService _navigatorService;
     private static ExternalApplicationsService _externalApplicationsService;
     private static ThumbnailService _thumbnailService;
     private static DatabaseWriterService? _databaseWriterService;
@@ -21,7 +24,9 @@ public class ServiceLocator
     private static MessageService _messageServuce;
     private static ProgressService _progressService;
     private static DataStore? _dataStore;
+
     private static NavigationService? _navigationService;
+
     //private static ScanService? _scanManager;
     private static Settings? _settings;
     private static PreviewService? _previewService;
@@ -38,7 +43,7 @@ public class ServiceLocator
     public static Settings? Settings => _settings;
     public static ToastService ToastService { get; set; }
     public static Dispatcher Dispatcher { get; set; }
-    
+
     public static void SetDataStore(DataStore dataStore)
     {
         _dataStore = dataStore;
@@ -49,12 +54,12 @@ public class ServiceLocator
         _settings = settings;
     }
 
-    //public static NavigationService NavigationService
-    //{
-    //    get { return _navigationService ??= new NavigationService(); }
-    //}
+    public static void SetNavigatorService(NavigatorService navigatorService)
+    {
+        _navigatorService = navigatorService;
+    }
 
-    public static PreviewService PreviewService
+public static PreviewService PreviewService
     {
         get { return _previewService ??= new PreviewService(); }
     }
@@ -128,6 +133,11 @@ public class ServiceLocator
     public static ExternalApplicationsService ExternalApplicationsService
     {
         get { return _externalApplicationsService ?? new ExternalApplicationsService(); }
+    }
+
+    public static NavigatorService NavigatorService
+    {
+        get { return _navigatorService; }
     }
 }
 

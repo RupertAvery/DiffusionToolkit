@@ -45,7 +45,13 @@ public class ContextMenuService
                 var menuItem = new MenuItem()
                 {
                     Header = externalApplication.Name,
-                    InputGestureText = $"Shift+{index}"
+                };
+
+                menuItem.InputGestureText = index switch
+                {
+                    < 10 => $"Shift+{index}",
+                    10 => $"Shift+0",
+                    _ => menuItem.InputGestureText
                 };
 
                 menuItem.Click += (o, eventArgs) =>
@@ -57,7 +63,28 @@ public class ContextMenuService
 
                 ServiceLocator.MainModel.OpenWithMenuItems.Add(menuItem);
             }
+
+         
         }
+
+        if (ServiceLocator.MainModel.OpenWithMenuItems.Any())
+        {
+            ServiceLocator.MainModel.OpenWithMenuItems.Add(new Separator());
+        }
+
+        var configMenuItem = new MenuItem()
+        {
+            Header = "Configure...",
+        };
+
+        configMenuItem.Click += (o, eventArgs) =>
+        {
+            ServiceLocator.NavigatorService.Goto("settings/#externalapplications");
+        };
+
+
+        ServiceLocator.MainModel.OpenWithMenuItems.Add(configMenuItem);
+
     }
 
     private ImageViewModel CurrentImage => ServiceLocator.MainModel.CurrentImage;

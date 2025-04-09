@@ -102,21 +102,21 @@ You can now change the path of a root folder and all the images under it. This o
 
 TODO: 
 
-<<<<<<< HEAD
-Click to unset rating in StarRating
-Tilde to unset
 
-=======
->>>>>>> scanning-refactor
-UnavailableConverter crashing designer in Search.xaml?
+Unavailable Converter crashing designer in Search.xaml?
 
-* Rescan selected (Channel has been closed) when 1 or a few images are selected
-  Race condition?
-* Fix selection on page change 
-* Check if Rebuild Metadata uses Archived folders
+* clear preview when selected entry is not an image
+
 * Handle Folder unavailable when search results (in database, not on disk)
   * Clear results
   * Handle gracefully
+
+
+* Rescan selected (Channel has been closed) when 1 or a few images are selected
+  Race condition?
+
+* Check if Rebuild Metadata uses Archived folders
+
 * Search after Rescan
 * Fix Cancel
 * Fix Watched scanned files has error
@@ -127,6 +127,17 @@ UnavailableConverter crashing designer in Search.xaml?
 * find delete marked implementation and others
 * Handle Recursive option - how to handle images?
 
+* Folders not working?
+
+* Unavailable thumbnail icon missing 
+
+* Fix selection on page change 
+
+* Show Welcome Window in Taskbar
+* Messages dont fit in popups (High DPI?) Also, what about different languages? 
+
+* Click to unset rating in StarRating
+* Tilde to unset
 * Broken Scroll / key auto page in preview and popout
 * CheckUnavailableFolders conflicts with some other writes
 * Make sure Folder Refresh will restore unavailable folders AND all the images under them
