@@ -2,8 +2,11 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
+using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit
 {

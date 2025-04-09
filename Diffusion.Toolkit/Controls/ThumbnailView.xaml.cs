@@ -13,10 +13,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Pages;
+using Diffusion.Common;
+using Diffusion.Toolkit.Localization;
+using Settings = Diffusion.Toolkit.Configuration.Settings;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -98,12 +101,12 @@ namespace Diffusion.Toolkit.Controls
                 albumMenuItem
             });
 
-            Model.CopyPathCommand = new RelayCommand<object>(CopyPath);
-            Model.CopyPromptCommand = new RelayCommand<object>(CopyPrompt);
-            Model.CopyNegativePromptCommand = new RelayCommand<object>(CopyNegative);
-            Model.CopySeedCommand = new RelayCommand<object>(CopySeed);
-            Model.CopyHashCommand = new RelayCommand<object>(CopyHash);
-            Model.CopyParametersCommand = new RelayCommand<object>(CopyParameters);
+            Model.CopyPathCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyPath);
+            Model.CopyPromptCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyPrompt);
+            Model.CopyNegativePromptCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyNegative);
+            Model.CopySeedCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopySeed);
+            Model.CopyHashCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyHash);
+            Model.CopyParametersCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyParameters);
             Model.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
             Model.ExpandToFolderCommand = new RelayCommand<object>(ExpandToFolder);
             Model.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
@@ -126,75 +129,10 @@ namespace Diffusion.Toolkit.Controls
             //_model.FocusSearch = new RelayCommand<object>((o) => SearchTermTextBox.Focus());
             //_model.ShowDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = true);
             //_model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
-            Model.OpenWithMenuItems = new ObservableCollection<Control>();
-
-            if (ServiceLocator.Settings != null)
-            {
-                ServiceLocator.Settings.PropertyChanged += (sender, args) =>
-                {
-                    if (args.PropertyName == nameof(Settings.ExternalApplications))
-                    {
-                        BuildOpenWithContextMenu();
-                    }
-                };
-            }
-
-            BuildOpenWithContextMenu();
 
             _debounceRedrawThumbnails = Utility.Debounce(() => Dispatcher.Invoke(() => ReloadThumbnailsView()));
 
             Init();
-        }
-
-        private void BuildOpenWithContextMenu()
-        {
-            Model.OpenWithMenuItems = new ObservableCollection<Control>();
-
-            if (ServiceLocator.Settings?.ExternalApplications != null)
-            {
-                foreach (var externalApplication in ServiceLocator.Settings.ExternalApplications)
-                {
-                    var menuItem = new MenuItem()
-                    {
-                        Header = externalApplication.Name,
-                    };
-                    menuItem.Click += (o, eventArgs) =>
-                    {
-                        //var bindingExpression = textBox.GetBindingExpression(TextBox.TextProperty);
-                        //var boundInput = (Input)bindingExpression.ResolvedSource;
-                        string args = "%1";
-
-                        if (!string.IsNullOrEmpty(externalApplication.CommandLineArgs))
-                        {
-                            args = externalApplication.CommandLineArgs;
-                        }
-
-                        var images = string.Join(" ", SelectedImages.Select(d => $"\"{d.Path}\""));
-
-                        var appPath = externalApplication.Path;
-
-                        args = args.Replace("%1", images);
-
-                        if (!string.IsNullOrEmpty(appPath) && File.Exists(appPath))
-                        {
-                            var ps = new ProcessStartInfo()
-                            {
-                                FileName = appPath,
-                                Arguments = args,
-                                UseShellExecute = true
-                            };
-
-                            Process.Start(ps);
-                        }
-                        else
-                        {
-                            ServiceLocator.MessageService.ShowMedium($"Failed to launch the application {externalApplication.Name}.\r\n\r\nPath not found", "Error opening External Application", PopupButtons.OK);
-                        }
-
-                    };
-                    Model.OpenWithMenuItems.Add(menuItem);
-                }
-            }
         }
 
 
@@ -208,7 +146,10 @@ namespace Diffusion.Toolkit.Controls
             {
                 var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
 
-                await ServiceLocator.MetadataScannerService.QueueBatchAsync(imageEntries.Select(s => s.Path), ServiceLocator.ProgressService.CancellationToken);
+                await ServiceLocator.MetadataScannerService.QueueBatchAsync(
+                    imageEntries.Select(s => s.Path),
+                    null,
+                    ServiceLocator.ProgressService.CancellationToken);
             }
 
         }
@@ -281,6 +222,10 @@ namespace Diffusion.Toolkit.Controls
 
                 case Key.N when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                     NSFWSelected();
+                    break;
+
+                case Key.OemTilde:
+                    UnrateSelected();
                     break;
 
                 case >= Key.D0 and <= Key.D9 when e.KeyboardDevice.Modifiers == ModifierKeys.None:
@@ -429,6 +374,13 @@ namespace Diffusion.Toolkit.Controls
                             _ => 0
                         };
 
+                        var visibleCount = 0;
+
+                        foreach (var item1 in ThumbnailListView.Items)
+                        {
+                            visibleCount += ((ImageEntry)item1).IsEmpty ? 0 : 1;
+                        }
+
                         switch (delta)
                         {
                             case -1 when currentItemIndex == 0 && !e.IsRepeat:
@@ -436,7 +388,7 @@ namespace Diffusion.Toolkit.Controls
                                 {
                                     GoPrevPage(() =>
                                     {
-                                        var index = ThumbnailListView.Items.Count - 1;
+                                        var index = visibleCount - 1;
                                         SelectedImageEntry = (ImageEntry)ThumbnailListView.Items[^1];
                                         ThumbnailListView.SelectedItem = SelectedImageEntry;
                                         wrapPanel.Children[index].Focus();
@@ -444,7 +396,7 @@ namespace Diffusion.Toolkit.Controls
                                     e.Handled = true;
                                 }
                                 return;
-                            case 1 when currentItemIndex == ThumbnailListView.Items.Count - 1 && !e.IsRepeat:
+                            case 1 when currentItemIndex == visibleCount - 1 && !e.IsRepeat:
                                 if (ThumbnailListView.SelectedItems.Count == 1)
                                 {
                                     GoNextPage(() =>
@@ -821,6 +773,9 @@ namespace Diffusion.Toolkit.Controls
                             break;
                         case CursorPosition.End:
                             ShowItem(Model.Images.Count - 1, reloadOptions.Focus);
+                            break;
+                        case CursorPosition.Unspecified:
+                            ShowItem(0, reloadOptions.Focus);
                             break;
                     }
                 }

@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Input;
-using Diffusion.Database;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit;
 

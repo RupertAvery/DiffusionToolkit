@@ -40,6 +40,7 @@ public class Metadata
         RuinedFooocus,
         FooocusMRE,
         Fooocus,
+        SwarmUI,
         Unknown,
     }
 
@@ -162,8 +163,24 @@ public class Metadata
                                         if (fileParameters == null)
                                         {
                                             var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
-                                            format = isJson ? MetaFormat.RuinedFooocus : MetaFormat.A1111;
-                                            fileParameters = isJson ? ReadRuinedFooocusParameters(tag.Description) : ReadA111Parameters(tag.Description);
+                                            if (isJson)
+                                            {
+                                                if (tag.Description.Contains("sui_image_params"))
+                                                {
+                                                    fileParameters = ReadStableSwarmParameters(tag.Description);
+                                                    format = MetaFormat.SwarmUI;
+                                                }
+                                                else
+                                                {
+                                                    fileParameters = ReadRuinedFooocusParameters(tag.Description);
+                                                    format = MetaFormat.RuinedFooocus;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                fileParameters = ReadA111Parameters(tag.Description);
+                                                format = MetaFormat.A1111;
+                                            }
                                         }
                                     }
                                     else if (tag.Description.StartsWith("Comment:"))
@@ -995,13 +1012,19 @@ public class Metadata
 
     private static FileParameters ReadStableSwarmParameters(string data)
     {
-        var json = JsonDocument.Parse(data);
+        if (data.StartsWith("parameters: "))
+        {
+            data = data.Substring("parameters: ".Length);
+        }
 
-        var root = json.RootElement;
+        var json = JsonDocument.Parse(data);
 
         var fp = new FileParameters();
         fp.WorkflowId = data.GetHashCode().ToString("X");
         fp.Workflow = data;
+
+        var root = json.RootElement;
+
 
         var suiRoot = root.GetProperty("sui_image_params");
 

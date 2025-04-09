@@ -8,12 +8,20 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Diffusion.Common;
 using Diffusion.IO;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Services;
+
+public class ScanCompletionEvent
+{
+    public Action? OnMetadataCompleted { get; set; }
+    public Action? OnDatabaseWriteCompleted { get; set; }
+}
 
 public class MetadataScannerService
 {
     private Channel<FileScanJob> _channel;
+    private Channel<FileScanJob> _queueChannel = Channel.CreateUnbounded<FileScanJob>();
 
     private CancellationTokenSource _cancellationTokenSource;
 
@@ -22,7 +30,7 @@ public class MetadataScannerService
     private Settings _settings => ServiceLocator.Settings!;
 
 
-    public async Task QueueBatchAsync(IEnumerable<string> paths, CancellationToken cancellationToken)
+    public async Task QueueBatchAsync(IEnumerable<string> paths, ScanCompletionEvent scanCompletionEvent, CancellationToken cancellationToken)
     {
         var dt = ServiceLocator.DatabaseWriterService.StartAsync(cancellationToken);
 
@@ -30,18 +38,21 @@ public class MetadataScannerService
         {
             dt.Task.ContinueWith(d =>
             {
+                scanCompletionEvent?.OnDatabaseWriteCompleted?.Invoke();
                 ServiceLocator.ProgressService.CompleteTask();
                 ServiceLocator.ProgressService.ClearProgress();
+                ServiceLocator.ProgressService.SetStatus("");
             });
         }
 
-        var mt = ServiceLocator.MetadataScannerService.StartAsync(cancellationToken);
+        var mt = StartAsync(cancellationToken);
 
 
         if (!mt.IsStarted)
         {
             mt.Task.ContinueWith(d =>
             {
+                scanCompletionEvent?.OnMetadataCompleted?.Invoke();
                 ServiceLocator.DatabaseWriterService.Complete();
             });
         }
@@ -65,39 +76,23 @@ public class MetadataScannerService
         _channel.Writer.Complete();
     }
 
+    private bool _queueRunning;
+
+    public void StartQueue(CancellationToken cancellationToken)
+    {
+        if (!_queueRunning)
+        {
+            Task.Run(async () => await ProcessQueueTaskAsync(cancellationToken));
+            _queueRunning = true;
+        }
+    }
+
     public async Task QueueAsync(string path, CancellationToken cancellationToken)
     {
-        var dt = ServiceLocator.DatabaseWriterService.StartAsync(cancellationToken);
+        ServiceLocator.DatabaseWriterService.StartQueueAsync(cancellationToken);
+        StartQueue(cancellationToken);
 
-        if (!dt.IsStarted)
-        {
-            dt.Task.ContinueWith(d =>
-            {
-                ServiceLocator.ProgressService.CompleteTask();
-                ServiceLocator.ProgressService.ClearProgress();
-            });
-        }
-
-        var mt = ServiceLocator.MetadataScannerService.StartAsync(cancellationToken);
-
-        if (!mt.IsStarted)
-        {
-            mt.Task.ContinueWith(d =>
-            {
-                ServiceLocator.DatabaseWriterService.Complete();
-            });
-        }
-
-
-        await _channel.Writer.WriteAsync(new FileScanJob() { Path = path });
-
-        ServiceLocator.ProgressService.AddTotal(1);
-
-        // TODO: Figure out how to get the databasewriter to complete so can complete the task
-
-        // complete writer on delay?
-        // what if more stuff comes in?
-
+        await _queueChannel.Writer.WriteAsync(new FileScanJob() { Path = path });
     }
 
     private bool _isStarted;
@@ -181,6 +176,36 @@ public class MetadataScannerService
                         await ServiceLocator.DatabaseWriterService.QueueAddAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
                     }
 
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Error scanning {job.Path}:" + ex.Message);
+            }
+        }
+
+        return count;
+    }
+
+
+
+    private async Task<int> ProcessQueueTaskAsync(CancellationToken token)
+    {
+        var count = 0;
+
+        while (await _queueChannel.Reader.WaitToReadAsync(token))
+        {
+            var job = await _queueChannel.Reader.ReadAsync(token);
+
+            try
+            {
+                if (File.Exists(job.Path))
+                {
+                    var fileParameters = Metadata.ReadFromFile(job.Path);
+
+                    count++;
+
+                    await ServiceLocator.DatabaseWriterService.QueueAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
                 }
             }
             catch (Exception ex)

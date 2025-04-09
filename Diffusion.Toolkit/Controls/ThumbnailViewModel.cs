@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls;
 
@@ -66,8 +67,7 @@ public class ThumbnailViewModel : BaseNotify
     private int _pageSize;
     private ICommand _expandToFolderCommand;
     private ObservableCollection<Control> _selectionAlbumMenuItems;
-    private ObservableCollection<Control> _openWithMenuItems;
-
+    
     public ThumbnailViewModel()
     {
         _images = new ObservableCollection<ImageEntry>();
@@ -77,6 +77,8 @@ public class ThumbnailViewModel : BaseNotify
         //_resultStatus = "Type anything to begin";
         _thumbnailSize = 128;
     }
+
+    public MainModel MainModel => ServiceLocator.MainModel;
 
     public ObservableCollection<ImageEntry>? Images
     {
@@ -408,11 +410,6 @@ public class ThumbnailViewModel : BaseNotify
         set => SetField(ref _selectionAlbumMenuItems, value);
     }
 
-    public ObservableCollection<Control> OpenWithMenuItems
-    {
-        get => _openWithMenuItems;
-        set => SetField(ref _openWithMenuItems, value);
-    }
 
     public int PageSize
     {

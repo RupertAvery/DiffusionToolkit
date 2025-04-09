@@ -8,7 +8,6 @@
              xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
-             xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
              xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
              lex:LocalizeDictionary.Separation="."
@@ -209,7 +208,7 @@
                     </MenuItem>
                     <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
                     <Separator />
-                    <MenuItem ItemsSource="{Binding OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
+                    <MenuItem ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
                     <Separator />
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Favorite}" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Rate}">

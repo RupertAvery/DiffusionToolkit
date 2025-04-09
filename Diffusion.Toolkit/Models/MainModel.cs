@@ -4,6 +4,8 @@ using Diffusion.Database;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Common;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -127,6 +129,12 @@ public class MainModel : BaseNotify
         set => SetField(ref _rescan, value);
     }
 
+    public ICommand OpenWithCommand
+    {
+        get => _openWithCommand;
+        set => SetField(ref _openWithCommand, value);
+    }
+
     public ICommand RemoveMarked
     {
         get => _removeMarked;
@@ -217,6 +225,7 @@ public class MainModel : BaseNotify
         get => _status;
         set => SetField(ref _status, value);
     }
+
     public bool IsBusy
     {
         get => _isBusy;
@@ -269,6 +278,22 @@ public class MainModel : BaseNotify
     {
         get;
         set;
+    }
+
+    private ICommand _toggleTags;
+
+    public ICommand ToggleTagsCommand
+    {
+        get => _toggleTags;
+        set => SetField(ref _toggleTags, value);
+    }
+
+    private bool _showTags;
+
+    public bool ShowTags
+    {
+        get => _showTags;
+        set => SetField(ref _showTags, value);
     }
 
     public bool AutoAdvance
@@ -594,6 +619,9 @@ public class MainModel : BaseNotify
     private Settings _settings;
     private ICommand _reloadFoldersCommand;
     private int _progressTarget;
+    private bool _isSettingsDirty;
+    private ObservableCollection<Control> _openWithMenuItems;
+    private ICommand _openWithCommand;
 
     public ModelViewModel? CurrentModel
     {
@@ -698,6 +726,12 @@ public class MainModel : BaseNotify
     public ICommand CreateFolderCommand { get; set; }
     public ICommand RenameFolderCommand { get; set; }
     public ICommand DeleteFolderCommand { get; set; }
+    public ICommand ArchiveFolderCommand { get; set; }
+    public ICommand ArchiveFolderRecursiveCommand { get; set; }
+    public ICommand ExcludeFolderCommand { get; set; }
+
+    
+
     public ICommand ToggleNavigationPane { get; set; }
     public ICommand ShowInExplorerCommand { get; set; }
     public string ToastMessage
@@ -707,4 +741,18 @@ public class MainModel : BaseNotify
     }
 
     public QueryModel CurrentQuery { get; set; }
+
+    public bool IsSettingsDirty
+    {
+        get => _isSettingsDirty;
+        set => SetField(ref _isSettingsDirty, value);
+    }
+
+    public ObservableCollection<Control> OpenWithMenuItems
+    {
+        get => _openWithMenuItems;
+        set => SetField(ref _openWithMenuItems, value);
+    }
+
+    public ImageViewModel CurrentImage { get; set; }
 }

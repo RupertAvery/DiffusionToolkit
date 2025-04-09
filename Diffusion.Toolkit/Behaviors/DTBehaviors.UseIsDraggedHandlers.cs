@@ -2,6 +2,7 @@
 
 namespace Diffusion.Toolkit.Behaviors
 {
+
     public static partial class DTBehaviors
     {
         public static readonly DependencyProperty UseIsDraggedHandlersProperty =

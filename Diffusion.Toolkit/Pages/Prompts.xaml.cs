@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Database;
+using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
@@ -24,7 +25,7 @@ namespace Diffusion.Toolkit.Pages
     public partial class Prompts : Page
     {
         private DataStore _dataStore => ServiceLocator.DataStore;
-        private Toolkit.Settings _settings => ServiceLocator.Settings;
+        private Configuration.Settings _settings => ServiceLocator.Settings;
         private PromptsModel _model;
         private bool _isLoaded;
 
@@ -53,7 +54,7 @@ namespace Diffusion.Toolkit.Pages
             _model.PropertyChanged += ModelOnPropertyChanged;
         }
 
-        public Toolkit.Settings Settings { get; set; }
+        public Configuration.Settings Settings { get; set; }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {

@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Management;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using Diffusion.IO;
+using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls
@@ -14,6 +16,11 @@ namespace Diffusion.Toolkit.Controls
     /// </summary>
     public partial class ComfyNode : UserControl
     {
+        private string GetLocalizedText(string key)
+        {
+            return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
+        }
+
         public int Id { get; private set; }
 
         private Dictionary<string, TextBox>? _textBoxes;
@@ -28,7 +35,7 @@ namespace Diffusion.Toolkit.Controls
         {
             _textBoxes = new Dictionary<string, TextBox>();
 
-            if(node.Inputs != null)
+            if (node.Inputs != null)
             {
 
                 foreach (var input in node.Inputs)
@@ -64,13 +71,32 @@ namespace Diffusion.Toolkit.Controls
 
                         }
                     };
-                    label.SetBinding(Label.ContentProperty, "Name");
+                    label.SetBinding(Label.ContentProperty, "Label");
                     textBox.SetValue(Grid.ColumnProperty, 1);
                     textBox.SetBinding(TextBox.TextProperty, "Value");
                     button.SetValue(Grid.ColumnProperty, 2);
                     button.Click += ButtonOnClick;
 
-                    var filterMenuItem = new MenuItem() { Header = "Add to Filters" };
+
+                    var copyNameMenuItem = new MenuItem() { Header = GetLocalizedText("Metadata.Workflow.ContextMenu.CopyPropertyName") };
+                    copyNameMenuItem.DataContext = input;
+                    copyNameMenuItem.Click += (sender, args) =>
+                    {
+                        var bindingExpression = label.GetBindingExpression(Label.ContentProperty);
+                        var boundInput = (Input)bindingExpression.ResolvedSource;
+                        Clipboard.SetText(boundInput.Name);
+                    };
+
+                    var copyValueMenuItem = new MenuItem() { Header = GetLocalizedText("Metadata.Workflow.ContextMenu.CopyPropertyValue") };
+                    copyValueMenuItem.DataContext = input;
+                    copyValueMenuItem.Click += (sender, args) =>
+                    {
+                        var bindingExpression = label.GetBindingExpression(Label.ContentProperty);
+                        var boundInput = (Input)bindingExpression.ResolvedSource;
+                        Clipboard.SetText(boundInput.Value.ToString());
+                    };
+
+                    var filterMenuItem = new MenuItem() { Header = GetLocalizedText("Metadata.Workflow.ContextMenu.AddToFilters") };
                     filterMenuItem.DataContext = input;
                     filterMenuItem.Click += (sender, args) =>
                     {
@@ -79,7 +105,7 @@ namespace Diffusion.Toolkit.Controls
                         ServiceLocator.SearchService.AddNodeFilter(boundInput.Name, (string)boundInput.Value);
                     };
 
-                    var searchMenuItem = new MenuItem() { Header = "Add to Default Search" };
+                    var searchMenuItem = new MenuItem() { Header = GetLocalizedText("Metadata.Workflow.ContextMenu.AddToDefaultSearch") };
                     searchMenuItem.DataContext = input;
                     searchMenuItem.Click += (sender, args) =>
                     {
@@ -88,6 +114,9 @@ namespace Diffusion.Toolkit.Controls
                         ServiceLocator.SearchService.AddDefaultSearchProperty(boundInput.Name);
                     };
 
+                    button.ContextMenu.Items.Add(copyNameMenuItem);
+                    button.ContextMenu.Items.Add(copyValueMenuItem);
+                    button.ContextMenu.Items.Add(new Separator());
                     button.ContextMenu.Items.Add(filterMenuItem);
                     button.ContextMenu.Items.Add(searchMenuItem);
 
@@ -149,7 +178,7 @@ namespace Diffusion.Toolkit.Controls
                     {
                         foreach (var input in node.Inputs)
                         {
-                            if(_textBoxes.TryGetValue(input.Name, out var textBox))
+                            if (_textBoxes.TryGetValue(input.Name, out var textBox))
                             {
                                 textBox.DataContext = input;
                             }

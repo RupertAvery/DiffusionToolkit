@@ -44,7 +44,7 @@ namespace Diffusion.Toolkit.Controls
             PageChangedCommand?.Execute(args);
         }
 
-        public void GoPrevPage(Action? onCompleted, bool gotoEnd = false)
+        public bool GoPrevPage(Action? onCompleted, bool gotoEnd = false)
         {
             if (Model.Page > 1)
             {
@@ -59,11 +59,13 @@ namespace Diffusion.Toolkit.Controls
                 };
 
                 PageChangedCommand?.Execute(args);
+                return true;
             }
 
+            return false;
         }
 
-        public void GoNextPage(Action? onCompleted)
+        public bool GoNextPage(Action? onCompleted)
         {
             if (Model.Page < Model.Pages)
             {
@@ -78,7 +80,9 @@ namespace Diffusion.Toolkit.Controls
                 };
 
                 PageChangedCommand?.Execute(args);
+                return true;
             }
+            return false;
         }
 
         public void SetPagingEnabled()
@@ -147,46 +151,4 @@ namespace Diffusion.Toolkit.Controls
 
     }
 
-    public static class Utility
-    {
-        public static Action Debounce(Action func, int milliseconds = 300)
-        {
-            CancellationTokenSource? cancelTokenSource = null;
-
-            return () =>
-            {
-                cancelTokenSource?.Cancel();
-                cancelTokenSource = new CancellationTokenSource();
-
-                Task.Delay(milliseconds, cancelTokenSource.Token)
-                    .ContinueWith(t =>
-                    {
-                        if (t.IsCompletedSuccessfully)
-                        {
-                            func();
-                        }
-                    }, TaskScheduler.Default);
-            };
-        }
-
-        public static Action<T> Debounce<T>(Action<T> func, int milliseconds = 300)
-        {
-            CancellationTokenSource? cancelTokenSource = null;
-
-            return (arg) =>
-            {
-                cancelTokenSource?.Cancel();
-                cancelTokenSource = new CancellationTokenSource();
-
-                Task.Delay(milliseconds, cancelTokenSource.Token)
-                    .ContinueWith(t =>
-                    {
-                        if (t.IsCompletedSuccessfully)
-                        {
-                            func(arg);
-                        }
-                    }, TaskScheduler.Default);
-            };
-        }
-    }
 }

@@ -9,7 +9,6 @@
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
         xmlns:lex="http://wpflocalizeextension.codeplex.com"
-        xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
         xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
         lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
         lex:LocalizeDictionary.Separation="."
@@ -20,7 +19,7 @@
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         MenuWidth="300"
         TitleWidth="*"
-        ExtraButtonWidth="90"
+        ExtraButtonWidth="150"
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Window.InputBindings>
         <common:BareKeyBinding Key="I" Command="{Binding ToggleInfoCommand}"></common:BareKeyBinding>
@@ -31,11 +30,21 @@
         <KeyBinding Key="F4" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Key="F5" Command="{Binding Refresh}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="F5" Command="{Binding Refresh}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
+        <!--<KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D2" Command="{Binding ShowAlbums}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D3" Command="{Binding ShowSearch}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D4" Command="{Binding ShowFavorite}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D5" Command="{Binding ShowMarked}"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="D5" Command="{Binding ShowMarked}"></KeyBinding>-->
+        <KeyBinding Modifiers="Shift" Key="D1" Command="{Binding OpenWithCommand}" CommandParameter="1"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D2" Command="{Binding OpenWithCommand}" CommandParameter="2"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D3" Command="{Binding OpenWithCommand}" CommandParameter="3"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D4" Command="{Binding OpenWithCommand}" CommandParameter="4"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D5" Command="{Binding OpenWithCommand}" CommandParameter="5"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D6" Command="{Binding OpenWithCommand}" CommandParameter="6"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D7" Command="{Binding OpenWithCommand}" CommandParameter="7"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D8" Command="{Binding OpenWithCommand}" CommandParameter="8"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D9" Command="{Binding OpenWithCommand}" CommandParameter="9"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D0" Command="{Binding OpenWithCommand}" CommandParameter="10"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="R" Command="{Binding Rescan}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleActualSize}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="P" Command="{Binding TogglePreview}"></KeyBinding>
@@ -84,6 +93,7 @@
                 <MenuItem Header="{lex:Loc Menu.View.Folders}" IsChecked="{Binding Settings.NavigationSection.ShowFolders}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Folders"/>
                 <MenuItem Header="{lex:Loc Menu.View.Models}" IsChecked="{Binding Settings.NavigationSection.ShowModels}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Models"/>
                 <MenuItem Header="{lex:Loc Menu.View.Albums}" IsChecked="{Binding Settings.NavigationSection.ShowAlbums}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Albums"/>
+                <MenuItem Header="{lex:Loc Menu.View.Queries}" IsChecked="{Binding Settings.NavigationSection.ShowQueries}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Queries"/>
                 <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.FitToPreview}" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
                 <MenuItem Header="{lex:Loc Menu.View.ActualSize}" IsChecked="{Binding ActualSize}" Command="{Binding ToggleActualSize}"  InputGestureText="Ctrl+Shift+A"/>
@@ -139,11 +149,45 @@
                 <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" Grid.Column="1">
-                <Button Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
+                <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleTagsCommand}">
+                    <fa:ImageAwesome ToolTip="Show/Hide Tags" Icon="Star" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <fa:ImageAwesome.Resources>
+                            <Style TargetType="fa:ImageAwesome">
+                                <Setter Property="Opacity" Value="0.5"></Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding ShowTags}" Value="{StaticResource TrueValue}">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </fa:ImageAwesome.Resources>
+                    </fa:ImageAwesome>
+                </Button>
+                <Button Style="{StaticResource StaticButton}" Margin="0,0,15,0" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleAutoAdvance}">
+                    <fa:ImageAwesome ToolTip="Advance on Tag" Icon="ArrowRight" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <fa:ImageAwesome.Resources>
+                            <Style TargetType="fa:ImageAwesome">
+                                <Setter Property="Opacity" Value="0.5"></Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding AutoAdvance}" Value="{StaticResource TrueValue}">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </fa:ImageAwesome.Resources>
+                    </fa:ImageAwesome>
+                </Button>
+                <Button Margin="0,0,15,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
                     <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Margin="15,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
+                <Button Margin="0,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
                     <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
@@ -229,12 +273,15 @@
                             <fa:ImageAwesome ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
-                        <Button Margin="0,5,0,10" Height="16" Width="24" 
-                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Settings}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSettingsCommand}">
-                            <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
+                        <Grid>
+                            <Button Margin="0,5,0,10" Height="16" Width="24" 
+                                    behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Settings}"
+                                    Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSettingsCommand}">
+                                <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                </fa:ImageAwesome>
+                            </Button>
+                            <Ellipse Fill="Red" Width="8" Height="8" Margin="15,0,0,15" Visibility="{Binding IsSettingsDirty, Converter={StaticResource boolToVisCol}}"></Ellipse>
+                        </Grid>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Recycle Bin}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowMarked}">

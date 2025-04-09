@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Diffusion.Database;
 using Diffusion.Toolkit.Services;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit
 {
@@ -34,7 +34,7 @@ namespace Diffusion.Toolkit
 
                 var paths = GetSearchResults().Select(m => m.Path).ToList();
 
-                await ServiceLocator.MetadataScannerService.QueueBatchAsync(paths, cancellationToken);
+                await ServiceLocator.MetadataScannerService.QueueBatchAsync(paths, null, cancellationToken);
             }
 
 

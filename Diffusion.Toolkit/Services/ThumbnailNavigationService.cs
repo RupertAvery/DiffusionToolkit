@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -17,6 +18,8 @@ public class ThumbnailNavigationService
 
     public void MoveNext()
     {
+        //System.Diagnostics.StackTrace t = new System.Diagnostics.StackTrace();
+        //Debug.WriteLine(t);
         Next?.Invoke(this, EventArgs.Empty);
     }
 

@@ -35,13 +35,6 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(ModelProperty, value);
         }
 
-
-        public Action<IList<ImageEntry>> MoveFiles
-        {
-            get => ThumbnailListView.MoveFiles;
-            set => ThumbnailListView.MoveFiles = value;
-        }
-
         public ImageEntry SelectedImageEntry
         {
             get => (ImageEntry)GetValue(SelectedImageEntryProperty);
@@ -51,9 +44,7 @@ namespace Diffusion.Toolkit.Controls
         public Action ClearQuery { get; set; }
 
         public Action SearchImages { get; set; }
-
-        public Action<bool> ReloadMatches { get; set; }
-
+        
         public ThumbnailPane()
         {
             InitializeComponent();
@@ -86,17 +77,6 @@ namespace Diffusion.Toolkit.Controls
             Model.SearchHint = $"Search for {randomHint}";
         }
 
-        //public void SetPagingEnabled()
-        //{
-        //    ThumbnailListView.SetPagingEnabled();
-        //}
-
-        //public void ResetView(bool focus)
-        //{
-        //    ThumbnailListView.ResetView(focus);
-        //}
-
-
         private void SearchTermTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
@@ -106,11 +86,6 @@ namespace Diffusion.Toolkit.Controls
                     e.Handled = true;
                     break;
             }
-        }
-
-        private void ThumbnailListView_OnPageChangedEvent(object? sender, PageChangedEventArgs e)
-        {
-            ReloadMatches(true);
         }
     }
 }

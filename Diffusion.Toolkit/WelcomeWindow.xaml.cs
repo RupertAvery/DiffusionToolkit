@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Navigation;
-using Diffusion.Common;
-using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.Services;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Diffusion.Toolkit
@@ -22,6 +22,8 @@ namespace Diffusion.Toolkit
         private bool _storeWorkflow;
         private bool _storeMetadata;
         private bool _scanForNewImagesOnStartup;
+
+        private List<FolderChange> _folderChanges = new List<FolderChange>();
 
         public WelcomeModel()
         {
@@ -99,6 +101,8 @@ namespace Diffusion.Toolkit
         private readonly Settings _settings;
         private readonly WelcomeModel _model = new WelcomeModel();
 
+        public IReadOnlyList<string> SelectedPaths { get; private set; }
+
         public WelcomeWindow(Settings settings)
         {
             _settings = settings;
@@ -114,6 +118,7 @@ namespace Diffusion.Toolkit
                 settings.WatchFolders = true;
                 settings.RecurseFolders = true;
                 settings.ImagePaths = _model.ImagePaths.ToList();
+                SelectedPaths = _model.ImagePaths.ToList();
                 settings.StoreWorkflow = _model.StoreWorkflow;
                 settings.StoreMetadata = _model.StoreMetadata;
                 settings.ScanForNewImagesOnStartup = _model.ScanForNewImagesOnStartup;

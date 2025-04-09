@@ -7,6 +7,8 @@
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+             xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
+             xmlns:configuration="clr-namespace:Diffusion.Toolkit.Configuration"
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="400">
     <UserControl.Resources>
@@ -27,7 +29,7 @@
                             <fa:ImageAwesome.Style>
                                 <Style>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static local:AccordionState.Expanded}">
+                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static configuration:AccordionState.Expanded}">
                                             <DataTrigger.EnterActions>
                                                 <BeginStoryboard>
                                                     <Storyboard TargetProperty="Rotation">
@@ -43,7 +45,7 @@
                                                 </BeginStoryboard>
                                             </DataTrigger.ExitActions>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static local:AccordionState.Collapsed}">
+                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static configuration:AccordionState.Collapsed}">
                                             <DataTrigger.EnterActions>
                                                 <BeginStoryboard>
                                                     <Storyboard TargetProperty="Rotation">

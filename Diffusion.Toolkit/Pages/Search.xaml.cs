@@ -25,19 +25,22 @@ using System.Collections.Specialized;
 using System.Text.Json;
 using System.Threading;
 using Diffusion.IO;
-using Image = Diffusion.Database.Image;
+using Image = Diffusion.Database.Models.Image;
 using Diffusion.Toolkit.Common;
 using Microsoft.Extensions.Options;
-using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Themes;
 using static System.Net.WebRequestMethods;
 using WPFLocalizeExtension.Engine;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Diffusion.Common;
+using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 using Node = Diffusion.IO.Node;
 using SearchView = Diffusion.Database.SearchView;
 using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
+using Diffusion.Database.Models;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -54,6 +57,7 @@ namespace Diffusion.Toolkit.Pages
         public bool Focus { get; set; }
         public Action? OnCompleted { get; set; }
         public CursorPosition CursorPosition { get; set; }
+        public bool IsEmpty { get; set; }
     }
 
     public class ModeSettings
@@ -472,6 +476,7 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSectionSettings.ShowFolders):
                     case nameof(NavigationSectionSettings.ShowModels):
                     case nameof(NavigationSectionSettings.ShowAlbums):
+                    case nameof(NavigationSectionSettings.ShowQueries):
                         SetAccordionResizeableState();
                         break;
 
@@ -495,6 +500,9 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSection.AlbumState):
                         _settings.NavigationSection.AlbumState = _model.NavigationSection.AlbumState;
                         break;
+                    case nameof(NavigationSection.QueryState):
+                        _settings.NavigationSection.QueryState = _model.NavigationSection.QueryState;
+                        break;
 
                     case nameof(NavigationSection.FolderHeight):
                         _settings.NavigationSection.FolderHeight = _model.NavigationSection.FolderHeight;
@@ -505,6 +513,10 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSection.AlbumHeight):
                         _settings.NavigationSection.AlbumHeight = _model.NavigationSection.AlbumHeight;
                         break;
+                    case nameof(NavigationSection.QueryHeight):
+                        _settings.NavigationSection.QueryHeight = _model.NavigationSection.QueryHeight;
+                        break;
+
                         //case nameof(NavigationSection.ShowFolders):
                         //    _settings.NavigationSection.ShowFolders = _model.NavigationSection.ShowFolders;
                         //    break;
@@ -520,10 +532,12 @@ namespace Diffusion.Toolkit.Pages
             _model.NavigationSection.FolderState = _settings.NavigationSection.FolderState;
             _model.NavigationSection.ModelState = _settings.NavigationSection.ModelState;
             _model.NavigationSection.AlbumState = _settings.NavigationSection.AlbumState;
+            _model.NavigationSection.QueryHeight = _settings.NavigationSection.QueryHeight;
 
             _model.NavigationSection.FolderHeight = _settings.NavigationSection.FolderHeight;
             _model.NavigationSection.ModelHeight = _settings.NavigationSection.ModelHeight;
             _model.NavigationSection.AlbumHeight = _settings.NavigationSection.AlbumHeight;
+            _model.NavigationSection.QueryState = _settings.NavigationSection.QueryState;
 
             //_model.NavigationSection.ShowFolders = _settings.NavigationSection.ShowFolders;
             //_model.NavigationSection.ShowModels = _settings.NavigationSection.ShowModels;
@@ -545,38 +559,12 @@ namespace Diffusion.Toolkit.Pages
                 _ = ExpandToPath(Path.GetDirectoryName(entry.Path));
             };
 
-
-            PreviewPane.NSFW = (id, b) =>
+            ServiceLocator.TaggingService.TagUpdated += (sender, arguments) =>
             {
-                ServiceLocator.DataStore.SetNSFW(id, b);
-                Update(id);
-
+                Update(arguments.Id);
                 AdvanceOnTag();
             };
 
-            PreviewPane.Favorite = (id, b) =>
-            {
-                ServiceLocator.DataStore.SetFavorite(id, b);
-                Update(id);
-
-                AdvanceOnTag();
-            };
-
-            PreviewPane.Rate = (id, b) =>
-            {
-                ServiceLocator.DataStore.SetRating(id, b);
-                Update(id);
-
-                AdvanceOnTag();
-            };
-
-            PreviewPane.Delete = (id, b) =>
-            {
-                ServiceLocator.DataStore.SetDeleted(id, b);
-                Update(id);
-
-                AdvanceOnTag();
-            };
 
             FilterPopup.Closed += (sender, args) =>
             {
@@ -721,7 +709,7 @@ namespace Diffusion.Toolkit.Pages
 
         public void SearchImages(QueryOptions? queryOptions, bool focus = false)
         {
-            if (!ServiceLocator.Settings.ImagePaths.Any())
+            if (!ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Any())
             {
                 MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -909,14 +897,14 @@ namespace Diffusion.Toolkit.Pages
                         ThumbnailListView.SetPagingEnabled();
                     });
 
-                    ReloadMatches(new ReloadOptions() { Focus = focus });
-
+                    ReloadMatches(new ReloadOptions() { Focus = focus, IsEmpty = count == 0 });
                 })
                 .ContinueWith(d =>
                 {
                     if (d.IsFaulted)
                     {
                         ServiceLocator.MessageService.ShowMessage(d.Exception.Message, "An error occured while searching");
+                        _model.IsBusy = false;
                     }
                 });
 
@@ -1159,196 +1147,56 @@ namespace Diffusion.Toolkit.Pages
         {
             Task.Run(() =>
             {
-                LoadMatches();
-                ThumbnailListView.ResetView(options);
                 Dispatcher.Invoke(() =>
                 {
-                    options?.OnCompleted?.Invoke();
-
-                    if (options is not null && _model.Images is { Count: > 0 })
-                    {
-                        _model.SelectedImageEntry = options.CursorPosition switch
-                        {
-                            CursorPosition.Start => _model.Images[0],
-                            CursorPosition.End => _model.Images[^1],
-                            _ => _model.Images[0]
-                        };
-                    }
-                    else
-                    {
-                        _model.SelectedImageEntry = null;
-                    }
-
+                    _model.IsBusy = true;
                 });
 
+                try
+                {
+                    LoadMatches();
+                    ThumbnailListView.ResetView(options);
+                    Dispatcher.Invoke(() =>
+                    {
+                        options?.OnCompleted?.Invoke();
+
+                        if (options is not null && _model.Images is { Count: > 0 })
+                        {
+                            var empty = _model.Images.FirstOrDefault(d => d.IsEmpty);
+
+                            var lastIndex = _model.Images.Count - 1;
+
+                            if (empty != null)
+                            {
+                                lastIndex = _model.Images.IndexOf(empty) - 1;
+                            }
+
+                            _model.SelectedImageEntry = options.CursorPosition switch
+                            {
+                                CursorPosition.Start => _model.Images[0],
+                                CursorPosition.End => _model.Images[lastIndex],
+                                _ => _model.Images[0]
+                            };
+
+                            //ThumbnailListView.SelectedImageEntry = _model.SelectedImageEntry;
+                        }
+                        else
+                        {
+                            _model.SelectedImageEntry = null;
+                        }
+
+                    });
+                }
+                finally
+                {
+                    _model.IsBusy = false;
+                }
 
             });
         }
-
-        private int _startIndex = -1;
-
-        public void StartNavigateCursor()
-        {
-            if (_startIndex == -1 && _model.SelectedImageEntry != null)
-            {
-                _startIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
-            }
-        }
-
-        public void EndNavigateCursor()
-        {
-            _startIndex = -1;
-        }
-
-
-        public void Advance()
-        {
-            StartNavigateCursor();
-            NavigateCursorNext();
-        }
-
-        public void NavigateCursorNext()
-        {
-            if (_model.Images == null) return;
-
-            int currentIndex = 0;
-
-            if (_model.SelectedImageEntry != null)
-            {
-                currentIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
-            }
-
-            if (currentIndex < _model.Images.Count - 1)
-            {
-                ThumbnailListView.ShowItem(currentIndex + 1);
-                _model.SelectedImageEntry = _model.Images[currentIndex + 1];
-                ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-            }
-            else
-            {
-                if (_startIndex == _model.Images.Count - 1)
-                {
-                    ThumbnailListView.GoNextPage(() =>
-                    {
-                        _model.SelectedImageEntry = _model.Images[0];
-                        ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-                        NavigationCompleted?.Invoke(this, new EventArgs());
-                    });
-                    _startIndex = 0;
-
-                }
-            }
-
-        }
-
-        public void NavigateCursorPrevious()
-        {
-            if (_model.Images == null) return;
-            int currentIndex = 0;
-            if (_model.SelectedImageEntry != null)
-            {
-                currentIndex = _model.Images.IndexOf(_model.SelectedImageEntry);
-            }
-
-            if (currentIndex > 0)
-            {
-                ThumbnailListView.ShowItem(currentIndex - 1);
-                _model.SelectedImageEntry = _model.Images[currentIndex - 1];
-                ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-            }
-            else
-            {
-                if (_startIndex == 0)
-                {
-                    ThumbnailListView.GoPrevPage(() =>
-                    {
-                        _model.SelectedImageEntry = _model.Images[^1];
-                        ThumbnailListView.ThumbnailListView.SelectedItem = _model.SelectedImageEntry;
-                        NavigationCompleted?.Invoke(this, new EventArgs());
-                    }, true);
-                    _startIndex = _model.Images.Count - 1;
-
-                }
-            }
-
-        }
-
-        //private async Task LoadMatchesAsync()
-        //{
-        //    var rId = r.NextInt64();
-        //    ThumbnailLoader.Instance.SetCurrentRequestId(rId);
-
-        //    var query = _model.SearchText;
-
-        //    if (_currentModeSettings.IsFavorite)
-        //    {
-        //        query = $"{query} favorite: true";
-        //    }
-        //    else if (_currentModeSettings.IsMarkedForDeletion)
-        //    {
-        //        query = $"{query} delete: true";
-        //    }
-
-
-        //    var matches = Time(() => DataStore
-        //        .Search(query, _settings.PageSize,
-        //            _settings.PageSize * (_model.Page - 1),
-        //            _model.SortBy,
-        //            _model.SortDirection
-        //            ));
-
-        //    Dispatcher.Invoke(() =>
-        //    {
-        //        _model.Images.Clear();
-        //    });
-
-        //    var images = new List<ImageEntry>();
-
-        //    var sw = new Stopwatch();
-        //    sw.Start();
-
-
-        //    var count = 0;
-        //    foreach (var file in matches)
-        //    {
-        //        images.Add(new ImageEntry(rId)
-        //        {
-        //            Id = file.Id,
-        //            Favorite = file.Favorite,
-        //            ForDeletion = file.ForDeletion,
-        //            Rating = file.Rating,
-        //            Path = file.Path,
-        //            CreatedDate = file.CreatedDate,
-        //            FileName = Path.GetFileName(file.Path),
-        //            NSFW = file.NSFW
-        //        });
-
-
-        //        count++;
-        //    }
-
-        //    Dispatcher.Invoke(() =>
-        //    {
-        //        _model.Images = new ObservableCollection<ImageEntry>(images);
-        //    });
-
-        //    sw.Stop();
-
-        //    Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
-
-        //    foreach (var image in _model.Images)
-        //    {
-        //        await image.LoadThumbnail();
-        //    }
-        //}
 
         private void LoadMatches()
         {
-            Dispatcher.Invoke(() =>
-            {
-                _model.IsBusy = true;
-                //                _model.Images?.Clear();
-            });
 
             var foldersEntries = new List<ImageEntry>();
 
@@ -1362,7 +1210,7 @@ namespace Diffusion.Toolkit.Pages
 
                 if (_currentModeSettings.CurrentFolderPath == null)
                 {
-                    folders = ServiceLocator.Settings.ImagePaths;
+                    folders = ServiceLocator.FolderService.RootFolders.Select(d => d.Path);
                 }
                 else
                 {
@@ -1374,7 +1222,7 @@ namespace Diffusion.Toolkit.Pages
                         return;
                     }
 
-                    if (!ServiceLocator.Settings.ImagePaths.Contains(_currentModeSettings.CurrentFolderPath))
+                    if (!ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Contains(_currentModeSettings.CurrentFolderPath))
                     {
                         folders = folders.Concat(new[] { ".." });
                     }
@@ -1457,6 +1305,7 @@ namespace Diffusion.Toolkit.Pages
                     if (totalEntries > _model.Images.Count)
                     {
                         var difference = totalEntries - _model.Images.Count;
+
                         for (var i = 0; i < difference; i++)
                         {
                             _model.Images.Add(new ImageEntry(0));
@@ -1558,8 +1407,6 @@ namespace Diffusion.Toolkit.Pages
                 ThumbnailListView.ReloadThumbnailsView();
 
                 ThumbnailListView.ClearSelection();
-
-                _model.IsBusy = false;
 
                 if (_model.SelectedImageEntry != null)
                 {
@@ -1825,23 +1672,7 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
-        public string? Prompt => _model.SearchText;
-
         public Filter Filter => _model.Filter.AsFilter();
-
-        private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                if (_model.FolderPath != null && Directory.Exists(_model.FolderPath))
-                {
-                    throw new NotImplementedException();
-                    //_currentModeSettings.CurrentFolder = _model.FolderPath;
-
-                    SearchImages(null);
-                }
-            }
-        }
 
         public void ExtOnKeyUp(object sender, KeyEventArgs e)
         {
@@ -1854,22 +1685,6 @@ namespace Diffusion.Toolkit.Pages
                 else if (e.Key == Key.Right)
                 {
                     EndNavigateCursor();
-                }
-                else if (e.Key == Key.Delete)
-                {
-                    AdvanceOnTag();
-                }
-                else if (e.Key >= Key.D0 && e.Key <= Key.D9)
-                {
-                    AdvanceOnTag();
-                }
-                else if (e.Key == Key.F)
-                {
-                    AdvanceOnTag();
-                }
-                else if (e.Key == Key.F)
-                {
-                    AdvanceOnTag();
                 }
             }
         }
@@ -1895,7 +1710,7 @@ namespace Diffusion.Toolkit.Pages
 
         private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
-            ExtOnKeyUp(this, e);
+            //ExtOnKeyUp(this, e);
         }
 
         private void PreviewPane_OnPreviewKeyDown(object sender, KeyEventArgs e)

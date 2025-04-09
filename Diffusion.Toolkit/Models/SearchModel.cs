@@ -1,28 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.ComponentModel;
 using System.Windows.Input;
-using Diffusion.Database;
+using Diffusion.Common;
+using Diffusion.Database.Models;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Services;
-using Filter = Diffusion.Database.Filter;
-using NodeFilter = Diffusion.Database.NodeFilter;
 
 namespace Diffusion.Toolkit.Models;
-
-public class OptionValue
-{
-    public string Name { get; }
-    public string Value { get; }
-
-    public OptionValue(string name, string value)
-    {
-        Name = name;
-        Value = value;
-    }
-}
 
 public class SearchModel : BaseNotify
 {
@@ -95,6 +81,15 @@ public class SearchModel : BaseNotify
         MetadataSection = new MetadataSection();
         NavigationSection = new NavigationSection();
         SearchSettings = new SearchSettings();
+        PropertyChanged += OnPropertyChanged;
+    }
+
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CurrentImage))
+        {
+            ServiceLocator.MainModel.CurrentImage = CurrentImage;
+        }
     }
 
     //public SearchModel(MainModel mainModel)
@@ -366,7 +361,16 @@ public class SearchModel : BaseNotify
     public ViewMode CurrentViewMode
     {
         get => _currentViewMode;
-        set => SetField(ref _currentViewMode, value);
+        set
+        {
+            SetField(ref _currentViewMode, value);
+            OnPropertyChanged(nameof(IsFolderView));
+        }
+    }
+
+    public bool IsFolderView
+    {
+        get => _currentViewMode == ViewMode.Folder;
     }
 
 
@@ -416,413 +420,4 @@ public class SearchModel : BaseNotify
     }
 
     public SearchSettings SearchSettings { get; set; }
-}
-
-public class SearchSettings : BaseNotify
-{
-    private string _includeNodeProperties;
-    private bool _searchNodes;
-    private bool _searchRawData;
-    private bool _searchAllProperties;
-    private bool _searchNoProperties;
-
-    public string IncludeNodeProperties
-    {
-        get => _includeNodeProperties;
-        set => SetField(ref _includeNodeProperties, value);
-    }
-
-    public IEnumerable<string> GetNodePropertiesList()
-    {
-        return IncludeNodeProperties.Split(new[] { "\n", "\r\n", "," }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-    }
-
-    public void AddDefaultSearchProperty(string property)
-    {
-        var properties = IncludeNodeProperties.Split(new[] { "\n", "\r\n", "," }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (!properties.Contains(property.Trim().ToLower()))
-        {
-            IncludeNodeProperties = string.Join("\n",properties.Append(property));
-        }
-    }
-
-    public bool SearchRawData
-
-    {
-        get => _searchRawData;
-        set => SetField(ref _searchRawData, value);
-    }
-
-    public bool SearchNoProperties
-    {
-        get => _searchNoProperties;
-        set => SetField(ref _searchNoProperties, value);
-    }
-
-    public bool SearchAllProperties
-    {
-        get => _searchAllProperties;
-        set => SetField(ref _searchAllProperties, value);
-    }
-
-    public bool SearchNodes
-    {
-        get => _searchNodes;
-        set => SetField(ref _searchNodes, value);
-    }
-}
-
-public class NavigationSection : BaseNotify
-{
-    private AccordionState _folderState;
-    private AccordionState _modelState;
-    private AccordionState _albumState;
-    private bool _showFolders;
-    private bool _showModels;
-    private bool _showAlbums;
-    private FoldersSection? _foldersSection;
-    private double _folderHeight;
-    private double _albumHeight;
-    private double _modelHeight;
-
-    public NavigationSection()
-    {
-        FoldersSection = new FoldersSection();
-    }
-
-    public bool ShowFolders
-    {
-        get => _showFolders;
-        set => SetField(ref _showFolders, value);
-    }
-
-    public bool ShowModels
-    {
-        get => _showModels;
-        set => SetField(ref _showModels, value);
-    }
-
-    public bool ShowAlbums
-    {
-        get => _showAlbums;
-        set => SetField(ref _showAlbums, value);
-    }
-
-    public AccordionState FolderState
-    {
-        get => _folderState;
-        set => SetField(ref _folderState, value);
-    }
-
-    public double FolderHeight
-    {
-        get => _folderHeight;
-        set => SetField(ref _folderHeight, value);
-    }
-
-
-    public AccordionState ModelState
-    {
-        get => _modelState;
-        set => SetField(ref _modelState, value);
-    }
-
-    public double ModelHeight
-    {
-        get => _modelHeight;
-        set => SetField(ref _modelHeight, value);
-    }
-
-    public AccordionState AlbumState
-    {
-        get => _albumState;
-        set => SetField(ref _albumState, value);
-    }
-
-    public double AlbumHeight
-    {
-        get => _albumHeight;
-        set => SetField(ref _albumHeight, value);
-    }
-
-    public FoldersSection FoldersSection
-    {
-        get => _foldersSection;
-        set => SetField(ref _foldersSection, value);
-    }
-}
-
-public class FoldersSection : BaseNotify
-{
-    private bool _canDelete;
-    private bool _canRename;
-
-    public bool CanDelete
-    {
-        get => _canDelete;
-        set => SetField(ref _canDelete, value);
-    }
-
-    public bool CanRename
-    {
-        get => _canRename;
-        set => SetField(ref _canRename, value);
-    }
-}
-
-public class MetadataSection : BaseNotify
-{
-    private AccordionState _promptState;
-    private AccordionState _negativePromptState;
-    private AccordionState _seedState;
-    private AccordionState _samplerState;
-    private AccordionState _pathState;
-    private AccordionState _albumState;
-    private AccordionState _othersState;
-    private AccordionState _modelState;
-    private AccordionState _dateState;
-    private AccordionState _workflowState;
-
-    public AccordionState PromptState
-    {
-        get => _promptState;
-        set => SetField(ref _promptState, value);
-    }
-
-    public AccordionState NegativePromptState
-    {
-        get => _negativePromptState;
-        set => SetField(ref _negativePromptState, value);
-    }
-
-    public AccordionState SeedState
-    {
-        get => _seedState;
-        set => SetField(ref _seedState, value);
-    }
-
-    public AccordionState SamplerState
-    {
-        get => _samplerState;
-        set => SetField(ref _samplerState, value);
-    }
-
-    public AccordionState OthersState
-    {
-        get => _othersState;
-        set => SetField(ref _othersState, value);
-    }
-
-    public AccordionState ModelState
-    {
-        get => _modelState;
-        set => SetField(ref _modelState, value);
-    }
-
-    public AccordionState PathState
-    {
-        get => _pathState;
-        set => SetField(ref _pathState, value);
-    }
-
-    public AccordionState DateState
-    {
-        get => _dateState;
-        set => SetField(ref _dateState, value);
-    }
-
-    public AccordionState AlbumState
-    {
-        get => _albumState;
-        set => SetField(ref _albumState, value);
-    }
-
-    public AccordionState WorkflowState
-    {
-        get => _workflowState; 
-        set => SetField(ref _workflowState, value);
-    }
-}
-
-public static class SearchControlModelExtensions
-{
-    public static FilterControlModel AsModel(this Filter filter)
-    {
-        var model = new FilterControlModel();
-
-        model.UsePrompt = filter.UsePrompt;
-        model.Prompt = filter.Prompt;
-        model.UsePromptEx = filter.UsePromptEx;
-        model.PromptEx = filter.PromptEx;
-        model.UseNegativePrompt = filter.UseNegativePrompt;
-        model.NegativePrompt = filter.NegativePrompt;
-        model.UseNegativePromptEx = filter.UseNegativePromptEx;
-        model.NegativePromptEx = filter.NegativePromptEx;
-
-        model.UseSteps = filter.UseSteps;
-        model.Steps = filter.Steps;
-        model.UseSampler = filter.UseSampler;
-        model.Sampler = filter.Sampler;
-        model.UseSeed = filter.UseSeed;
-        model.SeedStart = filter.SeedStart;
-        model.SeedEnd = filter.SeedEnd;
-        model.UseCFGScale = filter.UseCFGScale;
-        model.CFGScale = filter.CFGScale;
-        model.UseSize = filter.UseSize;
-        model.Width = filter.Width;
-        model.Height = filter.Height;
-        model.UseModelHash = filter.UseModelHash;
-        model.ModelHash = filter.ModelHash;
-        model.UseModelName = filter.UseModelName;
-        model.ModelName = filter.ModelName;
-
-        model.UseFavorite = filter.UseFavorite;
-        model.Favorite = filter.Favorite;
-        model.UseRating = filter.UseRating;
-        model.RatingOp = filter.RatingOp;
-        model.Rating = filter.Rating;
-        model.Unrated = filter.Unrated;
-        model.UseNSFW = filter.UseNSFW;
-        model.NSFW = filter.NSFW;
-
-        model.UseForDeletion = filter.UseForDeletion;
-        model.ForDeletion = filter.ForDeletion;
-
-        model.UseBatchSize = filter.UseBatchSize;
-        model.BatchSize = filter.BatchSize;
-
-        model.UseBatchPos = filter.UseBatchPos;
-        model.BatchPos = filter.BatchPos;
-
-        model.NoAestheticScore = filter.NoAestheticScore;
-        model.UseAestheticScore = filter.UseAestheticScore;
-        model.AestheticScoreOp = filter.AestheticScoreOp;
-        model.AestheticScore = filter.AestheticScore;
-
-        model.UsePath = filter.UsePath;
-        model.Path = filter.Path;
-
-        model.UseCreationDate = filter.UseCreationDate;
-        model.Start = filter.Start;
-        model.End = filter.End;
-
-        model.UseHyperNet = filter.UseHyperNet;
-        model.HyperNet = filter.HyperNet;
-
-        model.UseHyperNetStr = filter.UseHyperNetStr;
-        model.HyperNetStrOp = filter.HyperNetStrOp;
-        model.HyperNetStr = filter.HyperNetStr;
-
-        model.UseNoMetadata = filter.UseNoMetadata;
-        model.NoMetadata = filter.NoMetadata;
-
-        model.UseInAlbum = filter.UseInAlbum;
-        model.InAlbum = filter.InAlbum;
-
-        model.UseUnavailable = filter.UseUnavailable;
-        model.Unavailable = filter.Unavailable;
-
-        model.NodeFilters = new ObservableCollection<Controls.NodeFilter>(filter.NodeFilters.Select(d => new Controls.NodeFilter()
-        {
-            IsActive = d.IsActive,
-            Operation = d.Operation,
-            Node = d.Node,
-            Property = d.Property,
-            Comparison = d.Comparison,
-            Value = d.Value,
-        }));
-
-        return model;
-    }
-
-    public static Filter AsFilter(this FilterControlModel model)
-    {
-        var filter = new Filter();
-
-        filter.UsePrompt = model.UsePrompt;
-        filter.Prompt = model.Prompt;
-        filter.UsePromptEx = model.UsePromptEx;
-        filter.PromptEx = model.PromptEx;
-        filter.UseNegativePrompt = model.UseNegativePrompt;
-        filter.NegativePrompt = model.NegativePrompt;
-        filter.UseNegativePromptEx = model.UseNegativePromptEx;
-        filter.NegativePromptEx = model.NegativePromptEx;
-
-        filter.UseSteps = model.UseSteps;
-        filter.Steps = model.Steps;
-        filter.UseSampler = model.UseSampler;
-        filter.Sampler = model.Sampler;
-        filter.UseSeed = model.UseSeed;
-        filter.SeedStart = model.SeedStart;
-        filter.SeedEnd = model.SeedEnd;
-        filter.UseCFGScale = model.UseCFGScale;
-        filter.CFGScale = model.CFGScale;
-        filter.UseSize = model.UseSize;
-        filter.Width = model.Width;
-        filter.Height = model.Height;
-        filter.UseModelHash = model.UseModelHash;
-        filter.ModelHash = model.ModelHash;
-        filter.UseModelName = model.UseModelName;
-        filter.ModelName = model.ModelName;
-
-        filter.UseFavorite = model.UseFavorite;
-        filter.Favorite = model.Favorite;
-        filter.UseRating = model.UseRating;
-        filter.RatingOp = model.RatingOp;
-        filter.Rating = model.Rating;
-        filter.Unrated = model.Unrated;
-        filter.UseNSFW = model.UseNSFW;
-        filter.NSFW = model.NSFW;
-        
-        filter.UseForDeletion = model.UseForDeletion;
-        filter.ForDeletion = model.ForDeletion;
-
-        filter.UseBatchSize = model.UseBatchSize;
-        filter.BatchSize = model.BatchSize;
-
-        filter.UseBatchPos = model.UseBatchPos;
-        filter.BatchPos = model.BatchPos;
-
-        filter.NoAestheticScore = model.NoAestheticScore;
-        filter.UseAestheticScore = model.UseAestheticScore;
-        filter.AestheticScoreOp = model.AestheticScoreOp;
-        filter.AestheticScore = model.AestheticScore;
-
-        filter.UsePath = model.UsePath;
-        filter.Path = model.Path;
-
-        filter.UseCreationDate = model.UseCreationDate;
-        filter.Start = model.Start;
-        filter.End = model.End;
-
-        filter.UseHyperNet = model.UseHyperNet;
-        filter.HyperNet = model.HyperNet;
-
-        filter.UseHyperNetStr = model.UseHyperNetStr;
-        filter.HyperNetStrOp = model.HyperNetStrOp;
-        filter.HyperNetStr = model.HyperNetStr;
-
-        filter.UseNoMetadata = model.UseNoMetadata;
-        filter.NoMetadata = model.NoMetadata;
-
-        filter.UseInAlbum = model.UseInAlbum;
-        filter.InAlbum = model.InAlbum;
-
-        filter.UseUnavailable = model.UseUnavailable;
-        filter.Unavailable = model.Unavailable;
-
-        filter.NodeFilters = model.NodeFilters.Select(d => new NodeFilter()
-        {
-            IsActive = d.IsActive,
-            Operation = d.Operation,
-            Node = d.Node,
-            Property = d.Property,
-            Comparison = d.Comparison,
-            Value = d.Value,
-        }).ToList();
-
-        return filter;
-    }
-
-
 }

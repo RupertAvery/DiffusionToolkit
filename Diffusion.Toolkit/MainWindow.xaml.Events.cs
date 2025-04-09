@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using System.Windows.Interop;
 using WPFLocalizeExtension.Providers;
 using System.Collections.ObjectModel;
+using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Thumbnails;
@@ -332,23 +333,23 @@ namespace Diffusion.Toolkit
             // Don't do any database updates here
             switch (args.PropertyName)
             {
-                case nameof(Toolkit.Settings.PageSize):
+                case nameof(Settings.PageSize):
                     ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
                     _search.SetPageSize(_settings.PageSize);
                     _prompts.SetPageSize(_settings.PageSize);
                     _search.SearchImages();
                     break;
 
-                case nameof(Toolkit.Settings.ModelRootPath):
-                case nameof(Toolkit.Settings.HashCache):
+                case nameof(Settings.ModelRootPath):
+                case nameof(Settings.HashCache):
                     LoadModels();
                     break;
 
-                case nameof(Toolkit.Settings.Theme):
+                case nameof(Settings.Theme):
                     UpdateTheme(_settings.Theme);
                     break;
 
-                case nameof(Toolkit.Settings.PortableMode):
+                case nameof(Settings.PortableMode):
                     if (_settings.PortableMode)
                     {
                         GoPortable();
@@ -359,7 +360,7 @@ namespace Diffusion.Toolkit
                     }
                     break;
 
-                case nameof(Toolkit.Settings.Culture):
+                case nameof(Settings.Culture):
                     if (_settings.Culture == "default")
                     {
                         LocalizeDictionary.Instance.Culture = DefaultCulture;
@@ -371,6 +372,11 @@ namespace Diffusion.Toolkit
                     break;
 
             }
+        }
+
+        private async Task OpenWith(string? arg)
+        {
+            await ServiceLocator.ExternalApplicationsService.OpenWith(int.Parse(arg));
         }
 
     }

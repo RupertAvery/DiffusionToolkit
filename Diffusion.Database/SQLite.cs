@@ -892,27 +892,67 @@ namespace SQLite
 		/// <returns>Zero on success.</returns>
 		public int CreateIndex<T> (Expression<Func<T, object>> property, bool unique = false)
 		{
-			MemberExpression mx;
 			if (property.Body.NodeType == ExpressionType.Convert) {
-				mx = ((UnaryExpression)property.Body).Operand as MemberExpression;
-			}
-			else {
-				mx = (property.Body as MemberExpression);
-			}
-			var propertyInfo = mx.Member as PropertyInfo;
-			if (propertyInfo == null) {
-				throw new ArgumentException ("The lambda expression 'property' should point to a valid Property");
-			}
+				var mx = ((UnaryExpression)property.Body).Operand as MemberExpression;
+                var propertyInfo = mx.Member as PropertyInfo;
+                if (propertyInfo == null)
+                {
+                    throw new ArgumentException("The lambda expression 'property' should point to a valid Property");
+                }
 
-			var propName = propertyInfo.Name;
+                var propName = propertyInfo.Name;
 
-			var map = GetMapping<T> ();
-			var colName = map.FindColumnWithPropertyName (propName).Name;
+                var map = GetMapping<T>();
+                var colName = map.FindColumnWithPropertyName(propName).Name;
 
-			return CreateIndex (map.TableName, colName, unique);
+                return CreateIndex(map.TableName, colName, unique);
+            }
+            else if (property.Body.NodeType == ExpressionType.New)
+            {
+                if (property.Body is NewExpression newExpression)
+                {
+                    var map = GetMapping<T>();
+                    var colNames = new List<string>();
+
+                    foreach (var arg in newExpression.Arguments)
+                    {
+                        if (arg is MemberExpression memberExpression)
+                        {
+                            var propName = memberExpression.Member.Name;
+                            var colName = map.FindColumnWithPropertyName(propName).Name;
+                            colNames.Add(colName);
+                        }
+                    }
+
+                    if (colNames.Any())
+                    {
+                        return CreateIndex(map.TableName, colNames.ToArray(), unique);
+                    }
+                }
+
+                throw new ArgumentException($"The lambda expression 'property' should be a valid new Expression");
+            }
+            else {
+				var mx = (property.Body as MemberExpression);
+
+                var propertyInfo = mx.Member as PropertyInfo;
+                if (propertyInfo == null)
+                {
+                    throw new ArgumentException("The lambda expression 'property' should point to a valid Property");
+                }
+
+                var propName = propertyInfo.Name;
+
+                var map = GetMapping<T>();
+                var colName = map.FindColumnWithPropertyName(propName).Name;
+
+                return CreateIndex(map.TableName, colName, unique);
+            }
+	
 		}
 
-		[Preserve (AllMembers = true)]
+
+        [Preserve (AllMembers = true)]
 		public class ColumnInfo
 		{
 			//			public int cid { get; set; }

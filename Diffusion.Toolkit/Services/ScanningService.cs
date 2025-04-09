@@ -6,8 +6,11 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Database.Models;
 using Diffusion.IO;
+using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 
@@ -30,7 +33,7 @@ public class ScanningService
     {
         await Task.Run(() =>
         {
-            foreach (var path in _settings.ImagePaths)
+            foreach (var path in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
             {
                 // Check if we can access the path
                 if (Directory.Exists(path))
@@ -41,6 +44,7 @@ public class ScanningService
                     if (folder is { Unavailable: true })
                     {
                         // Restore it
+                        // TODO Tag it and it's children as available
                         _dataStore.SetFolderUnavailable(path, false);
 
                         var childImages = _dataStore.GetAllPathImages(path);
@@ -55,7 +59,7 @@ public class ScanningService
                 }
                 else
                 {
-                    // Tag it and it's children as unavailable
+                    // TODO Tag it and it's children as unavailable
                     _dataStore.SetFolderUnavailable(path, true);
 
                     var childImages = _dataStore.GetAllPathImages(path);
@@ -134,9 +138,48 @@ public class ScanningService
 
     }
 
+
+    public async Task ScanFolder(FolderViewModel folder)
+    {
+        if (await ServiceLocator.ProgressService.TryStartTask())
+        {
+            var filesToScan = new List<string>();
+
+            var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
+
+            foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected))
+            {
+                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(model.Path, new HashSet<string>(), cancellationToken));
+            }
+
+            await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan,
+                new ScanCompletionEvent()
+                {
+                    OnDatabaseWriteCompleted = () =>
+                    {
+                        if (folder.Id == 0)
+                        {
+                            ServiceLocator.FolderService.SetFoldersDirty();
+                            var dbEntity = ServiceLocator.DataStore.GetFolder(folder.Path);
+                            if (dbEntity != null)
+                            {
+                                folder.IsScanned = true;
+                                folder.Id = dbEntity.Id;
+                            }
+                        }
+                        ServiceLocator.SearchService.RefreshResults();
+                        ServiceLocator.FolderService.LoadFolders();
+                    }
+                },
+                cancellationToken);
+        }
+    }
+
     public async Task<IEnumerable<string>> GetFilesToScan(string path, HashSet<string> ignoreFiles, CancellationToken cancellationToken)
     {
-        return await Task.Run(() => MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), _settings.ExcludePaths, cancellationToken).ToList());
+        var excludePaths = ServiceLocator.FolderService.ExcludedOrArchivedFolderPaths;
+
+        return await Task.Run(() => MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludePaths, cancellationToken).ToList());
     }
 
     public async Task ScanWatchedFolders(bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
@@ -156,7 +199,13 @@ public class ScanningService
 
             var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
 
-            foreach (var path in _settings.ImagePaths)
+            var archivedFolders = ServiceLocator.DataStore.GetArchivedFolders().Select(d => d.Path);
+
+            var settingsExcluded = _settings.ExcludePaths;
+
+            var excludedPaths = settingsExcluded.Concat(archivedFolders).ToHashSet();
+
+            foreach (var path in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -187,7 +236,7 @@ public class ScanningService
 
                     var ignoreFiles = updateImages ? null : folderImagesHashSet;
 
-                    filesToScan.AddRange(MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), _settings.ExcludePaths, cancellationToken).ToList());
+                    filesToScan.AddRange(MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludedPaths, cancellationToken).ToList());
                 }
                 else
                 {
@@ -210,7 +259,7 @@ public class ScanningService
                 }
             }
 
-            await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, cancellationToken);
+            await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan, null, cancellationToken);
 
         }
         catch (Exception ex)
@@ -286,9 +335,9 @@ public class ScanningService
         return (image, newNodes);
     }
 
-    public int UpdateImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, int> folderIdCache, bool storeWorkflow, CancellationToken cancellationToken)
+    public int UpdateImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, CancellationToken cancellationToken)
     {
-        var updated = _dataStore.UpdateImagesByPath(images, includeProperties, folderIdCache, cancellationToken);
+        var updated = _dataStore.UpdateImagesByPath(images, includeProperties, folderCache, cancellationToken);
 
         if (storeWorkflow && nodes.Any())
         {
@@ -298,9 +347,9 @@ public class ScanningService
         return updated;
     }
 
-    public int AddImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, int> folderIdCache, bool storeWorkflow, CancellationToken cancellationToken)
+    public int AddImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, CancellationToken cancellationToken)
     {
-        var added = _dataStore.AddImages(images, includeProperties, folderIdCache, cancellationToken);
+        var added = _dataStore.AddImages(images, includeProperties, folderCache, cancellationToken);
 
         if (storeWorkflow && nodes.Any())
         {
@@ -358,7 +407,7 @@ public class ScanningService
 
                 scanned++;
 
-          
+
 
                 // var (image, nodes) = ProcessFile(file, storeMetadata, storeWorkflow);
 
@@ -459,7 +508,7 @@ public class ScanningService
             stopwatch.Stop();
 
             var elapsedTime = stopwatch.ElapsedMilliseconds / 1000;
-            
+
             return (added, elapsedTime);
         }
         catch (Exception e)
@@ -498,6 +547,8 @@ public class ScanningService
 
                 var scanning = GetLocalizedText("Actions.Scanning.Status");
 
+                var excludePaths = _settings.ExcludePaths.Concat(ServiceLocator.DataStore.GetArchivedFolders().Select(d => d.Path)).ToHashSet();
+
                 foreach (var folder in rootFolders)
                 {
                     if (token.IsCancellationRequested)
@@ -513,7 +564,7 @@ public class ScanningService
                     if (Directory.Exists(folder.Path))
                     {
                         //var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, null, _settings.RecurseFolders.GetValueOrDefault(true), null);
-                        var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), _settings.ExcludePaths, token);
+                        var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludePaths, token);
 
                         foreach (var file in filesOnDisk)
                         {

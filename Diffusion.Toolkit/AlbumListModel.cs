@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Input;
-using Diffusion.Database;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit;
 

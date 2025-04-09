@@ -3,14 +3,15 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
-using Diffusion.Database;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
+using Diffusion.Common;
 using Diffusion.Toolkit.Services;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -231,7 +232,7 @@ namespace Diffusion.Toolkit.Controls
         public static readonly DependencyProperty AlbumsProperty =
             DependencyProperty.Register(
                 name: nameof(Albums),
-                propertyType: typeof(ObservableCollection<Album>),
+                propertyType: typeof(ObservableCollection<AlbumModel>),
                 ownerType: typeof(ThumbnailView),
                 typeMetadata: new FrameworkPropertyMetadata(
                     defaultValue: null,
@@ -303,14 +304,6 @@ namespace Diffusion.Toolkit.Controls
                     case nameof(CurrentImage):
                         thumbnailView.Model.CurrentImage = (ImageViewModel)e.NewValue;
                         thumbnailView.Model.CurrentImage.SearchModelCommand = new RelayCommand<object>(thumbnailView.SearchModel);
-                        thumbnailView.Model.CurrentImage.CopyPathCommand = new RelayCommand<object>(thumbnailView.CopyPath);
-                        thumbnailView.Model.CurrentImage.CopyPromptCommand = new RelayCommand<object>(thumbnailView.CopyPrompt);
-                        thumbnailView.Model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(thumbnailView.CopyNegative);
-                        //_model.CurrentImage.CopySeed = new RelayCommand<object>(CopySeed);
-                        //_model.CurrentImage.CopyHash = new RelayCommand<object>(CopyHash);
-                        thumbnailView.Model.CurrentImage.CopyOthersCommand = new RelayCommand<object>(thumbnailView.CopyOthers);
-                        thumbnailView.Model.CurrentImage.CopyParametersCommand = new RelayCommand<object>(thumbnailView.CopyParameters);
-                        thumbnailView.Model.CurrentImage.ShowInExplorerCommand = new RelayCommand<object>(thumbnailView.ShowInExplorer);
                         //_model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
                         thumbnailView.Model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => thumbnailView.DeleteSelected());
                         thumbnailView.Model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => thumbnailView.FavoriteSelected());
@@ -329,9 +322,9 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(SelectedImagesProperty, value);
         }
 
-        public ObservableCollection<Album> Albums
+        public ObservableCollection<AlbumModel> Albums
         {
-            get => (ObservableCollection<Album>)GetValue(AlbumsProperty);
+            get => (ObservableCollection<AlbumModel>)GetValue(AlbumsProperty);
             set => SetValue(AlbumsProperty, value);
         }
 

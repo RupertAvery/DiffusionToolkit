@@ -1,6 +1,5 @@
 ﻿using Diffusion.Common;
 using Diffusion.Toolkit.Classes;
-using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Themes;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -19,6 +18,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Database;
+using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Pages
@@ -30,7 +31,7 @@ namespace Diffusion.Toolkit.Pages
     public partial class Settings : Page
     {
         private SettingsModel _model = new SettingsModel();
-        public Toolkit.Settings _settings => ServiceLocator.Settings;
+        public Configuration.Settings _settings => ServiceLocator.Settings;
 
         private List<FolderChange> _folderChanges = new List<FolderChange>();
 
@@ -47,7 +48,7 @@ namespace Diffusion.Toolkit.Pages
             InitializeComponent();
 
             _model.PropertyChanged += ModelOnPropertyChanged;
-            
+
             InitializeSettings();
             LoadCultures();
 
@@ -82,10 +83,10 @@ namespace Diffusion.Toolkit.Pages
 
             _model.AutoTagNSFW = _settings.AutoTagNSFW;
             _model.NSFWTags = string.Join("\r\n", _settings.NSFWTags);
-            
+
             _model.HashCache = _settings.HashCache;
             _model.PortableMode = _settings.PortableMode;
-            
+
             _model.StoreMetadata = _settings.StoreMetadata;
             _model.StoreWorkflow = _settings.StoreWorkflow;
             _model.ScanUnavailable = _settings.ScanUnavailable;
@@ -104,8 +105,8 @@ namespace Diffusion.Toolkit.Pages
 
         private void InitializeFolders()
         {
-            _model.ImagePaths = new ObservableCollection<string>(_settings.ImagePaths);
-            _model.ExcludePaths = new ObservableCollection<string>(_settings.ExcludePaths);
+            _model.ImagePaths = new ObservableCollection<string>(ServiceLocator.FolderService.RootFolders.Select(d => d.Path));
+            _model.ExcludePaths = new ObservableCollection<string>(ServiceLocator.FolderService.ExcludedFolders.Select(d => d.Path));
             _model.RecurseFolders = _settings.RecurseFolders;
             _model.SetFoldersPristine();
             _folderChanges.Clear();
@@ -157,18 +158,18 @@ namespace Diffusion.Toolkit.Pages
                     _settings.Culture = _model.Culture;
                     break;
                 case nameof(SettingsModel.SlideShowDelay):
-                {
-                    if (_model.SlideShowDelay < 1)
                     {
-                        _model.SlideShowDelay = 1;
-                    }
-                    if (_model.SlideShowDelay > 100)
-                    {
-                        _model.SlideShowDelay = 100;
-                    }
+                        if (_model.SlideShowDelay < 1)
+                        {
+                            _model.SlideShowDelay = 1;
+                        }
+                        if (_model.SlideShowDelay > 100)
+                        {
+                            _model.SlideShowDelay = 100;
+                        }
 
-                    break;
-                }
+                        break;
+                    }
             }
         }
 
@@ -204,11 +205,26 @@ namespace Diffusion.Toolkit.Pages
                 }
 
                 _model.ImagePaths.Add(path);
-                _folderChanges.Add(new FolderChange()
+
+                if (!ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Contains(path))
                 {
-                    ChangeType = ChangeType.Add,
-                    Path = path,
-                });
+                    _folderChanges.Add(new FolderChange()
+                    {
+                        FolderType = FolderType.Watched,
+                        ChangeType = ChangeType.Add,
+                        Path = path,
+                    });
+                }
+                else
+                {
+                    var removeChange = _folderChanges.Find(d =>
+                        d is { FolderType: FolderType.Watched, ChangeType: ChangeType.Remove } && d.Path == path);
+                    if (removeChange != null)
+                    {
+                        _folderChanges.Remove(removeChange);
+                    }
+                }
+
                 _model.SetFoldersDirty();
 
             }
@@ -226,11 +242,26 @@ namespace Diffusion.Toolkit.Pages
             {
                 var path = _model.ImagePaths[_model.SelectedIndex];
                 _model.ImagePaths.RemoveAt(_model.SelectedIndex);
-                _folderChanges.Add(new FolderChange()
+                
+                if (ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Contains(path))
                 {
-                    ChangeType = ChangeType.Remove,
-                    Path = path,
-                });
+                    _folderChanges.Add(new FolderChange()
+                    {
+                        FolderType = FolderType.Watched,
+                        ChangeType = ChangeType.Remove,
+                        Path = path,
+                    });
+                }
+                else
+                {
+                    var addChange = _folderChanges.Find(d =>
+                        d is { FolderType: FolderType.Watched, ChangeType: ChangeType.Add } && d.Path == path);
+                    if (addChange != null)
+                    {
+                        _folderChanges.Remove(addChange);
+                    }
+                }
+
                 _model.SetFoldersDirty();
             }
         }
@@ -242,7 +273,9 @@ namespace Diffusion.Toolkit.Pages
             dialog.IsFolderPicker = true;
             if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
             {
-                if (_model.ImagePaths.All(d => !dialog.FileName.StartsWith(d)))
+                var path = dialog.FileName;
+
+                if (_model.ImagePaths.All(d => !path.StartsWith(d)))
                 {
                     MessageBox.Show(this._window,
                         "The selected folder must be on the path of one of the included folders",
@@ -251,7 +284,26 @@ namespace Diffusion.Toolkit.Pages
                     return;
                 }
 
-                _model.ExcludePaths.Add(dialog.FileName);
+                if (!ServiceLocator.FolderService.ExcludedFolders.Select(d => d.Path).Contains(path))
+                {
+                    _folderChanges.Add(new FolderChange()
+                    {
+                        FolderType = FolderType.Excluded,
+                        ChangeType = ChangeType.Add,
+                        Path = path,
+                    });
+                }
+                else
+                {
+                    var removeChange = _folderChanges.Find(d =>
+                        d is { FolderType: FolderType.Excluded, ChangeType: ChangeType.Remove } && d.Path == path);
+                    if (removeChange != null)
+                    {
+                        _folderChanges.Remove(removeChange);
+                    }
+                }
+
+                _model.ExcludePaths.Add(path);
             }
 
         }
@@ -265,7 +317,27 @@ namespace Diffusion.Toolkit.Pages
 
             if (result == MessageBoxResult.Yes)
             {
+                var path = _model.ExcludePaths[_model.ExcludedSelectedIndex];
                 _model.ExcludePaths.RemoveAt(_model.ExcludedSelectedIndex);
+
+                if (ServiceLocator.FolderService.ExcludedFolders.Select(d => d.Path).Contains(path))
+                {
+                    _folderChanges.Add(new FolderChange()
+                    {
+                        FolderType = FolderType.Excluded,
+                        ChangeType = ChangeType.Remove,
+                        Path = path,
+                    });
+                }
+                else
+                {
+                    var addChange = _folderChanges.Find(d =>
+                        d is { FolderType: FolderType.Excluded, ChangeType: ChangeType.Add } && d.Path == path);
+                    if (addChange != null)
+                    {
+                        _folderChanges.Remove(addChange);
+                    }
+                }
             }
         }
 
@@ -364,7 +436,7 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-     
+
         private void BrowseExternalApplicationPath_OnClick(object sender, RoutedEventArgs e)
         {
             //var button = (Button)sender;
@@ -469,7 +541,7 @@ namespace Diffusion.Toolkit.Pages
 
             if (_model.IsFoldersDirty)
             {
-                Task.Run(async ()=>
+                Task.Run(async () =>
                 {
                     await ServiceLocator.FolderService.ApplyFolderChanges(_folderChanges);
                     _folderChanges.Clear();
@@ -491,8 +563,11 @@ namespace Diffusion.Toolkit.Pages
             if (_model.IsDirty)
             {
                 _settings.SetPristine();
+
+                // TODO: Remove, these are no longer used
                 _settings.ImagePaths = _model.ImagePaths.ToList();
                 _settings.ExcludePaths = _model.ExcludePaths.ToList();
+
                 _settings.ModelRootPath = _model.ModelRootPath;
                 _settings.FileExtensions = _model.FileExtensions;
                 _settings.Theme = _model.Theme;

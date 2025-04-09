@@ -102,9 +102,12 @@ You can now change the path of a root folder and all the images under it. This o
 
 TODO: 
 
+<<<<<<< HEAD
 Click to unset rating in StarRating
 Tilde to unset
 
+=======
+>>>>>>> scanning-refactor
 UnavailableConverter crashing designer in Search.xaml?
 
 * Rescan selected (Channel has been closed) when 1 or a few images are selected

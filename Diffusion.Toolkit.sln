@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Civitai", "Diffus
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Scripting", "Diffusion.Scripting\Diffusion.Scripting.csproj", "{51529D09-5ACB-439C-90FE-3EF4B9D3B440}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBed", "TestBed\TestBed.csproj", "{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{51529D09-5ACB-439C-90FE-3EF4B9D3B440}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51529D09-5ACB-439C-90FE-3EF4B9D3B440}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51529D09-5ACB-439C-90FE-3EF4B9D3B440}.Release|Any CPU.Build.0 = Release|Any CPU
+		{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,10 @@
-﻿using Diffusion.Database;
+﻿using Diffusion.Database.Models;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Controls;
 using System.Collections.Generic;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Diffusion.Toolkit.Services;
 using Node = Diffusion.IO.Node;
 
 namespace Diffusion.Toolkit.Models;
@@ -56,7 +59,17 @@ public class ImageViewModel : BaseNotify
 
     public ImageViewModel()
     {
+        CopyPathCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyPath);
+        CopyPromptCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyPrompt);
+        CopyNegativePromptCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyNegative);
+        //_model.CurrentImage.CopySeed = new RelayCommand<object>(CopySeed);
+        //_model.CurrentImage.CopyHash = new RelayCommand<object>(CopyHash);
+        CopyOthersCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyOthers);
+        CopyParametersCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyParameters);
+        //ShowInExplorerCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.ShowInExplorer);
     }
+
+    public MainModel MainModel => ServiceLocator.MainModel;
 
     public int Id { get; set; }
 

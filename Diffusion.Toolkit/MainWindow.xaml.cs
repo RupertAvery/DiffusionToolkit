@@ -33,7 +33,7 @@ using Diffusion.Toolkit.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Common;
-using ModelViewModel = Diffusion.Toolkit.Models.ModelViewModel;
+using Settings = Diffusion.Toolkit.Configuration.Settings;
 
 namespace Diffusion.Toolkit
 {
@@ -96,7 +96,7 @@ namespace Diffusion.Toolkit
 
                 Logger.Log($"Creating Thumbnail loader");
 
- 
+
 
                 _navigatorService = new NavigatorService(this);
                 _navigatorService.OnNavigate += OnNavigate;
@@ -111,6 +111,7 @@ namespace Diffusion.Toolkit
                 ServiceLocator.MainModel = _model;
                 ServiceLocator.Dispatcher = Dispatcher;
 
+                _model.OpenWithCommand = new AsyncCommand<string>(OpenWith);
                 _model.Rescan = new AsyncCommand<object>(RescanTask);
                 _model.Rebuild = new AsyncCommand<object>(RebuildTask);
                 _model.ReloadHashes = new AsyncCommand<object>(async (o) =>
@@ -135,6 +136,7 @@ namespace Diffusion.Toolkit
                 _model.ToggleActualSize = new RelayCommand<object>((o) => ToggleActualSize());
 
                 _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
+                _model.ToggleTagsCommand = new RelayCommand<object>((o) => ToggleTags());
 
                 _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
                 _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
@@ -242,6 +244,13 @@ namespace Diffusion.Toolkit
             _model.Settings.AutoAdvance = _model.AutoAdvance;
         }
 
+
+        private void ToggleTags()
+        {
+            _model.ShowTags = !_model.ShowTags;
+            _model.Settings.ShowTags = _model.ShowTags;
+        }
+
         private async Task UnavailableFiles(object o)
         {
             var window = new UnavailableFilesWindow();
@@ -303,6 +312,9 @@ namespace Diffusion.Toolkit
                 case "Navigation.Albums":
                     _model.Settings.NavigationSection.ShowAlbums = !_model.Settings.NavigationSection.ShowAlbums;
                     break;
+                case "Navigation.Queries":
+                    _model.Settings.NavigationSection.ShowQueries = !_model.Settings.NavigationSection.ShowQueries;
+                    break;
             }
         }
 
@@ -327,6 +339,8 @@ namespace Diffusion.Toolkit
             {
                 _search.ReloadMatches(null);
             }
+
+            _ = ServiceLocator.FolderService.LoadFolders();
         }
 
         private PreviewWindow? _previewWindow;
@@ -347,13 +361,15 @@ namespace Diffusion.Toolkit
 
                 _previewWindow.Owner = this;
 
+                // TODO: better implementation for StartNavigation events
                 _previewWindow.PreviewKeyUp += _search.ExtOnKeyUp;
                 _previewWindow.PreviewKeyDown += _search.ExtOnKeyDown;
 
                 _previewWindow.AdvanceSlideShow = _search.Advance;
 
                 _previewWindow.OnDrop = (s) => _search.LoadPreviewImage(s);
-                _previewWindow.Changed = (id) => _search.Update(id);
+                //_previewWindow.Changed = (id) => _search.Update(id);
+                
                 _previewWindow.Closed += (sender, args) =>
                 {
                     _search.OnCurrentImageChange = null;
@@ -461,6 +477,7 @@ namespace Diffusion.Toolkit
             ServiceLocator.SetDataStore(dataStore);
 
             var isFirstTime = false;
+            IReadOnlyList<string> newFolders = null;
 
             if (!_configuration.Exists())
             {
@@ -473,6 +490,8 @@ namespace Diffusion.Toolkit
                 var welcome = new WelcomeWindow(_settings);
                 welcome.Owner = this;
                 welcome.ShowDialog();
+
+                newFolders = welcome.SelectedPaths;
 
                 if (_settings.IsDirty())
                 {
@@ -510,6 +529,15 @@ namespace Diffusion.Toolkit
                     throw;
                 }
 
+            }
+
+            // TODO: Find a better place to put this:
+            // Set defaults for new version features
+            if (_settings.Version < 190)
+            {
+                _settings.Version = 190;
+                _settings.ShowTags = true;
+                _settings.NavigationSection.ShowQueries = true;
             }
 
 
@@ -559,6 +587,7 @@ namespace Diffusion.Toolkit
             _model.HideDeleted = _settings.HideDeleted;
             _model.HideUnavailable = _settings.HideUnavailable;
 
+            // TODO: Get rid of globals
             QueryBuilder.HideNSFW = _model.HideNSFW;
             QueryBuilder.HideDeleted = _model.HideDeleted;
             QueryBuilder.HideUnavailable = _model.HideUnavailable;
@@ -567,6 +596,7 @@ namespace Diffusion.Toolkit
             _model.FitToPreview = _settings.FitToPreview;
             _model.ActualSize = _settings.ActualSize;
             _model.AutoAdvance = _settings.AutoAdvance;
+            _model.ShowTags = _settings.ShowTags;
 
             _model.Settings = _settings;
 
@@ -581,9 +611,10 @@ namespace Diffusion.Toolkit
 
 
             await dataStore.Create(
+                _settings,
                 () => Dispatcher.Invoke(() => _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database")),
                 (handle) => { Dispatcher.Invoke(() => { ((MessagePopupHandle)handle).CloseAsync(); }); }
-            );
+                );
 
             //var total = _dataStore.GetTotal();
 
@@ -621,9 +652,9 @@ namespace Diffusion.Toolkit
 
                     if (_settings.RecurseFolders.GetValueOrDefault(true))
                     {
-                        foreach (var imagePath in _settings.ImagePaths)
+                        foreach (var folder in ServiceLocator.FolderService.RootFolders)
                         {
-                            if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
+                            if (path.StartsWith(folder.Path, true, CultureInfo.InvariantCulture))
                             {
                                 isInPath = true;
                                 break;
@@ -645,7 +676,7 @@ namespace Diffusion.Toolkit
                     {
                         // If recursion is turned off, the path must specifically equal one of the diffusion folders
 
-                        foreach (var imagePath in _settings.ImagePaths)
+                        foreach (var imagePath in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
                         {
                             if (path.Equals(imagePath, StringComparison.InvariantCultureIgnoreCase))
                             {
@@ -766,6 +797,8 @@ namespace Diffusion.Toolkit
             LoadImageModels();
             InitFolders();
 
+            ServiceLocator.ContextMenuService.Go();
+
             Logger.Log($"{_modelsCollection.Count} models loaded");
 
             Logger.Log($"Starting Services...");
@@ -801,38 +834,55 @@ namespace Diffusion.Toolkit
                 });
             }
 
-            if (_settings.ImagePaths.Any())
+            if (isFirstTime)
             {
-                _search.SearchImages(null);
-
-                if (isFirstTime)
+                // Automatically scans images...
+                await ServiceLocator.FolderService.ApplyFolderChanges(newFolders.Select(d => new FolderChange()
                 {
-                    _ = Scan(true);
-                }
-                else if (_settings.ScanForNewImagesOnStartup)
+                    ChangeType = ChangeType.Add,
+                    FolderType = FolderType.Watched,
+                    Path = d,
+                }), confirmScan: false);
+
+                // Wait for a bit, then show thumbnails
+                _ = Task.Delay(10000).ContinueWith(t =>
                 {
-                    Logger.Log($"Scanning for new images");
-
-                    _ = Task.Run(async () =>
-                    {
-                        if (await ServiceLocator.ProgressService.TryStartTask())
-                        {
-
-                            await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
-                            //try
-                            //{
-                            //}
-                            //finally
-                            //{
-                            //    //ServiceLocator.ProgressService.CompleteTask();
-                            //    //ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                            //}
-                        }
-                    });
-                }
-
+                    ServiceLocator.SearchService.ExecuteSearch();
+                    ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
+                });
             }
+            else
+            {
+                if (ServiceLocator.FolderService.HasRootFolders)
+                {
+                    if (_settings.ScanForNewImagesOnStartup)
+                    {
+                        Logger.Log($"Scanning for new images");
 
+                        _ = Task.Run(async () =>
+                        {
+                            if (await ServiceLocator.ProgressService.TryStartTask())
+                            {
+
+                                await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
+                                //try
+                                //{
+                                //}
+                                //finally
+                                //{
+                                //    //ServiceLocator.ProgressService.CompleteTask();
+                                //    //ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
+                                //}
+                            }
+                        });
+                    }
+                    else
+                    {
+                        _search.SearchImages(null);
+                    }
+
+                }
+            }
 
             Logger.Log($"Init completed");
 
@@ -1061,7 +1111,7 @@ namespace Diffusion.Toolkit
 
         private async Task TryScanFolders()
         {
-            if (_settings.ImagePaths.Any())
+            if (ServiceLocator.FolderService.HasRootFolders)
             {
                 if (await ServiceLocator.MessageService.Show("Do you want to scan your folders now?", "Setup", PopupButtons.YesNo) == PopupResult.Yes)
                 {

@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
-             xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
              lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
              lex:LocalizeDictionary.Separation="."
              lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"

@@ -3,7 +3,9 @@ using System.Windows.Forms;
 using System.Windows;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Thumbnails;
 
@@ -11,6 +13,7 @@ namespace Diffusion.Toolkit.Services;
 
 public class ServiceLocator
 {
+    private static ExternalApplicationsService _externalApplicationsService;
     private static ThumbnailService _thumbnailService;
     private static DatabaseWriterService? _databaseWriterService;
     private static MetadataScannerService? _metadataScannerService;
@@ -29,25 +32,13 @@ public class ServiceLocator
     private static TaggingService? _taggingService;
     private static NotificationService? _notificationService;
     private static ScanningService? _scanningService;
+    private static ContextMenuService? _contextMenuService;
 
     public static DataStore? DataStore => _dataStore;
-    public static ThumbnailCache? ThumbnailCache => _thumbnailCache;
     public static Settings? Settings => _settings;
-    public static ThumbnailService? ThumbnailLoader => _thumbnailLoader;
     public static ToastService ToastService { get; set; }
     public static Dispatcher Dispatcher { get; set; }
-
-    public static void SetThumbnailLoader(ThumbnailService thumbnailService)
-    {
-        _thumbnailLoader = thumbnailService;
-    }
-
-    public static void SetThumbnailCache(ThumbnailCache thumbnailCache)
-    {
-        _thumbnailCache = thumbnailCache;
-    }
-
-
+    
     public static void SetDataStore(DataStore dataStore)
     {
         _dataStore = dataStore;
@@ -127,6 +118,16 @@ public class ServiceLocator
     public static ThumbnailService ThumbnailService
     {
         get { return _thumbnailService ??= new ThumbnailService(); }
+    }
+
+    public static ContextMenuService ContextMenuService
+    {
+        get { return _contextMenuService ??= new ContextMenuService(); }
+    }
+
+    public static ExternalApplicationsService ExternalApplicationsService
+    {
+        get { return _externalApplicationsService ?? new ExternalApplicationsService(); }
     }
 }
 

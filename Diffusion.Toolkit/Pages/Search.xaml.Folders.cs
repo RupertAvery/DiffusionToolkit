@@ -12,11 +12,55 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Common;
 using Diffusion.Toolkit.Behaviors;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Pages
 {
     public partial class Search
     {
+        private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (_model.FolderPath != null && Directory.Exists(_model.FolderPath))
+                {
+                    if (ServiceLocator.FolderService.RootFolders.Select(d => d.Path)
+                        .Any(d => _model.FolderPath.StartsWith(d)))
+                    {
+                        _currentModeSettings.CurrentFolderPath = _model.FolderPath;
+                        SearchImages(null);
+                        return;
+                    }
+                }
+
+                _model.FolderPath = _currentModeSettings.CurrentFolderPath;
+
+                ((TextBox)sender).SelectionStart = _model.FolderPath.Length;
+                ((TextBox)sender).SelectionLength = 0;
+
+            }
+            // TODO: implement autocomplete
+            //else if(e.Key is >= Key.A and <= Key.Z or >= Key.D0 and <= Key.D9)
+            //{
+            //    var textbox = (TextBox)sender;
+            //    if (textbox.Text == null) return;
+            //    var subdirs = Directory.GetDirectories(_currentModeSettings.CurrentFolderPath);
+
+            //    if (textbox.Text.EndsWith("\\")) return;
+
+            //    var currentText = textbox.Text;
+
+            //    var subdir = subdirs.FirstOrDefault(d => d.StartsWith(textbox.Text));
+
+            //    if (subdir != null)
+            //    {
+            //        textbox.Text = subdir;
+
+            //        textbox.SelectionStart = currentText.Length;
+            //        textbox.SelectionLength = subdir.Length;
+            //    }
+            //}
+        }
 
         private async Task ExpandToPath(string path)
         {
@@ -103,68 +147,63 @@ namespace Diffusion.Toolkit.Pages
             {
                 var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
-                OpenFolder(folder);
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.LeftCtrl))
+                {
+                    folder.IsSelected = !folder.IsSelected;
+                }
+                else
+                {
+                    OpenFolder(folder);
+
+                    foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected))
+                    {
+                        model.IsSelected = false;
+                    }
+
+                    folder.IsSelected = true;
+                }
+
+                e.Handled = true;
             }
         }
 
         public void OpenFolder(FolderViewModel folder)
         {
-            if (_currentModeSettings.CurrentFolderPath == folder.Path)
-                return;
-
-            var subFolders = folder.Children;
-
-            if (subFolders == null)
+            try
             {
-                if (folder.IsUnavailable) return;
-                subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
-                folder.HasChildren = subFolders.Any();
-                folder.Children = subFolders;
+
+                if (_currentModeSettings.CurrentFolderPath == folder.Path)
+                    return;
+
+                var subFolders = folder.Children;
+
+                if (subFolders == null)
+                {
+                    if (folder.IsUnavailable) return;
+                    subFolders = ServiceLocator.FolderService.GetSubFolders(folder);
+                    folder.HasChildren = subFolders.Any();
+                    folder.Children = subFolders;
+                }
+
+                _model.MainModel.CurrentFolder = folder;
+
+                _model.NavigationSection.FoldersSection.CanDelete = folder.Depth > 0;
+                _model.NavigationSection.FoldersSection.CanRename = folder.Depth > 0;
+
+                _model.MainModel.ActiveView = "Folders";
+
+                SetMode("folders");
+
+                _model.FolderPath = folder.Path;
+                _currentModeSettings.CurrentFolderPath = folder.Path;
+
+                SearchImages(null);
+            }
+            catch (Exception e)
+            {
+                _model.IsBusy = false;
             }
 
-            if (_model.MainModel.CurrentFolder != null)
-            {
-                _model.MainModel.CurrentFolder.IsSelected = false;
-            }
-
-            _model.MainModel.CurrentFolder = folder;
-
-            folder.IsSelected = true;
-
-            _model.NavigationSection.FoldersSection.CanDelete = folder.Depth > 0;
-            _model.NavigationSection.FoldersSection.CanRename = folder.Depth > 0;
-
-            _model.MainModel.ActiveView = "Folders";
-
-            SetMode("folders");
-
-            _model.FolderPath = folder.Path;
-            _currentModeSettings.CurrentFolderPath = folder.Path;
-
-            SearchImages(null);
-        }
-
-        private IEnumerable<FolderViewModel> GetSubFolders(FolderViewModel folder)
-        {
-            if (!Directory.Exists(folder.Path))
-            {
-                return Enumerable.Empty<FolderViewModel>();
-            }
-
-            var directories = Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
-            {
-                IgnoreInaccessible = true
-            });
-
-            return directories.Select(path => new FolderViewModel()
-            {
-                Parent = folder,
-                HasChildren = true,
-                Visible = true,
-                Depth = folder.Depth + 1,
-                Name = path.EndsWith("\\") ? "Root" : Path.GetFileName(path),
-                Path = path,
-            });
         }
 
         private async Task Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
@@ -191,7 +230,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
+                            subFolders = ServiceLocator.FolderService.GetSubFolders(folder);
                             folder.HasChildren = subFolders.Any();
                             folder.Children = subFolders;
 
@@ -267,39 +306,39 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public void RefreshFolder(FolderViewModel model)
+        public void RefreshFolder(FolderViewModel targetFolder)
         {
-            var subFolders = GetSubFolders(model).ToList();
+            var subFolders = ServiceLocator.FolderService.GetSubFolders(targetFolder).ToList();
 
             // TODO: prevent updating of state and MainModel.Folders if no visual update is required
 
-            if (model.HasChildren)
+            if (targetFolder.HasChildren)
             {
-                var addedFolders = subFolders.Except(model.Children);
-                var removedFolders = model.Children.Except(subFolders);
+                var addedFolders = subFolders.Except(targetFolder.Children);
+                var removedFolders = targetFolder.Children.Except(subFolders);
 
-                var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+                var insertPoint = _model.MainModel.Folders.IndexOf(targetFolder) + 1;
 
                 foreach (var folder in addedFolders)
                 {
-                    model.Children.Add(folder);
+                    targetFolder.Children.Add(folder);
                     _model.MainModel.Folders.Insert(insertPoint, folder);
                 }
 
                 foreach (var folder in removedFolders)
                 {
-                    model.Children.Remove(folder);
+                    targetFolder.Children.Remove(folder);
                     _model.MainModel.Folders.Remove(folder);
                 }
 
-                model.HasChildren = subFolders.Any();
+                targetFolder.HasChildren = subFolders.Any();
             }
             else
             {
-                model.HasChildren = subFolders.Any();
-                model.Children = new ObservableCollection<FolderViewModel>(subFolders);
+                targetFolder.HasChildren = subFolders.Any();
+                targetFolder.Children = new ObservableCollection<FolderViewModel>(subFolders);
 
-                var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
+                var insertPoint = _model.MainModel.Folders.IndexOf(targetFolder) + 1;
 
                 foreach (var folder in subFolders)
                 {
@@ -308,12 +347,19 @@ namespace Diffusion.Toolkit.Pages
 
             }
 
-            if (model.HasChildren)
+            if (targetFolder.HasChildren)
             {
-                model.State = FolderState.Expanded;
+                targetFolder.State = FolderState.Expanded;
             }
         }
 
 
+        private void NotScanned_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (_model.MainModel.CurrentFolder != null)
+            {
+                _ = ServiceLocator.ScanningService.ScanFolder(_model.MainModel.CurrentFolder);
+            }
+        }
     }
 }

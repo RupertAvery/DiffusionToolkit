@@ -9,7 +9,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Diffusion.Toolkit.Services;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Diffusion.Toolkit
 {
@@ -24,7 +23,7 @@ namespace Diffusion.Toolkit
 
         public Action<string> OnDrop { get; set; }
 
-        public Action<int> Changed { get; set; }
+        //public Action<int> Changed { get; set; }
         public Action AdvanceSlideShow { get; set; }
 
         protected override void OnSourceInitialized(EventArgs e)
@@ -46,28 +45,9 @@ namespace Diffusion.Toolkit
 
             PreviewPane.IsPopout = true;
 
-            PreviewPane.NSFW = (id, v) =>
+            ServiceLocator.TaggingService.TagUpdated += (sender, arguments) =>
             {
-                _dataStore.SetNSFW(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.Favorite = (id, v) =>
-            {
-                _dataStore.SetFavorite(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.Rate = (id, v) =>
-            {
-                _dataStore.SetRating(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.Delete = (id, v) =>
-            {
-                _dataStore.SetDeleted(id, v);
-                Changed?.Invoke(id);
+                //Changed?.Invoke(arguments.Id);
             };
 
             var mainModel = ServiceLocator.MainModel;
@@ -172,7 +152,7 @@ namespace Diffusion.Toolkit
 
         private void PreviewPane_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) && !e.Data.GetDataPresent("DTCustomDragSource"))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 OnDrop?.Invoke(files[0]);
@@ -181,7 +161,7 @@ namespace Diffusion.Toolkit
 
         private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
-            OnPreviewKeyUp(e);
+            //OnPreviewKeyUp(e);
 
             SetFocus();
         }
@@ -195,7 +175,7 @@ namespace Diffusion.Toolkit
         {
             RestartSlideShowTimer();
 
-            OnPreviewKeyDown(e);
+            //OnPreviewKeyDown(e);
 
 
             SetFocus();
@@ -209,6 +189,11 @@ namespace Diffusion.Toolkit
         private void PreviewPane_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Close();
+        }
+
+        private void Play_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            StartStopSlideShow();
         }
     }
 
