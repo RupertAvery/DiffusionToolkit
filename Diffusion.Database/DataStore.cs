@@ -115,12 +115,12 @@ public partial class DataStore
                 db.CreateIndex<Image>(image => image.WorkflowId);
                 db.CreateIndex<Image>(image => image.HasError);
 
-                db.CreateIndex("Image", new[] { "HasError", "CreatedDate" });
-                db.CreateIndex("Image", new[] { "ForDeletion", "CreatedDate" });
-                db.CreateIndex("Image", new[] { "NSFW", "CreatedDate" });
-                db.CreateIndex("Image", new[] { "Unavailable", "CreatedDate" });
-                db.CreateIndex("Image", new[] { "ForDeletion", "Unavailable", "CreatedDate" });
-                db.CreateIndex("Image", new[] { "NSFW", "ForDeletion", "Unavailable", "CreatedDate" });
+                db.CreateIndex<Image>(image => new { image.HasError, image.CreatedDate });
+                db.CreateIndex<Image>(image => new { image.ForDeletion, image.CreatedDate });
+                db.CreateIndex<Image>(image => new { image.NSFW, image.CreatedDate });
+                db.CreateIndex<Image>(image => new { image.Unavailable, image.CreatedDate });
+                db.CreateIndex<Image>(image => new { image.ForDeletion, image.Unavailable, image.CreatedDate });
+                db.CreateIndex<Image>(image => new { image.NSFW, image.ForDeletion, image.Unavailable, image.CreatedDate });
 
 
                 db.CreateTable<Album>();
@@ -135,13 +135,13 @@ public partial class DataStore
                 db.CreateTable<Node>();
                 db.CreateIndex<Node>(node => node.ImageId);
                 db.CreateIndex<Node>(node => node.Name);
-                db.CreateIndex("Node", new[] { "ImageId", "NodeId" }, true);
+                db.CreateIndex<Node>(node => new { node.ImageId, node.NodeId }, true);
 
                 db.CreateTable<NodeProperty>();
                 db.CreateIndex<NodeProperty>(property => property.NodeId);
                 db.CreateIndex<NodeProperty>(property => property.Name);
                 db.CreateIndex<NodeProperty>(property => property.Value);
-                db.CreateIndex("NodeProperty", new[] { "Name", "Value" });
+                db.CreateIndex<NodeProperty>(property => new { property.Name, property.Value });
 
                 db.CreateTable<Folder>();
                 db.CreateIndex<Folder>(folder => folder.ParentId);
@@ -152,7 +152,6 @@ public partial class DataStore
 
                 db.CreateTable<Query>();
                 db.CreateIndex<Query>(query => query.Name, true);
-
 
             }
             finally
