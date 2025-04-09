@@ -848,7 +848,7 @@ namespace Diffusion.Toolkit
                 _ = Task.Delay(10000).ContinueWith(t =>
                 {
                     ServiceLocator.SearchService.ExecuteSearch();
-                    ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
+                    ServiceLocator.MessageService.ShowMedium(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
                 });
             }
             else

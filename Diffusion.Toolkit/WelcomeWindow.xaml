@@ -12,7 +12,7 @@
         lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
         d:DataContext="{d:DesignInstance local:WelcomeModel, IsDesignTimeCreatable = True}"
         WindowStartupLocation="CenterOwner"
-        ShowInTaskbar="False"
+        ShowInTaskbar="True"
         MenuWidth="0"
         TitleWidth="*"
         WindowStyle="ToolWindow"
