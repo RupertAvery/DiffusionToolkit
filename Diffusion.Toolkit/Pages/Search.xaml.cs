@@ -1234,6 +1234,7 @@ namespace Diffusion.Toolkit.Pages
                     if (!Directory.Exists(currentFolderPath))
                     {
                         _ = ServiceLocator.MessageService.ShowMedium(GetLocalizedText("Search.Folders.Unavailable"), GetLocalizedText("Search.Folders.Unavailable.Title"), PopupButtons.OK);
+                        ServiceLocator.MainModel.CurrentFolder.IsUnavailable = true;
                         return;
                     }
 

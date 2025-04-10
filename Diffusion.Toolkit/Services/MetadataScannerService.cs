@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -46,6 +47,10 @@ public class MetadataScannerService
                 if (d.Result.Updated > 0)
                 {
                     message.Add($"{d.Result.Updated} images updated");
+                }
+                if (d.Result is { Added: 0, Updated: 0 })
+                {
+                    message.Add("No images were found");
                 }
 
                 var toast = string.Join("\r\n", message);
@@ -115,6 +120,8 @@ public class MetadataScannerService
 
     public StartResult<int> StartAsync(CancellationToken token)
     {
+        Debug.WriteLine("Entering Start");
+
         if (_isStarted && !_isCompleted)
         {
             return new StartResult<int>() { IsStarted = true, Task = _currentTask };
@@ -137,6 +144,8 @@ public class MetadataScannerService
         {
             consumers.Add(Task.Run(async () => await ProcessTaskAsync(linkedCts.Token)));
         }
+
+        Debug.WriteLine($"Created {consumers.Count} consumers");
 
         _currentTask = Task.WhenAll(consumers).ContinueWith(t =>
         {
@@ -167,6 +176,8 @@ public class MetadataScannerService
 
     private async Task<int> ProcessTaskAsync(CancellationToken token)
     {
+        Debug.WriteLine($"Entering ProcessTaskAsync");
+
         var count = 0;
 
         while (await _channel.Reader.WaitToReadAsync(token))
@@ -197,6 +208,8 @@ public class MetadataScannerService
                 Logger.Log($"Error scanning {job.Path}:" + ex.Message);
             }
         }
+
+        Debug.WriteLine($"Exiting Task... Count: {count}");
 
         return count;
     }

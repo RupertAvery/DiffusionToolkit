@@ -23,6 +23,7 @@ using MessageBox = System.Windows.MessageBox;
 namespace Diffusion.Toolkit
 {
 
+
     public partial class MainWindow
     {
         static readonly CultureInfo DefaultCulture = CultureInfo.CurrentCulture;
@@ -108,12 +109,7 @@ namespace Diffusion.Toolkit
             {
                 return;
             }
-            //var files = new List<ImagePath>();
 
-            //for (var i = 1; i <= 100; i++)
-            //{
-            //    files.Add(new ImagePath() { Id = i, Path = $"File{i:000}.png" });
-            //}
 
             var files = _dataStore.GetMarkedImagePaths().ToList();
             var count = 0;
@@ -168,15 +164,18 @@ namespace Diffusion.Toolkit
 
                                         _dataStore.DeleteImage(imagePath.Id);
 
-                                        File.Delete(imagePath.Path);
+                                        ServiceLocator.FileService.Delete(imagePath.Path);
+                                        
                                         var dir = Path.GetDirectoryName(imagePath.Path);
                                         var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
                                         var textFilePath = Path.Join(dir, $"{fileName}.txt");
 
-                                        File.Delete(imagePath.Path);
+                                        // TODO: Why delete twice?
+                                        //ServiceLocator.FileService.Delete(imagePath.Path);
+                                        
                                         if (File.Exists(textFilePath))
                                         {
-                                            File.Delete(textFilePath);
+                                            ServiceLocator.FileService.Delete(textFilePath);
                                         }
 
                                     }
@@ -203,9 +202,6 @@ namespace Diffusion.Toolkit
                                 await Dispatcher.Invoke(async () =>
                                 {
                                     LoadAlbums();
-
-
-
                                 });
 
                                 if (cancelled || token.IsCancellationRequested)

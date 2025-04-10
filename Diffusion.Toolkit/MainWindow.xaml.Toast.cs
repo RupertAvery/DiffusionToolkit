@@ -19,7 +19,19 @@ namespace Diffusion.Toolkit
 
         public CustomPopupPlacement[] GetPopupPlacement(Size popupSize, Size targetSize, Point offset)
         {
-            var point = new Point(ActualWidth - popupSize.Width, ActualHeight - popupSize.Height - 50);
+            PresentationSource source = PresentationSource.FromVisual(this);
+
+            double dpiX = 96, dpiY = 96;
+            if (source != null)
+            {
+                dpiX = 96.0 * source.CompositionTarget.TransformToDevice.M11;
+                dpiY = 96.0 * source.CompositionTarget.TransformToDevice.M22;
+            }
+
+            var width = ActualWidth * dpiX / 96.0;
+            var height = ActualHeight * dpiY / 96.0;
+
+            var point = new Point(width - popupSize.Width, height - popupSize.Height - 50);
             return new[] { new CustomPopupPlacement(point, PopupPrimaryAxis.None) };
         }
     }

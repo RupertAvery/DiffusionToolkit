@@ -102,6 +102,11 @@ You can now change the path of a root folder and all the images under it. This o
 
 TODO: 
 
+ Still happening!
+=================
+* Rescan selected (Channel has been closed) when 1 or a few images are selected
+  Race condition?
+
 
 Unavailable Converter crashing designer in Search.xaml?
 
@@ -112,8 +117,7 @@ Unavailable Converter crashing designer in Search.xaml?
   * Handle gracefully
 
 
-* Rescan selected (Channel has been closed) when 1 or a few images are selected
-  Race condition?
+
 
 * Check if Rebuild Metadata uses Archived folders
 

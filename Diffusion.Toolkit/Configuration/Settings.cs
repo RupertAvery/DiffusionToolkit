@@ -66,6 +66,7 @@ public class Settings : SettingsContainer, IScanOptions
     private List<ExternalApplication> _externalApplications;
     private string _sortQueriesBy;
     private bool _showTags;
+    private bool _permanentlyDelete;
 
     public Settings() : this(false)
     {
@@ -476,7 +477,13 @@ public class Settings : SettingsContainer, IScanOptions
         set => UpdateValue(ref _showTags, value);
     }
 
+    public bool PermanentlyDelete
+    {
+        get => _permanentlyDelete;
+        set => UpdateValue(ref _permanentlyDelete, value);
+    }
 
     public int Version { get; set; }
 
+ 
 }

@@ -15,6 +15,7 @@ namespace Diffusion.Toolkit.Services;
 
 public class ServiceLocator
 {
+    private static FileService _fileService;
     private static NavigatorService _navigatorService;
     private static ExternalApplicationsService _externalApplicationsService;
     private static ThumbnailService _thumbnailService;
@@ -138,6 +139,11 @@ public static PreviewService PreviewService
     public static NavigatorService NavigatorService
     {
         get { return _navigatorService; }
+    }
+
+    public static FileService FileService
+    {
+        get { return _fileService ?? new FileService(); }
     }
 }
 

@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using Diffusion.Common;
 using Diffusion.Database;
 using Diffusion.Database.Models;
 using Diffusion.Toolkit.Configuration;
@@ -104,7 +103,8 @@ namespace Diffusion.Toolkit.Services
         }
 
         private bool _isFoldersDirty = true;
-        private IReadOnlyCollection<Folder> _folders;
+        private IReadOnlyCollection<Folder> _rootFolders;
+        private IReadOnlyCollection<Folder> _allFolders;
 
         public IReadOnlyCollection<Folder> RootFolders
         {
@@ -112,17 +112,27 @@ namespace Diffusion.Toolkit.Services
             {
                 if (_isFoldersDirty)
                 {
-                    _folders = ServiceLocator.DataStore.GetRootFolders().ToList();
+                    _rootFolders = ServiceLocator.DataStore.GetRootFolders().ToList();
+                    _allFolders = ServiceLocator.DataStore.GetFolders().ToList();
                     _isFoldersDirty = false;
                 }
-                return _folders;
+                return _rootFolders;
             }
         }
 
-        //public IEnumerable<Folder> GetRootFolders()
-        //{
-        //    return ServiceLocator.DataStore.GetRootFolders();
-        //}
+        public IReadOnlyCollection<Folder> AllFolders
+        {
+            get
+            {
+                if (_isFoldersDirty)
+                {
+                    _rootFolders = ServiceLocator.DataStore.GetRootFolders().ToList();
+                    _allFolders = ServiceLocator.DataStore.GetFolders().ToList();
+                    _isFoldersDirty = false;
+                }
+                return _allFolders;
+            }
+        }
 
         private void UpdateFolder(FolderViewModel folderView, Dictionary<string, Folder> lookup)
         {
@@ -134,13 +144,43 @@ namespace Diffusion.Toolkit.Services
                 folderView.IsExcluded = folder.Excluded;
                 folderView.IsScanned = true;
 
-                //if (folderView.Children is { Count: > 0 })
-                //{
-                //    foreach (var child in folderView.Children)
-                //    {
-                //        UpdateFolder(child, lookup);
-                //    }
-                //}
+                if (folderView.HasChildren && folderView.Children is { Count: > 0 })
+                {
+                    foreach (var child in folderView.Children)
+                    {
+                        UpdateFolder(child, lookup);
+                    }
+                }
+            }
+
+            if (folderView.State == FolderState.Expanded)
+            {
+                var driveFolders = GetDriveSubFolders(folderView, lookup);
+
+                if (driveFolders.Any())
+                {
+                    if (folderView.Children == null)
+                    {
+                        folderView.Children = new ObservableCollection<FolderViewModel>();
+                    }
+
+                    foreach (var subFolder in driveFolders.Reverse())
+                    {
+                        if (folderView.Children.FirstOrDefault(d => d.Path == subFolder.Path) == null)
+                        {
+                            var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folderView) + 1;
+                            var targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+
+                            while (subFolder.Path.CompareTo(targetFolder.Path) > 0 && targetFolder.Depth == subFolder.Depth)
+                            {
+                                insertPoint++;
+                                targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+                            }
+                            ServiceLocator.MainModel.Folders.Insert(insertPoint, subFolder);
+                            folderView.Children.Add(subFolder);
+                        }
+                    }
+                }
             }
         }
 
@@ -181,6 +221,21 @@ namespace Diffusion.Toolkit.Services
 
         }
 
+        public IEnumerable<FolderViewModel> GetDriveSubFolders(FolderViewModel folder, Dictionary<string, Folder> lookup)
+        {
+            return Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
+            {
+                IgnoreInaccessible = true
+            }).Where(path => !lookup.ContainsKey(path)).Select(sub => new FolderViewModel()
+            {
+                Parent = folder,
+                HasChildren = true,
+                Visible = true,
+                Depth = folder.Depth + 1,
+                Name = Path.GetFileName(sub),
+                Path = sub,
+            });
+        }
 
         public ObservableCollection<FolderViewModel> GetSubFolders(FolderViewModel folder)
         {

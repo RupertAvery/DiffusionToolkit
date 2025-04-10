@@ -432,5 +432,42 @@ namespace Diffusion.Database
 
             return images;
         }
+
+        public int RemoveFolder(SQLiteConnection db, string path)
+        {
+            var deletedIds = InsertIds(db, "DeletedIds", "FolderId IN (SELECT Id FROM Folder WHERE PATH LIKE @Path || '%')", new Dictionary<string, object>() { { "@Path", path } });
+
+            var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
+            var propsCommand = db.CreateCommand(propsQuery);
+            propsCommand.ExecuteNonQuery();
+
+            var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
+            var nodesCommand = db.CreateCommand(nodesQuery);
+            nodesCommand.ExecuteNonQuery();
+
+            var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
+            var albumCommand = db.CreateCommand(albumQuery);
+            albumCommand.ExecuteNonQuery();
+
+            var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
+            var command = db.CreateCommand(query);
+            var images = command.ExecuteNonQuery();
+
+            var deleteFolderQuery = "DELETE FROM Folder WHERE PATH = @Path";
+            var deleteFolderCommand = db.CreateCommand(deleteFolderQuery);
+            deleteFolderCommand.Bind("@Path", path);
+            deleteFolderCommand.ExecuteNonQuery();
+
+            return images;
+        }
+
+        public void UpdateFolder()
+        {
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Collection,
+            });
+        }
     }
 }

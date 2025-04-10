@@ -130,6 +130,18 @@ public class ThumbnailCache
         return db;
     }
 
+
+    public bool Unload(string path)
+    {
+        if (_connectionPool.TryRemove(path, out var db))
+        {
+            db.Close();
+            return true;
+        }
+
+        return false;
+    }
+
     public bool TryGetThumbnail(string path, int size, out BitmapSource? thumbnail)
     {
         var db = OpenConnection(path);
