@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit;
 

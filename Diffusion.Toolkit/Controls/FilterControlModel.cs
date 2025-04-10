@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls;
 

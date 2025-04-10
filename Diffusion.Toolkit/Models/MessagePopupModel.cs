@@ -1,29 +1,7 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 
 namespace Diffusion.Toolkit.Models;
-
-[Flags]
-public enum PopupButtons
-{
-    OK = 1,
-    Cancel = 2,
-    OkCancel = OK | Cancel,
-    Yes = 4,
-    No = 8,
-    YesNo = Yes | No,
-    None = 1024
-}
-
-
-public enum PopupResult
-{
-    OK = 1,
-    Cancel = 2,
-    Yes = 3,
-    No = 4,
-}
 
 public class MessagePopupModel : BaseNotify
 {

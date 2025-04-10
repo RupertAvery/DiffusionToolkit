@@ -9,6 +9,7 @@
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
              xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
+             xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
              lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
              lex:LocalizeDictionary.Separation="."
              lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
@@ -31,7 +32,7 @@
             <converters:AlbumModeVisibilityConverter x:Key="albumModeVis"></converters:AlbumModeVisibilityConverter>
             <local:ThumbnailTemplateSelector x:Key="ThumbnailTemplateSelector"></local:ThumbnailTemplateSelector>
 
-            <DataTemplate x:Key="FolderDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
+            <DataTemplate x:Key="FolderDataTemplate" DataType="{x:Type models:ImageEntry}">
                 <Grid
                     Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                     Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
@@ -45,7 +46,7 @@
 
             </DataTemplate>
 
-            <DataTemplate x:Key="AlbumDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
+            <DataTemplate x:Key="AlbumDataTemplate" DataType="{x:Type models:ImageEntry}">
                 <Grid
                     Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                     Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
@@ -65,7 +66,7 @@
                 </Grid>
             </DataTemplate>
 
-            <DataTemplate x:Key="FileDataTemplate" DataType="{x:Type toolkit:ImageEntry}">
+            <DataTemplate x:Key="FileDataTemplate" DataType="{x:Type models:ImageEntry}">
                 <Grid Background="Transparent">
                     <local:Thumbnail 
                         Source="{Binding Thumbnail}" 
@@ -277,13 +278,13 @@
                                     <Style TargetType="ContentControl">
                                         <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
                                         <Style.Triggers>
-                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static toolkit:EntryType.Folder}">
+                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Folder}">
                                                 <Setter Property="ContentTemplate" Value="{StaticResource FolderDataTemplate}" />
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static toolkit:EntryType.File}">
+                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.File}">
                                                 <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
                                             </DataTrigger>
-                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static toolkit:EntryType.Album}">
+                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Album}">
                                                 <Setter Property="ContentTemplate" Value="{StaticResource AlbumDataTemplate}" />
                                             </DataTrigger>
                                         </Style.Triggers>

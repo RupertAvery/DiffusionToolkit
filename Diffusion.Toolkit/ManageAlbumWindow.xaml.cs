@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using Diffusion.Database;
 using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit
 {

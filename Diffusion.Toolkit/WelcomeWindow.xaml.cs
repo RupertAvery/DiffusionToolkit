@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
 using Microsoft.WindowsAPICodePack.Dialogs;
 

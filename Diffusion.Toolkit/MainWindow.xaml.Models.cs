@@ -172,35 +172,33 @@ namespace Diffusion.Toolkit
 
             Dispatcher.Invoke(() =>
             {
-                _model.TotalProgress = 100;
-                _model.CurrentProgress = 1;
                 _model.Status = $"Downloading models from Civitai...";
             });
 
-            var results = await GetPage(civitai, 1, token);
+            var totalModels = 0;
+
+            var results = await GetNextPage(civitai, civitai.BaseUrl + "/models?limit=100&page=1&types=Checkpoint", token);
 
             if (results != null)
             {
                 collection.Models.AddRange(results.Items);
 
-                while (results.Metadata.CurrentPage < results.Metadata.TotalPages)
+                while (!string.IsNullOrEmpty(results.Metadata.NextPage))
                 {
                     if (token.IsCancellationRequested)
                     {
                         break;
                     }
 
-                    var nextPage = results.Metadata.CurrentPage + 1;
-                    var totalPages = results.Metadata.TotalPages;
+                    //var nextPage = results.Metadata.CurrentPage + 1;
+                    //var totalPages = results.Metadata.TotalPages;
 
                     Dispatcher.Invoke(() =>
                     {
-                        _model.TotalProgress = totalPages;
-                        _model.CurrentProgress = nextPage;
-                        _model.Status = $"Downloading set {nextPage} of {totalPages:n0}...";
+                        _model.Status = $"Downloading models from Civitai... {collection.Models.Count()}";
                     });
 
-                    results = await GetPage(civitai, nextPage, token);
+                    results = await GetNextPage(civitai, results.Metadata.NextPage, token);
 
                     if (token.IsCancellationRequested)
                     {
@@ -212,11 +210,47 @@ namespace Diffusion.Toolkit
                         collection.Models.AddRange(results.Items);
                     }
                 }
+
+                //while (results.Metadata.CurrentPage < results.Metadata.TotalPages)
+                //{
+                //    if (token.IsCancellationRequested)
+                //    {
+                //        break;
+                //    }
+
+                //    var nextPage = results.Metadata.CurrentPage + 1;
+                //    var totalPages = results.Metadata.TotalPages;
+
+                //    Dispatcher.Invoke(() =>
+                //    {
+                //        _model.TotalProgress = totalPages;
+                //        _model.CurrentProgress = nextPage;
+                //        _model.Status = $"Downloading set {nextPage} of {totalPages:n0}...";
+                //    });
+
+                //    results = await GetPage(civitai, nextPage, token);
+
+                //    if (token.IsCancellationRequested)
+                //    {
+                //        break;
+                //    }
+
+                //    if (results != null)
+                //    {
+                //        collection.Models.AddRange(results.Items);
+                //    }
+                //}
             }
 
 
             return collection;
         }
+
+        private async Task<Results<LiteModel>?> GetNextPage(CivitaiClient client, string nextPageUrl, CancellationToken token)
+        {
+            return await client.GetLiteModels(nextPageUrl, token);
+        }
+
 
         private async Task<Results<LiteModel>?> GetPage(CivitaiClient client, int page, CancellationToken token)
         {

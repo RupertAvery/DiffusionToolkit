@@ -1,4 +1,6 @@
-﻿namespace Diffusion.Toolkit.Pages;
+﻿using Diffusion.Toolkit.Models;
+
+namespace Diffusion.Toolkit.Pages;
 
 public class ModelViewModel : BaseNotify
 {

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Pages;
 using Diffusion.Toolkit.Services;
 

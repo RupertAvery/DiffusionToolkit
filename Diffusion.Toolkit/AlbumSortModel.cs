@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Input;
 using Diffusion.Database.Models;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit;
 

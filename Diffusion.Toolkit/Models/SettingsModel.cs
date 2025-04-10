@@ -1,25 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Windows.Input;
-using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
-namespace Diffusion.Toolkit;
-
-public class Langauge
-{
-    public string Name { get; set; }
-    public string Culture { get; set; }
-
-    public Langauge(string name, string culture)
-    {
-        Name = name;
-        Culture = culture;
-    }
-}
-
+namespace Diffusion.Toolkit.Models;
 
 public class SettingsModel : BaseNotify
 {
@@ -67,7 +54,26 @@ public class SettingsModel : BaseNotify
         SelectedIndex = -1;
         ExcludedSelectedIndex = -1;
         ExternalApplications = new ObservableCollection<ExternalApplicationModel>();
-        PropertyChanged+= OnPropertyChanged;
+        //ExternalApplications.CollectionChanged += ExternalApplicationsOnCollectionChanged;
+
+        PropertyChanged += OnPropertyChanged;
+    }
+
+    private void ExternalApplicationsOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        int i = 1;
+
+        foreach (var application in ExternalApplications)
+        {
+            application.Shortcut = i switch
+            {
+                >= 1 and <= 9 => $"Shift+{i}",
+                10 => $"Shift+0",
+                _ => ""
+            };
+
+            i++;
+        }
     }
 
     private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -158,7 +164,7 @@ public class SettingsModel : BaseNotify
         get => _watchFolders;
         set => SetField(ref _watchFolders, value);
     }
-    
+
     public bool AutoRefresh
     {
         get => _autoRefresh;
@@ -292,6 +298,7 @@ public class SettingsModel : BaseNotify
         {
             SetField(ref _externalApplications, value);
             RegisterObservableChanges(_externalApplications);
+            _externalApplications.CollectionChanged += ExternalApplicationsOnCollectionChanged;
         }
     }
 
@@ -323,29 +330,4 @@ public class SettingsModel : BaseNotify
         OnPropertyChanged(nameof(IsFoldersDirty));
     }
 
-}
-
-public class ExternalApplicationModel : BaseNotify
-{
-    private string _name;
-    private string _path;
-    private string _commandLineArgs;
-
-    public string Name
-    {
-        get => _name;
-        set => SetField(ref _name, value);
-    }
-
-    public string Path
-    {
-        get => _path;
-        set => SetField(ref _path, value);
-    }
-
-    public string CommandLineArgs
-    {
-        get => _commandLineArgs;
-        set => SetField(ref _commandLineArgs, value);
-    }
 }

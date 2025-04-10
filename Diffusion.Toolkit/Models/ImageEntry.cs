@@ -1,25 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using Diffusion.Toolkit.Services;
-using Diffusion.Toolkit.Thumbnails;
 
-namespace Diffusion.Toolkit;
-public enum EntryType
-{
-    File,
-    Folder,
-    Album
-}
-
-public enum LoadState
-{
-    Unloaded,
-    Loading,
-    Loaded,
-}
+namespace Diffusion.Toolkit.Models;
 
 public class ImageEntry : BaseNotify
 {

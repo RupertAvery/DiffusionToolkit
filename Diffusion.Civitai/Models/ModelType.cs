@@ -10,3 +10,4 @@ public enum ModelType
     Controlnet,
     Poses
 }
+

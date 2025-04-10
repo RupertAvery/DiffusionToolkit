@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit;
 

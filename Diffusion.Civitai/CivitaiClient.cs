@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.IO;
-using System.Net.Http.Headers;
+﻿using System.Collections;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 using Diffusion.Civitai.Models;
 
 namespace Diffusion.Civitai;
@@ -16,6 +11,8 @@ public class CivitaiClient : IDisposable
     private readonly string _baseUrl = "https://civitai.com/api/v1";
 
     private readonly HttpClient _httpClient;
+
+    public string BaseUrl => _baseUrl;
 
     public CivitaiClient()
     {
@@ -29,6 +26,11 @@ public class CivitaiClient : IDisposable
         string apiUrl = $"{_baseUrl}/models{queryString}";
 
         return await GetResponseResults<Results<LiteModel>>(_httpClient, apiUrl, token);
+    }
+
+    public async Task<Results<LiteModel>?> GetLiteModels(string url, CancellationToken token)
+    {
+        return await GetResponseResults<Results<LiteModel>>(_httpClient, url, token);
     }
 
     public async Task<Results<Model>?> GetModelsAsync(ModelSearchParameters searchParameters, CancellationToken token)
@@ -71,23 +73,23 @@ public class CivitaiClient : IDisposable
 
                 using (var responseStream = await response.Content.ReadAsStreamAsync(token))
                 {
-                    results = await JsonSerializer.DeserializeAsync<T>(responseStream, options);
+                    //results = await JsonSerializer.DeserializeAsync<T>(responseStream, options);
 
-                    //using var buffer = new MemoryStream();
-                    //await responseStream.CopyToAsync(buffer);
-                    //responseStream.Flush();
-                    //responseStream.Close();
+                    using var buffer = new MemoryStream();
+                    await responseStream.CopyToAsync(buffer);
+                    responseStream.Flush();
+                    responseStream.Close();
 
-                    //buffer.Position = 0;
-                    //using var fs = new FileStream($"civitai-{DateTime.Now:yyyyMMddhhmmss}.json", FileMode.Create, FileAccess.Write);
-                    //await buffer.CopyToAsync(fs);
-                    //fs.Flush();
-                    //fs.Close();
+                    buffer.Position = 0;
+                    using var fs = new FileStream($"civitai-{DateTime.Now:yyyyMMddhhmmss}.json", FileMode.Create, FileAccess.Write);
+                    await buffer.CopyToAsync(fs);
+                    fs.Flush();
+                    fs.Close();
 
-                    //buffer.Position = 0;
-                    //results = await JsonSerializer.DeserializeAsync<T>(buffer, options);
+                    buffer.Position = 0;
+                    results = await JsonSerializer.DeserializeAsync<T>(buffer, options);
 
-                    //buffer.Close();
+                    buffer.Close();
 
                 }
             }

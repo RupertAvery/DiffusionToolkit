@@ -12,7 +12,7 @@ using Diffusion.Common;
 using Diffusion.Database;
 using SQLite;
 
-var dbPath = @"C:\Users\ruper\AppData\Roaming\DiffusionToolkit\Backup-20240420-020535.db";
+//var dbPath = @"C:\Users\ruper\AppData\Roaming\DiffusionToolkit\Backup-20240420-020535.db";
 
 
 //var ds = new DataStore(dbPath);
@@ -22,7 +22,7 @@ var dbPath = @"C:\Users\ruper\AppData\Roaming\DiffusionToolkit\Backup-20240420-0
 
 
 
-return;
+//return;
 
 //var migrations = new Migrations(new SQLiteConnection(dbPath), Settings.Instance);
 //migrations.RupertAvery20250405_0001_FixFolders();
@@ -32,31 +32,46 @@ using var civitai = new CivitaiClient();
 
 var collection = new LiteModelCollection();
 
-var results = await GetPage(1);
+var results = await GetNextPage("https://civitai.com/api/v1/models?limit=100&page=1&types=Checkpoint&cursor=3%7C28%7C638698");
 
 collection.Models.AddRange(results.Items);
 
-while (results.Metadata.CurrentPage < results.Metadata.TotalPages)
+while (!string.IsNullOrEmpty(results.Metadata.NextPage))
 {
-    results = await GetPage(results.Metadata.CurrentPage + 1, results.Metadata.TotalPages);
+    results = await GetNextPage(results.Metadata.NextPage);
     collection.Models.AddRange(results.Items);
 }
 
-var options = new JsonSerializerOptions()
+
+//while (results.Metadata.CurrentPage < results.Metadata.TotalPages)
+//{
+//    results = await GetPage(results.Metadata.CurrentPage + 1, results.Metadata.TotalPages);
+//    collection.Models.AddRange(results.Items);
+//}
+
+//var options = new JsonSerializerOptions()
+//{
+//    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+//    Converters = { new JsonStringEnumConverter() }
+//};
+
+//var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
+
+//var mTime = DateTime.Now - baseTime;
+
+//collection.Date = mTime.TotalSeconds;
+
+//var json = JsonSerializer.Serialize(collection, options);
+
+//File.WriteAllText("models.json", json);
+
+
+async Task<Results<LiteModel>> GetNextPage(string nextPageUrl)
 {
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    Converters = { new JsonStringEnumConverter() }
-};
+    Console.WriteLine($"Fetching {nextPageUrl}");
 
-var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
-
-var mTime = DateTime.Now - baseTime;
-
-collection.Date = mTime.TotalSeconds;
-
-var json = JsonSerializer.Serialize(collection, options);
-
-File.WriteAllText("models.json", json);
+    return await civitai.GetLiteModels(nextPageUrl, CancellationToken.None);
+}
 
 
 async Task<Results<LiteModel>> GetPage(int page, int? total = 0)

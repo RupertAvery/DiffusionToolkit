@@ -6,12 +6,6 @@ using System.Windows.Navigation;
 
 namespace Diffusion.Toolkit.Models;
 
-public enum FolderState
-{
-    Collapsed,
-    Expanded
-}
-
 public class FolderViewModel : BaseNotify
 {
     private FolderState _state;

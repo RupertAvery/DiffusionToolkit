@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.MdStyles;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit
 {

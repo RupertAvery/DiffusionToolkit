@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls;
 

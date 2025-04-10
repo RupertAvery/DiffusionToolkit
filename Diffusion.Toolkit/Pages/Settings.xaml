@@ -8,23 +8,25 @@
                 xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
                 xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
                 xmlns:system="clr-namespace:System;assembly=System.Runtime"
+                xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
                 lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
                 lex:LocalizeDictionary.Separation="."
                 lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
-                d:DataContext="{d:DesignInstance toolkit:SettingsModel, IsDesignTimeCreatable = True}"
+                d:DataContext="{d:DesignInstance models:SettingsModel, IsDesignTimeCreatable = True}"
                 mc:Ignorable="d" 
                 d:DesignHeight="450" d:DesignWidth="800"
-                Title="Settings">
+                >
     <local:NavigationPage.Resources>
         <ResourceDictionary>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
             <converters:IsIndexSelectedConverter x:Key="IsIndexSelectedConverter"></converters:IsIndexSelectedConverter>
+            <converters:IndexOfConverter x:Key="IndexOfConverter"></converters:IndexOfConverter>
             <converters:NotNullConverter x:Key="NotNullConverter"></converters:NotNullConverter>
-            <toolkit:SettingsModel x:Key="TestData">
-                <toolkit:SettingsModel.ImagePaths>
+            <models:SettingsModel x:Key="TestData">
+                <models:SettingsModel.ImagePaths>
                     <system:String>Hello world!</system:String>
-                </toolkit:SettingsModel.ImagePaths>
-            </toolkit:SettingsModel>
+                </models:SettingsModel.ImagePaths>
+            </models:SettingsModel>
         </ResourceDictionary>
     </local:NavigationPage.Resources>
     <Grid d:DataContext="{StaticResource TestData}" Margin="0,0,0,10">
@@ -308,18 +310,11 @@
             </TabItem>
             <TabItem x:Name="ExternalApplicationsTab" Header="{lex:Loc Settings.ExternalApplications}">
                 <Grid Margin="10">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="26"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <Grid>
-                        <Label>External Applications are added to the Open with... context menu on images</Label>
-                    </Grid>
-                    <Grid Grid.Row="1">
+                    <Grid Grid.Row="0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="250"/>
                             <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="800"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <ListBox ItemsSource="{Binding ExternalApplications}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedApplication}">
                         </ListBox>
@@ -329,11 +324,11 @@
                             <Button Height="26" Margin="0,0,0,10" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullConverter}}" Click="MoveExternalApplicationUp_OnClick" Content="{lex:Loc Settings.ExternalApplications.MoveUp}"></Button>
                             <Button Height="26" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullConverter}}" Click="MoveExternalApplicationDown_OnClick" Content="{lex:Loc Settings.ExternalApplications.MoveDown}"></Button>
                         </StackPanel>
-                        <StackPanel Margin="10,0,0,0" Grid.Column="2" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullConverter}}">
+                        <StackPanel Margin="30,0,0,0"  HorizontalAlignment="Left" Grid.Column="2" IsEnabled="{Binding SelectedApplication, Converter={StaticResource NotNullConverter}}">
                             <Label>Application Name</Label>
-                            <TextBox Height="26" VerticalContentAlignment="Center" Text="{Binding SelectedApplication.Name}"></TextBox>
+                            <TextBox Margin="0,0,0,5" Height="26" VerticalContentAlignment="Center" Text="{Binding SelectedApplication.Name}"></TextBox>
                             <Label>Application Path</Label>
-                            <Grid>
+                            <Grid Margin="0,0,0,5" >
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition Width="60"/>
@@ -342,14 +337,18 @@
                                 <Button Height="26" Grid.Column="1" Click="BrowseExternalApplicationPath_OnClick" Content="{lex:Loc Common.Buttons.Browse}"></Button>
                             </Grid>
                             <Label>Command line arguments</Label>
-                            <TextBox Height="26" Margin="0,0,0,20" VerticalContentAlignment="Center" Text="{Binding SelectedApplication.CommandLineArgs}"></TextBox>
+                            <TextBox Height="26" Margin="0,0,0,5" VerticalContentAlignment="Center" Text="{Binding SelectedApplication.CommandLineArgs}"></TextBox>
+                            <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                                <Label>Shortcut:</Label>
+                                <Label Content="{Binding SelectedApplication.Shortcut}"></Label>
+                            </StackPanel>
                             <RichTextBox Width="600" HorizontalAlignment="Left" Foreground="{DynamicResource ForegroundBrush}" BorderBrush="Transparent" Margin="5" Background="Transparent" IsHitTestVisible="False">
                                 <FlowDocument>
                                     <Paragraph>
                                         Use %1 to pass the file path. If empty, it will default to %1.
                                     </Paragraph>
                                     <Paragraph>
-                                        Filenames will be enclosed in double quotes.
+                                        Filenames will automatically be enclosed in double quotes.
                                     </Paragraph>
                                     <Paragraph>
                                         Multiple selected files will be sent as multiple arguments separated by spaces. e.g.:
@@ -385,7 +384,7 @@
                 <ColumnDefinition Width="160"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Label VerticalAlignment="Center" FontSize="22" FontWeight="DemiBold">Settings</Label>
+            <Label VerticalAlignment="Center" FontSize="22" FontWeight="DemiBold" Content="{lex:Loc Settings}"></Label>
             <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsDirty}" Click="ApplyChanges_OnClick" Grid.Column="1" Content="{lex:Loc Settings.ApplyChanges}"></Button>
             <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsDirty}" Click="RevertChanges_OnClick" Grid.Column="2" Content="{lex:Loc Settings.RevertChanges}"></Button>
             <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsFoldersDirty}" Click="RevertFolders_OnClick" Grid.Column="3" Content="{lex:Loc Settings.RevertFolders}"></Button>

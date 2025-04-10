@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls;
 

@@ -1,4 +1,6 @@
-﻿namespace Diffusion.Toolkit.Thumbnails;
+﻿using Diffusion.Toolkit.Models;
+
+namespace Diffusion.Toolkit.Thumbnails;
 
 public class ThumbnailJob
 {

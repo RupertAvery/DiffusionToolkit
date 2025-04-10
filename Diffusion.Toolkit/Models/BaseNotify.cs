@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Diffusion.Toolkit;
+namespace Diffusion.Toolkit.Models;
 
 public class BaseNotify : INotifyPropertyChanged
 {

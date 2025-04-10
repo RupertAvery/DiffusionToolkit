@@ -11,6 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Resources;
 using System.Windows.Threading;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Thumbnails;
 
