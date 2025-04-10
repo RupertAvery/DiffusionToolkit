@@ -388,6 +388,12 @@ namespace Diffusion.Database
 
             db.Close();
 
+            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            {
+                EntityType = EntityType.Folder,
+                SourceType = SourceType.Collection,
+            });
+
             return images;
         }
 

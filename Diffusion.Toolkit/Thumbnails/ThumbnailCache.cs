@@ -1,13 +1,10 @@
-﻿using SQLite;
+﻿using Diffusion.Common;
+using SQLite;
 using System;
 using System.Collections.Concurrent;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Windows;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using Size = System.Drawing.Size;
 
 namespace Diffusion.Toolkit.Thumbnails;
 
@@ -101,41 +98,86 @@ public class Thumbnail
 }
 
 
+public class ConnectionCacheEntry
+{
+    private readonly string _path;
+    private readonly ConcurrentDictionary<string, ConnectionCacheEntry> _connectionPool;
+    private readonly SQLiteConnection _connection;
+    private Action _timeout;
+
+    public ConnectionCacheEntry(string path, ConcurrentDictionary<string, ConnectionCacheEntry> connectionPool, SQLiteConnection connection)
+    {
+        _path = path;
+        _connectionPool = connectionPool;
+        _connection = connection;
+        _timeout = Utility.Debounce(() =>
+        {
+            if (_connectionPool.TryRemove(_path, out var cacheEntry))
+            {
+                Connection.Close();
+            }
+        }, 2000);
+    }
+
+    public SQLiteConnection Connection => _connection;
+
+
+    public void ResetTimeout()
+    {
+        _timeout();
+    }
+
+}
+
 public class ThumbnailCache
 {
     private static ThumbnailCache _instance;
 
     public static ThumbnailCache Instance => _instance;
 
-    private readonly ConcurrentDictionary<string, SQLiteConnection> _connectionPool;
+    private readonly ConcurrentDictionary<string, ConnectionCacheEntry> _connectionPool;
 
     private ThumbnailCache()
     {
-        _connectionPool = new ConcurrentDictionary<string, SQLiteConnection>();
+        _connectionPool = new ConcurrentDictionary<string, ConnectionCacheEntry>();
     }
 
+    private object _lock = new object();
 
     public SQLiteConnection OpenConnection(string path)
     {
         var dbPath = Path.GetDirectoryName(path);
 
-        if (!_connectionPool.TryGetValue(dbPath, out var db))
+        lock (_lock)
         {
-            db = new SQLiteConnection(Path.Combine(dbPath, "dt_thumbnails.db"));
-            db.CreateTable<Thumbnail>();
-            db.CreateIndex<Thumbnail>(t => t.Filename, true);
-            _connectionPool[dbPath] = db;
-        }
+            if (!_connectionPool.TryGetValue(dbPath, out var cacheItem))
+            {
+                var db = new SQLiteConnection(Path.Combine(dbPath, "dt_thumbnails.db"));
+                db.CreateTable<Thumbnail>();
+                db.CreateIndex<Thumbnail>(t => t.Filename, true);
 
-        return db;
+                cacheItem = new ConnectionCacheEntry(dbPath, _connectionPool, db);
+
+                _connectionPool[dbPath] = cacheItem;
+
+                cacheItem.ResetTimeout();
+            }
+            else
+            {
+                cacheItem.ResetTimeout();
+            }
+
+            return cacheItem.Connection;
+        }
+       
     }
 
 
     public bool Unload(string path)
     {
-        if (_connectionPool.TryRemove(path, out var db))
+        if (_connectionPool.TryRemove(path, out var cacheEntry))
         {
-            db.Close();
+            cacheEntry.Connection.Close();
             return true;
         }
 

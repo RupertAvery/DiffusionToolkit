@@ -69,13 +69,13 @@
                                         KeyboardNavigation.TabIndex="1"
                                         Background="Transparent" />
                                     <Border x:Name="Border"
-                                  Grid.Row="1"
-                                  BorderThickness="1"
-                                  CornerRadius="2"
-                                  KeyboardNavigation.TabNavigation="Local"
-                                  KeyboardNavigation.DirectionalNavigation="Contained"
-                                  KeyboardNavigation.TabIndex="2">
-                                        <Border.Background>
+                                        Grid.Row="1"
+                                        BorderThickness="1"
+                                        CornerRadius="2"
+                                        KeyboardNavigation.TabNavigation="Local"
+                                        KeyboardNavigation.DirectionalNavigation="Contained"
+                                        KeyboardNavigation.TabIndex="2">
+                                        <!--<Border.Background>
                                             <LinearGradientBrush EndPoint="0.5,1"
                                    StartPoint="0.5,0">
                                                 <GradientStop Color="{DynamicResource ContentAreaColorLight}"
@@ -86,7 +86,7 @@
                                         </Border.Background>
                                         <Border.BorderBrush>
                                             <SolidColorBrush Color="{DynamicResource BorderMediumColor}"/>
-                                        </Border.BorderBrush>
+                                        </Border.BorderBrush>-->
                                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                                             <ContentPresenter x:Name="PART_SelectedContentHost"
                                                               Margin="4"

@@ -301,7 +301,8 @@ public class ScanningService
             FileSize = file.FileSize,
             NoMetadata = file.NoMetadata,
             WorkflowId = file.WorkflowId,
-            HasError = file.HasError
+            HasError = file.HasError,
+            Hash = file.Hash
         };
 
         if (storeMetadata)

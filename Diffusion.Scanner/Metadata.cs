@@ -11,6 +11,7 @@ using System.Reflection.Metadata.Ecma335;
 using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace Diffusion.IO;
 
@@ -81,6 +82,8 @@ public class Metadata
         return FileType.Other;
     }
 
+
+
     public static FileParameters? ReadFromFile(string file)
     {
         FileParameters? fileParameters = null;
@@ -103,6 +106,9 @@ public class Metadata
                     retry++;
                 }
             } while (failed);
+
+
+
         }
         catch (Exception e)
         {
@@ -122,6 +128,8 @@ public class Metadata
             fileParameters.Path = file;
             fileParameters.FileSize = fileInfo.Length;
         }
+
+        fileParameters.Hash = Hashing.CalculateHash(file);
 
         return fileParameters;
     }

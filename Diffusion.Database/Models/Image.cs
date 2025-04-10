@@ -2,6 +2,11 @@
 
 namespace Diffusion.Database.Models;
 
+[AttributeUsage(AttributeTargets.Property)]
+public class UserDefinedAttribute : Attribute {
+
+}
+
 public class Image
 {
     [PrimaryKey, AutoIncrement]
@@ -30,11 +35,17 @@ public class Image
 
     // These columns shouldn't be overwritten when batch updating 
     // Consider moving these out?
+    [UserDefined]
     public string? CustomTags { get; set; }
+    [UserDefined]
     public int? Rating { get; set; }
+    [UserDefined]
     public bool Favorite { get; set; }
+    [UserDefined]
     public bool ForDeletion { get; set; }
+    [UserDefined]
     public bool NSFW { get; set; }
+    [UserDefined]
     public bool Unavailable { get; set; }
 
     public decimal? AestheticScore { get; set; }
@@ -47,6 +58,11 @@ public class Image
     public string? Workflow { get; set; }
     public string? WorkflowId { get; set; }
     public bool HasError { get; set; }
+    public string? Hash { get; set; }
+    [UserDefined]
+    public DateTime? ViewedDate { get; set; }
+    [UserDefined]
+    public DateTime? OpenedDate { get; set; }
 }
 
 

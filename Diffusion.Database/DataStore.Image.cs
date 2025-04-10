@@ -175,6 +175,8 @@ namespace Diffusion.Database
 
             //db.BeginTransaction();
 
+            // These are user-defined metadata and should NOT be overwritten when the user
+            // re-scans the images
             var exclude = new string[]
             {
                 nameof(Image.Id),
@@ -184,7 +186,9 @@ namespace Diffusion.Database
                 nameof(Image.ForDeletion),
                 nameof(Image.NSFW),
                 nameof(Image.Unavailable),
-                nameof(Image.Workflow)
+                nameof(Image.Workflow),
+                nameof(Image.ViewedDate),
+                nameof(Image.OpenedDate),
             };
 
 
@@ -287,7 +291,10 @@ namespace Diffusion.Database
                 //nameof(Image.ForDeletion),
                 //nameof(Image.NSFW),
                 //nameof(Image.Unavailable),
-                nameof(Image.Workflow)
+                nameof(Image.Workflow),
+                nameof(Image.Rating),
+                nameof(Image.ViewedDate),
+                nameof(Image.OpenedDate),
             };
 
             exclude = exclude.Except(includeProperties).ToArray();
@@ -480,5 +487,25 @@ namespace Diffusion.Database
 
             return result > 0;
         }
+
+        public IReadOnlyCollection<HashMatch> GetImageIdByHash(string hash)
+        {
+            var db = OpenReadonlyConnection();
+
+            return db.Query<HashMatch>("SELECT Id, Path FROM Image WHERE Hash = ?", hash);
+        }
+
+        public int UpdateImagePath(int id, string path)
+        {
+            var db = OpenConnection();
+
+            return db.Execute("UPDATE Image SET Path = ? WHERE Id = ?", path, id);
+        }
+    }
+
+    public class HashMatch
+    {
+        public int Id { get; set; }
+        public string Path { get; set; }
     }
 }

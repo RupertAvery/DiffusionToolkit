@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Diffusion.Common;
+using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
@@ -79,6 +80,16 @@ namespace Diffusion.Toolkit
 
             _ = ServiceLocator.FolderService.LoadFolders();
 
+
+            ServiceLocator.DataStore.DataChanged += DataChanged;
+        }
+
+        private void DataChanged(object? sender, DataChangedEventArgs e)
+        {
+            if (e is { EntityType: EntityType.Folder, SourceType: SourceType.Collection })
+            {
+                _ = ServiceLocator.FolderService.LoadFolders();
+            }
         }
 
         static bool IsValidFolderName(string folderName)

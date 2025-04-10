@@ -114,6 +114,9 @@ public partial class DataStore
                 db.CreateIndex<Image>(image => image.Workflow);
                 db.CreateIndex<Image>(image => image.WorkflowId);
                 db.CreateIndex<Image>(image => image.HasError);
+                db.CreateIndex<Image>(image => image.Hash);
+                db.CreateIndex<Image>(image => image.ViewedDate);
+                db.CreateIndex<Image>(image => image.OpenedDate);
 
                 db.CreateIndex<Image>(image => new { image.HasError, image.CreatedDate });
                 db.CreateIndex<Image>(image => new { image.ForDeletion, image.CreatedDate });

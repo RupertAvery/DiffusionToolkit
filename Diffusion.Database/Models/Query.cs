@@ -19,3 +19,4 @@ public class QueryItem
     public DateTime CreatedDate { get; set; }
 }
 
+

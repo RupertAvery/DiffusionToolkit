@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using Diffusion.Common;
 using Diffusion.Database;
 using Diffusion.Database.Models;
 using Diffusion.Toolkit.Configuration;
@@ -16,6 +18,23 @@ using Diffusion.Toolkit.Thumbnails;
 
 namespace Diffusion.Toolkit.Services
 {
+    public class PathComparer : IEqualityComparer<FolderViewModel>
+    {
+        public bool Equals(FolderViewModel? x, FolderViewModel? y)
+        {
+            if (ReferenceEquals(x, y)) return true;
+            if (x is null) return false;
+            if (y is null) return false;
+            if (x.GetType() != y.GetType()) return false;
+            return x.Path == y.Path;
+        }
+
+        public int GetHashCode(FolderViewModel obj)
+        {
+            return obj.Path.GetHashCode();
+        }
+    }
+
     public class FolderService
     {
         private Settings _settings => ServiceLocator.Settings!;
@@ -144,44 +163,44 @@ namespace Diffusion.Toolkit.Services
                 folderView.IsExcluded = folder.Excluded;
                 folderView.IsScanned = true;
 
-                if (folderView.HasChildren && folderView.Children is { Count: > 0 })
-                {
-                    foreach (var child in folderView.Children)
-                    {
-                        UpdateFolder(child, lookup);
-                    }
-                }
+                //if (folderView.HasChildren && folderView.Children is { Count: > 0 })
+                //{
+                //    foreach (var child in folderView.Children)
+                //    {
+                //        UpdateFolder(child, lookup);
+                //    }
+                //}
             }
 
-            if (folderView.State == FolderState.Expanded)
-            {
-                var driveFolders = GetDriveSubFolders(folderView, lookup);
+            //if (folderView.State == FolderState.Expanded && Directory.Exists(folderView.Path))
+            //{
+            //    var driveFolders = GetDriveSubFolders(folderView, lookup);
 
-                if (driveFolders.Any())
-                {
-                    if (folderView.Children == null)
-                    {
-                        folderView.Children = new ObservableCollection<FolderViewModel>();
-                    }
+            //    if (driveFolders.Any())
+            //    {
+            //        if (folderView.Children == null)
+            //        {
+            //            folderView.Children = new ObservableCollection<FolderViewModel>();
+            //        }
 
-                    foreach (var subFolder in driveFolders.Reverse())
-                    {
-                        if (folderView.Children.FirstOrDefault(d => d.Path == subFolder.Path) == null)
-                        {
-                            var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folderView) + 1;
-                            var targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+            //        foreach (var subFolder in driveFolders.Reverse())
+            //        {
+            //            if (folderView.Children.FirstOrDefault(d => d.Path == subFolder.Path) == null)
+            //            {
+            //                var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folderView) + 1;
+            //                var targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
 
-                            while (subFolder.Path.CompareTo(targetFolder.Path) > 0 && targetFolder.Depth == subFolder.Depth)
-                            {
-                                insertPoint++;
-                                targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
-                            }
-                            ServiceLocator.MainModel.Folders.Insert(insertPoint, subFolder);
-                            folderView.Children.Add(subFolder);
-                        }
-                    }
-                }
-            }
+            //                while (subFolder.Path.CompareTo(targetFolder.Path) > 0 && targetFolder.Depth == subFolder.Depth)
+            //                {
+            //                    insertPoint++;
+            //                    targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+            //                }
+            //                ServiceLocator.MainModel.Folders.Insert(insertPoint, subFolder);
+            //                folderView.Children.Add(subFolder);
+            //            }
+            //        }
+            //    }
+            //}
         }
 
         public async Task LoadFolders()
@@ -210,9 +229,46 @@ namespace Diffusion.Toolkit.Services
                 }
                 else
                 {
+                    var comparer = new PathComparer();
+
                     foreach (var folder in ServiceLocator.MainModel.Folders)
                     {
                         UpdateFolder(folder, lookup);
+
+                        if (folder.State == FolderState.Expanded && Directory.Exists(folder.Path))
+                        {
+                            var driveFolders = GetDriveSubFolders(folder);
+
+                            if (folder.Children != null)
+                            {
+                                driveFolders = driveFolders.Except(folder.Children, comparer);
+                            }
+
+                            if (driveFolders.Any())
+                            {
+                                if (folder.Children == null)
+                                {
+                                    folder.Children = new ObservableCollection<FolderViewModel>();
+                                }
+
+                                foreach (var subFolder in driveFolders.Reverse())
+                                {
+                                    if (folder.Children.FirstOrDefault(d => d.Path == subFolder.Path) == null)
+                                    {
+                                        var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folder) + 1;
+                                        var targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+
+                                        while (subFolder.Path.CompareTo(targetFolder.Path) > 0 && targetFolder.Depth == subFolder.Depth)
+                                        {
+                                            insertPoint++;
+                                            targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+                                        }
+                                        ServiceLocator.MainModel.Folders.Insert(insertPoint, subFolder);
+                                        folder.Children.Add(subFolder);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -221,20 +277,27 @@ namespace Diffusion.Toolkit.Services
 
         }
 
-        public IEnumerable<FolderViewModel> GetDriveSubFolders(FolderViewModel folder, Dictionary<string, Folder> lookup)
+        public IEnumerable<FolderViewModel> GetDriveSubFolders(FolderViewModel folder)
         {
-            return Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
+            try
             {
-                IgnoreInaccessible = true
-            }).Where(path => !lookup.ContainsKey(path)).Select(sub => new FolderViewModel()
+                return Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
+                {
+                    IgnoreInaccessible = true
+                }).Select(sub => new FolderViewModel()
+                {
+                    Parent = folder,
+                    HasChildren = true,
+                    Visible = true,
+                    Depth = folder.Depth + 1,
+                    Name = Path.GetFileName(sub),
+                    Path = sub,
+                });
+            }
+            catch (DirectoryNotFoundException ex)
             {
-                Parent = folder,
-                HasChildren = true,
-                Visible = true,
-                Depth = folder.Depth + 1,
-                Name = Path.GetFileName(sub),
-                Path = sub,
-            });
+                return Enumerable.Empty<FolderViewModel>();
+            }
         }
 
         public ObservableCollection<FolderViewModel> GetSubFolders(FolderViewModel folder)
@@ -341,21 +404,6 @@ namespace Diffusion.Toolkit.Services
 
         private readonly List<FileSystemWatcher> _watchers = new List<FileSystemWatcher>();
 
-
-        private void WatcherOnCreated(object sender, FileSystemEventArgs e)
-        {
-            if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
-            {
-                if (!ServiceLocator.FolderService.IsExcludedOrArchivedFile(e.FullPath))
-                {
-                    ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
-                    {
-                        _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken);
-                    });
-                }
-            }
-        }
-
         private bool _isExcludedFoldersDirty = true;
 
         IReadOnlyCollection<Folder> _excludedFolders;
@@ -421,18 +469,6 @@ namespace Diffusion.Toolkit.Services
             return ExcludedOrArchivedFolderPaths.Contains(path);
         }
 
-        private void WatcherOnRenamed(object sender, RenamedEventArgs e)
-        {
-            var wasTmp = Path.GetExtension(e.OldFullPath).ToLowerInvariant() == ".tmp";
-
-            if (wasTmp && _settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
-            {
-                if (!ServiceLocator.FolderService.IsExcludedOrArchivedFile(e.FullPath))
-                {
-                    ServiceLocator.ProgressService.StartTask().ContinueWith(t => { _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken); });
-                }
-            }
-        }
 
         public void CreateWatchers()
         {
@@ -447,9 +483,93 @@ namespace Diffusion.Toolkit.Services
                     };
                     watcher.Created += WatcherOnCreated;
                     watcher.Renamed += WatcherOnRenamed;
+                    watcher.Changed += WatcherOnChanged;
+                    watcher.Deleted += WatcherOnDeleted;
                     _watchers.Add(watcher);
                 }
             }
+        }
+
+        private void WatcherOnCreated(object sender, FileSystemEventArgs e)
+        {
+            try
+            {
+                if (Path.GetFileName(e.FullPath) == "dt_thumbnails.db-journal")
+                {
+                    return;
+                }
+
+                FileAttributes attr = File.GetAttributes(e.FullPath);
+
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    //ServiceLocator.DataStore.ChangeFolderPath(e.OldFullPath, e.FullPath);
+                }
+                else
+                {
+                    if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
+                    {
+                        if (!ServiceLocator.FolderService.IsExcludedOrArchivedFile(e.FullPath))
+                        {
+                            ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
+                            {
+                                _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken);
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.Log(exception.Message + " " + exception.StackTrace);
+            }
+
+        }
+
+        private void WatcherOnRenamed(object sender, RenamedEventArgs e)
+        {
+            try
+            {
+                FileAttributes attr = File.GetAttributes(e.FullPath);
+
+                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
+                {
+                    if (!IsExcludedOrArchivedFolder(e.FullPath))
+                    {
+                        ServiceLocator.DataStore.ChangeFolderPath(e.OldFullPath, e.FullPath);
+                        // ServiceLocator.ProgressService.StartTask().ContinueWith(t => { _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken); });
+                    }
+                }
+                else
+                {
+                    if (_settings.FileExtensions.IndexOf(Path.GetExtension(e.FullPath), StringComparison.InvariantCultureIgnoreCase) > -1)
+                    {
+                        if (!IsExcludedOrArchivedFile(e.FullPath))
+                        {
+                            ServiceLocator.ProgressService.StartTask().ContinueWith(t => { _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken); });
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.Log(exception.Message + " " + exception.StackTrace);
+            }
+        }
+
+        private void WatcherOnDeleted(object sender, FileSystemEventArgs e)
+        {
+            if (Path.GetFileName(e.FullPath) == "dt_thumbnails.db-journal")
+            {
+                return;
+            }
+
+            var x = e;
+        }
+
+        private void WatcherOnChanged(object sender, FileSystemEventArgs e)
+        {
+            var x = e;
         }
 
         public void DisableWatchers()
@@ -475,31 +595,6 @@ namespace Diffusion.Toolkit.Services
                 watcher.Dispose();
             }
             _watchers.Clear();
-        }
-
-        private void ProcessQueueCallback(object? state)
-        {
-            //Dispatcher.Invoke(() =>
-            //{
-            //    var currentWindow = Application.Current.Windows.OfType<Window>().First();
-            //    if (currentWindow.IsActive)
-            //    {
-            //        ServiceLocator.ScanningService.Report(added, 0, elapsed, false, false, false);
-            //    }
-            //    else
-            //    {
-            //        lock (_lock)
-            //        {
-            //            addedTotal += added;
-            //        }
-            //    }
-            //});
-
-            //if (_settings.AutoRefresh)
-            //{
-            //    _search.ReloadMatches(null);
-            //}
-            //}
         }
 
         public void SetFoldersDirty()

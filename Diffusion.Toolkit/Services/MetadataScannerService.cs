@@ -189,8 +189,23 @@ public class MetadataScannerService
                 if (File.Exists(job.Path))
                 {
                     var fileParameters = Metadata.ReadFromFile(job.Path);
-
+                    
                     count++;
+
+                    var hashMatches = ServiceLocator.DataStore.GetImageIdByHash(fileParameters.Hash);
+
+                    if (hashMatches.Any())
+                    {
+                        var moved = hashMatches.FirstOrDefault(d => !File.Exists(d.Path));
+
+                        if (moved != null)
+                        {
+                            ServiceLocator.DataStore.UpdateImagePath(moved.Id, job.Path);
+
+                            await ServiceLocator.DatabaseWriterService.QueueMoveAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
+                            continue;
+                        }
+                    }
 
                     if (ServiceLocator.DataStore.ImageExists(job.Path))
                     {
@@ -200,6 +215,8 @@ public class MetadataScannerService
                     {
                         await ServiceLocator.DatabaseWriterService.QueueAddAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
                     }
+
+
 
                 }
             }
@@ -232,7 +249,24 @@ public class MetadataScannerService
 
                     count++;
 
+                    if (fileParameters.Hash != null)
+                    {
+                        var hashMatches = ServiceLocator.DataStore.GetImageIdByHash(fileParameters.Hash);
+
+                        if (hashMatches.Any())
+                        {
+                            var moved = hashMatches.FirstOrDefault(d => !File.Exists(d.Path));
+
+                            ServiceLocator.DataStore.UpdateImagePath(moved.Id, job.Path);
+
+                            await ServiceLocator.DatabaseWriterService.QueueMoveAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
+
+                            continue;
+                        }
+                    }
+
                     await ServiceLocator.DatabaseWriterService.QueueAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
+
                 }
             }
             catch (Exception ex)

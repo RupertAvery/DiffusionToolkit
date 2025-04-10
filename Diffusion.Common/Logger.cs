@@ -5,10 +5,14 @@ namespace Diffusion.Common;
 
 public class Logger
 {
+    private static readonly object _lock = new object();
 
     public static void Log(string message)
     {
-        File.AppendAllText("DiffusionToolkit.log", $"{DateTime.Now:G}: {message}\r\n");
+        lock (_lock)
+        {
+            File.AppendAllText("DiffusionToolkit.log", $"{DateTime.Now:G}: {message}\r\n");
+        }
     }
 
 }

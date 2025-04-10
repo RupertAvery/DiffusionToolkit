@@ -388,7 +388,7 @@ namespace Diffusion.Toolkit.Pages
                     { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolderPath = null } },
                    // { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
                     { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
-                    { "recyclebin", new ModeSettings() { Name = GetLocalizedText("Search.RecycleBin"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
+                    { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.RecycleBin"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
                 };
 
 

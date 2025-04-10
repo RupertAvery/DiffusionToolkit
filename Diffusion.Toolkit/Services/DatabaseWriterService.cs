@@ -28,11 +28,14 @@ public class DatabaseWriterService
     private Channel<RecordJob> _queueChannel = Channel.CreateUnbounded<RecordJob>();
     private Channel<RecordJob> _updateChannel;
     private Channel<RecordJob> _addChannel;
+    private Channel<RecordJob> _moveChannel = Channel.CreateUnbounded<RecordJob>();
 
     private CancellationTokenSource _cancellationTokenSource;
     private Settings _settings => ServiceLocator.Settings!;
     private Action<int> _debounceQueueNotification;
+    private Action<int> _debounceQueueMovedNotification;
     private int _queueTotal = 0;
+    private int _queueMovedTotal = 0;
 
     public DatabaseWriterService()
     {
@@ -42,18 +45,39 @@ public class DatabaseWriterService
             ServiceLocator.ToastService.Toast($"Added {diff} new images", "");
             _queueTotal = a;
         }, 2000);
+
+        _debounceQueueMovedNotification = Utility.Debounce<int>((a) =>
+        {
+            var diff = a - _queueMovedTotal;
+            ServiceLocator.ToastService.Toast($"Moved {diff} images", "");
+            _queueMovedTotal = a;
+        }, 2000);
     }
 
     public async Task QueueAsync(FileParameters fileParameters, bool storeMetadata, bool storeWorkflow)
     {
         var job = new RecordJob()
         {
+            IsMoved = true,
             FileParameters = fileParameters,
             StoreMetadata = storeMetadata,
             StoreWorkflow = storeWorkflow
         };
 
         await _queueChannel.Writer.WriteAsync(job);
+    }
+
+    public async Task QueueMoveAsync(FileParameters fileParameters,bool storeMetadata, bool storeWorkflow)
+    {
+        var job = new RecordJob()
+        {
+            IsMoved = true,
+            FileParameters = fileParameters,
+            StoreMetadata = storeMetadata,
+            StoreWorkflow = storeWorkflow
+        };
+
+        await _moveChannel.Writer.WriteAsync(job);
     }
 
     public async Task QueueAddAsync(FileParameters fileParameters, bool storeMetadata, bool storeWorkflow)
@@ -97,6 +121,7 @@ public class DatabaseWriterService
         if (!_queueRunning)
         {
             Task.Run(async () => await ProcessQueueTaskAsync(token));
+            Task.Run(async () => await ProcessQueueMoveTaskAsync(token));
             _queueRunning = true;
         }
     }
@@ -249,6 +274,90 @@ public class DatabaseWriterService
         }
 
         return added;
+    }
+
+
+    private async Task<int> ProcessQueueMoveTaskAsync(CancellationToken token)
+    {
+        var newImages = new List<Image>();
+        var newNodes = new List<IO.Node>();
+
+        var includeProperties = new List<string>();
+
+        if (_settings.AutoTagNSFW)
+        {
+            includeProperties.Add(nameof(Image.NSFW));
+        }
+
+        if (_settings.StoreMetadata)
+        {
+            includeProperties.Add(nameof(Image.Workflow));
+        }
+
+        var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
+
+        int moved = 0;
+
+        while (await _moveChannel.Reader.WaitToReadAsync(token))
+        {
+            var job = await _moveChannel.Reader.ReadAsync(token);
+
+            var fp = job.FileParameters;
+
+            try
+            {
+                try
+                {
+                    var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, _settings.StoreMetadata, _settings.StoreWorkflow);
+
+                    newImages.Add(image);
+                    newNodes.AddRange(nodes);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex.Message);
+                }
+
+                if (newImages.Count == 33 || _moveChannel.Reader.Count == 0)
+                {
+                    await _lock.WaitAsync(token);
+
+                    try
+                    {
+                        moved += ServiceLocator.ScanningService.UpdateImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
+                        _debounceQueueMovedNotification(moved);
+                    }
+                    finally
+                    {
+                        _lock.Release();
+                    }
+
+                    newNodes.Clear();
+                    newImages.Clear();
+                }
+
+                if (!ServiceLocator.MainModel.IsBusy)
+                {
+                    var path = job.FileParameters.Path;
+                    if (path.Length > 100)
+                    {
+                        path = "...\\" + path[path.LastIndexOf("\\", 100, StringComparison.Ordinal)..];
+                    }
+                    else if (path.Length > 70)
+                    {
+                        path = "...\\" + path[path.LastIndexOf("\\", 70, StringComparison.Ordinal)..];
+                    }
+                    ServiceLocator.ProgressService.SetStatus($"Moving: {path}");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message);
+            }
+        }
+
+        return moved;
     }
 
 

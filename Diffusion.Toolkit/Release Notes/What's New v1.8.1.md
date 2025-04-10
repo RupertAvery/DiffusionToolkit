@@ -26,6 +26,10 @@ One of the effects of this is you are now required to click **Apply Changes** at
 
 **IMPORTANT!** After you update, the **ImagePaths** and **ExcludePaths** settings in `config.json` will be moved into the database and will be ignored in the future (and may probably be deleted in the next update). This shouldn't be a problem, but just in case people might wonder why updating the path settings in JSON doesn't work anymore.
 
+## File Deletion Changes
+
+Diffusion Toolkit will now send deleted files to the Windows Recycle Bin when you clear Diffusion Toolkit's Recycle bin or Shift+Delete a file. You can change the setting to bypass the Windows Recycle Bin and delete permanently in Settings > Images. Note that even though the file is being sent to the recycle bin, any user metadata (rating, favorite) will still be permanently removed from the database.
+
 ## Unavailable Images Scanning
 
 This has been available for some time, but needs some explaining.
@@ -101,6 +105,32 @@ You can now change the path of a root folder and all the images under it. This o
 * Better handling during shutdown
 
 TODO: 
+
+Cases:
+
+# With Diffusion Toolkit Running, Watch Folders Enabled:
+  * Same Drive
+    * Move Files
+    * Rename Files
+    * Move Folders
+    * Rename Folders
+  * Different Drive
+    * Move Files
+    * Rename Files
+    * Move Folders
+    * Rename Folders
+`
+# With Diffusion Toolkit Closed, Folders Updated, then Rescan:
+  * Same Drive
+    * Move Files
+    * Rename Files
+    * Move Folders
+    * Rename Folders
+  * Different Drive
+    * Move Files
+    * Rename Files
+    * Move Folders
+    * Rename Folders
 
  Still happening!
 =================
