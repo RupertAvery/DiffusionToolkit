@@ -62,7 +62,7 @@ public class Image
     [UserDefined]
     public DateTime? ViewedDate { get; set; }
     [UserDefined]
-    public DateTime? OpenedDate { get; set; }
+    public DateTime? TouchedDate { get; set; }
 }
 
 

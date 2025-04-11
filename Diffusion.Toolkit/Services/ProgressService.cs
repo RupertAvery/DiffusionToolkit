@@ -174,4 +174,12 @@ public class ProgressService
             ServiceLocator.MainModel.Status = status;
         });
     }
+
+    public void ClearStatus()
+    {
+        _dispatcher.Invoke(() =>
+        {
+            ServiceLocator.MainModel.Status = "";
+        });
+    }
 }

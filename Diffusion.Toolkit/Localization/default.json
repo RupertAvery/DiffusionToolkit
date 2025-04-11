@@ -147,6 +147,8 @@
   "Search.SortBy.DateModified": "Date Modified",
   "Search.SortBy.Name": "Name",
   "Search.SortBy.Rating": "Rating",
+  "Search.SortBy.LastViewed": "Last Viewed",
+  "Search.SortBy.LastUpdated": "Last Updated",
   "Search.SortBy.AestheticScore": "Aesthetic Score",
   "Search.SortBy.Prompt": "Prompt",
   "Search.SortBy.Random": "Random",

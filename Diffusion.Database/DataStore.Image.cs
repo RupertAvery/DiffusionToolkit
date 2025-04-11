@@ -2,6 +2,7 @@
 using System.Text;
 using Diffusion.Common;
 using Diffusion.Database.Models;
+using System.IO;
 
 namespace Diffusion.Database
 {
@@ -167,11 +168,12 @@ namespace Diffusion.Database
         //    return result;
         //}
 
-        public int UpdateImagesByPath(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, Folder> folderCache, CancellationToken cancellationToken)
+
+
+        public int UpdateImagesByPath(SQLiteConnection db, IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, Folder> folderCache, CancellationToken cancellationToken)
         {
             var updated = 0;
 
-            using var db = OpenConnection();
 
             //db.BeginTransaction();
 
@@ -188,7 +190,7 @@ namespace Diffusion.Database
                 nameof(Image.Unavailable),
                 nameof(Image.Workflow),
                 nameof(Image.ViewedDate),
-                nameof(Image.OpenedDate),
+                nameof(Image.TouchedDate),
             };
 
 
@@ -265,17 +267,11 @@ namespace Diffusion.Database
 
             }
 
-            db.Close();
-
             return updated;
         }
 
-        public int AddImages(IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, Folder> folderCache, CancellationToken cancellationToken)
+        public int AddImages(SQLiteConnection db, IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, Folder> folderCache, CancellationToken cancellationToken)
         {
-            using var db = OpenConnection();
-
-            db.BeginTransaction();
-
             int added = 0;
 
             var fieldList = new List<string>();
@@ -285,7 +281,7 @@ namespace Diffusion.Database
                 nameof(Image.Id),
                 nameof(Image.CustomTags),
                 nameof(Image.Rating),
-                // Make sure these values are populated with 0
+                // Make sure these values are populated with 0 (False)
                 // so DO NOT Exclude them
                 //nameof(Image.Favorite),
                 //nameof(Image.ForDeletion),
@@ -294,7 +290,7 @@ namespace Diffusion.Database
                 nameof(Image.Workflow),
                 nameof(Image.Rating),
                 nameof(Image.ViewedDate),
-                nameof(Image.OpenedDate),
+                nameof(Image.TouchedDate),
             };
 
             exclude = exclude.Except(includeProperties).ToArray();
@@ -371,8 +367,6 @@ namespace Diffusion.Database
                 Logger.Log(string.Join("\r\n", values));
                 throw;
             }
-
-            db.Commit();
 
             return added;
         }
@@ -501,6 +495,14 @@ namespace Diffusion.Database
 
             return db.Execute("UPDATE Image SET Path = ? WHERE Id = ?", path, id);
         }
+
+        public int UpdateViewed(int id)
+        {
+            var db = OpenConnection();
+
+            return db.Execute("UPDATE Image SET ViewedDate = ? WHERE Id = ?", DateTime.Now, id);
+        }
+
     }
 
     public class HashMatch

@@ -557,6 +557,7 @@ public class MainModel : BaseNotify
     private ObservableCollection<Control> _openWithMenuItems;
     private ICommand _openWithCommand;
     private ICommand _gotoUrl;
+    private bool _foldersBusy;
 
     public ModelViewModel? CurrentModel
     {
@@ -690,4 +691,10 @@ public class MainModel : BaseNotify
     }
 
     public ImageViewModel CurrentImage { get; set; }
+
+    public bool FoldersBusy
+    {
+        get => _foldersBusy;
+        set => SetField(ref _foldersBusy, value);
+    }
 }

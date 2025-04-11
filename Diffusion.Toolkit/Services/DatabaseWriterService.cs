@@ -23,42 +23,37 @@ public class StartResult<T>
     public Task<T> Task { get; set; }
 }
 
-public class DatabaseWriterService
+
+public delegate int WriteDelegate(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes,
+    IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow,
+    CancellationToken cancellationToken);
+
+public class UnboundDataWriterQueue
 {
-    private Channel<RecordJob> _queueChannel = Channel.CreateUnbounded<RecordJob>();
-    private Channel<RecordJob> _updateChannel;
-    private Channel<RecordJob> _addChannel;
-    private Channel<RecordJob> _moveChannel = Channel.CreateUnbounded<RecordJob>();
-
-    private CancellationTokenSource _cancellationTokenSource;
-    private Settings _settings => ServiceLocator.Settings!;
-    private Action<int> _debounceQueueNotification;
-    private Action<int> _debounceQueueMovedNotification;
+    private static Settings Settings => ServiceLocator.Settings!;
+    private readonly Channel<RecordJob> _queueChannel = Channel.CreateUnbounded<RecordJob>();
     private int _queueTotal = 0;
-    private int _queueMovedTotal = 0;
+    private readonly Action<int> _debounceQueueNotification;
+    private bool _queueRunning;
 
-    public DatabaseWriterService()
+    public UnboundDataWriterQueue(string completionMessage)
     {
         _debounceQueueNotification = Utility.Debounce<int>((a) =>
         {
             var diff = a - _queueTotal;
-            ServiceLocator.ToastService.Toast($"Added {diff} new images", "");
+            ServiceLocator.ToastService.Toast(string.Format(completionMessage, diff), "");
+            _queueRunning = false;
+            ServiceLocator.ProgressService.CompleteTask();
+            ServiceLocator.ProgressService.ClearProgress();
+            ServiceLocator.ProgressService.ClearStatus();
             _queueTotal = a;
-        }, 2000);
-
-        _debounceQueueMovedNotification = Utility.Debounce<int>((a) =>
-        {
-            var diff = a - _queueMovedTotal;
-            ServiceLocator.ToastService.Toast($"Moved {diff} images", "");
-            _queueMovedTotal = a;
-        }, 2000);
+        }, 1000);
     }
 
     public async Task QueueAsync(FileParameters fileParameters, bool storeMetadata, bool storeWorkflow)
     {
         var job = new RecordJob()
         {
-            IsMoved = true,
             FileParameters = fileParameters,
             StoreMetadata = storeMetadata,
             StoreWorkflow = storeWorkflow
@@ -67,17 +62,165 @@ public class DatabaseWriterService
         await _queueChannel.Writer.WriteAsync(job);
     }
 
-    public async Task QueueMoveAsync(FileParameters fileParameters,bool storeMetadata, bool storeWorkflow)
+    private Task currentTask;
+
+    public Task StartAsync(CancellationToken token)
     {
-        var job = new RecordJob()
+        if (!_queueRunning)
         {
-            IsMoved = true,
-            FileParameters = fileParameters,
-            StoreMetadata = storeMetadata,
-            StoreWorkflow = storeWorkflow
+            _queueTotal = 0;
+            currentTask = Task.Run(async () => await ProcessQueueTask(token));
+            _queueRunning = true;
+        }
+
+        return currentTask;
+    }
+
+    //public abstract int Write(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes,
+    //    IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow,
+    //    CancellationToken cancellationToken);
+
+    public WriteDelegate Write { get; set; }
+
+
+    private async Task ProcessQueueTask(CancellationToken token)
+    {
+        var newImages = new List<Image>();
+        var newNodes = new List<IO.Node>();
+
+        var includeProperties = new List<string>();
+
+        if (Settings.AutoTagNSFW)
+        {
+            includeProperties.Add(nameof(Image.NSFW));
+        }
+
+        if (Settings.StoreMetadata)
+        {
+            includeProperties.Add(nameof(Image.Workflow));
+        }
+
+        var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
+
+        int completed = 0;
+
+        while (await _queueChannel.Reader.WaitToReadAsync(token))
+        {
+            var job = await _queueChannel.Reader.ReadAsync(token);
+
+            var fp = job.FileParameters;
+
+            try
+            {
+                try
+                {
+                    var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, Settings.StoreMetadata, Settings.StoreWorkflow);
+
+                    newImages.Add(image);
+                    newNodes.AddRange(nodes);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex.Message);
+                }
+
+                if (newImages.Count == 33 || _queueChannel.Reader.Count == 0)
+                {
+                    completed += Write(newImages, newNodes, includeProperties, folderCache, Settings.StoreWorkflow, token);
+                    _debounceQueueNotification(completed);
+
+                    newNodes.Clear();
+                    newImages.Clear();
+                }
+
+                var path = job.FileParameters.Path;
+                if (path.Length > 100)
+                {
+                    path = "...\\" + path[path.LastIndexOf("\\", 100, StringComparison.Ordinal)..];
+                }
+                else if (path.Length > 70)
+                {
+                    path = "...\\" + path[path.LastIndexOf("\\", 70, StringComparison.Ordinal)..];
+                }
+                ServiceLocator.ProgressService.SetStatus($"Scanning: {path}");
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.Message);
+            }
+        }
+    }
+}
+
+public enum QueueType
+{
+    Add,
+    Update,
+    Move
+}
+
+public class DatabaseWriterService
+{
+    private Channel<RecordJob> _updateChannel;
+    private Channel<RecordJob> _addChannel;
+
+    private CancellationTokenSource _cancellationTokenSource;
+    private Settings _settings => ServiceLocator.Settings!;
+
+    private readonly UnboundDataWriterQueue _addQueue;
+    private readonly UnboundDataWriterQueue _updateQueue;
+    private readonly UnboundDataWriterQueue _moveQueue;
+
+    public DatabaseWriterService()
+    {
+        _addQueue = new UnboundDataWriterQueue("Added {0} images")
+        {
+            Write = ServiceLocator.ScanningService.AddImages
         };
 
-        await _moveChannel.Writer.WriteAsync(job);
+        _updateQueue = new UnboundDataWriterQueue("Updated {0} images")
+        {
+            Write = ServiceLocator.ScanningService.UpdateImages
+        };
+
+        _moveQueue = new UnboundDataWriterQueue("Moved {0} images")
+        {
+            Write = ServiceLocator.ScanningService.UpdateImages
+        };
+    }
+
+
+    private bool _queueRunning;
+
+    private Task _queueTask;
+
+    public Task StartQueueAsync(CancellationToken token)
+    {
+        if (!_queueRunning)
+        {
+            var taskA = _addQueue.StartAsync(token);
+            var taskB = _updateQueue.StartAsync(token);
+            var taskC = _moveQueue.StartAsync(token);
+            _queueTask = Task.WhenAll(taskA, taskB, taskC);
+            _queueRunning = true;
+        }
+        return _queueTask;
+    }
+
+    public Task QueueAsync(FileParameters fileParameters, QueueType queueType, bool storeMetadata, bool storeWorkflow)
+    {
+        switch (queueType)
+        {
+            case QueueType.Add:
+                return _addQueue.QueueAsync(fileParameters, storeMetadata, storeWorkflow);
+            case QueueType.Update:
+                return _updateQueue.QueueAsync(fileParameters, storeMetadata, storeWorkflow);
+            case QueueType.Move:
+                return _moveQueue.QueueAsync(fileParameters, storeMetadata, storeWorkflow);
+        }
+
+        throw new ArgumentOutOfRangeException(nameof(queueType));
     }
 
     public async Task QueueAddAsync(FileParameters fileParameters, bool storeMetadata, bool storeWorkflow)
@@ -114,17 +257,6 @@ public class DatabaseWriterService
     private bool _isCompleted = false;
     private Task<DatabaseWriteReport> _currentTask;
 
-    private bool _queueRunning;
-
-    public void StartQueueAsync(CancellationToken token)
-    {
-        if (!_queueRunning)
-        {
-            Task.Run(async () => await ProcessQueueTaskAsync(token));
-            Task.Run(async () => await ProcessQueueMoveTaskAsync(token));
-            _queueRunning = true;
-        }
-    }
 
     public StartResult<DatabaseWriteReport> StartAsync(CancellationToken token)
     {
@@ -150,20 +282,18 @@ public class DatabaseWriterService
         {
             _isCompleted = true;
 
-            if (!t.IsCanceled)
+            var report = new DatabaseWriteReport();
+
+            if (addedTask.IsCompletedSuccessfully)
             {
-                return new DatabaseWriteReport()
-                {
-                    Added = t.Result[0],
-                    Updated = t.Result[1]
-                };
+                report.Added = addedTask.Result;
+            }
+            if (updatedTask.IsCompletedSuccessfully)
+            {
+                report.Updated = updatedTask.Result;
             }
 
-            return new DatabaseWriteReport()
-            {
-                Added = 0,
-                Updated = 0
-            };
+            return report;
         });
 
         return new StartResult<DatabaseWriteReport>
@@ -192,175 +322,6 @@ public class DatabaseWriterService
         ServiceLocator.ProgressService.SetStatus($"Scanning: {ServiceLocator.MainModel.CurrentProgress} of {ServiceLocator.MainModel.TotalProgress}");
     }
 
-
-    private async Task<int> ProcessQueueTaskAsync(CancellationToken token)
-    {
-        var newImages = new List<Image>();
-        var newNodes = new List<IO.Node>();
-
-        var includeProperties = new List<string>();
-
-        if (_settings.AutoTagNSFW)
-        {
-            includeProperties.Add(nameof(Image.NSFW));
-        }
-
-        if (_settings.StoreMetadata)
-        {
-            includeProperties.Add(nameof(Image.Workflow));
-        }
-
-        var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
-
-        int added = 0;
-
-        while (await _queueChannel.Reader.WaitToReadAsync(token))
-        {
-            var job = await _queueChannel.Reader.ReadAsync(token);
-
-            var fp = job.FileParameters;
-
-            try
-            {
-                try
-                {
-                    var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, _settings.StoreMetadata, _settings.StoreWorkflow);
-
-                    newImages.Add(image);
-                    newNodes.AddRange(nodes);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(ex.Message);
-                }
-
-                if (newImages.Count == 33 || _queueChannel.Reader.Count == 0)
-                {
-                    await _lock.WaitAsync(token);
-
-                    try
-                    {
-                        added += ServiceLocator.ScanningService.AddImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
-                        _debounceQueueNotification(added);
-                    }
-                    finally
-                    {
-                        _lock.Release();
-                    }
-
-                    newNodes.Clear();
-                    newImages.Clear();
-                }
-
-                if (!ServiceLocator.MainModel.IsBusy)
-                {
-                    var path = job.FileParameters.Path;
-                    if (path.Length > 100)
-                    {
-                        path = "...\\" + path[path.LastIndexOf("\\", 100, StringComparison.Ordinal)..];
-                    }
-                    else if (path.Length > 70)
-                    {
-                        path = "...\\" + path[path.LastIndexOf("\\", 70, StringComparison.Ordinal)..];
-                    }
-                    ServiceLocator.ProgressService.SetStatus($"Scanning: {path}");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.Message);
-            }
-        }
-
-        return added;
-    }
-
-
-    private async Task<int> ProcessQueueMoveTaskAsync(CancellationToken token)
-    {
-        var newImages = new List<Image>();
-        var newNodes = new List<IO.Node>();
-
-        var includeProperties = new List<string>();
-
-        if (_settings.AutoTagNSFW)
-        {
-            includeProperties.Add(nameof(Image.NSFW));
-        }
-
-        if (_settings.StoreMetadata)
-        {
-            includeProperties.Add(nameof(Image.Workflow));
-        }
-
-        var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
-
-        int moved = 0;
-
-        while (await _moveChannel.Reader.WaitToReadAsync(token))
-        {
-            var job = await _moveChannel.Reader.ReadAsync(token);
-
-            var fp = job.FileParameters;
-
-            try
-            {
-                try
-                {
-                    var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, _settings.StoreMetadata, _settings.StoreWorkflow);
-
-                    newImages.Add(image);
-                    newNodes.AddRange(nodes);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(ex.Message);
-                }
-
-                if (newImages.Count == 33 || _moveChannel.Reader.Count == 0)
-                {
-                    await _lock.WaitAsync(token);
-
-                    try
-                    {
-                        moved += ServiceLocator.ScanningService.UpdateImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
-                        _debounceQueueMovedNotification(moved);
-                    }
-                    finally
-                    {
-                        _lock.Release();
-                    }
-
-                    newNodes.Clear();
-                    newImages.Clear();
-                }
-
-                if (!ServiceLocator.MainModel.IsBusy)
-                {
-                    var path = job.FileParameters.Path;
-                    if (path.Length > 100)
-                    {
-                        path = "...\\" + path[path.LastIndexOf("\\", 100, StringComparison.Ordinal)..];
-                    }
-                    else if (path.Length > 70)
-                    {
-                        path = "...\\" + path[path.LastIndexOf("\\", 70, StringComparison.Ordinal)..];
-                    }
-                    ServiceLocator.ProgressService.SetStatus($"Moving: {path}");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.Message);
-            }
-        }
-
-        return moved;
-    }
-
-
     private async Task<int> ProcessAddTaskAsync(CancellationToken token)
     {
 
@@ -383,50 +344,56 @@ public class DatabaseWriterService
 
         var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
 
-        while (await _addChannel.Reader.WaitToReadAsync(token))
+        try
         {
-            var job = await _addChannel.Reader.ReadAsync(token);
-
-            var fp = job.FileParameters;
-
-            try
+            while (await _addChannel.Reader.WaitToReadAsync(token))
             {
+                var job = await _addChannel.Reader.ReadAsync(token);
+
+                var fp = job.FileParameters;
+
                 try
                 {
-                    var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, _settings.StoreMetadata, _settings.StoreWorkflow);
+                    try
+                    {
+                        var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, _settings.StoreMetadata, _settings.StoreWorkflow);
 
-                    newImages.Add(image);
-                    newNodes.AddRange(nodes);
+                        newImages.Add(image);
+                        newNodes.AddRange(nodes);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(ex.Message);
+                    }
+
+                    if (newImages.Count == 33 || _addChannel.Reader.Count == 0)
+                    {
+                        await _lock.WaitAsync(token);
+
+                        try
+                        {
+                            added += ServiceLocator.ScanningService.AddImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
+                            ServiceLocator.ProgressService.AddProgress(newImages.Count);
+                            UpdateStatus();
+                        }
+                        finally
+                        {
+                            _lock.Release();
+                        }
+
+                        newNodes.Clear();
+                        newImages.Clear();
+                    }
+
                 }
                 catch (Exception ex)
                 {
                     Logger.Log(ex.Message);
                 }
-
-                if (newImages.Count == 33 || _addChannel.Reader.Count == 0)
-                {
-                    await _lock.WaitAsync(token);
-
-                    try
-                    {
-                        added += ServiceLocator.ScanningService.AddImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
-                        ServiceLocator.ProgressService.AddProgress(newImages.Count);
-                        UpdateStatus();
-                    }
-                    finally
-                    {
-                        _lock.Release();
-                    }
-
-                    newNodes.Clear();
-                    newImages.Clear();
-                }
-
             }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.Message);
-            }
+        }
+        catch (TaskCanceledException e) when (token.IsCancellationRequested)
+        {
         }
 
         return added;
@@ -453,52 +420,59 @@ public class DatabaseWriterService
 
         int updated = 0;
 
-        while (await _updateChannel.Reader.WaitToReadAsync(token))
+        try
         {
-            var job = await _updateChannel.Reader.ReadAsync(token);
-
-            var fp = job.FileParameters;
-
-            try
+            while (await _updateChannel.Reader.WaitToReadAsync(token))
             {
+                var job = await _updateChannel.Reader.ReadAsync(token);
+
+                var fp = job.FileParameters;
+
                 try
                 {
-                    var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, _settings.StoreMetadata, _settings.StoreWorkflow);
+                    try
+                    {
+                        var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, _settings.StoreMetadata, _settings.StoreWorkflow);
 
-                    newImages.Add(image);
-                    newNodes.AddRange(nodes);
+                        newImages.Add(image);
+                        newNodes.AddRange(nodes);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(ex.Message);
+                    }
+
+
+                    if (newImages.Count == 33 || _updateChannel.Reader.Count == 0)
+                    {
+                        await _lock.WaitAsync(token);
+
+                        try
+                        {
+                            updated += ServiceLocator.ScanningService.UpdateImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
+                            ServiceLocator.ProgressService.AddProgress(newImages.Count);
+                            UpdateStatus();
+                        }
+                        finally
+                        {
+                            _lock.Release();
+                        }
+
+                        newNodes.Clear();
+                        newImages.Clear();
+                    }
+
                 }
                 catch (Exception ex)
                 {
                     Logger.Log(ex.Message);
                 }
-
-
-                if (newImages.Count == 33 || _updateChannel.Reader.Count == 0)
-                {
-                    await _lock.WaitAsync(token);
-
-                    try
-                    {
-                        updated += ServiceLocator.ScanningService.UpdateImages(newImages, newNodes, includeProperties, folderCache, _settings.StoreWorkflow, token);
-                        ServiceLocator.ProgressService.AddProgress(newImages.Count);
-                        UpdateStatus();
-                    }
-                    finally
-                    {
-                        _lock.Release();
-                    }
-
-                    newNodes.Clear();
-                    newImages.Clear();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Logger.Log(ex.Message);
             }
         }
+        catch (TaskCanceledException e) when (token.IsCancellationRequested)
+        {
+        }
+
 
         return updated;
     }

@@ -132,10 +132,15 @@ Cases:
     * Move Folders
     * Rename Folders
 
+
+Rescan - doesn't complete task
+
  Still happening!
 =================
 * Rescan selected (Channel has been closed) when 1 or a few images are selected
   Race condition?
+
+Check unavailable folders - database is locked
 
 
 Unavailable Converter crashing designer in Search.xaml?

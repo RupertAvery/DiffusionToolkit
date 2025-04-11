@@ -202,7 +202,7 @@ public class MetadataScannerService
                         {
                             ServiceLocator.DataStore.UpdateImagePath(moved.Id, job.Path);
 
-                            await ServiceLocator.DatabaseWriterService.QueueMoveAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
+                            await ServiceLocator.DatabaseWriterService.QueueUpdateAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
                             continue;
                         }
                     }
@@ -257,15 +257,26 @@ public class MetadataScannerService
                         {
                             var moved = hashMatches.FirstOrDefault(d => !File.Exists(d.Path));
 
-                            ServiceLocator.DataStore.UpdateImagePath(moved.Id, job.Path);
+                            if (moved != null)
+                            {
+                                ServiceLocator.DataStore.UpdateImagePath(moved.Id, job.Path);
 
-                            await ServiceLocator.DatabaseWriterService.QueueMoveAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
+                                await ServiceLocator.DatabaseWriterService.QueueAsync(fileParameters, QueueType.Move, _settings.StoreMetadata, _settings.StoreWorkflow);
 
-                            continue;
+                                continue;
+                            }
                         }
                     }
 
-                    await ServiceLocator.DatabaseWriterService.QueueAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
+                    if (ServiceLocator.DataStore.ImageExists(job.Path))
+                    {
+                        await ServiceLocator.DatabaseWriterService.QueueAsync(fileParameters, QueueType.Update, _settings.StoreMetadata, _settings.StoreWorkflow);
+                    }
+                    else
+                    {
+                        await ServiceLocator.DatabaseWriterService.QueueAsync(fileParameters, QueueType.Add, _settings.StoreMetadata, _settings.StoreWorkflow);
+                    }
+
 
                 }
             }

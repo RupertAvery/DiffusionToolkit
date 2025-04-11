@@ -20,6 +20,8 @@ namespace Diffusion.Database
             SortBy = sortBy switch
             {
                 "Date Created" => nameof(Image.CreatedDate),
+                "Last Viewed" => nameof(Image.ViewedDate),
+                "Last Updated" => nameof(Image.TouchedDate),
                 "Date Modified" => nameof(Image.ModifiedDate),
                 "Rating" => nameof(Image.Rating),
                 "Aesthetic Score" => nameof(Image.AestheticScore),

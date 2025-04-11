@@ -144,32 +144,33 @@ public class ThumbnailCache
 
     private object _lock = new object();
 
-    public SQLiteConnection OpenConnection(string path)
+    private bool TryOpenConnection(string path, out SQLiteConnection connection)
     {
         var dbPath = Path.GetDirectoryName(path);
 
-        lock (_lock)
+        if (Directory.Exists(dbPath))
         {
             if (!_connectionPool.TryGetValue(dbPath, out var cacheItem))
             {
-                var db = new SQLiteConnection(Path.Combine(dbPath, "dt_thumbnails.db"));
+                var dbFile = Path.Combine(dbPath, "dt_thumbnails.db");
+
+                var db = new SQLiteConnection(dbFile);
                 db.CreateTable<Thumbnail>();
                 db.CreateIndex<Thumbnail>(t => t.Filename, true);
 
                 cacheItem = new ConnectionCacheEntry(dbPath, _connectionPool, db);
 
                 _connectionPool[dbPath] = cacheItem;
-
-                cacheItem.ResetTimeout();
-            }
-            else
-            {
-                cacheItem.ResetTimeout();
             }
 
-            return cacheItem.Connection;
+            cacheItem.ResetTimeout();
+
+            connection =  cacheItem.Connection;
+            return true;
         }
-       
+
+        connection = null;
+        return false;
     }
 
 
@@ -186,29 +187,27 @@ public class ThumbnailCache
 
     public bool TryGetThumbnail(string path, int size, out BitmapSource? thumbnail)
     {
-        var db = OpenConnection(path);
-
-        var filename = Path.GetFileName(path);
-
-        var data = db.Query<Thumbnail>("SELECT Filename, Data FROM Thumbnail WHERE Filename = ? AND Size = ?", filename, size);
-
         var result = false;
+        thumbnail = null;
 
-        if (data.Count > 0)
+        if (TryOpenConnection(path, out var db))
         {
-            var bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.StreamSource = new MemoryStream(data[0].Data);
-            result = true;
-            bitmap.EndInit();
-            bitmap.Freeze();
-            thumbnail = bitmap;
-        }
-        else
-        {
-            thumbnail = null;
-        }
+            var filename = Path.GetFileName(path);
 
+            var data = db.Query<Thumbnail>("SELECT Filename, Data FROM Thumbnail WHERE Filename = ? AND Size = ?", filename, size);
+
+            if (data.Count > 0)
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.StreamSource = new MemoryStream(data[0].Data);
+                result = true;
+                bitmap.EndInit();
+                bitmap.Freeze();
+                thumbnail = bitmap;
+            }
+        }
+       
         return result;
     }
 
@@ -216,16 +215,17 @@ public class ThumbnailCache
     {
         if (File.Exists(path))
         {
-            var db = OpenConnection(path);
+            if (TryOpenConnection(path, out var db))
+            {
+                var filename = Path.GetFileName(path);
+                var data = ((MemoryStream)bitmapImage.StreamSource).ToArray();
 
-            var filename = Path.GetFileName(path);
-            var data = ((MemoryStream)bitmapImage.StreamSource).ToArray();
-
-            var command = db.CreateCommand("REPLACE INTO Thumbnail (Filename, Data, Size) VALUES (@Filename, @Data, @Size)");
-            command.Bind("@Filename", filename);
-            command.Bind("@Data", data);
-            command.Bind("@Size", size);
-            command.ExecuteNonQuery();
+                var command = db.CreateCommand("REPLACE INTO Thumbnail (Filename, Data, Size) VALUES (@Filename, @Data, @Size)");
+                command.Bind("@Filename", filename);
+                command.Bind("@Data", data);
+                command.Bind("@Size", size);
+                command.ExecuteNonQuery();
+            }
         }
     }
 

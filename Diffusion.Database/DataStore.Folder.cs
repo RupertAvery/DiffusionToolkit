@@ -27,12 +27,20 @@ namespace Diffusion.Database
 
     public partial class DataStore
     {
-        private string DirectoryTreeCTE => @"WITH RECURSIVE
+        private string DirectoryTreeWithPathCTE => @"WITH RECURSIVE
 	directoryTree(Id, ParentId, Path, RootId, Depth) AS
 	(
 		SELECT Id, ParentId, Path, Id AS RootId, 0 AS Depth FROM Folder 
 		UNION ALL
 		SELECT f.Id, f.ParentId, f.Path, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
+	)";
+
+        private string DirectoryTreeCTE => @"WITH RECURSIVE
+	directoryTree(Id, ParentId, RootId, Depth) AS
+	(
+		SELECT Id, ParentId, Id AS RootId, 0 AS Depth FROM Folder 
+		UNION ALL
+		SELECT f.Id, f.ParentId, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
 	)";
 
         public EventHandler<DataChangedEventArgs> DataChanged;
@@ -82,15 +90,34 @@ namespace Diffusion.Database
 
         public void SetFolderUnavailable(int id, bool unavailable, bool recursive)
         {
-            using var db = OpenConnection();
+            using (var db = OpenConnection())
+            {
+                db.BeginTransaction();
 
-            var query = recursive
-                ? $"{DirectoryTreeCTE} UPDATE Folder SET Unavailable = ? FROM (SELECT Id FROM directoryTree WHERE RootId = ?) AS Subfolder WHERE Folder.Id = Subfolder.Id"
-                : "UPDATE Folder SET Unavailable = ? WHERE Id = ?";
+                try
+                {
+                    var query = recursive
+                        ? $"{DirectoryTreeCTE} UPDATE Folder SET Unavailable = ? FROM (SELECT Id FROM directoryTree WHERE RootId = ?) AS Subfolder WHERE Folder.Id = Subfolder.Id"
+                        : "UPDATE Folder SET Unavailable = ? WHERE Id = ?";
 
-            db.Execute(query, unavailable, id);
+                    db.Execute(query, unavailable, id);
 
-            db.Close();
+                    // Set files unavailable
+                    //query = recursive
+                    //    ? $"{DirectoryTreeCTE} UPDATE Image SET Unavailable = ? FROM (SELECT i.Id FROM Image i JOIN directoryTree d on i.FolderId = d.Id WHERE d.RootId = ?) AS RefImage WHERE Image.Id = RefImage.Id"
+                    //    : "";
+
+                    //db.Execute(query, unavailable, id);
+
+                    db.Commit();
+                }
+                catch (Exception e)
+                {
+                    db.Rollback();
+                    throw;
+                }
+            }
+           
 
             DataChanged?.Invoke(this, new DataChangedEventArgs()
             {
@@ -299,29 +326,33 @@ namespace Diffusion.Database
             return folder;
         }
 
-        public void SetFolderUnavailable(string path, bool unavailable)
-        {
-            using var db = OpenConnection();
+        //public void SetFolderUnavailable(string path, bool unavailable, bool recursive)
+        //{
+        //    using var db = OpenConnection();
 
-            db.BeginTransaction();
+        //    db.BeginTransaction();
 
-            var query = $"UPDATE Folder SET Unavailable = @Unavailable WHERE Path = @Path";
-            var command = db.CreateCommand(query);
+        //    var query = recursive 
+        //        ? $"{DirectoryTreeCTE} UPDATE Folder SET Unavailable = ? FROM (SELECT Id FROM directoryTree WHERE RootId = ?) AS Subfolder WHERE Folder.Id = Subfolder.Id"
+        //        : "UPDATE Folder SET Unavailable = @Unavailable WHERE Path = @Path";
+        //    var command = db.CreateCommand(query);
 
-            command.Bind("@Unavailable", unavailable);
-            command.Bind("@Path", path);
-            command.ExecuteNonQuery();
+        //    command.Bind("@Unavailable", unavailable);
+        //    command.Bind("@Path", path);
+        //    command.ExecuteNonQuery();
 
-            db.Commit();
+        //    db.Commit();
 
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Item,
-                Property = "Unavailable"
-            });
+        //    db.Close();
 
-        }
+        //    DataChanged?.Invoke(this, new DataChangedEventArgs()
+        //    {
+        //        EntityType = EntityType.Folder,
+        //        SourceType = SourceType.Item,
+        //        Property = "Unavailable"
+        //    });
+
+        //}
 
 
         public int CleanRemovedFolders()

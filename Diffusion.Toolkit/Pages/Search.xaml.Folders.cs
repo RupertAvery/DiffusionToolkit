@@ -165,6 +165,10 @@ namespace Diffusion.Toolkit.Pages
 
                 e.Handled = true;
             }
+            else if (e.ChangedButton == MouseButton.Right)
+            {
+
+            }
         }
 
         public void OpenFolder(FolderViewModel folder)

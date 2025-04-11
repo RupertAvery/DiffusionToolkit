@@ -12,12 +12,13 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var query = "UPDATE Image SET ForDeletion = @ForDeletion WHERE Id = @Id";
+            var query = "UPDATE Image SET ForDeletion = @ForDeletion, TouchedDate = @Date WHERE Id = @Id";
 
             var command = db.CreateCommand(query);
 
             command.Bind("@ForDeletion", forDeletion);
             command.Bind("@Id", id);
+            command.Bind("@Date", DateTime.Now);
 
             command.ExecuteNonQuery();
         }
@@ -30,9 +31,11 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            var query = "UPDATE Image SET ForDeletion = @ForDeletion WHERE Id IN (SELECT Id FROM MarkedIds)";
+            var query = "UPDATE Image SET ForDeletion = @ForDeletion, TouchedDate = @Date WHERE Id IN (SELECT Id FROM MarkedIds)";
             var command = db.CreateCommand(query);
             command.Bind("@ForDeletion", forDeletion);
+            command.Bind("@Date", DateTime.Now);
+
             command.ExecuteNonQuery();
 
             db.Commit();
@@ -42,12 +45,13 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var query = "UPDATE Image SET Favorite = @Favorite WHERE Id = @Id";
+            var query = "UPDATE Image SET Favorite = @Favorite, TouchedDate = @Date WHERE Id = @Id";
 
             var command = db.CreateCommand(query);
 
             command.Bind("@Favorite", favorite);
             command.Bind("@Id", id);
+            command.Bind("@Date", DateTime.Now);
 
             command.ExecuteNonQuery();
         }
@@ -57,17 +61,16 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
+            InsertIds(db, "MarkedIds", ids);
+
             db.BeginTransaction();
 
-            var query = "UPDATE Image SET Favorite = @Favorite WHERE Id = @Id";
+            var query = "UPDATE Image SET Favorite = @Favorite, TouchedDate = @Date WHERE Id IN (SELECT Id FROM MarkedIds)";
             var command = db.CreateCommand(query);
+            command.Bind("@Favorite", favorite);
+            command.Bind("@Date", DateTime.Now);
 
-            foreach (var id in ids)
-            {
-                command.Bind("@Favorite", favorite);
-                command.Bind("@Id", id);
-                command.ExecuteNonQuery();
-            }
+            command.ExecuteNonQuery();
 
             db.Commit();
         }
@@ -76,12 +79,13 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var query = "UPDATE Image SET NSFW = @NSFW WHERE Id = @Id";
+            var query = "UPDATE Image SET NSFW = @NSFW, TouchedDate = @Date WHERE Id = @Id";
 
             var command = db.CreateCommand(query);
 
             command.Bind("@NSFW", nsfw);
             command.Bind("@Id", id);
+            command.Bind("@Date", DateTime.Now);
 
             command.ExecuteNonQuery();
         }
@@ -97,9 +101,11 @@ namespace Diffusion.Database
 
             InsertIds(db, "MarkedIds", ids);
 
-            var query = $"UPDATE Image SET {update} WHERE Id IN (SELECT Id FROM MarkedIds)";
+            var query = $"UPDATE Image SET {update}, TouchedDate = @Date WHERE Id IN (SELECT Id FROM MarkedIds)";
             var command = db.CreateCommand(query);
             command.Bind("@NSFW", nsfw);
+            command.Bind("@Date", DateTime.Now);
+
             command.ExecuteNonQuery();
 
             db.Commit();
@@ -110,7 +116,7 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var query = "UPDATE Image SET Rating = @Rating WHERE Id = @Id";
+            var query = "UPDATE Image SET Rating = @Rating, TouchedDate = @Date WHERE Id = @Id";
 
             var command = db.CreateCommand(query);
 
@@ -126,7 +132,7 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            var query = "UPDATE Image SET Rating = @Rating WHERE Id = @Id";
+            var query = "UPDATE Image SET Rating = @Rating, TouchedDate = @Date WHERE Id = @Id";
 
             var command = db.CreateCommand(query);
 
@@ -186,15 +192,9 @@ namespace Diffusion.Database
             command.ExecuteNonQuery();
         }
 
-        public void AddNodes(IEnumerable<ComfyUINode> nodes, CancellationToken cancellationToken)
+        public void AddNodes(SQLiteConnection db, IEnumerable<ComfyUINode> nodes, CancellationToken cancellationToken)
         {
-            using var db = OpenConnection();
-
-            db.BeginTransaction();
-
             AddNodesInternal(db, nodes);
-
-            db.Commit();
         }
 
         private void AddNodesInternal(SQLiteConnection db, IEnumerable<ComfyUINode> nodes)
@@ -263,17 +263,11 @@ namespace Diffusion.Database
             public int Id { get; set; }
         }
 
-        public void UpdateNodes(IReadOnlyCollection<ComfyUINode> nodes, CancellationToken cancellationToken)
+        public void UpdateNodes(SQLiteConnection db, IReadOnlyCollection<ComfyUINode> nodes, CancellationToken cancellationToken)
         {
-            using var db = OpenConnection();
-
-            db.BeginTransaction();
-
             DeleteNodesInternal(db, nodes);
 
             AddNodesInternal(db, nodes);
-
-            db.Commit();
         }
 
         private void DeleteNodesInternal(SQLiteConnection db, IReadOnlyCollection<ComfyUINode> nodes)

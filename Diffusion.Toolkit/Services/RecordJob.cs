@@ -7,5 +7,5 @@ public class RecordJob
     public FileParameters FileParameters { get; set; }
     public bool StoreMetadata { get; set; }
     public bool StoreWorkflow { get; set; }
-    public bool IsMoved { get; set; }
 }
+ 

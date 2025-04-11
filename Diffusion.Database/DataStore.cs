@@ -1,4 +1,5 @@
-﻿using Diffusion.Database.Models;
+﻿using System.Diagnostics;
+using Diffusion.Database.Models;
 using SQLite;
 
 namespace Diffusion.Database;
@@ -23,7 +24,13 @@ public partial class DataStore
 
     public SQLiteConnection OpenConnection()
     {
-        return new SQLiteConnection(DatabasePath);
+        var db = new SQLiteConnection(DatabasePath);
+        db.Trace = true;
+        db.Tracer = (args) =>
+        {
+            Debug.WriteLine(args);
+        };
+        return db;
     }
 
     public DataStore(string databasePath)
@@ -73,17 +80,18 @@ public partial class DataStore
         await Task.Run(() =>
         {
             object handle = null;
-            Action schemaUpdated = () =>
+
+            void SchemaUpdated(object? sender, EventArgs args)
             {
                 if (handle == null)
                 {
                     handle = notify?.Invoke();
                 }
-            };
+            }
 
             try
             {
-                db.SchemaUpdated = schemaUpdated;
+                db.SchemaUpdated += SchemaUpdated;
                 db.CreateTable<Image>();
                 db.CreateIndex<Image>(image => image.RootFolderId);
                 db.CreateIndex<Image>(image => image.FolderId);
@@ -116,7 +124,7 @@ public partial class DataStore
                 db.CreateIndex<Image>(image => image.HasError);
                 db.CreateIndex<Image>(image => image.Hash);
                 db.CreateIndex<Image>(image => image.ViewedDate);
-                db.CreateIndex<Image>(image => image.OpenedDate);
+                db.CreateIndex<Image>(image => image.TouchedDate);
 
                 db.CreateIndex<Image>(image => new { image.HasError, image.CreatedDate });
                 db.CreateIndex<Image>(image => new { image.ForDeletion, image.CreatedDate });

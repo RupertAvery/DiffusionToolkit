@@ -27,51 +27,38 @@ public class ScanningService
 
     private DataStore _dataStore => ServiceLocator.DataStore!;
 
-
-
     public async Task CheckUnavailableFolders()
     {
+        if(ServiceLocator.MainModel.FoldersBusy) return;
+
         await Task.Run(() =>
         {
-            foreach (var path in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
+            ServiceLocator.MainModel.FoldersBusy = true;
+
+            try
             {
-                // Check if we can access the path
-                if (Directory.Exists(path))
+                foreach (var folder in ServiceLocator.FolderService.RootFolders)
                 {
-                    // See if this was previously tagged as unavailable
-                    var folder = _dataStore.GetFolder(path);
-
-                    if (folder is { Unavailable: true })
+                    // Check if we can access the path
+                    if (Directory.Exists(folder.Path))
                     {
-                        // Restore it
-                        // TODO Tag it and it's children as available
-                        _dataStore.SetFolderUnavailable(path, false);
-
-                        var childImages = _dataStore.GetAllPathImages(path);
-
-                        var ids = childImages.Select(c => c.Id).ToList();
-
-                        if (ids.Any())
+                        if (folder is { Unavailable: true })
                         {
-                            _dataStore.SetUnavailable(ids, false);
+                            _dataStore.SetFolderUnavailable(folder.Id, false, true);
                         }
                     }
-                }
-                else
-                {
-                    // TODO Tag it and it's children as unavailable
-                    _dataStore.SetFolderUnavailable(path, true);
-
-                    var childImages = _dataStore.GetAllPathImages(path);
-
-                    var ids = childImages.Select(c => c.Id).ToList();
-
-                    if (ids.Any())
+                    else
                     {
-                        _dataStore.SetUnavailable(ids, true);
+                        _dataStore.SetFolderUnavailable(folder.Id, true, true);
                     }
                 }
             }
+            finally
+            {
+                ServiceLocator.MainModel.FoldersBusy = false;
+            }
+
+
         });
 
     }
@@ -184,7 +171,6 @@ public class ScanningService
 
     public async Task ScanWatchedFolders(bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
     {
-
         bool foldersUnavailable = false;
         bool foldersRestored = false;
 
@@ -199,26 +185,22 @@ public class ScanningService
 
             var gatheringFilesMessage = GetLocalizedText("Actions.Scanning.GatheringFiles");
 
-            var archivedFolders = ServiceLocator.DataStore.GetArchivedFolders().Select(d => d.Path);
+            var excludedPaths = ServiceLocator.FolderService.ExcludedOrArchivedFolderPaths.ToHashSet();
 
-            var settingsExcluded = _settings.ExcludePaths;
-
-            var excludedPaths = settingsExcluded.Concat(archivedFolders).ToHashSet();
-
-            foreach (var path in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
+            foreach (var folder in ServiceLocator.FolderService.RootFolders)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
                     break;
                 }
 
-                if (Directory.Exists(path))
+                if (Directory.Exists(folder.Path))
                 {
                     //ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.CheckUnavailable"));
 
                     //foldersUnavailable |= CheckFolderUnavailable(path);
 
-                    var folderImages = _dataStore.GetAllPathImages(path).ToList();
+                    var folderImages = _dataStore.GetAllPathImages(folder.Path).ToList();
 
                     var folderImagesHashSet = folderImages.Select(p => p.Path).ToHashSet();
 
@@ -232,29 +214,27 @@ public class ScanningService
                         break;
                     }
 
-                    ServiceLocator.ProgressService.SetStatus(gatheringFilesMessage.Replace("{path}", path));
+                    ServiceLocator.ProgressService.SetStatus(gatheringFilesMessage.Replace("{path}", folder.Path));
 
                     var ignoreFiles = updateImages ? null : folderImagesHashSet;
 
-                    filesToScan.AddRange(MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludedPaths, cancellationToken).ToList());
+                    filesToScan.AddRange(MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludedPaths, cancellationToken).ToList());
                 }
                 else
                 {
-                    foldersUnavailable = true;
+                    _dataStore.SetFolderUnavailable(folder.Id, true, true);
 
-                    _dataStore.SetFolderUnavailable(path, true);
+                    //var childImages = _dataStore.GetAllPathImages(folder.Path);
 
-                    var childImages = _dataStore.GetAllPathImages(path);
+                    //foreach (var childImageChunk in childImages.Chunk(100))
+                    //{
+                    //    if (cancellationToken.IsCancellationRequested)
+                    //    {
+                    //        break;
+                    //    }
 
-                    foreach (var childImageChunk in childImages.Chunk(100))
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            break;
-                        }
-
-                        _dataStore.SetUnavailable(childImageChunk.Select(c => c.Id), true);
-                    }
+                    //    _dataStore.SetUnavailable(childImageChunk.Select(c => c.Id), true);
+                    //}
 
                 }
             }
@@ -336,28 +316,72 @@ public class ScanningService
         return (image, newNodes);
     }
 
+    private readonly object _lock = new object();
+
     public int UpdateImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, CancellationToken cancellationToken)
     {
-        var updated = _dataStore.UpdateImagesByPath(images, includeProperties, folderCache, cancellationToken);
-
-        if (storeWorkflow && nodes.Any())
+        lock (_lock)
         {
-            _dataStore.UpdateNodes(nodes, cancellationToken);
-        }
+            var db = _dataStore.OpenConnection();
 
-        return updated;
+            int updated = 0;
+
+            try
+            {
+                db.BeginTransaction();
+
+                updated =
+                    _dataStore.UpdateImagesByPath(db, images, includeProperties, folderCache, cancellationToken);
+
+                if (storeWorkflow && nodes.Any())
+                {
+                    _dataStore.UpdateNodes(db, nodes, cancellationToken);
+                }
+
+                db.Commit();
+
+            }
+            catch (Exception ex)
+            {
+                db.Rollback();
+                Logger.Log("UpdateImages: " + ex.Message + " " + ex.StackTrace);
+            }
+
+            return updated;
+        }
     }
 
     public int AddImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, CancellationToken cancellationToken)
     {
-        var added = _dataStore.AddImages(images, includeProperties, folderCache, cancellationToken);
-
-        if (storeWorkflow && nodes.Any())
+        lock (_lock)
         {
-            _dataStore.AddNodes(nodes, cancellationToken);
-        }
 
-        return added;
+            var db = _dataStore.OpenConnection();
+
+            int added = 0;
+
+            try
+            {
+                db.BeginTransaction();
+
+                added = _dataStore.AddImages(db, images, includeProperties, folderCache, cancellationToken);
+
+                if (storeWorkflow && nodes.Any())
+                {
+                    _dataStore.AddNodes(db, nodes, cancellationToken);
+                }
+
+                db.Commit();
+
+            }
+            catch (Exception ex)
+            {
+                db.Rollback();
+                Logger.Log("AddImages: " + ex.Message + " " + ex.StackTrace);
+            }
+
+            return added;
+        }
     }
 
 

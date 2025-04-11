@@ -757,7 +757,7 @@ namespace Diffusion.Toolkit
             LoadQueries();
             LoadModels();
             LoadImageModels();
-            InitFolders();
+            await InitFolders();
 
             ServiceLocator.ContextMenuService.Go();
 
@@ -873,6 +873,8 @@ namespace Diffusion.Toolkit
         {
             //if (obj == null) return;
             var p = obj.Path;
+
+            ServiceLocator.DataStore.UpdateViewed(obj.Id);
 
             if (_settings.UseBuiltInViewer.GetValueOrDefault(true))
             {

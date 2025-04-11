@@ -207,71 +207,71 @@ namespace Diffusion.Toolkit.Services
         {
             var folders = ServiceLocator.DataStore.GetFolders().ToList();
 
-            var lookup = folders.ToDictionary(d => d.Path);
-
             _dispatcher.Invoke(() =>
-            {
-                if (ServiceLocator.MainModel.Folders == null || ServiceLocator.MainModel.Folders.Count == 0)
                 {
-                    ServiceLocator.MainModel.Folders = new ObservableCollection<FolderViewModel>(folders.Where(d => d.IsRoot).Select(folder => new FolderViewModel()
+                    if (ServiceLocator.MainModel.Folders == null || ServiceLocator.MainModel.Folders.Count == 0)
                     {
-                        Id = folder.Id,
-                        HasChildren = true,
-                        Visible = true,
-                        Depth = 0,
-                        Name = Path.GetFileName(folder.Path),
-                        Path = folder.Path,
-                        IsArchived = folder.Archived,
-                        IsExcluded = folder.Excluded,
-                        IsUnavailable = !Directory.Exists(folder.Path),
-                        IsScanned = true
-                    }));
-                }
-                else
-                {
-                    var comparer = new PathComparer();
-
-                    foreach (var folder in ServiceLocator.MainModel.Folders)
-                    {
-                        UpdateFolder(folder, lookup);
-
-                        if (folder.State == FolderState.Expanded && Directory.Exists(folder.Path))
+                        ServiceLocator.MainModel.Folders = new ObservableCollection<FolderViewModel>(folders.Where(d => d.IsRoot).Select(folder => new FolderViewModel()
                         {
-                            var driveFolders = GetDriveSubFolders(folder);
+                            Id = folder.Id,
+                            HasChildren = true,
+                            Visible = true,
+                            Depth = 0,
+                            Name = Path.GetFileName(folder.Path),
+                            Path = folder.Path,
+                            IsArchived = folder.Archived,
+                            IsExcluded = folder.Excluded,
+                            IsUnavailable = !Directory.Exists(folder.Path),
+                            IsScanned = true
+                        }));
+                    }
+                    else
+                    {
+                        var comparer = new PathComparer();
 
-                            if (folder.Children != null)
-                            {
-                                driveFolders = driveFolders.Except(folder.Children, comparer);
-                            }
+                        var lookup = folders.ToDictionary(d => d.Path);
 
-                            if (driveFolders.Any())
+                        foreach (var folder in ServiceLocator.MainModel.Folders)
+                        {
+                            UpdateFolder(folder, lookup);
+
+                            if (folder.State == FolderState.Expanded && Directory.Exists(folder.Path))
                             {
-                                if (folder.Children == null)
+                                var driveFolders = GetDriveSubFolders(folder);
+
+                                if (folder.Children != null)
                                 {
-                                    folder.Children = new ObservableCollection<FolderViewModel>();
+                                    driveFolders = driveFolders.Except(folder.Children, comparer);
                                 }
 
-                                foreach (var subFolder in driveFolders.Reverse())
+                                if (driveFolders.Any())
                                 {
-                                    if (folder.Children.FirstOrDefault(d => d.Path == subFolder.Path) == null)
+                                    if (folder.Children == null)
                                     {
-                                        var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folder) + 1;
-                                        var targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+                                        folder.Children = new ObservableCollection<FolderViewModel>();
+                                    }
 
-                                        while (subFolder.Path.CompareTo(targetFolder.Path) > 0 && targetFolder.Depth == subFolder.Depth)
+                                    foreach (var subFolder in driveFolders.Reverse())
+                                    {
+                                        if (folder.Children.FirstOrDefault(d => d.Path == subFolder.Path) == null)
                                         {
-                                            insertPoint++;
-                                            targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+                                            var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folder) + 1;
+                                            var targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+
+                                            while (subFolder.Path.CompareTo(targetFolder.Path) > 0 && targetFolder.Depth == subFolder.Depth)
+                                            {
+                                                insertPoint++;
+                                                targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+                                            }
+                                            ServiceLocator.MainModel.Folders.Insert(insertPoint, subFolder);
+                                            folder.Children.Add(subFolder);
                                         }
-                                        ServiceLocator.MainModel.Folders.Insert(insertPoint, subFolder);
-                                        folder.Children.Add(subFolder);
                                     }
                                 }
                             }
                         }
                     }
-                }
-            });
+                });
 
             await ServiceLocator.ScanningService.CheckUnavailableFolders();
 

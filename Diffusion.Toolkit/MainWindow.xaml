@@ -19,7 +19,7 @@
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
         MenuWidth="300"
         TitleWidth="*"
-        ExtraButtonWidth="150"
+        ExtraButtonWidth="190"
         Title="Diffusion Toolkit" Height="450" Width="800">
     <Window.InputBindings>
         <common:BareKeyBinding Key="I" Command="{Binding ToggleInfoCommand}"></common:BareKeyBinding>
@@ -148,6 +148,23 @@
                 <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleNotificationsCommand}">
+                    <fa:ImageAwesome ToolTip="Show/Hide Notifications" Icon="Bell" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <fa:ImageAwesome.Resources>
+                            <Style TargetType="fa:ImageAwesome">
+                                <Setter Property="Opacity" Value="0.5"></Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </Trigger>
+                                    <DataTrigger Binding="{Binding ShowNotifications}" Value="{StaticResource TrueValue}">
+                                        <Setter Property="Opacity" Value="1.0"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </fa:ImageAwesome.Resources>
+                    </fa:ImageAwesome>
+                </Button>
                 <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleTagsCommand}">
                     <fa:ImageAwesome ToolTip="Show/Hide Tags" Icon="Star" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <fa:ImageAwesome.Resources>

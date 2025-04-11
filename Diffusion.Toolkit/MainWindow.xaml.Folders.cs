@@ -18,7 +18,7 @@ namespace Diffusion.Toolkit
 {
     public partial class MainWindow
     {
-        private void InitFolders()
+        private async Task InitFolders()
         {
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
 
@@ -78,7 +78,7 @@ namespace Diffusion.Toolkit
                 _ = ServiceLocator.FolderService.LoadFolders();
             });
 
-            _ = ServiceLocator.FolderService.LoadFolders();
+            await ServiceLocator.FolderService.LoadFolders();
 
 
             ServiceLocator.DataStore.DataChanged += DataChanged;
