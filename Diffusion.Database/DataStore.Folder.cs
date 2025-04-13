@@ -76,7 +76,10 @@ namespace Diffusion.Database
                 ? $"{DirectoryTreeCTE} UPDATE Folder SET Excluded = ? FROM (SELECT Id FROM directoryTree WHERE RootId = ?) AS Subfolder WHERE Folder.Id = Subfolder.Id"
                 : "UPDATE Folder SET Excluded = ? WHERE Id = ?";
 
-            db.Execute(query, excluded, id);
+            lock (_lock)
+            {
+                db.Execute(query, excluded, id);
+            }
 
             db.Close();
 
@@ -92,32 +95,22 @@ namespace Diffusion.Database
         {
             using (var db = OpenConnection())
             {
-                db.BeginTransaction();
+                var query = recursive
+                    ? $"{DirectoryTreeCTE} UPDATE Folder SET Unavailable = ? FROM (SELECT Id FROM directoryTree WHERE RootId = ?) AS Subfolder WHERE Folder.Id = Subfolder.Id"
+                    : "UPDATE Folder SET Unavailable = ? WHERE Id = ?";
 
-                try
+                lock (_lock)
                 {
-                    var query = recursive
-                        ? $"{DirectoryTreeCTE} UPDATE Folder SET Unavailable = ? FROM (SELECT Id FROM directoryTree WHERE RootId = ?) AS Subfolder WHERE Folder.Id = Subfolder.Id"
-                        : "UPDATE Folder SET Unavailable = ? WHERE Id = ?";
-
                     db.Execute(query, unavailable, id);
-
-                    // Set files unavailable
-                    //query = recursive
-                    //    ? $"{DirectoryTreeCTE} UPDATE Image SET Unavailable = ? FROM (SELECT i.Id FROM Image i JOIN directoryTree d on i.FolderId = d.Id WHERE d.RootId = ?) AS RefImage WHERE Image.Id = RefImage.Id"
-                    //    : "";
-
-                    //db.Execute(query, unavailable, id);
-
-                    db.Commit();
                 }
-                catch (Exception e)
-                {
-                    db.Rollback();
-                    throw;
-                }
+
+                // Set files unavailable
+                //query = recursive
+                //    ? $"{DirectoryTreeCTE} UPDATE Image SET Unavailable = ? FROM (SELECT i.Id FROM Image i JOIN directoryTree d on i.FolderId = d.Id WHERE d.RootId = ?) AS RefImage WHERE Image.Id = RefImage.Id"
+                //    : "";
+
+                //db.Execute(query, unavailable, id);
             }
-           
 
             DataChanged?.Invoke(this, new DataChangedEventArgs()
             {
@@ -135,7 +128,10 @@ namespace Diffusion.Database
                 ? $"{DirectoryTreeCTE} UPDATE Folder SET Archived = ? FROM (SELECT Id FROM directoryTree WHERE RootId = ?) AS Subfolder WHERE Folder.Id = Subfolder.Id"
                 : "UPDATE Folder SET Archived = ? WHERE Id = ?";
 
-            db.Execute(query, archived, id);
+            lock (_lock)
+            {
+                db.Execute(query, archived, id);
+            }
 
             db.Close();
 
@@ -151,8 +147,14 @@ namespace Diffusion.Database
         public int AddRootFolder(string path, bool recursive)
         {
             using var db = OpenConnection();
+
             // ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot
-            var id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 0, 1)", path);
+            int id;
+
+            lock (_lock)
+            {
+                id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 0, 1)", path);
+            }
 
             db.Close();
 
@@ -179,8 +181,8 @@ namespace Diffusion.Database
             db.Close();
         }
 
-
-        public static bool EnsureFolderExists(SQLiteConnection db, string path, Dictionary<string, Folder>? folderCache, out int folderId)
+        public static bool EnsureFolderExistsExt(SQLiteConnection db, string path, Dictionary<string, Folder>? folderCache,
+            out int folderId)
         {
             if (folderCache?.TryGetValue(path, out var folder) ?? false)
             {
@@ -216,6 +218,58 @@ namespace Diffusion.Database
                 else
                 {
                     var id = db.ExecuteScalar<int>("INSERT INTO Folder (ParentId, Path, Unavailable, Archived, Excluded, IsRoot) VALUES (?, ?, 0, 0, 0, 0) RETURNING Id", currentParentId, current);
+                    folderCache?.Add(current, new Folder() { Id = id, ParentId = currentParentId, Path = current });
+                    currentParentId = id;
+                }
+
+
+            } while (nextSeparator > 0);
+
+            folderId = currentParentId;
+
+            return true;
+        }
+
+        public bool EnsureFolderExists(SQLiteConnection db, string path, Dictionary<string, Folder>? folderCache, out int folderId)
+        {
+            if (folderCache?.TryGetValue(path, out var folder) ?? false)
+            {
+                folderId = folder.Id;
+                return true;
+            }
+
+            var rootFolders = db.Query<Folder>($"SELECT {FolderColumns} FROM Folder WHERE IsRoot = 1");
+
+            var root = rootFolders.FirstOrDefault(d => path.StartsWith(d.Path));
+            if (root == null)
+            {
+                folderId = -1;
+                return false;
+            }
+
+            var current = root.Path;
+            var currentParentId = root.Id;
+            // skip root
+            int nextSeparator;
+            do
+            {
+
+                nextSeparator = path.IndexOf("\\", current.Length + 1, StringComparison.Ordinal);
+                current = nextSeparator > 0 ? path[..nextSeparator] : path;
+
+                var existingId = db.ExecuteScalar<int?>("SELECT Id FROM Folder WHERE Path = ?", current);
+
+                if (existingId.HasValue)
+                {
+                    currentParentId = existingId.Value;
+                }
+                else
+                {
+                    int id;
+                    lock (_lock)
+                    {
+                        id = db.ExecuteScalar<int>("INSERT INTO Folder (ParentId, Path, Unavailable, Archived, Excluded, IsRoot) VALUES (?, ?, 0, 0, 0, 0) RETURNING Id", currentParentId, current);
+                    }
                     folderCache?.Add(current, new Folder() { Id = id, ParentId = currentParentId, Path = current });
                     currentParentId = id;
                 }
@@ -393,31 +447,38 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            db.BeginTransaction();
+            int imagesUpdated = 0;
 
-            var updatedIds = InsertIds(db, "UpdatedIds", "PATH LIKE @Path || '\\%'", new Dictionary<string, object>() { { "@Path", path } });
+            lock (_lock)
+            {
+                db.BeginTransaction();
 
-            var updateQuery = $"UPDATE Image SET Path = @NewPath || SUBSTR(Path, length(@Path) + 1) WHERE Id IN {updatedIds}";
-            var updateCommand = db.CreateCommand(updateQuery);
-            updateCommand.Bind("@Path", path);
-            updateCommand.Bind("@NewPath", newPath);
-            var images = updateCommand.ExecuteNonQuery();
+                var updatedIds = InsertIds(db, "UpdatedIds", "PATH LIKE @Path || '\\%'", new Dictionary<string, object>() { { "@Path", path } });
 
-            var updateSubQuery = "UPDATE Folder SET Path = @NewPath || SUBSTR(Path, length(@Path) + 1) WHERE PATH LIKE @Path || '\\%'";
-            var updateSubCommand = db.CreateCommand(updateSubQuery);
-            updateSubCommand.Bind("@Path", path);
-            updateSubCommand.Bind("@NewPath", newPath);
-            updateSubCommand.ExecuteNonQuery();
+                // TODO: Change to use folderIDs?
+                var updateQuery = $"UPDATE Image SET Path = @NewPath || SUBSTR(Path, length(@Path) + 1) WHERE Id IN {updatedIds}";
+                var updateCommand = db.CreateCommand(updateQuery);
+                updateCommand.Bind("@Path", path);
+                updateCommand.Bind("@NewPath", newPath);
+                imagesUpdated = updateCommand.ExecuteNonQuery();
 
-            var updateFolderQuery = "UPDATE Folder SET Path = @NewPath WHERE PATH = @Path";
-            var updateFolderCommand = db.CreateCommand(updateFolderQuery);
-            updateFolderCommand.Bind("@Path", path);
-            updateFolderCommand.Bind("@NewPath", newPath);
-            updateFolderCommand.ExecuteNonQuery();
+                var updateSubQuery = "UPDATE Folder SET Path = @NewPath || SUBSTR(Path, length(@Path) + 1) WHERE PATH LIKE @Path || '\\%'";
+                var updateSubCommand = db.CreateCommand(updateSubQuery);
+                updateSubCommand.Bind("@Path", path);
+                updateSubCommand.Bind("@NewPath", newPath);
+                updateSubCommand.ExecuteNonQuery();
 
-            db.Commit();
+                var updateFolderQuery = "UPDATE Folder SET Path = @NewPath WHERE PATH = @Path";
+                var updateFolderCommand = db.CreateCommand(updateFolderQuery);
+                updateFolderCommand.Bind("@Path", path);
+                updateFolderCommand.Bind("@NewPath", newPath);
+                updateFolderCommand.ExecuteNonQuery();
 
-            db.Close();
+                db.Commit();
+
+                db.Close();
+            }
+
 
             DataChanged?.Invoke(this, new DataChangedEventArgs()
             {
@@ -425,39 +486,46 @@ namespace Diffusion.Database
                 SourceType = SourceType.Collection,
             });
 
-            return images;
+            return imagesUpdated;
         }
 
         public int RemoveFolder(string path)
         {
             using var db = OpenConnection();
 
-            db.BeginTransaction();
+            int images = 0;
 
-            var deletedIds = InsertIds(db, "DeletedIds", "FolderId IN (SELECT Id FROM Folder WHERE PATH LIKE @Path || '%')", new Dictionary<string, object>() { { "@Path", path } });
+            lock (_lock)
+            {
+                db.BeginTransaction();
 
-            var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
-            var propsCommand = db.CreateCommand(propsQuery);
-            propsCommand.ExecuteNonQuery();
+                var deletedIds = InsertIds(db, "DeletedIds", "FolderId IN (SELECT Id FROM Folder WHERE PATH LIKE @Path || '%')", new Dictionary<string, object>() { { "@Path", path } });
 
-            var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
-            var nodesCommand = db.CreateCommand(nodesQuery);
-            nodesCommand.ExecuteNonQuery();
+                var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
+                var propsCommand = db.CreateCommand(propsQuery);
+                propsCommand.ExecuteNonQuery();
 
-            var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
-            var albumCommand = db.CreateCommand(albumQuery);
-            albumCommand.ExecuteNonQuery();
+                var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
+                var nodesCommand = db.CreateCommand(nodesQuery);
+                nodesCommand.ExecuteNonQuery();
 
-            var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
-            var command = db.CreateCommand(query);
-            var images = command.ExecuteNonQuery();
+                var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
+                var albumCommand = db.CreateCommand(albumQuery);
+                albumCommand.ExecuteNonQuery();
 
-            var deleteFolderQuery = "DELETE FROM Folder WHERE PATH = @Path";
-            var deleteFolderCommand = db.CreateCommand(deleteFolderQuery);
-            deleteFolderCommand.Bind("@Path", path);
-            deleteFolderCommand.ExecuteNonQuery();
+                var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
+                var command = db.CreateCommand(query);
+                images = command.ExecuteNonQuery();
 
-            db.Commit();
+                var deleteFolderQuery = "DELETE FROM Folder WHERE PATH = @Path";
+                var deleteFolderCommand = db.CreateCommand(deleteFolderQuery);
+                deleteFolderCommand.Bind("@Path", path);
+                deleteFolderCommand.ExecuteNonQuery();
+
+                db.Commit();
+
+
+            }
 
             db.Close();
 

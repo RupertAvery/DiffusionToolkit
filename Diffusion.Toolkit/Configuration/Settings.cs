@@ -67,6 +67,7 @@ public class Settings : SettingsContainer, IScanOptions
     private string _sortQueriesBy;
     private bool _showTags;
     private bool _permanentlyDelete;
+    private bool _confirmDeletion;
 
     public Settings() : this(false)
     {
@@ -118,6 +119,8 @@ public class Settings : SettingsContainer, IScanOptions
             "text_positive",
             "text_negative",
         };
+
+        ConfirmDeletion = true;
 
         NavigationSection = new NavigationSectionSettings(initialize);
         NavigationSection.Attach(this);
@@ -485,5 +488,9 @@ public class Settings : SettingsContainer, IScanOptions
 
     public int Version { get; set; }
 
- 
+    public bool ConfirmDeletion
+    {
+        get => _confirmDeletion;
+        set => UpdateValue(ref _confirmDeletion, value);
+    }
 }

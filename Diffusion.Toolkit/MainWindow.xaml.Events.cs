@@ -98,133 +98,56 @@ namespace Diffusion.Toolkit
             _settings.ActualSize = _model.ActualSize;
         }
 
+        private void ToggleNotifications()
+        {
+            _model.ShowNotifications = !_model.ShowNotifications;
+            _settings.ShowNotifications = _model.ShowNotifications;
+        }
+
         private void ToggleInfo()
         {
             _search.ToggleInfo();
         }
 
-        private void RemoveMarked(object obj)
+        private async Task RemoveMarked(object obj)
         {
-            if (_model.IsBusy)
-            {
-                return;
-            }
-
-
             var files = _dataStore.GetMarkedImagePaths().ToList();
             var count = 0;
 
-            // TODO: Localize
+            var title = GetLocalizedText("Actions.Delete.Caption");
 
             if (files.Count == 0)
             {
-                _messagePopupManager.Show("There are no files to delete", "Empty recycle bin");
+                var noFilesMessage = GetLocalizedText("Actions.Delete.NoFiles.Caption");
+                await ServiceLocator.MessageService.Show(noFilesMessage, title);
                 return;
             }
 
-            _messagePopupManager.Show("This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", PopupButtons.YesNo).ContinueWith(t =>
+            var message = ServiceLocator.Settings.PermanentlyDelete
+                ? GetLocalizedText("Actions.Delete.PermanentlyDelete.Message")
+                : GetLocalizedText("Actions.Delete.Delete.Message");
+
+            var result = await ServiceLocator.MessageService.Show(message, title, PopupButtons.YesNo);
+
+            if (result == PopupResult.Yes)
             {
-                if (t.Result == PopupResult.Yes)
+                if (await ServiceLocator.ProgressService.TryStartTask())
                 {
-                    Task.Run(async () =>
+                    try
                     {
-                        if (await ServiceLocator.ProgressService.TryStartTask())
-                        {
+                        await ServiceLocator.FileService.DeleteFiles(files, ServiceLocator.ProgressService.CancellationToken);
+                    }
+                    finally
+                    {
+                        ServiceLocator.ProgressService.CompleteTask();
 
-                            var token = ServiceLocator.ProgressService.CancellationToken;
+                        ServiceLocator.ScanningService.SetTotalFilesStatus();
 
-                            var cancelled = false;
-
-                            try
-                            {
-                                Dispatcher.Invoke(() =>
-                                {
-                                    _model.TotalProgress = files.Count;
-                                    _model.CurrentProgress = 0;
-                                });
-
-                                foreach (var imagePath in files)
-                                {
-                                    if (token.IsCancellationRequested)
-                                    {
-                                        break;
-                                    }
-
-                                    try
-                                    {
-                                        count++;
-
-                                        var filename = Path.GetFileName(imagePath.Path);
-
-                                        Dispatcher.Invoke(() =>
-                                        {
-                                            _model.Status = $"Deleting {filename}...";
-                                            _model.CurrentProgress = count;
-                                        });
-
-                                        _dataStore.DeleteImage(imagePath.Id);
-
-                                        ServiceLocator.FileService.Delete(imagePath.Path);
-                                        
-                                        var dir = Path.GetDirectoryName(imagePath.Path);
-                                        var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
-                                        var textFilePath = Path.Join(dir, $"{fileName}.txt");
-
-                                        // TODO: Why delete twice?
-                                        //ServiceLocator.FileService.Delete(imagePath.Path);
-                                        
-                                        if (File.Exists(textFilePath))
-                                        {
-                                            ServiceLocator.FileService.Delete(textFilePath);
-                                        }
-
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Logger.Log($"Failed to delete {imagePath.Path}. \n\n {e.Message}");
-
-                                        var result = await Dispatcher.Invoke(async () =>
-                                        {
-                                            return await _messagePopupManager.Show($"Failed to delete {imagePath.Path}. \n\n {e.Message}", "Error", PopupButtons.OkCancel);
-                                        });
-
-                                        if (result == PopupResult.Cancel)
-                                        {
-                                            cancelled = true;
-                                            break;
-                                        }
-
-                                    }
-                                }
-
-                                ServiceLocator.ProgressService.ClearProgress();
-
-                                await Dispatcher.Invoke(async () =>
-                                {
-                                    LoadAlbums();
-                                });
-
-                                if (cancelled || token.IsCancellationRequested)
-                                {
-                                    await ServiceLocator.MessageService.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
-                                }
-
-                                ServiceLocator.ToastService.Toast($"{count} images were deleted", "Empty recycle bin");
-
-                            }
-                            finally
-                            {
-                                ServiceLocator.ProgressService.CompleteTask();
-
-                                ServiceLocator.ScanningService.SetTotalFilesStatus();
-
-                                _search.ReloadMatches(null);
-                            }
-                        }
-
-                    });
+                        ServiceLocator.SearchService.RefreshResults();
+                    }
                 }
-            });
+            }
+            ;
         }
 
         private void ShowAbout()
@@ -329,6 +252,10 @@ namespace Diffusion.Toolkit
             // Don't do any database updates here
             switch (args.PropertyName)
             {
+                case nameof(Settings.PermanentlyDelete):
+                    _model.PermanentlyDelete = _settings.PermanentlyDelete;
+                    break;
+
                 case nameof(Settings.PageSize):
                     ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
                     _search.SetPageSize(_settings.PageSize);

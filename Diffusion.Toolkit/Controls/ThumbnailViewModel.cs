@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
@@ -418,5 +419,5 @@ public class ThumbnailViewModel : BaseNotify
     }
 
     public ICommand RescanCommand { get; set; }
-
+    public ICommand PermanentlyDeleteCommand { get; set; }
 }

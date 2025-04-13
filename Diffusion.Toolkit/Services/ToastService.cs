@@ -49,6 +49,11 @@ public class ToastService
 
     public void Toast(string message, string caption, int timeout = 5)
     {
+        if (!_settings.ShowNotifications)
+        {
+            return;
+        }
+
         if (timeout == 0)
         {
             timeout = 5;

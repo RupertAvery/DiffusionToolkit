@@ -34,6 +34,7 @@ using System.Windows.Input;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Common;
 using Settings = Diffusion.Toolkit.Configuration.Settings;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit
 {
@@ -121,7 +122,7 @@ namespace Diffusion.Toolkit
                     LoadModels();
                     await _messagePopupManager.Show("Models have been reloaded", "Diffusion Toolkit", PopupButtons.OK);
                 });
-                _model.RemoveMarked = new RelayCommand<object>(RemoveMarked);
+                _model.RemoveMarked = new AsyncCommand<object>(RemoveMarked);
                 _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
                 _model.CancelCommand = new AsyncCommand<object>((o) => CancelProgress());
                 _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
@@ -139,6 +140,7 @@ namespace Diffusion.Toolkit
 
                 _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
                 _model.ToggleTagsCommand = new RelayCommand<object>((o) => ToggleTags());
+                _model.ToggleNotificationsCommand = new RelayCommand<object>((o) => ToggleNotifications());
 
                 _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
                 _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
@@ -540,6 +542,8 @@ namespace Diffusion.Toolkit
                 _settings.Version = 190;
                 _settings.ShowTags = true;
                 _settings.NavigationSection.ShowQueries = true;
+                _settings.ConfirmDeletion = true;
+                _settings.PermanentlyDelete = false;
             }
 
 
@@ -588,6 +592,7 @@ namespace Diffusion.Toolkit
             _model.HideNSFW = _settings.HideNSFW;
             _model.HideDeleted = _settings.HideDeleted;
             _model.HideUnavailable = _settings.HideUnavailable;
+            _model.PermanentlyDelete = _settings.PermanentlyDelete;
 
             // TODO: Get rid of globals
             QueryBuilder.HideNSFW = _model.HideNSFW;
@@ -599,6 +604,7 @@ namespace Diffusion.Toolkit
             _model.ActualSize = _settings.ActualSize;
             _model.AutoAdvance = _settings.AutoAdvance;
             _model.ShowTags = _settings.ShowTags;
+            _model.ShowNotifications = _settings.ShowNotifications;
 
             _model.Settings = _settings;
 
@@ -665,9 +671,9 @@ namespace Diffusion.Toolkit
 
                         // Now check if the path falls under one of the excluded paths.
 
-                        foreach (var imagePath in _settings.ExcludePaths)
+                        foreach (var folder in ServiceLocator.FolderService.ExcludedFolders)
                         {
-                            if (path.StartsWith(imagePath, true, CultureInfo.InvariantCulture))
+                            if (path.StartsWith(folder.Path, true, CultureInfo.InvariantCulture))
                             {
                                 isInPath = false;
                                 break;
@@ -729,7 +735,7 @@ namespace Diffusion.Toolkit
                     "search" when args.TargetUri.Fragment != null => args.TargetUri.Fragment.ToLower() switch
                     {
                         "favorites" => "Favorites",
-                        "deleted" => "Recycle Bin",
+                        "deleted" => "For Deletion",
                         "images" => "Diffusions",
                         "folders" => "Folders",
                         "albums" => "Albums",

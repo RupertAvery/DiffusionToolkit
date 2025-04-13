@@ -140,33 +140,33 @@ namespace Diffusion.Toolkit
 
             if (result == PopupResult.Yes)
             {
-                using (var db = _dataStore.OpenConnection())
+                //using (var db = _dataStore.OpenConnection())
+                //{
+                //    try
+                //    {
+                ServiceLocator.DataStore.RemoveFolder(folder.Path);
+
+                ThumbnailCache.Instance.Unload(folder.Path);
+                ServiceLocator.FolderService.Delete(folder.Path);
+
+                // db.Commit();
+
+                Dispatcher.Invoke(() =>
                 {
-                    try
-                    {
-                        ServiceLocator.DataStore.RemoveFolder(folder.Path);
+                    RemoveFolder(folder);
+                    folder.Parent!.Children!.Remove(folder);
+                    folder.Parent!.HasChildren = folder.Parent!.Children.Any();
+                });
 
-                        ThumbnailCache.Instance.Unload(folder.Path);
-                        ServiceLocator.FileService.Delete(folder.Path);
-
-                        db.Commit();
-
-                        Dispatcher.Invoke(() =>
-                        {
-                            RemoveFolder(folder);
-                            folder.Parent!.Children!.Remove(folder);
-                            folder.Parent!.HasChildren = folder.Parent!.Children.Any();
-                        });
-
-                        _search.OpenFolder(folder.Parent);
-                    }
-                    catch (Exception e)
-                    {
-                        db.Rollback();
-                    }
+                _search.OpenFolder(folder.Parent);
+                //}
+                //catch (Exception e)
+                //{
+                //    db.Rollback();
+                //}
 
 
-                }
+                //}
 
             }
         }
@@ -229,6 +229,8 @@ namespace Diffusion.Toolkit
 
                 await Task.Run(async () =>
                 {
+                    // TODO: Lock? Prevent other tasks from running?
+
                     using (var db = _dataStore.OpenConnection())
                     {
                         db.BeginTransaction();

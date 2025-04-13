@@ -60,7 +60,10 @@ namespace Diffusion.Database
             command.Bind("@Name", name);
             command.Bind("@Id", id);
 
-            command.ExecuteNonQuery();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
 
             db.Close();
         }
@@ -155,7 +158,10 @@ namespace Diffusion.Database
 
             command.Bind("@Id", id);
 
-            command.ExecuteNonQuery();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
 
             query = $"DELETE FROM {nameof(Album)} WHERE Id = @Id";
 
@@ -163,12 +169,15 @@ namespace Diffusion.Database
 
             command.Bind("@Id", id);
 
-            command.ExecuteNonQuery();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
 
             db.Commit();
         }
 
-        public bool AddImagesToAlbum(int albumId, IEnumerable<int> imageId)
+        public bool AddImagesToAlbum(int albumId, IEnumerable<int> imageIds)
         {
             //add a check to make sure that album exists
             if (GetAlbum(albumId) == null)
@@ -178,16 +187,13 @@ namespace Diffusion.Database
 
             db.BeginTransaction();
 
-            var query = $"INSERT OR IGNORE INTO {nameof(AlbumImage)} (AlbumId, ImageId) VALUES (@AlbumId, @ImageId)";
+            var selectedIds = InsertIds(db, "SelectedIds", imageIds);
+
+            var query = $"INSERT OR IGNORE INTO {nameof(AlbumImage)} (AlbumId, ImageId) SELECT @AlbumId, Id FROM {selectedIds}";
 
             var command = db.CreateCommand(query);
-
-            foreach (var id in imageId)
-            {
-                command.Bind("@AlbumId", albumId);
-                command.Bind("@ImageId", id);
-                command.ExecuteNonQuery();
-            }
+            command.Bind("@AlbumId", albumId);
+            command.ExecuteNonQuery();
 
             query = $"UPDATE {nameof(Album)} SET LastUpdated = @LastUpdated WHERE Id = @Id";
 
@@ -196,7 +202,10 @@ namespace Diffusion.Database
             command.Bind("@LastUpdated", DateTime.Now);
             command.Bind("@Id", albumId);
 
-            command.ExecuteNonQuery();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
 
             db.Commit();
 
@@ -215,7 +224,13 @@ namespace Diffusion.Database
 
             var command = db.CreateCommand(query);
             command.Bind("@AlbumId", albumId);
-            var affected = command.ExecuteNonQuery();
+
+            int affected = 0;
+
+            lock (_lock)
+            {
+                affected = command.ExecuteNonQuery();
+            }
 
             db.Commit();
 

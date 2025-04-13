@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Diffusion.Database.Models;
+using Microsoft.VisualBasic;
 using SQLite;
 using ComfyUINode = Diffusion.IO.Node;
 
@@ -20,7 +21,10 @@ namespace Diffusion.Database
             command.Bind("@Id", id);
             command.Bind("@Date", DateTime.Now);
 
-            command.ExecuteNonQuery();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
         }
 
         public void SetDeleted(IEnumerable<int> ids, bool forDeletion)
@@ -29,16 +33,15 @@ namespace Diffusion.Database
 
             InsertIds(db, "MarkedIds", ids);
 
-            db.BeginTransaction();
-
             var query = "UPDATE Image SET ForDeletion = @ForDeletion, TouchedDate = @Date WHERE Id IN (SELECT Id FROM MarkedIds)";
             var command = db.CreateCommand(query);
             command.Bind("@ForDeletion", forDeletion);
             command.Bind("@Date", DateTime.Now);
 
-            command.ExecuteNonQuery();
-
-            db.Commit();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
         }
 
         public void SetFavorite(int id, bool favorite)
@@ -53,7 +56,10 @@ namespace Diffusion.Database
             command.Bind("@Id", id);
             command.Bind("@Date", DateTime.Now);
 
-            command.ExecuteNonQuery();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
         }
 
 
@@ -63,16 +69,15 @@ namespace Diffusion.Database
 
             InsertIds(db, "MarkedIds", ids);
 
-            db.BeginTransaction();
-
             var query = "UPDATE Image SET Favorite = @Favorite, TouchedDate = @Date WHERE Id IN (SELECT Id FROM MarkedIds)";
             var command = db.CreateCommand(query);
             command.Bind("@Favorite", favorite);
             command.Bind("@Date", DateTime.Now);
 
-            command.ExecuteNonQuery();
-
-            db.Commit();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
         }
 
         public void SetNSFW(int id, bool nsfw)
@@ -87,15 +92,16 @@ namespace Diffusion.Database
             command.Bind("@Id", id);
             command.Bind("@Date", DateTime.Now);
 
-            command.ExecuteNonQuery();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
         }
 
 
         public void SetNSFW(IEnumerable<int> ids, bool nsfw, bool preserve = false)
         {
             using var db = OpenConnection();
-
-            db.BeginTransaction();
 
             var update = preserve ? "NSFW = NSFW OR @NSFW" : "NSFW = @NSFW";
 
@@ -106,9 +112,10 @@ namespace Diffusion.Database
             command.Bind("@NSFW", nsfw);
             command.Bind("@Date", DateTime.Now);
 
-            command.ExecuteNonQuery();
-
-            db.Commit();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
         }
 
 
@@ -123,27 +130,29 @@ namespace Diffusion.Database
             command.Bind("@Rating", rating);
             command.Bind("@Id", id);
 
-            command.ExecuteNonQuery();
+
+
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
         }
 
         public void SetRating(IEnumerable<int> ids, int? rating)
         {
             using var db = OpenConnection();
 
-            db.BeginTransaction();
+            InsertIds(db, "MarkedIds", ids);
 
-            var query = "UPDATE Image SET Rating = @Rating, TouchedDate = @Date WHERE Id = @Id";
-
+            var query = $"UPDATE Image SET Rating = @Rating, TouchedDate = @Date WHERE Id IN (SELECT Id FROM MarkedIds)";
             var command = db.CreateCommand(query);
+            command.Bind("@Rating", rating);
+            command.Bind("@Date", DateTime.Now);
 
-            foreach (var id in ids)
+            lock (_lock)
             {
-                command.Bind("@Rating", rating);
-                command.Bind("@Id", id);
                 command.ExecuteNonQuery();
             }
-
-            db.Commit();
         }
 
         public IEnumerable<ImagePath> GetUnavailable(bool unavailable)
@@ -167,30 +176,31 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            db.BeginTransaction();
-
             InsertIds(db, "UnavailableIds", ids);
 
             var query = "UPDATE Image SET Unavailable = @Unavailable WHERE Id IN (SELECT Id FROM UnavailableIds)";
             var command = db.CreateCommand(query);
             command.Bind("@Unavailable", unavailable);
 
-            db.Commit();
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
         }
 
-        public void SetCustomTags(int id, string tags)
-        {
-            using var db = OpenConnection();
+        //public void SetCustomTags(int id, string tags)
+        //{
+        //    using var db = OpenConnection();
 
-            var query = "UPDATE Image SET CustomTags = @CustomTags WHERE Id = @Id";
+        //    var query = "UPDATE Image SET CustomTags = @CustomTags WHERE Id = @Id";
 
-            var command = db.CreateCommand(query);
+        //    var command = db.CreateCommand(query);
 
-            command.Bind("@CustomTags", tags);
-            command.Bind("@Id", id);
+        //    command.Bind("@CustomTags", tags);
+        //    command.Bind("@Id", id);
 
-            command.ExecuteNonQuery();
-        }
+        //    command.ExecuteNonQuery();
+        //}
 
         public void AddNodes(SQLiteConnection db, IEnumerable<ComfyUINode> nodes, CancellationToken cancellationToken)
         {
@@ -254,7 +264,11 @@ namespace Diffusion.Database
                 propertyQuery.Append(string.Join(",", propertyHolders));
 
                 var propertyCommand = db.CreateCommand(propertyQuery.ToString(), propertyValues.ToArray());
-                propertyCommand.ExecuteNonQuery();
+
+                lock (_lock)
+                {
+                    propertyCommand.ExecuteNonQuery();
+                }
             }
         }
 
@@ -278,11 +292,19 @@ namespace Diffusion.Database
 
             var delNodePropQuery = $"DELETE FROM {nameof(NodeProperty)} WHERE NodeId IN (SELECT Id FROM {nameof(Node)} WHERE ImageId IN (SELECT Id FROM DeletedIds))";
             var delNodePropCommand = db.CreateCommand(delNodePropQuery);
-            delNodePropCommand.ExecuteNonQuery();
+
+            lock (_lock)
+            {
+                delNodePropCommand.ExecuteNonQuery();
+            }
 
             var delNodeQuery = $"DELETE FROM {nameof(Node)} WHERE ImageId IN (SELECT Id FROM DeletedIds)";
             var delNodeCommand = db.CreateCommand(delNodeQuery);
-            delNodeCommand.ExecuteNonQuery();
+            
+            lock (_lock)
+            {
+                delNodeCommand.ExecuteNonQuery();
+            }
         }
     }
 }

@@ -231,7 +231,7 @@ namespace Diffusion.Toolkit.Services
 
                         var lookup = folders.ToDictionary(d => d.Path);
 
-                        foreach (var folder in ServiceLocator.MainModel.Folders)
+                        foreach (var folder in ServiceLocator.MainModel.Folders.ToList())
                         {
                             UpdateFolder(folder, lookup);
 
@@ -602,6 +602,18 @@ namespace Diffusion.Toolkit.Services
             _isArchivedFoldersDirty = true;
             _isExcludedFoldersDirty = true;
             _isFoldersDirty = true;
+        }
+
+        public void Delete(string path)
+        {
+            if (ServiceLocator.Settings.PermanentlyDelete)
+            {
+                Directory.Delete(path);
+            }
+            else
+            {
+                Win32FileAPI.Recycle(path);
+            }
         }
     }
 }

@@ -328,7 +328,7 @@ public class ScanningService
 
             try
             {
-                db.BeginTransaction();
+                //db.BeginTransaction();
 
                 updated =
                     _dataStore.UpdateImagesByPath(db, images, includeProperties, folderCache, cancellationToken);
@@ -338,12 +338,12 @@ public class ScanningService
                     _dataStore.UpdateNodes(db, nodes, cancellationToken);
                 }
 
-                db.Commit();
+                //db.Commit();
 
             }
             catch (Exception ex)
             {
-                db.Rollback();
+                //db.Rollback();
                 Logger.Log("UpdateImages: " + ex.Message + " " + ex.StackTrace);
             }
 
@@ -362,7 +362,7 @@ public class ScanningService
 
             try
             {
-                db.BeginTransaction();
+                //db.BeginTransaction();
 
                 added = _dataStore.AddImages(db, images, includeProperties, folderCache, cancellationToken);
 
@@ -371,12 +371,12 @@ public class ScanningService
                     _dataStore.AddNodes(db, nodes, cancellationToken);
                 }
 
-                db.Commit();
+                //db.Commit();
 
             }
             catch (Exception ex)
             {
-                db.Rollback();
+               // db.Rollback();
                 Logger.Log("AddImages: " + ex.Message + " " + ex.StackTrace);
             }
 
@@ -572,7 +572,7 @@ public class ScanningService
 
                 var scanning = GetLocalizedText("Actions.Scanning.Status");
 
-                var excludePaths = _settings.ExcludePaths.Concat(ServiceLocator.DataStore.GetArchivedFolders().Select(d => d.Path)).ToHashSet();
+                var excludePaths = ServiceLocator.FolderService.ExcludedOrArchivedFolderPaths;
 
                 foreach (var folder in rootFolders)
                 {

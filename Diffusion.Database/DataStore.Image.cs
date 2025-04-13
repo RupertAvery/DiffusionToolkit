@@ -3,6 +3,7 @@ using System.Text;
 using Diffusion.Common;
 using Diffusion.Database.Models;
 using System.IO;
+using static Diffusion.Database.DataStore;
 
 namespace Diffusion.Database
 {
@@ -76,27 +77,32 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            db.BeginTransaction();
+            lock (_lock)
+            {
+                db.BeginTransaction();
 
-            var deletedIds = InsertIds(db, "DeletedIds", ids);
+                var deletedIds = InsertIds(db, "DeletedIds", ids);
 
-            var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
-            var propsCommand = db.CreateCommand(propsQuery);
-            propsCommand.ExecuteNonQuery();
+                var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
+                var propsCommand = db.CreateCommand(propsQuery);
+                propsCommand.ExecuteNonQuery();
 
-            var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
-            var nodesCommand = db.CreateCommand(nodesQuery);
-            nodesCommand.ExecuteNonQuery();
+                var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
+                var nodesCommand = db.CreateCommand(nodesQuery);
+                nodesCommand.ExecuteNonQuery();
 
-            var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
-            var albumCommand = db.CreateCommand(albumQuery);
-            albumCommand.ExecuteNonQuery();
+                var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
+                var albumCommand = db.CreateCommand(albumQuery);
+                albumCommand.ExecuteNonQuery();
 
-            var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
-            var command = db.CreateCommand(query);
-            command.ExecuteNonQuery();
+                var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
+                var command = db.CreateCommand(query);
+                command.ExecuteNonQuery();
 
-            db.Commit();
+                db.Commit();
+
+            }
+
         }
 
         public IEnumerable<ImagePath> GetMarkedImagePaths()
@@ -252,8 +258,11 @@ namespace Diffusion.Database
                 try
                 {
                     var command = db.CreateCommand(updateQuery, values.ToArray());
-                    var ids = command.ExecuteQuery<ReturnId>();
-                    image.Id = ids[0].Id;
+                    lock (_lock)
+                    {
+                        var ids = command.ExecuteQuery<ReturnId>();
+                        image.Id = ids[0].Id;
+                    }
                     updated += 1;
                 }
                 catch (Exception e)
@@ -350,7 +359,12 @@ namespace Diffusion.Database
             {
                 var command = db.CreateCommand(query.ToString(), values.ToArray());
 
-                var returnIds = command.ExecuteQuery<ReturnId>();
+                List<ReturnId> returnIds;
+
+                lock (_lock)
+                {
+                    returnIds = command.ExecuteQuery<ReturnId>();
+                }
 
                 foreach (var item in images.Zip(returnIds))
                 {
@@ -358,6 +372,7 @@ namespace Diffusion.Database
                 }
 
                 added = returnIds.Count;
+
             }
             catch (Exception e)
             {
@@ -401,7 +416,10 @@ namespace Diffusion.Database
                 Logger.Log($"Root folder not found for {dirName}");
             }
 
-            db.Execute("UPDATE Image SET FolderId = ? WHERE Id = ?", folderId, id);
+            lock (_lock)
+            {
+                db.Execute("UPDATE Image SET FolderId = ? WHERE Id = ?", folderId, id);
+            }
 
             db.Close();
         }
@@ -417,7 +435,10 @@ namespace Diffusion.Database
                 Logger.Log($"Root folder not found for {dirName}");
             }
 
-            db.Execute("UPDATE Image SET Path = ?, FolderId = ? WHERE Id = ?", newPath, folderId, id);
+            lock (_lock)
+            {
+                db.Execute("UPDATE Image SET Path = ?, FolderId = ? WHERE Id = ?", newPath, folderId, id);
+            }
 
             db.Close();
         }
@@ -436,42 +457,45 @@ namespace Diffusion.Database
                 Logger.Log($"Root folder not found for {dirName}");
             }
 
-            db.Execute("UPDATE Image SET Path = ?, FolderId = ? WHERE Id = ?", newPath, folderId, id);
-        }
-
-        public void MoveImages(IEnumerable<ImagePath> images, string path)
-        {
-            using var db = OpenConnection();
-
-            db.BeginTransaction();
-
-            try
+            lock (_lock)
             {
-                var query =
-                    "UPDATE Image SET Path = @Path WHERE Id = @Id";
-
-                var command = db.CreateCommand(query);
-
-                foreach (var image in images)
-                {
-                    var fileName = Path.GetFileName(image.Path);
-                    var newPath = Path.Join(path, fileName);
-                    File.Move(image.Path, newPath);
-                    command.Bind("@Path", newPath);
-                    command.ExecuteNonQuery();
-                }
-
-                db.Commit();
-            }
-            catch (Exception e)
-            {
-                db.Rollback();
-            }
-            finally
-            {
-                db.Close();
+                db.Execute("UPDATE Image SET Path = ?, FolderId = ? WHERE Id = ?", newPath, folderId, id);
             }
         }
+
+        //public void MoveImages(IEnumerable<ImagePath> images, string path)
+        //{
+        //    using var db = OpenConnection();
+
+        //    db.BeginTransaction();
+
+        //    try
+        //    {
+        //        var query =
+        //            "UPDATE Image SET Path = @Path WHERE Id = @Id";
+
+        //        var command = db.CreateCommand(query);
+
+        //        foreach (var image in images)
+        //        {
+        //            var fileName = Path.GetFileName(image.Path);
+        //            var newPath = Path.Join(path, fileName);
+        //            File.Move(image.Path, newPath);
+        //            command.Bind("@Path", newPath);
+        //            command.ExecuteNonQuery();
+        //        }
+
+        //        db.Commit();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        db.Rollback();
+        //    }
+        //    finally
+        //    {
+        //        db.Close();
+        //    }
+        //}
 
         public bool ImageExists(string path)
         {
@@ -493,14 +517,20 @@ namespace Diffusion.Database
         {
             var db = OpenConnection();
 
-            return db.Execute("UPDATE Image SET Path = ? WHERE Id = ?", path, id);
+            lock (_lock)
+            {
+                return db.Execute("UPDATE Image SET Path = ? WHERE Id = ?", path, id);
+            }
         }
 
         public int UpdateViewed(int id)
         {
             var db = OpenConnection();
 
-            return db.Execute("UPDATE Image SET ViewedDate = ? WHERE Id = ?", DateTime.Now, id);
+            lock (_lock)
+            {
+                return db.Execute("UPDATE Image SET ViewedDate = ? WHERE Id = ?", DateTime.Now, id);
+            }
         }
 
     }

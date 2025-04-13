@@ -13,6 +13,7 @@ using System.Windows.Input;
 using Diffusion.Common;
 using Diffusion.Toolkit.Behaviors;
 using Diffusion.Toolkit.Services;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -143,11 +144,24 @@ namespace Diffusion.Toolkit.Pages
 
         private void Folder_OnClick(object sender, MouseButtonEventArgs e)
         {
+            var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
+
+
+
             if (e.ChangedButton == MouseButton.Left)
             {
-                var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
+                if (e.ClickCount == 2)
+                {
+                    if (!folder.IsUnavailable)
+                    {
+                        _ = ToggleFolder(folder);
+                    }
 
-                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.LeftCtrl))
+                    e.Handled = true;
+                    return;
+                }
+
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
                 {
                     folder.IsSelected = !folder.IsSelected;
                 }
@@ -167,7 +181,12 @@ namespace Diffusion.Toolkit.Pages
             }
             else if (e.ChangedButton == MouseButton.Right)
             {
+                foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected))
+                {
+                    model.IsSelected = false;
+                }
 
+                folder.IsSelected = true;
             }
         }
 

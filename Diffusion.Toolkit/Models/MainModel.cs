@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Common;
+using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Models;
@@ -558,6 +559,8 @@ public class MainModel : BaseNotify
     private ICommand _openWithCommand;
     private ICommand _gotoUrl;
     private bool _foldersBusy;
+    private bool _showNotifications;
+    private bool _permanentlyDelete;
 
     public ModelViewModel? CurrentModel
     {
@@ -696,5 +699,19 @@ public class MainModel : BaseNotify
     {
         get => _foldersBusy;
         set => SetField(ref _foldersBusy, value);
+    }
+
+    public bool ShowNotifications
+    {
+        get => _showNotifications;
+        set => SetField(ref _showNotifications, value);
+    }
+
+    public ICommand ToggleNotificationsCommand { get; set; }
+
+    public bool PermanentlyDelete
+    {
+        get => _permanentlyDelete;
+        set => SetField(ref _permanentlyDelete, value);
     }
 }

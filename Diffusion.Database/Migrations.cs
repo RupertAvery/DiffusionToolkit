@@ -200,11 +200,11 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
         return "UPDATE Image SET Unavailable = 0";
     }
 
-    //[Migrate(MigrationType.Pre, true)]
-    //private string RupertAvery20250321_0001_EnableWAL()
-    //{
-    //    return "PRAGMA journal_mode=WAL";
-    //}
+    [Migrate(MigrationType.Pre, true)]
+    private string RupertAvery20250321_0001_EnableWAL()
+    {
+        return "PRAGMA journal_mode=WAL";
+    }
 
     private class FolderTemp : Folder
     {
@@ -278,7 +278,7 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
 
                 try
                 {
-                    if (DataStore.EnsureFolderExists(_db, folder, folderCache, out var folderId))
+                    if (DataStore.EnsureFolderExistsExt(_db, folder, folderCache, out var folderId))
                     {
                         var children = orphanedFolders.Where(d => d.ParentPath == folder);
 
@@ -326,7 +326,7 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
 
                     try
                     {
-                        if (DataStore.EnsureFolderExists(_db, folder, folderCache, out var folderId))
+                        if (DataStore.EnsureFolderExistsExt(_db, folder, folderCache, out var folderId))
                         {
                             Logger.Log($"Setting {folder} as Excluded");
                             _db.Execute("UPDATE Folder SET Excluded = 1 WHERE Id = ?", folderId);

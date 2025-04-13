@@ -265,6 +265,8 @@
                     </StackPanel>
                     <CheckBox IsChecked="{Binding AdvanceOnTag}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.AdvanceOnTag}"></CheckBox>
                     <CheckBox IsChecked="{Binding ScrollNavigation}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ScrollNavigation}"></CheckBox>
+                    <CheckBox IsChecked="{Binding PermanentlyDelete}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.PermanentlyDelete}"></CheckBox>
+                    <CheckBox IsChecked="{Binding ConfirmDeletion}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ConfirmDeletion}"></CheckBox>
                 </StackPanel>
             </TabItem>
             <TabItem Header="{lex:Loc Settings.Metadata}">

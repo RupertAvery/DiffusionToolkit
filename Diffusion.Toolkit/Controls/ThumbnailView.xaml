@@ -243,9 +243,24 @@
                     <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.ShowInExplorer}"  Command="{Binding ShowInExplorerCommand}"/>
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.ExpandToFolder}"  Command="{Binding ExpandToFolderCommand}"/>
                     <Separator />
-                    <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.SendToTrash}" InputGestureText="X/Del" ToolTip="Remove" Command="{Binding DeleteCommand}"/>
-                    <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.Restore}" InputGestureText="X/Del" ToolTip="Restore" Command="{Binding DeleteCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.ForDeletion}" InputGestureText="X/Del"  Command="{Binding DeleteCommand}"/>
+                    <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.Restore}" InputGestureText="X/Del" Command="{Binding DeleteCommand}"/>
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Remove}" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
+
+                    <MenuItem IsEnabled="{Binding IsImage}" InputGestureText="Shift+X/Del" Command="{Binding PermanentlyDeleteCommand}" >
+                        <MenuItem.Style>
+                            <Style TargetType="MenuItem">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding MainModel.PermanentlyDelete}" Value="True">
+                                        <Setter Property="Header" Value="{lex:Loc Thumbnail.ContextMenu.PermanentlyDelete}"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding MainModel.PermanentlyDelete}" Value="False">
+                                        <Setter Property="Header" Value="{lex:Loc Thumbnail.ContextMenu.Delete}"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </MenuItem.Style>
+                    </MenuItem>
                     <Separator />
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Rescan}" Command="{Binding RescanCommand}" />
                 </ContextMenu>

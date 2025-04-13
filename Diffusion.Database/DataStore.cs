@@ -6,6 +6,10 @@ namespace Diffusion.Database;
 
 public partial class DataStore
 {
+    private readonly object _lock = new object();
+    public static int _instances;
+
+
     public string DatabasePath { get; }
     public bool RescanRequired { get; set; }
 

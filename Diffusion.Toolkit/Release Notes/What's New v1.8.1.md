@@ -94,15 +94,59 @@ Thumbnails are stored at the size you've selected in your settings and will be u
 
 **Note:** Thumbnails are saved in JPG format within an unencrypted SQLite database and can be viewed using any SQLite browser.
 
+## Moving Files outside of Diffusion Toolkit
+
+Diffusion Toolkit can now track files moved outside the application.
+
+To do this, you will need to rescan your images to generate the file's SHA-256 hashes. This is a fingerprint of the file and uniquely identifies them. You can rescan images by right-clicking a selection of images and clicking Rescan, or right-clicking a non-archived folder and clicking Rescan.
+
+You can then move the files outside of Diffusion Toolkit to another folder that is under a root folder. When you try to view the images in Diffusion Toolkit, they will be unavailable.
+
+Once the files have been moved, rescanning the destination folder should move the metadata and point them automatically to the new destination.
+
+## Deleting Files
+
+Diffusion Toolkit can now delete files to the Windows Recycle Bin. This is enabled by default.
+
+The Recycle Bin view has been renamed **For Deletion**, to avoid confusion with the Windows Recycle Bin.
+
+Pressing `Shift+Delete` or `Shift+X` will bypass tagging the file For Deletion and send it directly to the Recycle Bin, deleting the entry from the database and removing all metadata associated with it.
+
+To delete the file permanently the way it worked before enable the setting **Permanently delete files (do not send to Recycle Bin)** in Settings, under the Images tab.
+
+By default, you will be prompted for confirmation before deleting. You can change this with the settings **Ask for confirmation before deleting files**
+
+## Tagging UI
+
+You can now tag images interactively by clicking on the stars displayed at the bottom of the Preview.  You can also tag as Favorite, For deletion and NSFW. If you don't want to see the Tagging UI, you can hide it by clicking on the **star icon** above the Preview or in the Settings under the Image tab.
+
+## Show Hide Notifications
+
+You can now chose to disable the popup that shows how many images have been scanned. Click on the **bell icon** above the Preview or in the Settings under the General tab.
+
+## Tracking images moved outside of Diffusion Toolkit
+
+Diffusion Toolkit now computes and stores the SHA-256 hash of the files it scans. This is used to track an image when you move it to another folder that is also tracked or watched by Diffusion Toolkit.
+
+Diffusion Toolkit will see it as an
+
 ## Change Root Folder Path
 
 You can now change the path of a root folder and all the images under it. This only changes the paths of the folders and images in the database and assumes that the images already exist in the target folder, otherwise they will be unavailable.
 
+
+
 ## Others
 
-* **Copy Path** from Context Menu
+* **Copy Path** added to Context Menu
 * Fixed crashing on when scanning on startup
 * Better handling during shutdown
+* Toggle Switches added to top-right of window (above Preview)
+  * Show/Hide notifications
+  * Show/Hide Tagging UI
+  * Advance on Tag toggle
+
+
 
 TODO: 
 

@@ -5,5 +5,5 @@ public enum SearchView
     Search,
     Folders,
     Albums,
-    RecycleBin,
+    ForDeletion,
 }

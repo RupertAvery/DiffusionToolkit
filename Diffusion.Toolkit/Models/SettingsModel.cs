@@ -46,6 +46,8 @@ public class SettingsModel : BaseNotify
     private ExternalApplicationModel? _selectedApplication;
     private IEnumerable<OptionValue> _themeOptions;
     private bool _isFoldersDirty;
+    private bool _confirmDeletion;
+    private bool _permanentlyDelete;
 
     public SettingsModel()
     {
@@ -289,6 +291,18 @@ public class SettingsModel : BaseNotify
     {
         get => _scanUnavailable;
         set => SetField(ref _scanUnavailable, value);
+    }
+
+    public bool PermanentlyDelete
+    {
+        get => _permanentlyDelete;
+        set => SetField(ref _permanentlyDelete, value);
+    }
+
+    public bool ConfirmDeletion
+    {
+        get => _confirmDeletion;
+        set => SetField(ref _confirmDeletion, value);
     }
 
     public ObservableCollection<ExternalApplicationModel> ExternalApplications

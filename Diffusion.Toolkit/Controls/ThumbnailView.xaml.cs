@@ -110,6 +110,7 @@ namespace Diffusion.Toolkit.Controls
             Model.ShowInExplorerCommand = new RelayCommand<object>(ShowInExplorer);
             Model.ExpandToFolderCommand = new RelayCommand<object>(ExpandToFolder);
             Model.DeleteCommand = new RelayCommand<object>(o => DeleteSelected());
+            Model.PermanentlyDeleteCommand = new RelayCommand<object>(o => PermanentlyDeleteSelected());
             Model.FavoriteCommand = new RelayCommand<object>(o => FavoriteSelected());
             Model.NSFWCommand = new RelayCommand<object>(o => NSFWSelected());
             Model.RatingCommand = new RelayCommand<object>(o => RateSelected(int.Parse((string)o)));
@@ -161,6 +162,7 @@ namespace Diffusion.Toolkit.Controls
                     {
                         await ServiceLocator.MetadataScannerService.QueueAsync(imageEntry.Path, ServiceLocator.ProgressService.CancellationToken);
                     }
+
                 }
             }
 
@@ -215,18 +217,22 @@ namespace Diffusion.Toolkit.Controls
 
                 case Key.Delete:
                 case Key.X:
+                {
+                    switch (e.KeyboardDevice.Modifiers)
                     {
-                        if (e.KeyboardDevice.Modifiers == ModifierKeys.Control)
-                        {
+                        case ModifierKeys.Control:
                             RemoveEntry();
-                        }
-                        else if (e.KeyboardDevice.Modifiers == ModifierKeys.None)
-                        {
+                            break;
+                        case ModifierKeys.None:
                             DeleteSelected();
-                        }
-
-                        break;
+                            break;
+                        case ModifierKeys.Shift:
+                            PermanentlyDeleteSelected();
+                            break;
                     }
+
+                    break;
+                }
 
                 case Key.F when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                     FavoriteSelected();
@@ -624,6 +630,53 @@ namespace Diffusion.Toolkit.Controls
 
                     });
                 }
+            }
+        }
+
+        private void PermanentlyDeleteSelected()
+        {
+            if (ThumbnailListView.SelectedItems is { Count: > 0 })
+            {
+                var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+                _ = Task.Run(async () =>
+                {
+                    var result = PopupResult.Yes;
+
+                    if (ServiceLocator.Settings.ConfirmDeletion)
+                    {
+                        var message = ServiceLocator.Settings.PermanentlyDelete
+                            ? GetLocalizedText("Actions.Delete.PermanentlyDelete.Message")
+                            : GetLocalizedText("Actions.Delete.Delete.Message");
+
+                        var title = GetLocalizedText("Actions.Delete.Caption");
+
+                        result = await ServiceLocator.MessageService.Show(message, title, PopupButtons.YesNo);
+                    }
+
+                    if (result == PopupResult.Yes)
+                    {
+                        if (await ServiceLocator.ProgressService.TryStartTask())
+                        {
+                            try
+                            {
+                                var files = imageEntries.Select(d => new ImagePath() { Id = d.Id, Path = d.Path }).ToList();
+
+                                await ServiceLocator.FileService.DeleteFiles(files,
+                                    ServiceLocator.ProgressService.CancellationToken);
+                            }
+                            finally
+                            {
+                                ServiceLocator.ProgressService.CompleteTask();
+
+                                ServiceLocator.ScanningService.SetTotalFilesStatus();
+
+                                ServiceLocator.SearchService.RefreshResults();
+                            }
+                        }
+                    }
+                });
+               
             }
         }
 

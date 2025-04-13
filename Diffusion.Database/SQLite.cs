@@ -3289,7 +3289,13 @@ namespace SQLite
             var stmt = Prepare();
             r = SQLite3.Step(stmt);
             Finalize(stmt);
-            if (r == SQLite3.Result.Done)
+            
+            if (r == SQLite3.Result.Row)
+            {
+                // Prevent PRAGMA from throwing an exception
+                return 1;
+            }
+            else if (r == SQLite3.Result.Done)
             {
                 int rowsAffected = SQLite3.Changes(_conn.Handle);
                 return rowsAffected;

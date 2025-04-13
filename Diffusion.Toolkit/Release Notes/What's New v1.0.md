@@ -1,33 +1,3 @@
-# Diffusion Toolkit Release v1.0
-
-Diffusion Toolkit is an image metadata-indexer and viewer for AI-generated images.  It scans your 50,000 image collection in seconds and lets you search them by prompt, seed, hash and more.
-
-You can also tag your images as favorites, rate them 1-10, sort them by aesthetic score, mark them as NSFW, blur images marked as NSFW, and auto-tag NSFW images by looking at keywords in the prompt.
-
-You can arrange them in albums, view them by folder, see your most used prompts.
-
-Diffusion Toolkit supports
-
-* JPG/JPEG + EXIF
-* PNG
-* WebP
-* .TXT metadata
-
-Metadata formats supported are:
-
-* AUTOMATIC1111
-* InvokeAI
-* NovelAI
-* Stable Diffusion
-* ComfyUI (Experimental)
-
-How to get it:
-
-* [Download](https://github.com/RupertAvery/DiffusionToolkit/releases/tag/v1.0
-) (Windows)
-* Requires [.NET 6 Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) 
-* [Usage](https://github.com/RupertAvery/DiffusionToolkit/blob/master/Diffusion.Toolkit/Tips.md)
-
 # What's New in v1.0
 
 * Less files! All .NET assemblies are now packaged into a single executable. If you're coming from an older version, you may want to start anew and remove all the old files, as the updater doesn't remove existing files.

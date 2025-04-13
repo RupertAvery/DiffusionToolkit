@@ -121,7 +121,7 @@
                 <MenuItem Header="{lex:Loc Menu.Search.RemoveMatching}" Command="{Binding RemoveMatching}"/>
             </MenuItem>
             <MenuItem Header="{lex:Loc Menu.Tools}">
-                <MenuItem Header="{lex:Loc Menu.Tools.EmptyRecycleBin}" Command="{Binding RemoveMarked}"/>
+                <MenuItem Header="{lex:Loc Menu.Tools.EmptyForDeletion}" Command="{Binding RemoveMarked}"/>
                 <MenuItem Header="{lex:Loc Menu.Tools.RebuildMetadata}" Command="{Binding Rebuild}"/>
                 <MenuItem Header="{lex:Loc Menu.Tools.ReloadModels}" Command="{Binding ReloadHashes}"/>
                 <MenuItem Header="{lex:Loc Menu.Tools.DownloadCivitaiModels}" Command="{Binding DownloadCivitai}"/>
@@ -233,9 +233,9 @@
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
-                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Recycle Bin}"
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=For Deletion}"
                                 Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#deleted">
-                            <fa:ImageAwesome ToolTip="Recycle bin (Ctrl+4)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <fa:ImageAwesome ToolTip="For Deletion (Ctrl+4)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Separator BorderThickness="1" BorderBrush="{DynamicResource SecondaryBrush}"></Separator>

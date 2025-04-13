@@ -65,14 +65,29 @@
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition MinWidth="200"/>
+                    <ColumnDefinition MinWidth="100"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="70"/>
                 </Grid.ColumnDefinitions>
-                <Label VerticalAlignment="Center" FontSize="22" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
+                <StackPanel Orientation="Horizontal">
+                    <Label VerticalAlignment="Center" FontSize="22" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
+                    <Button Content="{lex:Loc Search.ForDeletion.DeleteFiles}">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                <Setter Property="Visibility" Value="Hidden"></Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentMode}" Value="deleted">
+                                        <Setter Property="Visibility" Value="Visible"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,10,0" Orientation="Horizontal">
                     <Border Visibility="{Binding MainModel.HasSelectedModels, Converter={StaticResource boolToVisCol}}" Background="SeaGreen" CornerRadius="6" Height="24" Padding="6,0,6,0" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">

@@ -89,6 +89,9 @@ namespace Diffusion.Toolkit.Pages
             _model.ScrollNavigation = _settings.ScrollNavigation;
             _model.AdvanceOnTag = _settings.AutoAdvance;
 
+            _model.PermanentlyDelete = _settings.PermanentlyDelete;
+            _model.ConfirmDeletion = _settings.ConfirmDeletion;
+
             _model.AutoTagNSFW = _settings.AutoTagNSFW;
             _model.NSFWTags = string.Join("\r\n", _settings.NSFWTags);
 
@@ -602,6 +605,9 @@ namespace Diffusion.Toolkit.Pages
                 _settings.SlideShowDelay = _model.SlideShowDelay;
                 _settings.ScrollNavigation = _model.ScrollNavigation;
                 _settings.AutoAdvance = _model.AdvanceOnTag;
+
+                _settings.PermanentlyDelete = _model.PermanentlyDelete;
+                _settings.ConfirmDeletion = _model.ConfirmDeletion;
 
                 _settings.StoreMetadata = _model.StoreMetadata;
                 _settings.StoreWorkflow = _model.StoreWorkflow;

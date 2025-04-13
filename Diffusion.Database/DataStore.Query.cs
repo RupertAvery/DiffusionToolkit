@@ -28,7 +28,11 @@ namespace Diffusion.Database
             using var db = OpenConnection();
 
             var command = db.CreateCommand("REPLACE INTO Query (Name, QueryJson, CreatedDate) VALUES (?,?,?)", name, json, DateTime.Now);
-            command.ExecuteNonQuery();
+
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
 
             db.Close();
         }
@@ -64,7 +68,11 @@ namespace Diffusion.Database
             using var db = OpenConnection();
 
             var command = db.CreateCommand("UPDATE Query SET Name = ?, ModifiedDate = ? WHERE Id = ?", name, DateTime.Now, id);
-            command.ExecuteNonQuery();
+
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
 
             db.Close();
         }
@@ -74,7 +82,11 @@ namespace Diffusion.Database
             using var db = OpenConnection();
 
             var command = db.CreateCommand("DELETE FROM Query SET WHERE Id = ?", id);
-            command.ExecuteNonQuery();
+
+            lock (_lock)
+            {
+                command.ExecuteNonQuery();
+            }
 
             db.Close();
         }

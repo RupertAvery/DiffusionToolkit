@@ -379,21 +379,22 @@ namespace Diffusion.Toolkit.Pages
                 ReloadMatches(new ReloadOptions() { Focus = true, CursorPosition = o.CursorPosition, OnCompleted = o.OnCompleted });
             });
 
-            _modeSettings = new Dictionary<string, ModeSettings>()
+            void PopulateViews()
             {
-                { "images", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
-                //{ "models", new ModeSettings() { Name = GetLocalizedText("Search.Models"), ViewMode = ViewMode.Model } },
-                { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolderPath = null } },
-                // { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
-                { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
-                { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.RecycleBin"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
-            };
+                _modeSettings = new Dictionary<string, ModeSettings>()
+                {
+                    { "images", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
+                    //{ "models", new ModeSettings() { Name = GetLocalizedText("Search.Models"), ViewMode = ViewMode.Model } },
+                    { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolderPath = null } },
+                    // { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
+                    { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
+                    { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.ForDeletion"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
+                };
+            }
 
 
             void PopulateSortOptions()
             {
-               
-
                 _model.SortOptions = new List<OptionValue>()
                 {
                     new(GetLocalizedText("Search.SortBy.DateCreated"), "Date Created"),
@@ -417,6 +418,8 @@ namespace Diffusion.Toolkit.Pages
 
             LocalizeDictionary.Instance.PropertyChanged += (sender, args) =>
             {
+                PopulateViews();
+
                 var sortBy = _model.SortBy;
                 var sortDirection = _model.SortDirection;
                 PopulateSortOptions();
@@ -428,6 +431,7 @@ namespace Diffusion.Toolkit.Pages
                 _model.MainModel.Status = "";
             };
 
+            PopulateViews();
             PopulateSortOptions();
 
             _model.SortBy = _settings.SortBy;
@@ -613,6 +617,7 @@ namespace Diffusion.Toolkit.Pages
         private void ClearQueryFilter()
         {
             _model.Filter.Clear();
+            _currentModeSettings.LastQuery = "";
             SearchTermTextBox.Text = "";
             SearchImages(null);
         }

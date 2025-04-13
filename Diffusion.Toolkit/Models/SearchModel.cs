@@ -64,6 +64,7 @@ public class SearchModel : BaseNotify
     private bool _isBusy;
     private ICommand _showSearchSettings;
     private bool _isSearchSettingsVisible;
+    private string _currentMode;
 
     public SearchModel()
     {
@@ -411,7 +412,11 @@ public class SearchModel : BaseNotify
         set => SetField(ref _isBusy, value);
     }
 
-    public string CurrentMode { get; set; }
+    public string CurrentMode
+    {
+        get => _currentMode;
+        set => SetField(ref _currentMode, value);
+    }
 
     public bool IsSearchSettingsVisible
     {

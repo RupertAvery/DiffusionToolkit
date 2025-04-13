@@ -46,6 +46,7 @@ public class UnboundDataWriterQueue
             ServiceLocator.ProgressService.CompleteTask();
             ServiceLocator.ProgressService.ClearProgress();
             ServiceLocator.ProgressService.ClearStatus();
+            _ = ServiceLocator.FolderService.LoadFolders();
             _queueTotal = a;
         }, 1000);
     }
