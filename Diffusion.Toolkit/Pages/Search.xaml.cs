@@ -990,17 +990,29 @@ namespace Diffusion.Toolkit.Pages
 
         public void LoadPreviewImage(string path, ImageEntry? image = null)
         {
-            if (image != null && image.EntryType != EntryType.File) return;
-
-
             try
             {
+                if (image.EntryType == EntryType.Folder)
+                {
+                    var emptyModel = new ImageViewModel();
+                    emptyModel.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
+                    emptyModel.Path = path;
+                    //emptyModel.IsMessageVisible = true;
+                    //emptyModel.Message = GetLocalizedText("Search.LoadPreview.MediaUnavailable");
+
+                    _model.CurrentImage = emptyModel;
+
+                    PreviewPane.ResetZoom();
+                    return;
+                }
+
                 if (_loadPreviewBitmapCts != null)
                 {
                     _loadPreviewBitmapCts.Cancel();
                 }
 
                 _loadPreviewBitmapCts = new CancellationTokenSource();
+
 
                 if (!File.Exists(path))
                 {

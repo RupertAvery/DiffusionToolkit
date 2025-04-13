@@ -46,6 +46,9 @@
             <converters:InvBoolToOpacityConverter x:Key="InvBoolToOpacityConverter"></converters:InvBoolToOpacityConverter>
             <converters:MultiBoolToVisibilityCollapsedConverter x:Key="MultiBoolToVisibilityCollapsedConverter"></converters:MultiBoolToVisibilityCollapsedConverter>
             <converters:InvertBoolConverter x:Key="InvertBoolConverter"></converters:InvertBoolConverter>
+            <models:ArchivedStatus x:Key="Archived">Archived</models:ArchivedStatus>
+            <models:ArchivedStatus x:Key="Unarchived">Unarchived</models:ArchivedStatus>
+            <models:ArchivedStatus x:Key="PartiallyArchived">PartiallyArchived</models:ArchivedStatus>
         </ResourceDictionary>
     </local:NavigationPage.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -296,6 +299,7 @@
                                                                     <Separator></Separator>
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.CreateFolderCommand}"
                                                                           CommandParameter="{Binding .}"
+                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanCreateFolder}" 
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.CreateFolder}"></MenuItem>
                                                                     <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Add to Album"></MenuItem>-->
                                                                     <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Send to Recycle Bin"></MenuItem>-->
@@ -335,6 +339,7 @@
                                                                     <Separator></Separator>
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowInExplorerCommand}" 
                                                                           CommandParameter="{Binding .}"
+                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanShowInExplorer}"
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.ShowInExplorer}"></MenuItem>
                                                                 </ContextMenu>
                                                             </Grid.ContextMenu>
@@ -376,13 +381,18 @@
                                                                 </TextBlock.Resources>
 
                                                             </TextBlock>
-                                                            <fa:FontAwesome Grid.Column="4" Icon="Lock" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource ForegroundBrush}">
+                                                            <fa:FontAwesome Grid.Column="4" Icon="Lock" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" >
                                                                 <fa:FontAwesome.Resources>
                                                                     <Style TargetType="fa:FontAwesome">
                                                                         <Setter Property="Opacity" Value="0.25"></Setter>
+                                                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
                                                                         <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding Path=IsArchived, Mode=OneWay}" Value="True">
+                                                                            <DataTrigger Binding="{Binding Path=ArchivedStatus, Mode=OneWay}" Value="{StaticResource Archived}">
                                                                                 <Setter  Property="Opacity" Value="1"></Setter>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Path=ArchivedStatus, Mode=OneWay}" Value="{StaticResource PartiallyArchived}">
+                                                                                <Setter  Property="Opacity" Value="1"></Setter>
+                                                                                <Setter  Property="Foreground" Value="#3672ff"></Setter>
                                                                             </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>

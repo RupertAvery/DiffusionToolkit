@@ -17,6 +17,7 @@ public class FolderViewModel : BaseNotify
     private bool _isExcluded;
     private bool _isUnavailable;
     private bool _isScanned;
+    private ArchivedStatus _archivedStatus;
 
     public MainModel MainModel => ServiceLocator.MainModel;
 
@@ -72,6 +73,12 @@ public class FolderViewModel : BaseNotify
         set => SetField(ref _isArchived, value);
     }
 
+    public ArchivedStatus ArchivedStatus
+    {
+        get => _archivedStatus;
+        set => SetField(ref _archivedStatus, value);
+    }
+
     public bool IsExcluded
     {
         get => _isExcluded;
@@ -108,4 +115,11 @@ public class FolderViewModel : BaseNotify
     {
         return this.Path.GetHashCode();
     }
+}
+
+public enum ArchivedStatus
+{
+    Archived,
+    Unarchived,
+    PartiallyArchived
 }

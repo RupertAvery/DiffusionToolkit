@@ -61,6 +61,8 @@ namespace Diffusion.Toolkit
             {
                 var (result, name) = await _messagePopupManager.ShowInput("Enter a new name for the album", "Rename Query", queryModel.Name);
 
+                name = name.Trim();
+
                 if (result == PopupResult.OK)
                 {
                     if (string.IsNullOrWhiteSpace(name))

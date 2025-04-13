@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Threading;
 using Diffusion.Common;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
@@ -131,98 +128,128 @@ namespace Diffusion.Toolkit
                 }
             }
 
-            _model.Folders.Remove(folder);
+            var listItem = _model.Folders.FirstOrDefault(d => d.Path == folder.Path);
+
+            if (listItem != null)
+            {
+                _model.Folders.Remove(listItem);
+            }
         }
 
         private async void ShowDeleteFolderDialog(FolderViewModel folder)
         {
-            var result = await _messagePopupManager.Show($"Are you sure you want to delete the folder \"{folder.Name}\" and all the images and metadata under it? This cannot be undone!", "Delete folder", PopupButtons.YesNo);
+            var selectedFolders = ServiceLocator.MainModel.Folders.Where(d => d.IsSelected).ToList();
+
+            PopupResult result;
+
+            var title = GetLocalizedText("Actions.Folders.Delete.Message");
+
+            if (selectedFolders.Count > 1)
+            {
+                result = await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.DeleteSelection.Message"), title, PopupButtons.YesNo);
+            }
+            else
+            {
+                result = await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Delete.Message").Replace("{folder}", folder.Name), title, PopupButtons.YesNo);
+            }
 
             if (result == PopupResult.Yes)
             {
-                //using (var db = _dataStore.OpenConnection())
-                //{
-                //    try
-                //    {
-                ServiceLocator.DataStore.RemoveFolder(folder.Path);
 
-                ThumbnailCache.Instance.Unload(folder.Path);
-                ServiceLocator.FolderService.Delete(folder.Path);
-
-                // db.Commit();
-
-                Dispatcher.Invoke(() =>
+                var count = 0;
+                foreach (var model in selectedFolders)
                 {
-                    RemoveFolder(folder);
-                    folder.Parent!.Children!.Remove(folder);
-                    folder.Parent!.HasChildren = folder.Parent!.Children.Any();
-                });
+                    ServiceLocator.DataStore.RemoveFolder(model.Path, count == selectedFolders.Count - 1);
 
-                _search.OpenFolder(folder.Parent);
-                //}
-                //catch (Exception e)
-                //{
-                //    db.Rollback();
-                //}
+                    if (Directory.Exists(model.Path))
+                    {
+                        ThumbnailCache.Instance.Unload(model.Path);
+                        ServiceLocator.FolderService.Delete(model.Path);
+                    }
 
+                    Dispatcher.Invoke(() =>
+                    {
+                        ServiceLocator.MainModel.Folders.Remove(model);
+                        //RemoveFolder(model);
+                        model.IsSelected = false;
+                        folder.Parent!.Children!.Remove(model);
+                        folder.Parent!.HasChildren = folder.Parent!.Children.Any();
+                    });
 
-                //}
+                    count++;
+                }
 
+                
+
+                _search.OpenFolder(selectedFolders[0]);
             }
         }
 
 
         private async void ShowCreateFolderDialog(FolderViewModel folder)
         {
-            var (result, text) = await _messagePopupManager.ShowInput("Enter a name for the new folder", "New folder");
+            var title = GetLocalizedText("Actions.Folders.Create.Title");
+
+            var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Folders.Create.Message"), title);
 
             if (result == PopupResult.OK)
             {
                 var currentFolder = _model.CurrentFolder;
 
-                if (!IsValidFolderName(text))
+                if (!IsValidFolderName(name))
                 {
-                    await _messagePopupManager.Show("Invalid folder name", "New Folder");
+                    await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Invalid.Message"), title);
                     return;
                 }
+
+                var newPath = Path.Combine(currentFolder.Path, name);
+
+                if (Directory.Exists(newPath))
+                {
+                    await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Exists.Message").Replace("{folder}", name), title);
+                    return;
+                }
+
 
                 var directory = new DirectoryInfo(currentFolder.Path);
 
                 if (directory.Exists)
                 {
-                    directory.CreateSubdirectory(text);
+                    directory.CreateSubdirectory(name);
 
                     Dispatcher.Invoke(() =>
                     {
                         _search.RefreshFolder(currentFolder);
                     });
                 }
+ 
             }
         }
 
         private async void ShowRenameFolderDialog(FolderViewModel folder)
         {
+            var title = GetLocalizedText("Actions.Folders.Rename.Title");
 
-            var (result, text) = await ServiceLocator.MessageService.ShowInput("Enter a new name for the folder", "Rename folder", folder.Name);
+            var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Folders.Rename.Message"), title, folder.Name);
 
             if (result == PopupResult.OK)
             {
                 var parentPath = Path.GetDirectoryName(folder.Path);
-                var newPath = Path.Combine(parentPath, text);
+                var newPath = Path.Combine(parentPath, name);
 
-                if (!IsValidFolderName(text))
+                if (!IsValidFolderName(name))
                 {
-                    await ServiceLocator.MessageService.Show("Invalid folder name", "Rename Folder");
+                    await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Invalid.Message"), title);
                     return;
                 }
 
                 if (Directory.Exists(newPath))
                 {
-                    await ServiceLocator.MessageService.Show($"The folder \"{text}\" already exists.", "Rename Folder");
+                    await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Exists.Message").Replace("{folder}", name), title);
                     return;
                 }
 
-                if (folder.Name.Equals(text, StringComparison.InvariantCultureIgnoreCase))
+                if (folder.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
                 {
                     return;
                 }
@@ -246,7 +273,7 @@ namespace Diffusion.Toolkit
                                 Dispatcher.Invoke(() =>
                                 {
                                     folder.Path = newPath;
-                                    folder.Name = text;
+                                    folder.Name = name;
                                 });
 
                                 db.Commit();

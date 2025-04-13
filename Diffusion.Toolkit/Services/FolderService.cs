@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using Diffusion.Common;
 using Diffusion.Database;
@@ -15,6 +16,7 @@ using Diffusion.Database.Models;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Thumbnails;
+using ArchivedStatus = Diffusion.Toolkit.Models.ArchivedStatus;
 
 namespace Diffusion.Toolkit.Services
 {
@@ -122,8 +124,39 @@ namespace Diffusion.Toolkit.Services
         }
 
         private bool _isFoldersDirty = true;
+        private bool _isArchivedFoldersDirty = true;
+
         private IReadOnlyCollection<Folder> _rootFolders;
         private IReadOnlyCollection<Folder> _allFolders;
+        
+        private IDictionary<int, bool> _archivedStatus;
+        private IReadOnlyCollection<Folder> _excludedFolders;
+        private IReadOnlyCollection<Folder> _archivedFolders;
+        private HashSet<string> _excludedOrArchivedFolderPaths;
+
+        private void RefreshData()
+        {
+            _archivedStatus = ServiceLocator.DataStore.GetArchivedStatus().ToDictionary(d => d.FolderId, d => d.Complete);
+            _rootFolders = ServiceLocator.DataStore.GetRootFolders().ToList();
+            _allFolders = ServiceLocator.DataStore.GetFolders().ToList();
+            _archivedFolders = ServiceLocator.DataStore.GetArchivedFolders().ToList();
+        }
+
+
+        public IDictionary<int, bool> ArchivedStatus
+        {
+            get
+            {
+                if (_isArchivedFoldersDirty)
+                {
+                    _archivedStatus = ServiceLocator.DataStore.GetArchivedStatus().ToDictionary(d => d.FolderId, d => d.Complete);
+                    _archivedFolders = ServiceLocator.DataStore.GetArchivedFolders().ToList();
+                    _isArchivedFoldersDirty = false;
+                }
+
+                return _archivedStatus;
+            }
+        }
 
         public IReadOnlyCollection<Folder> RootFolders
         {
@@ -153,74 +186,117 @@ namespace Diffusion.Toolkit.Services
             }
         }
 
-        private void UpdateFolder(FolderViewModel folderView, Dictionary<string, Folder> lookup)
+
+        private bool _isExcludedFoldersDirty = true;
+
+
+        public IReadOnlyCollection<Folder> ExcludedFolders
+        {
+            get
+            {
+                if (_isExcludedFoldersDirty)
+                {
+                    _excludedFolders = ServiceLocator.DataStore.GetExcludedFolders().ToList();
+                    _excludedOrArchivedFolderPaths = ServiceLocator.DataStore.GetExcludedFolders().Concat(ServiceLocator.DataStore.GetArchivedFolders()).Select(d => d.Path).ToHashSet();
+
+                    _isExcludedFoldersDirty = false;
+                }
+
+                return _excludedFolders;
+            }
+        }
+
+        public IReadOnlyCollection<Folder> ArchivedFolders
+        {
+            get
+            {
+                if (_isArchivedFoldersDirty)
+                {
+                    _archivedStatus = ServiceLocator.DataStore.GetArchivedStatus().ToDictionary(d => d.FolderId, d => d.Complete);
+                    _archivedFolders = ServiceLocator.DataStore.GetArchivedFolders().ToList();
+                    _isArchivedFoldersDirty = false;
+                }
+
+                return _archivedFolders;
+            }
+        }
+
+        public HashSet<string> ExcludedOrArchivedFolderPaths
+        {
+            get
+            {
+                if (_isExcludedFoldersDirty || _isArchivedFoldersDirty || _isFoldersDirty)
+                {
+                    _excludedOrArchivedFolderPaths = ExcludedFolders.Concat(ArchivedFolders).Select(d => d.Path).ToHashSet();
+                }
+
+                return _excludedOrArchivedFolderPaths;
+            }
+        }
+
+        private bool IsExcludedOrArchivedFile(string path)
+        {
+            var directory = Path.GetDirectoryName(path);
+            return ExcludedOrArchivedFolderPaths.Contains(directory);
+        }
+
+        private bool IsExcludedOrArchivedFolder(string path)
+        {
+            return ExcludedOrArchivedFolderPaths.Contains(path);
+        }
+
+        private ArchivedStatus GetArchivedStatus(Folder folder)
+        {
+            ArchivedStatus archivedStatus = Models.ArchivedStatus.Unarchived;
+
+            if (folder.Archived)
+            {
+                archivedStatus = Models.ArchivedStatus.Archived;
+
+                if (ArchivedStatus.TryGetValue(folder.Id, out var complete))
+                {
+                    archivedStatus = complete ? archivedStatus : Models.ArchivedStatus.PartiallyArchived;
+                }
+            }
+
+            return archivedStatus;
+        }
+
+
+        private void UpdateFolder(FolderViewModel folderView, Dictionary<string, FolderView> lookup)
         {
             if (lookup.TryGetValue(folderView.Path, out var folder))
             {
                 folderView.Id = folder.Id;
+                folderView.HasChildren = folder.HasChildren;
                 folderView.IsArchived = folder.Archived;
                 folderView.IsUnavailable = folder.Unavailable;
                 folderView.IsExcluded = folder.Excluded;
                 folderView.IsScanned = true;
-
-                //if (folderView.HasChildren && folderView.Children is { Count: > 0 })
-                //{
-                //    foreach (var child in folderView.Children)
-                //    {
-                //        UpdateFolder(child, lookup);
-                //    }
-                //}
+                folderView.ArchivedStatus = GetArchivedStatus(folder);
             }
-
-            //if (folderView.State == FolderState.Expanded && Directory.Exists(folderView.Path))
-            //{
-            //    var driveFolders = GetDriveSubFolders(folderView, lookup);
-
-            //    if (driveFolders.Any())
-            //    {
-            //        if (folderView.Children == null)
-            //        {
-            //            folderView.Children = new ObservableCollection<FolderViewModel>();
-            //        }
-
-            //        foreach (var subFolder in driveFolders.Reverse())
-            //        {
-            //            if (folderView.Children.FirstOrDefault(d => d.Path == subFolder.Path) == null)
-            //            {
-            //                var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folderView) + 1;
-            //                var targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
-
-            //                while (subFolder.Path.CompareTo(targetFolder.Path) > 0 && targetFolder.Depth == subFolder.Depth)
-            //                {
-            //                    insertPoint++;
-            //                    targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
-            //                }
-            //                ServiceLocator.MainModel.Folders.Insert(insertPoint, subFolder);
-            //                folderView.Children.Add(subFolder);
-            //            }
-            //        }
-            //    }
-            //}
         }
 
         public async Task LoadFolders()
         {
-            var folders = ServiceLocator.DataStore.GetFolders().ToList();
+            var folders = ServiceLocator.DataStore.GetFoldersView().ToList();
 
             _dispatcher.Invoke(() =>
                 {
                     if (ServiceLocator.MainModel.Folders == null || ServiceLocator.MainModel.Folders.Count == 0)
                     {
+
                         ServiceLocator.MainModel.Folders = new ObservableCollection<FolderViewModel>(folders.Where(d => d.IsRoot).Select(folder => new FolderViewModel()
                         {
                             Id = folder.Id,
-                            HasChildren = true,
+                            HasChildren = folder.HasChildren,
                             Visible = true,
                             Depth = 0,
                             Name = Path.GetFileName(folder.Path),
                             Path = folder.Path,
                             IsArchived = folder.Archived,
                             IsExcluded = folder.Excluded,
+                            ArchivedStatus = GetArchivedStatus(folder),
                             IsUnavailable = !Directory.Exists(folder.Path),
                             IsScanned = true
                         }));
@@ -307,21 +383,22 @@ namespace Diffusion.Toolkit.Services
                 return new ObservableCollection<FolderViewModel>();
             }
 
-            var subfolders = ServiceLocator.DataStore.GetSubfolders(folder.Id);
-
+            var subfolders = ServiceLocator.DataStore.GetSubFoldersView(folder.Id);
+            
             var subViews = subfolders.Select(sub => new FolderViewModel()
             {
                 Id = sub.Id,
                 Parent = folder,
-                HasChildren = true,
+                HasChildren = sub.HasChildren,
                 Visible = true,
                 Depth = folder.Depth + 1,
                 Name = Path.GetFileName(sub.Path),
                 Path = sub.Path,
                 IsArchived = sub.Archived,
-                IsUnavailable = sub.Unavailable,
+                ArchivedStatus = GetArchivedStatus(sub),
+                IsUnavailable = !Directory.Exists(sub.Path),
                 IsExcluded = sub.Excluded,
-                IsScanned = true
+                IsScanned = true,
             }).ToList();
 
             var lookup = subViews.Select(p => p.Path).ToHashSet();
@@ -332,7 +409,7 @@ namespace Diffusion.Toolkit.Services
             }).Where(path => !lookup.Contains(path)).Select(sub => new FolderViewModel()
             {
                 Parent = folder,
-                HasChildren = true,
+                HasChildren = Directory.GetDirectories(sub).Length > 0,
                 Visible = true,
                 Depth = folder.Depth + 1,
                 Name = Path.GetFileName(sub),
@@ -341,8 +418,6 @@ namespace Diffusion.Toolkit.Services
 
             return new ObservableCollection<FolderViewModel>(subViews.Concat(directories).OrderBy(d => d.Name));
         }
-
-
 
         public async Task ApplyFolderChanges(IEnumerable<FolderChange> folderChanges, bool confirmScan = false)
         {
@@ -403,72 +478,6 @@ namespace Diffusion.Toolkit.Services
         }
 
         private readonly List<FileSystemWatcher> _watchers = new List<FileSystemWatcher>();
-
-        private bool _isExcludedFoldersDirty = true;
-
-        IReadOnlyCollection<Folder> _excludedFolders;
-
-        public IReadOnlyCollection<Folder> ExcludedFolders
-        {
-            get
-            {
-                if (_isExcludedFoldersDirty)
-                {
-                    _excludedFolders = ServiceLocator.DataStore.GetExcludedFolders().ToList();
-                    _excludedOrArchivedFolderPaths = ServiceLocator.DataStore.GetExcludedFolders().Concat(ServiceLocator.DataStore.GetArchivedFolders()).Select(d => d.Path).ToHashSet();
-
-                    _isExcludedFoldersDirty = false;
-                }
-
-                return _excludedFolders;
-            }
-        }
-
-        private bool _isArchivedFoldersDirty = true;
-
-        IReadOnlyCollection<Folder> _archivedFolders;
-
-        public IReadOnlyCollection<Folder> ArchivedFolders
-        {
-            get
-            {
-                if (_isArchivedFoldersDirty)
-                {
-                    _archivedFolders = ServiceLocator.DataStore.GetArchivedFolders().ToList();
-
-                    _isArchivedFoldersDirty = false;
-                }
-
-                return _archivedFolders;
-            }
-        }
-
-
-        private HashSet<string> _excludedOrArchivedFolderPaths;
-        public HashSet<string> ExcludedOrArchivedFolderPaths
-        {
-            get
-            {
-                if (_isExcludedFoldersDirty || _isArchivedFoldersDirty || _isFoldersDirty)
-                {
-                    _excludedOrArchivedFolderPaths = ExcludedFolders.Concat(ArchivedFolders).Select(d => d.Path).ToHashSet();
-                }
-
-                return _excludedOrArchivedFolderPaths;
-            }
-        }
-
-        private bool IsExcludedOrArchivedFile(string path)
-        {
-            var directory = Path.GetDirectoryName(path);
-            return ExcludedOrArchivedFolderPaths.Contains(directory);
-        }
-
-        private bool IsExcludedOrArchivedFolder(string path)
-        {
-            return ExcludedOrArchivedFolderPaths.Contains(path);
-        }
-
 
         public void CreateWatchers()
         {

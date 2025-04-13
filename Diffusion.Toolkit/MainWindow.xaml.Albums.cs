@@ -20,19 +20,43 @@ namespace Diffusion.Toolkit
             _model.AddSelectedImagesToAlbum = AddSelectedImagesToAlbum;
 
 
-            _model.AddAlbumCommand = new AsyncCommand<object>(async (o) =>
+            _model.CreateAlbumCommand = new AsyncCommand<object>(async (o) =>
             {
-                var (result, text) = await _messagePopupManager.ShowInput("Enter a name for the new album", "New Album");
+                var title = GetLocalizedText("Actions.Albums.Create.Title");
+
+                var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Albums.Create.Message"), title);
+
+                name = name.Trim();
 
                 if (result == PopupResult.OK)
                 {
-                    if (string.IsNullOrWhiteSpace(text))
+                    if (string.IsNullOrWhiteSpace(name))
                     {
-                        await _messagePopupManager.Show("Album name cannot be empty.", "New Album", PopupButtons.OK);
+                        await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Albums.CannotBeEmpty.Message"), title, PopupButtons.OK);
                         return;
                     }
 
-                    await CreateAlbum(text, _model.SelectedImages);
+                    await CreateAlbum(name);
+                }
+            });
+
+            _model.AddAlbumCommand = new AsyncCommand<object>(async (o) =>
+            {
+                var title = GetLocalizedText("Actions.Albums.Create.Title");
+
+                var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Albums.Create.Message"), title);
+
+                name = name.Trim();
+
+                if (result == PopupResult.OK)
+                {
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Albums.CannotBeEmpty.Message"), title, PopupButtons.OK);
+                        return;
+                    }
+
+                    await CreateAlbum(name, _model.SelectedImages);
                 }
             });
 
@@ -40,6 +64,7 @@ namespace Diffusion.Toolkit
             {
                 var album = (Album)((MenuItem)o).Tag;
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
+
                 if (_dataStore.AddImagesToAlbum(album.Id, images))
                 {
                     ServiceLocator.ToastService.Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
@@ -49,21 +74,51 @@ namespace Diffusion.Toolkit
                 else
                     MessageBox.Show("Album not found, please refresh and try again", "No Album");
             });
+            
+            _model.RenameAlbumCommand = new AsyncCommand<AlbumModel>(async (album) =>
+            {
+                var title = GetLocalizedText("Actions.Albums.Rename.Title");
+
+                var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Albums.Rename.Message"), title, album.Name);
+
+                name = name.Trim();
+
+                if (result == PopupResult.OK)
+                {
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Albums.CannotBeEmpty.Message"), title, PopupButtons.OK);
+                        return;
+                    }
+
+                    _dataStore.RenameAlbum(album.Id, name);
+                    //UpdateAlbums();
+                    //SearchImages(null);
+                    LoadAlbums();
+                }
+            });
 
             _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
             {
                 var album = ((MenuItem)o).Tag as Album;
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
                 var count = _dataStore.RemoveImagesFromAlbum(album.Id, images);
-                ServiceLocator.ToastService.Toast($"{count} image{(count == 1 ? "" : "s")} removed from \"{album.Name}\".", "Remove from Album");
-                //_search.SearchImages(null);
+
+                var message = GetLocalizedText("Actions.Albums.RemoveImages.Toast")
+                    .Replace("{images}", $"{count}")
+                    .Replace("{album}", $"{album.Name}");
+
+                ServiceLocator.ToastService.Toast(message, "");
+
                 LoadAlbums();
                 _search.ReloadMatches(null);
             });
 
             _model.RemoveAlbumCommand = new AsyncCommand<AlbumModel>(async (album) =>
             {
-                var result = await _messagePopupManager.Show($"Are you sure you want to remove \"{album.Name}\"?", "Remove Album", PopupButtons.YesNo);
+                var title = GetLocalizedText("Actions.Albums.Remove.Title");
+
+                var result = await _messagePopupManager.Show(GetLocalizedText("Actions.Albums.Remove.Message").Replace("{album}", album.Name), title, PopupButtons.YesNo);
 
                 if (result == PopupResult.Yes)
                 {
@@ -83,40 +138,6 @@ namespace Diffusion.Toolkit
                 }
             });
 
-            _model.RenameAlbumCommand = new AsyncCommand<AlbumModel>(async (album) =>
-            {
-                var (result, text) = await _messagePopupManager.ShowInput("Enter a new name for the album", "Rename Album", album.Name);
-
-                if (result == PopupResult.OK)
-                {
-                    if (string.IsNullOrWhiteSpace(text))
-                    {
-                        await _messagePopupManager.Show("Album name cannot be empty.", "Rename Album", PopupButtons.OK);
-                        return;
-                    }
-
-                    _dataStore.RenameAlbum(album.Id, text);
-                    //UpdateAlbums();
-                    //SearchImages(null);
-                    LoadAlbums();
-                }
-            });
-
-            _model.CreateAlbumCommand = new AsyncCommand<object>(async (o) =>
-            {
-                var (result, text) = await _messagePopupManager.ShowInput("Enter a name for the new album", "New Album");
-
-                if (result == PopupResult.OK)
-                {
-                    if (string.IsNullOrWhiteSpace(text))
-                    {
-                        await _messagePopupManager.Show("Album name cannot be empty.", "New Album", PopupButtons.OK);
-                        return;
-                    }
-
-                    await CreateAlbum(text);
-                }
-            });
 
         }
 
@@ -175,6 +196,8 @@ namespace Diffusion.Toolkit
 
         private async Task CreateAlbum(string name, IEnumerable<ImageEntry>? imageEntries = null)
         {
+            var title = GetLocalizedText("Actions.Albums.Create.Title");
+
             try
             {
                 var album = _dataStore.CreateAlbum(new Album() { Name = name });
@@ -189,13 +212,9 @@ namespace Diffusion.Toolkit
                     {
                         imageEntry.AlbumCount++;
                     }
+                }
 
-                    ServiceLocator.ToastService.Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to new album \"{album.Name}\".", "Add to Album");
-                }
-                else
-                {
-                    ServiceLocator.ToastService.Toast($"Album \"{album.Name}\" created.", "Add to Album");
-                }
+                ServiceLocator.ToastService.Toast(GetLocalizedText("Actions.Albums.Created.Toast").Replace("{album}", album.Name), title);
 
                 LoadAlbums();
             }
@@ -212,7 +231,11 @@ namespace Diffusion.Toolkit
                 var images = _model.SelectedImages.Select(x => x.Id).ToList();
                 if (_dataStore.AddImagesToAlbum(album.Id, images))
                 {
-                    ServiceLocator.ToastService.Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name}\".", "Add to Album");
+                    var message = GetLocalizedText("Actions.Albums.AddImages.Toast")
+                        .Replace("{images}", $"{images.Count}")
+                        .Replace("{album}", $"{album.Name}");
+
+                    ServiceLocator.ToastService.Toast(message, "");
 
                     LoadAlbums();
 

@@ -14,6 +14,7 @@ using Diffusion.Common;
 using Diffusion.Toolkit.Behaviors;
 using Diffusion.Toolkit.Services;
 using Diffusion.Database.Models;
+using Diffusion.Civitai.Models;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -107,21 +108,21 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        private async void Expander_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var folder = ((Button)sender).DataContext as FolderViewModel;
+        //private async void Expander_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        var folder = ((Button)sender).DataContext as FolderViewModel;
 
-                await ToggleFolder(folder);
+        //        await ToggleFolder(folder);
 
-                e.Handled = true;
-            }
-            catch (Exception exception)
-            {
-                Logger.Log(exception.Message);
-            }
-        }
+        //        e.Handled = true;
+        //    }
+        //    catch (Exception exception)
+        //    {
+        //        Logger.Log(exception.Message);
+        //    }
+        //}
 
         private async void Expander_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -146,7 +147,16 @@ namespace Diffusion.Toolkit.Pages
         {
             var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
+            var selectedFolders = ServiceLocator.MainModel.Folders.Where(d => d.IsSelected).ToList();
+            var isRoot = folder.Depth == 0;
+            var isAvailable = !folder.IsUnavailable;
 
+            _model.NavigationSection.FoldersSection.CanCreateFolder = selectedFolders.Count == 1 && isAvailable;
+            _model.NavigationSection.FoldersSection.CanDelete = !isRoot;
+            _model.NavigationSection.FoldersSection.CanRename = !isRoot && selectedFolders.Count == 1 && isAvailable;
+            _model.NavigationSection.FoldersSection.CanShowInExplorer = selectedFolders.Count == 1 && isAvailable;
+            _model.NavigationSection.FoldersSection.CanArchive = isAvailable;
+            _model.NavigationSection.FoldersSection.CanUnarchive = isAvailable;
 
             if (e.ChangedButton == MouseButton.Left)
             {
@@ -181,7 +191,14 @@ namespace Diffusion.Toolkit.Pages
             }
             else if (e.ChangedButton == MouseButton.Right)
             {
-                foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected))
+
+
+                if (selectedFolders.Contains(folder))
+                {
+                    return;
+                }
+
+                foreach (var model in selectedFolders)
                 {
                     model.IsSelected = false;
                 }
@@ -190,28 +207,47 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
+        public void ClearResults()
+        {
+            foreach (var image in _model.Images)
+            {
+                image.Thumbnail = null;
+                image.IsEmpty = true;
+            }
+
+            _model.Page = 0;
+            _model.Pages = 0;
+            _model.Results = GetLocalizedText("Search.NoResults");
+
+            ThumbnailListView.ReloadThumbnailsView();
+            ThumbnailListView.ClearSelection();
+        }
+
         public void OpenFolder(FolderViewModel folder)
         {
             try
             {
+                if (folder.IsUnavailable)
+                {
+                    ClearResults();
+                    return;
+                }
 
                 if (_currentModeSettings.CurrentFolderPath == folder.Path)
                     return;
 
-                var subFolders = folder.Children;
+                //var subFolders = folder.Children;
 
-                if (subFolders == null)
-                {
-                    if (folder.IsUnavailable) return;
-                    subFolders = ServiceLocator.FolderService.GetSubFolders(folder);
-                    folder.HasChildren = subFolders.Any();
-                    folder.Children = subFolders;
-                }
+                //if (subFolders == null)
+                //{
+                //    if (folder.IsUnavailable) return;
+                //    subFolders = ServiceLocator.FolderService.GetSubFolders(folder);
+                //    folder.HasChildren = subFolders.Any();
+                //    folder.Children = subFolders;
+                //}
 
                 _model.MainModel.CurrentFolder = folder;
 
-                _model.NavigationSection.FoldersSection.CanDelete = folder.Depth > 0;
-                _model.NavigationSection.FoldersSection.CanRename = folder.Depth > 0;
 
                 _model.MainModel.ActiveView = "Folders";
 
@@ -219,6 +255,11 @@ namespace Diffusion.Toolkit.Pages
 
                 _model.FolderPath = folder.Path;
                 _currentModeSettings.CurrentFolderPath = folder.Path;
+                if (!folder.IsUnavailable && !Directory.Exists(folder.Path))
+                {
+                    folder.IsUnavailable = true;
+                    ServiceLocator.DataStore.SetUnavailable(new[] { folder.Id }, true);
+                }
 
                 SearchImages(null);
             }
@@ -227,18 +268,6 @@ namespace Diffusion.Toolkit.Pages
                 _model.IsBusy = false;
             }
 
-        }
-
-        private async Task Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var folder = ((FolderViewModel)((Button)sender).DataContext);
-
-            if (!folder.IsUnavailable)
-            {
-                await ToggleFolder(folder);
-            }
-
-            e.Handled = true;
         }
 
         private async Task ToggleFolder(FolderViewModel folder)

@@ -283,9 +283,30 @@ namespace Diffusion.Database
         }
 
 
+        public IEnumerable<FolderView> GetSubFoldersView(int id)
+        {
+            var db = OpenReadonlyConnection();
+
+            var query = $@"{DirectoryTreeCTE} SELECT f.Id, f.ParentId, f.Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot, min(coalesce(P.Children, 0),1) AS HasChildren
+FROM Folder f JOIN 
+directoryTree t ON f.Id = t.Id 
+LEFT JOIN (SELECT RootId, COUNT(*) AS Children FROM directoryTree 
+WHERE Depth = 1 
+GROUP BY RootId) P ON F.Id = P.RootId
+WHERE t.RootId = ? AND t.Depth = 1
+";
+            var folders = db.Query<FolderView>(query, id);
+
+            foreach (var folder in folders)
+            {
+                yield return folder;
+            }
+
+        }
+
         public IEnumerable<Folder> GetSubfolders(int id)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var folders = db.Query<Folder>($"{DirectoryTreeCTE} SELECT f.Id, f.ParentId, f.Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot FROM Folder f JOIN directoryTree t ON f.Id = t.Id WHERE t.RootId = ? AND t.Depth = 1", id);
 
@@ -293,8 +314,6 @@ namespace Diffusion.Database
             {
                 yield return folder;
             }
-
-            db.Close();
         }
 
         public IEnumerable<Folder> GetDescendants(int id)
@@ -356,12 +375,40 @@ namespace Diffusion.Database
         private static string FolderColumns = "Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot";
         private static string FolderColumnsSansId = "ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot";
 
+        public IEnumerable<FolderView> GetFoldersView()
+        {
+            using var db = OpenConnection();
+
+            var query = $@"WITH RECURSIVE
+	directoryTree(Id, ParentId, RootId, Depth) AS
+	(
+		SELECT Id, ParentId, Id AS RootId, 0 AS Depth FROM Folder 
+		UNION ALL
+		SELECT f.Id, f.ParentId, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
+	)
+SELECT {FolderColumns}, min(coalesce(P.Children, 0),1) AS HasChildren  FROM Folder F 
+LEFT JOIN (SELECT RootId, COUNT(*) AS Children FROM directoryTree WHERE Depth = 1 GROUP BY RootId) P ON F.Id = P.RootId
+";
+
+            //$"SELECT {FolderColumns} FROM Folder"
+
+            var folders = db.Query<FolderView>(query);
+
+            foreach (var folder in folders)
+            {
+                yield return folder;
+            }
+
+            db.Close();
+        }
 
         public IEnumerable<Folder> GetFolders()
         {
             using var db = OpenConnection();
 
-            var folders = db.Query<Folder>($"SELECT {FolderColumns} FROM Folder");
+            var query = $"SELECT {FolderColumns} FROM Folder";
+
+            var folders = db.Query<FolderView>(query);
 
             foreach (var folder in folders)
             {
@@ -489,7 +536,7 @@ namespace Diffusion.Database
             return imagesUpdated;
         }
 
-        public int RemoveFolder(string path)
+        public int RemoveFolder(string path, bool raiseEvent = true)
         {
             using var db = OpenConnection();
 
@@ -529,11 +576,14 @@ namespace Diffusion.Database
 
             db.Close();
 
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
+            if (raiseEvent)
             {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Collection,
-            });
+                DataChanged?.Invoke(this, new DataChangedEventArgs()
+                {
+                    EntityType = EntityType.Folder,
+                    SourceType = SourceType.Collection,
+                });
+            }
 
             return images;
         }
@@ -566,6 +616,28 @@ namespace Diffusion.Database
             return images;
         }
 
+        public IEnumerable<ArchivedStatus> GetArchivedStatus()
+        {
+            var db = OpenReadonlyConnection();
+
+            var query = @"WITH RECURSIVE
+	directoryTree(Id, ParentId, Archived, RootId, Depth) AS
+	(
+		SELECT Id, ParentId, Archived, Id AS RootId, 0 AS Depth FROM Folder 
+		UNION ALL
+		SELECT f.Id, f.ParentId, f.Archived, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
+	)
+SELECT Q.RootId FolderId, CASE WHEN Q.Archived = P.Total THEN 1 ELSE 0 END Complete FROM 
+(
+	(SELECT RootId, Count(*) AS Archived FROM directoryTree WHERE Archived = 1 GROUP BY RootId) Q
+		JOIN 
+		(SELECT RootId, Count(*) AS Total FROM directoryTree GROUP BY RootId) P
+		ON P.RootId = Q.RootId
+)
+";
+            return db.Query<ArchivedStatus>(query);
+        }
+
         public void UpdateFolder()
         {
             DataChanged?.Invoke(this, new DataChangedEventArgs()
@@ -574,5 +646,11 @@ namespace Diffusion.Database
                 SourceType = SourceType.Collection,
             });
         }
+    }
+
+    public class ArchivedStatus
+    {
+        public int FolderId { get; set; }
+        public bool Complete { get; set; }
     }
 }

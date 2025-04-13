@@ -84,6 +84,7 @@ namespace Diffusion.Database
 
             if (album.Count < 1)
                 return null;
+
             return album[0];
         }
 
@@ -150,31 +151,31 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            db.BeginTransaction();
-
-            var query = $"DELETE FROM {nameof(AlbumImage)} WHERE AlbumId = @Id";
-
-            var command = db.CreateCommand(query);
-
-            command.Bind("@Id", id);
-
             lock (_lock)
             {
+                db.BeginTransaction();
+
+                var query = $"DELETE FROM {nameof(AlbumImage)} WHERE AlbumId = @Id";
+
+                var command = db.CreateCommand(query);
+
+                command.Bind("@Id", id);
+
+                lock (_lock)
+                {
+                    command.ExecuteNonQuery();
+                }
+
+                query = $"DELETE FROM {nameof(Album)} WHERE Id = @Id";
+
+                command = db.CreateCommand(query);
+
+                command.Bind("@Id", id);
+
                 command.ExecuteNonQuery();
+                db.Commit();
             }
 
-            query = $"DELETE FROM {nameof(Album)} WHERE Id = @Id";
-
-            command = db.CreateCommand(query);
-
-            command.Bind("@Id", id);
-
-            lock (_lock)
-            {
-                command.ExecuteNonQuery();
-            }
-
-            db.Commit();
         }
 
         public bool AddImagesToAlbum(int albumId, IEnumerable<int> imageIds)
@@ -185,29 +186,30 @@ namespace Diffusion.Database
 
             using var db = OpenConnection();
 
-            db.BeginTransaction();
-
-            var selectedIds = InsertIds(db, "SelectedIds", imageIds);
-
-            var query = $"INSERT OR IGNORE INTO {nameof(AlbumImage)} (AlbumId, ImageId) SELECT @AlbumId, Id FROM {selectedIds}";
-
-            var command = db.CreateCommand(query);
-            command.Bind("@AlbumId", albumId);
-            command.ExecuteNonQuery();
-
-            query = $"UPDATE {nameof(Album)} SET LastUpdated = @LastUpdated WHERE Id = @Id";
-
-            command = db.CreateCommand(query);
-
-            command.Bind("@LastUpdated", DateTime.Now);
-            command.Bind("@Id", albumId);
-
             lock (_lock)
             {
-                command.ExecuteNonQuery();
-            }
+                db.BeginTransaction();
 
-            db.Commit();
+                var selectedIds = InsertIds(db, "SelectedIds", imageIds);
+
+                var query = $"INSERT OR IGNORE INTO {nameof(AlbumImage)} (AlbumId, ImageId) SELECT @AlbumId, Id FROM {selectedIds}";
+
+                var command = db.CreateCommand(query);
+                command.Bind("@AlbumId", albumId);
+                command.ExecuteNonQuery();
+
+                query = $"UPDATE {nameof(Album)} SET LastUpdated = @LastUpdated WHERE Id = @Id";
+
+                command = db.CreateCommand(query);
+
+                command.Bind("@LastUpdated", DateTime.Now);
+                command.Bind("@Id", albumId);
+
+
+                command.ExecuteNonQuery();
+
+                db.Commit();
+            }
 
             return true;
         }
@@ -216,25 +218,22 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            db.BeginTransaction();
-
-            var selectedIds = InsertIds(db, "SelectedIds", imageIds);
-
-            var query = $"DELETE FROM {nameof(AlbumImage)}  WHERE AlbumId = @AlbumId AND ImageId IN {selectedIds}";
-
-            var command = db.CreateCommand(query);
-            command.Bind("@AlbumId", albumId);
-
-            int affected = 0;
-
             lock (_lock)
             {
+                var selectedIds = InsertIds(db, "SelectedIds", imageIds);
+
+                var query = $"DELETE FROM {nameof(AlbumImage)}  WHERE AlbumId = @AlbumId AND ImageId IN {selectedIds}";
+
+                var command = db.CreateCommand(query);
+                command.Bind("@AlbumId", albumId);
+
+                int affected = 0;
+
                 affected = command.ExecuteNonQuery();
+
+                return affected;
             }
 
-            db.Commit();
-
-            return affected;
         }
 
         public IEnumerable<Image> GetAlbumImages(int albumId, int pageSize, int offset)
@@ -255,20 +254,23 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            db.BeginTransaction();
-
-            var query = $"UPDATE {nameof(Album)} SET [Order] = @Order WHERE Id = @Id";
-
-            var command = db.CreateCommand(query);
-
-            foreach (var album in albums)
+            lock (_lock)
             {
-                command.Bind("@Order", album.Order);
-                command.Bind("@Id", album.Id);
-                command.ExecuteNonQuery();
-            }
+                db.BeginTransaction();
 
-            db.Commit();
+                var query = $"UPDATE {nameof(Album)} SET [Order] = @Order WHERE Id = @Id";
+
+                var command = db.CreateCommand(query);
+
+                foreach (var album in albums)
+                {
+                    command.Bind("@Order", album.Order);
+                    command.Bind("@Id", album.Id);
+                    command.ExecuteNonQuery();
+                }
+
+                db.Commit();
+            }
         }
     }
 }

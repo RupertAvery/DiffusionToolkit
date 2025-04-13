@@ -16,4 +16,9 @@ namespace Diffusion.Database.Models
         public bool Excluded { get; set; }
         public bool IsRoot { get; set; }
     }
+
+    public class FolderView : Folder
+    {
+        public bool HasChildren { get; set; }
+    }
 }

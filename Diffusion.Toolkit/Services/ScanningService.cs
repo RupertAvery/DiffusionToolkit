@@ -196,18 +196,9 @@ public class ScanningService
 
                 if (Directory.Exists(folder.Path))
                 {
-                    //ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.CheckUnavailable"));
-
-                    //foldersUnavailable |= CheckFolderUnavailable(path);
-
                     var folderImages = _dataStore.GetAllPathImages(folder.Path).ToList();
 
                     var folderImagesHashSet = folderImages.Select(p => p.Path).ToHashSet();
-
-                    //if (_settings.ScanUnavailable)
-                    //{
-                    //    unavailable += CheckFilesUnavailable(folderImages, folderImagesHashSet, cancellationToken);
-                    //}
 
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -223,19 +214,6 @@ public class ScanningService
                 else
                 {
                     _dataStore.SetFolderUnavailable(folder.Id, true, true);
-
-                    //var childImages = _dataStore.GetAllPathImages(folder.Path);
-
-                    //foreach (var childImageChunk in childImages.Chunk(100))
-                    //{
-                    //    if (cancellationToken.IsCancellationRequested)
-                    //    {
-                    //        break;
-                    //    }
-
-                    //    _dataStore.SetUnavailable(childImageChunk.Select(c => c.Id), true);
-                    //}
-
                 }
             }
 
