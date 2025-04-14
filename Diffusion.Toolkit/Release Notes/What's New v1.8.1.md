@@ -44,11 +44,11 @@ To scan for unavailable images, click **Tools > Scan for Unavailable images**. T
 
 Unavailable root folders will still be verified on startup to check for removable drives. Clicking on the Refresh button when the drive has been reconnected will restore the unavailable root folder and all the images under it.
 
-## Click-to-Rate
+## Tagging UI
 
-Some users have asked for the ability to click on the stars to set the Rating. This has now been implemented.
+You can now tag images interactively by clicking on the stars displayed at the bottom of the Preview.  You can also tag as Favorite, For deletion and NSFW. If you don't want to see the Tagging UI, you can hide it by clicking on the **star icon** above the Preview or in the Settings under the Image tab.
 
-to remove the rating on selected images you can now press the tilde button ~ on your keyboard. 
+To remove the rating on selected images you can now press the tilde button ~ on your keyboard.
 
 ## External Applications
 
@@ -115,10 +115,6 @@ Pressing `Shift+Delete` or `Shift+X` will bypass tagging the file For Deletion a
 To delete the file permanently the way it worked before enable the setting **Permanently delete files (do not send to Recycle Bin)** in Settings, under the Images tab.
 
 By default, you will be prompted for confirmation before deleting. You can change this with the settings **Ask for confirmation before deleting files**
-
-## Tagging UI
-
-You can now tag images interactively by clicking on the stars displayed at the bottom of the Preview.  You can also tag as Favorite, For deletion and NSFW. If you don't want to see the Tagging UI, you can hide it by clicking on the **star icon** above the Preview or in the Settings under the Image tab.
 
 ## Show Hide Notifications
 

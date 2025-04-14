@@ -122,7 +122,6 @@ namespace Diffusion.Toolkit
                     LoadModels();
                     await _messagePopupManager.Show("Models have been reloaded", "Diffusion Toolkit", PopupButtons.OK);
                 });
-                _model.RemoveMarked = new AsyncCommand<object>(RemoveMarked);
                 _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
                 _model.CancelCommand = new AsyncCommand<object>((o) => CancelProgress());
                 _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());

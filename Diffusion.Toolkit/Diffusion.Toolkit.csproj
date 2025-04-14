@@ -64,6 +64,8 @@
     <None Remove="Localization\default.json" />
     <None Remove="Localization\es-ES.json" />
     <None Remove="Localization\fr-FR.json" />
+    <None Remove="SearchHelp.md" />
+    <None Remove="Tips.md" />
   </ItemGroup>
 
   <ItemGroup>
@@ -148,6 +150,12 @@
     <Resource Include="Icons\x-mark-16.png" />
     <Resource Include="Icons\x-mark-32.png" />
     <Resource Include="Images\thumbnail.png" />
+    <EmbeddedResource Include="SearchHelp.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tips.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -215,9 +223,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="samplers.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Tips.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="version.txt">

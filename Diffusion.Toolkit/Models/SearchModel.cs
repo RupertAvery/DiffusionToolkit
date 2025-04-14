@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
 using Diffusion.Common;
 using Diffusion.Database.Models;
@@ -65,6 +66,10 @@ public class SearchModel : BaseNotify
     private ICommand _showSearchSettings;
     private bool _isSearchSettingsVisible;
     private string _currentMode;
+    private bool _isSearchHelpVisible;
+    private ICommand _showSearchHelp;
+    private Style _searchHelpStyle;
+    private string _searchHelpMarkdown;
 
     public SearchModel()
     {
@@ -269,6 +274,12 @@ public class SearchModel : BaseNotify
         set => SetField(ref _copyFiles, value);
     }
 
+    public ICommand ShowSearchHelp
+    {
+        get => _showSearchHelp;
+        set => SetField(ref _showSearchHelp, value);
+    }
+
     public ICommand ShowSearchSettings
     {
         get => _showSearchSettings;
@@ -425,4 +436,23 @@ public class SearchModel : BaseNotify
     }
 
     public SearchSettings SearchSettings { get; set; }
+
+    public bool IsSearchHelpVisible
+    {
+        get => _isSearchHelpVisible;
+        set => SetField(ref _isSearchHelpVisible, value);
+    }
+
+    public string SearchHelpMarkdown
+    {
+        get => _searchHelpMarkdown;
+        set => SetField(ref _searchHelpMarkdown, value);
+    }
+
+    public Style SearchHelpStyle
+    {
+        get => _searchHelpStyle;
+        set => SetField(ref _searchHelpStyle, value);
+    }
+
 }

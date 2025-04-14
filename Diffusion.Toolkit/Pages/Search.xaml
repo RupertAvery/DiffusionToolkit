@@ -14,6 +14,7 @@
                 xmlns:lex="http://wpflocalizeextension.codeplex.com"
                 xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
                 xmlns:system="clr-namespace:System;assembly=System.Runtime"
+                xmlns:mdXaml="clr-namespace:MdXaml;assembly=MdXaml"
                 lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
                 lex:LocalizeDictionary.Separation="."
                 lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
@@ -77,9 +78,10 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal">
                     <Label VerticalAlignment="Center" FontSize="22" FontWeight="DemiBold" Content="{Binding ModeName}"></Label>
-                    <Button Content="{lex:Loc Search.ForDeletion.DeleteFiles}">
+
+                    <Button Content="{lex:Loc Search.ForDeletion.Empty}" Margin="10,0,0,0" Height="25" MinWidth="120" Click="EmptyTrash_OnClick">
                         <Button.Style>
-                            <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                            <Style TargetType="Button" BasedOn="{StaticResource BorderlessButton}">
                                 <Setter Property="Visibility" Value="Hidden"></Setter>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding CurrentMode}" Value="deleted">
@@ -125,6 +127,7 @@
                     <ColumnDefinition Width="28"/>
                     <ColumnDefinition Width="28"/>
                     <ColumnDefinition Width="28"/>
+                    <ColumnDefinition Width="28"/>
                 </Grid.ColumnDefinitions>
 
                 <!--<Button DockPanel.Dock="Left" Width="28" Command="{Binding ClearFilter}" >
@@ -164,20 +167,24 @@
                         </TextBlock.Style>
                     </TextBlock>
                 </Grid>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowSearchSettings.ToolTip}" Grid.Column="1" Command="{Binding ShowSearchSettings}">
-                    <fa:ImageAwesome Icon="Sliders" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowSearchHelp.ToolTip}" Grid.Column="1" Command="{Binding ShowSearchHelp}">
+                    <fa:ImageAwesome Icon="Question" Height="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Refresh.ToolTip}" Grid.Column="2" Width="28" Command="{Binding Refresh}" >
-                    <fa:ImageAwesome Icon="Refresh" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowSearchSettings.ToolTip}" Grid.Column="2" Command="{Binding ShowSearchSettings}">
+                    <fa:ImageAwesome Icon="Sliders" Height="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Clear.ToolTip}" Grid.Column="3" Width="28" Command="{Binding ClearSearch}" >
-                    <fa:ImageAwesome Icon="Close" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Refresh.ToolTip}" Grid.Column="3" Width="28" Command="{Binding Refresh}" >
+                    <fa:ImageAwesome Icon="Refresh" Height="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
-                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowFilter.ToolTip}" Grid.Column="4" Command="{Binding ShowFilter}" Background="{Binding Filter.IsActive, Converter={StaticResource FilterActiveConverter}}">
-                    <fa:ImageAwesome Icon="Filter" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.Clear.ToolTip}" Grid.Column="4" Width="28" Command="{Binding ClearSearch}" >
+                    <fa:ImageAwesome Icon="Close" Height="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    </fa:ImageAwesome>
+                </Button>
+                <Button Style="{DynamicResource BorderlessButton}" ToolTip="{lex:Loc Search.Buttons.ShowFilter.ToolTip}" Grid.Column="5" Command="{Binding ShowFilter}" Background="{Binding Filter.IsActive, Converter={StaticResource FilterActiveConverter}}">
+                    <fa:ImageAwesome Icon="Filter" Height="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>
                 </Button>
             </Grid>
@@ -747,85 +754,7 @@
                     <controls:MetadataPanel CurrentImage="{Binding CurrentImage}" MetadataSection="{Binding MetadataSection}">
                     </controls:MetadataPanel>
                 </Grid>
-
-                <!--<StackPanel Orientation="Horizontal" Grid.Row="2" DataContext="{Binding CurrentImage}">
-
-
-                    <Image Height="32" Width="32" Source="../Icons/blue-heart-32.png" Visibility="{Binding Path=Favorite, Converter={StaticResource boolToVisCol}}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=1}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=2}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=3}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=4}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=5}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=6}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=7}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=8}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=9}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Image Height="32" Width="32" Source="../Icons/star-32.png" Visibility="{Binding Path=Rating, Converter={StaticResource intToVis}, ConverterParameter=10}">
-                        <Image.Effect>
-                            <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
-                        </Image.Effect>
-                    </Image>
-
-                    <Border Height="40" Width="40" CornerRadius="5" Background="#90000000" Visibility="{Binding Path=AestheticScore, Converter={StaticResource strToVis}, ConverterParameter=10}">
-                        <Label FontSize="18" FontWeight="Bold" Content="{Binding AestheticScore}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></Label>
-                    </Border>
-
-                </StackPanel>-->
             </Grid>
-
-
-
 
             <GridSplitter x:Name="GridSplitterPreview"  
                           Grid.Row="1"
@@ -840,7 +769,6 @@
             </controls:MetadataPanel>
 
         </Grid>
-
 
         <Popup x:Name="FilterPopup" Placement="Center" Width="800" Height="600"
                IsOpen="{Binding IsFilterVisible}"
@@ -930,6 +858,48 @@
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="1" Height="30" Click="HideSearchSettings_OnClick">Close</Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Popup>
+
+
+        <Popup x:Name="SearchHelpPopup" Placement="Center" Width="800" Height="600"
+               IsOpen="{Binding IsSearchHelpVisible}"
+               KeyDown="SearchHelpPopup_OnKeyDown"
+               AllowsTransparency="True" PopupAnimation="Fade">
+            <Border         
+                BorderBrush="{DynamicResource SecondaryBrush}"
+                Background="{DynamicResource PrimaryBrush}"
+                BorderThickness="2"
+                CornerRadius="10"
+                Padding="2">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                </Border.Effect>
+
+                <Grid Margin="10,0,10,10" DataContext="{Binding DataContext, ElementName=MainGrid}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <mdXaml:MarkdownScrollViewer 
+                        Padding="10"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        Background="White"
+                        ClickAction="OpenBrowser"
+                        MarkdownStyle="{Binding SearchHelpStyle}"
+                        Markdown="{Binding SearchHelpMarkdown}">
+                    </mdXaml:MarkdownScrollViewer>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="1" Height="30" Click="HideSearchHelp_OnClick">Close</Button>
                     </Grid>
                 </Grid>
             </Border>

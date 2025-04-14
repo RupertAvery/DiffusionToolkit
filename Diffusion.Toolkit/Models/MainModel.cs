@@ -118,13 +118,6 @@ public class MainModel : BaseNotify
         set => SetField(ref _openWithCommand, value);
     }
 
-    public ICommand RemoveMarked
-    {
-        get => _removeMarked;
-        set => SetField(ref _removeMarked, value);
-    }
-
-
     public ICommand SettingsCommand
     {
         get => _settingsCommand;

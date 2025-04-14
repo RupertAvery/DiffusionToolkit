@@ -134,7 +134,7 @@ public class ScanningService
 
             var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
 
-            foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected))
+            foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected).ToList())
             {
                 filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(model.Path, new HashSet<string>(), cancellationToken));
             }

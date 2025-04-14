@@ -143,7 +143,8 @@
   "Search.Models": "Models",
   "Search.Albums": "Albums",
   "Search.Favorites": "Favorites",
-  "Search.ForDeletion": "For Deletion",
+  "Search.ForDeletion": "Trash",
+  "Search.ForDeletion.Empty": "Empty Trash",
   "Search.SortBy": "Sort by:",
   "Search.SortBy.DateCreated": "Date Created",
   "Search.SortBy.DateModified": "Date Modified",
@@ -179,6 +180,7 @@
   "Search.LoadPreview.ImageNotFound": "The source image could not be located. This can happen when you move or rename the file outside of Diffusion Toolkit.",
   "Search.LoadPreview.ImageNotFound.Caption": "Load image failed",
   "Search.LoadPreview.MediaUnavailable": "Media unavailable",
+  "Search.Buttons.ShowSearchHelp.ToolTip": "Show Search Help",
   "Search.Buttons.ShowSearchSettings.ToolTip": "Show Search Settings",
   "Search.Buttons.ShowFilter.ToolTip": "Show filter",
   "Search.Buttons.Clear.ToolTip": "Clear",
@@ -347,5 +349,11 @@
   "UnavailableFiles.Results.Removed": "{count} images removed.",
   "UnavailableFiles.Results.MarkedForDeletion": "{count} images marked for deletion / unavailable.",
   "UnavailableFiles.Results.Updated": "{count} images updated.",
-  "UnavailableFiles.Results.Restored": "{count} images restored."
+  "UnavailableFiles.Results.Restored": "{count} images restored.",
+  "Preview.Controls.Slideshow": "Start Slideshow",
+  "Common.Controls.ShowNotifications": "Show/Hide Notifications",
+  "Common.Controls.ShowTags": "Show/Hide Tags",
+  "Common.Controls.AutoAdvance": "Advance on Tag",
+  "SelectAlbum.NewAlbum": "New Album",
+  "SelectAlbum.ExistingAlbum": "Existing Album"
 }

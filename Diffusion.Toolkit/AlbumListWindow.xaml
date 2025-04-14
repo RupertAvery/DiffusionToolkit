@@ -29,9 +29,9 @@
             <RowDefinition></RowDefinition>
             <RowDefinition Height="30"></RowDefinition>
         </Grid.RowDefinitions>
-        <RadioButton Grid.Row="0" VerticalAlignment="Center" IsChecked="{Binding IsNewAlbum}">New Album</RadioButton>
-        <TextBox IsEnabled="{Binding IsNewAlbum}" Grid.Row="1" Margin="3,0" VerticalAlignment="Center" Text="{Binding AlbumName}"></TextBox>
-        <RadioButton Grid.Row="2" VerticalAlignment="Center" IsChecked="{Binding IsExistingAlbum}">Existing Album</RadioButton>
+        <RadioButton Grid.Row="0" VerticalAlignment="Center" IsChecked="{Binding IsNewAlbum}" Content="{lex:Loc SelectAlbum.NewAlbum}"></RadioButton>
+        <TextBox IsEnabled="{Binding IsNewAlbum}" Grid.Row="1" Margin="3,0" VerticalAlignment="Center" Text="{Binding AlbumName, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+        <RadioButton Grid.Row="2" VerticalAlignment="Center" IsChecked="{Binding IsExistingAlbum}"  Content="{lex:Loc SelectAlbum.ExistingAlbum}"></RadioButton>
         <ListBox Grid.Row="3" Margin="3,0" ItemsSource="{Binding Albums}" SelectedItem="{Binding SelectedAlbum}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -44,8 +44,8 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0" Click="Cancel_OnClick">Cancel</Button>
-            <Button Grid.Column="1" Click="OK_OnClick">OK</Button>
+            <Button Grid.Column="0" Click="Cancel_OnClick" Content="{lex:Loc Common.Buttons.Cancel}"></Button>
+            <Button Grid.Column="1" IsEnabled="{Binding CanClickOk}" Click="OK_OnClick" Content="{lex:Loc Common.Buttons.OK}"></Button>
         </Grid>
     </Grid>
 </local:BorderlessWindow>

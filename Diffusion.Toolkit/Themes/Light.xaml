@@ -5,7 +5,7 @@
     <Color x:Key="ControlBackground">White</Color>
     <Color x:Key="Splitter">#C0C0C0</Color>
     <Color x:Key="Focused">#3E5E7C</Color>
-    <Color x:Key="Highlight">#4E7EAC</Color>
+    <Color x:Key="Highlight">#3F658A</Color>
     <Color x:Key="HighlightFocused">#6E9EBC</Color>
     <Color x:Key="BgHighlight">#7E3E5E7C</Color>
     <Color x:Key="DisabledForeground">#3E5E7C</Color>

@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Linq;
+using System.Windows;
 using Diffusion.Database;
 using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
@@ -24,12 +26,28 @@ namespace Diffusion.Toolkit
         {
             _dataStore = dataStore;
             _model = new AlbumListModel();
+            _model.PropertyChanged += ModelOnPropertyChanged;
 
             InitializeComponent();
 
             _model.Escape = new RelayCommand<object>(o => Escape());
-            _model.Albums = dataStore.GetAlbums();
+            _model.Albums = dataStore.GetAlbums().OrderBy(d => d.Name);
             DataContext = _model;
+        }
+
+        private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(AlbumListModel.SelectedAlbum))
+            {
+                _model.IsExistingAlbum = true;
+            }
+
+
+
+            _model.CanClickOk =
+                (_model.IsNewAlbum && (!string.IsNullOrEmpty(_model.AlbumName) && _model.AlbumName.Trim().Length != 0))
+                || (_model.IsExistingAlbum && _model.SelectedAlbum != null);
+
         }
 
         private void Escape()
@@ -40,11 +58,7 @@ namespace Diffusion.Toolkit
 
         private void OK_OnClick(object sender, RoutedEventArgs e)
         {
-            if(!_model.IsNewAlbum && !_model.IsExistingAlbum) return;
 
-            if (_model.IsNewAlbum && (string.IsNullOrEmpty(_model.AlbumName) || _model.AlbumName.Trim().Length == 0)) return;
-
-            if (_model.IsExistingAlbum && _model.SelectedAlbum == null) return;
 
             IsNewAlbum = _model.IsNewAlbum;
             AlbumName = _model.AlbumName;

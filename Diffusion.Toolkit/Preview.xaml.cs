@@ -195,6 +195,17 @@ namespace Diffusion.Toolkit
         {
             StartStopSlideShow();
         }
+
+        private void Star_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ServiceLocator.MainModel.ShowTags = !ServiceLocator.MainModel.ShowTags;
+        }
+
+        private void AutoAdvance_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ServiceLocator.MainModel.AutoAdvance = !ServiceLocator.MainModel.AutoAdvance;
+        }
+
     }
 
 

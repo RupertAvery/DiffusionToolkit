@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using Diffusion.Toolkit.Classes;
@@ -7,6 +9,29 @@ using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit
 {
+    public static class ResourceHelper
+    {
+        public static string GetString(string resourcePath)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            using (Stream resourceStream = assembly.GetManifestResourceStream(resourcePath))
+            {
+                if (resourceStream == null)
+                {
+                    throw new Exception(string.Format(
+                        "Unable to find embedded resource with path of '{0}'.",
+                        resourcePath));
+                }
+
+                using (StreamReader resourceReader = new StreamReader(resourceStream))
+                {
+                    return resourceReader.ReadToEnd();
+                }
+            }
+        }
+    }
+
     public class TipsModel : BaseNotify
     {
         private string _markdown;
@@ -44,7 +69,7 @@ namespace Diffusion.Toolkit
             InitializeComponent();
             var tips = new TipsModel
             {
-                Markdown = File.ReadAllText("Tips.md"),
+                Markdown = ResourceHelper.GetString("Diffusion.Toolkit.Tips.md"),
                 Style = CustomStyles.BetterGithub,
                 Escape = new RelayCommand<object>(o => Close())
             };

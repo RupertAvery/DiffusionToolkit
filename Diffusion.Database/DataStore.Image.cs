@@ -105,7 +105,7 @@ namespace Diffusion.Database
 
         }
 
-        public IEnumerable<ImagePath> GetMarkedImagePaths()
+        public IEnumerable<ImagePath> GetImagesTaggedForDeletion()
         {
             //List<ImagePath> paths = new List<ImagePath>();
 

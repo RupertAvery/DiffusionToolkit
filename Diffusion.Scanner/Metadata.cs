@@ -129,8 +129,6 @@ public class Metadata
             fileParameters.FileSize = fileInfo.Length;
         }
 
-        fileParameters.Hash = Hashing.CalculateHash(file);
-
         return fileParameters;
     }
 
@@ -140,12 +138,24 @@ public class Metadata
 
         var ext = Path.GetExtension(file).ToLowerInvariant();
 
-        using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var stream = new MemoryStream();
+        string hash;
 
+        // Read the entire file into memory since we're going to hash it anyway, and also read metadata
+        using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            // Custom copy with hash to avoid reading the entire stream twice
+            hash = fileStream.CopyAndHash(stream).ToHexString();
+        }
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        // Some PNGs are JPEGs in disguise, read the magic to make sure we have the correct file type
         var fileType = GetFileType(stream);
 
         stream.Seek(0, SeekOrigin.Begin);
 
+        // Now, attempt to read the metadata
         switch (fileType)
         {
             case FileType.PNG:
@@ -286,16 +296,7 @@ public class Metadata
                         }
                     }
 
-                    try
-                    {
-
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
-                    }
-
-
+    
                     if (aestheticScore > 0)
                     {
                         fileParameters ??= new FileParameters();
@@ -330,6 +331,7 @@ public class Metadata
 
                     break;
                 }
+
             case FileType.JPEG:
                 {
                     var format = MetaFormat.Unknown;
@@ -411,6 +413,7 @@ public class Metadata
 
                     break;
                 }
+
             case FileType.WebP:
                 {
                     IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(stream);
@@ -428,10 +431,12 @@ public class Metadata
                 }
         }
 
+        // Nothing matched and we still don't have any metadata
         if (fileParameters == null)
         {
             try
             {
+                // Check if there is a .TXT metadata file (Automatic1111)
                 var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
 
                 if (File.Exists(parameterFile))
@@ -463,9 +468,12 @@ public class Metadata
         // Try to read from Stealth Alpha channel if PNG
         if (fileParameters == null && fileType == FileType.PNG)
         {
-            var metadata = StealthPng.Read(file);
-            return ReadA111Parameters(metadata);
+            stream.Seek(0, SeekOrigin.Begin);
+            var metadata = StealthPng.Read(stream);
+            fileParameters = ReadA111Parameters(metadata);
         }
+
+        fileParameters.Hash = hash;
 
         return fileParameters;
     }

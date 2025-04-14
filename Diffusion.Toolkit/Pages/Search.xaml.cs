@@ -27,6 +27,7 @@ using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 using Diffusion.Database.Models;
 using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.MdStyles;
 using SearchView = Diffusion.Database.SearchView;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
@@ -275,6 +276,7 @@ namespace Diffusion.Toolkit.Pages
             _model.HideDropDown = new RelayCommand<object>((o) => SearchTermTextBox.IsDropDownOpen = false);
 
             _model.ShowFilter = new RelayCommand<object>((o) => ShowFilter());
+            _model.ShowSearchHelp = new RelayCommand<object>((o) => OpenSearchHelp());
             _model.ShowSearchSettings = new RelayCommand<object>((o) => OpenSearchSettings());
             _model.HideFilter = new RelayCommand<object>((o) => _model.IsFilterVisible = false);
             _model.ClearSearch = new RelayCommand<object>((o) => ClearQueryFilter());
@@ -1894,6 +1896,19 @@ namespace Diffusion.Toolkit.Pages
             _model.IsSearchSettingsVisible = false;
         }
 
+
+        private void OpenSearchHelp()
+        {
+            _model.SearchHelpMarkdown = ResourceHelper.GetString("Diffusion.Toolkit.SearchHelp.md");
+            _model.SearchHelpStyle = CustomStyles.BetterGithub;
+            _model.IsSearchHelpVisible = true;
+        }
+
+        private void CloseSearchHelp()
+        {
+            _model.IsSearchHelpVisible = false;
+        }
+
         private void SearchSettingsPopup_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -1918,6 +1933,24 @@ namespace Diffusion.Toolkit.Pages
             var q = ServiceLocator.DataStore.GetQuery(queryModel.Id);
 
             SearchImages(q);
+        }
+
+        private void EmptyTrash_OnClick(object sender, RoutedEventArgs e)
+        {
+            _ = ServiceLocator.FileService.RemoveImagesTaggedForDeletion();
+        }
+
+        private void SearchHelpPopup_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                CloseSearchHelp();
+            }
+        }
+
+        private void HideSearchHelp_OnClick(object sender, RoutedEventArgs e)
+        {
+            CloseSearchHelp();
         }
     }
 

@@ -104,6 +104,18 @@
         </ResourceDictionary>
 
     </UserControl.Resources>
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Shift" Key="D1" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="1"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D2" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="2"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D3" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="3"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D4" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="4"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D5" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="5"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D6" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="6"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D7" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="7"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D8" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="8"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D9" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="9"></KeyBinding>
+        <KeyBinding Modifiers="Shift" Key="D0" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="10"></KeyBinding>
+    </UserControl.InputBindings>
     <Grid  DataContext="{Binding Path=Model, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
         <Grid.RowDefinitions>
             <RowDefinition/>

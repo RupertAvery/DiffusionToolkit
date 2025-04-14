@@ -109,48 +109,7 @@ namespace Diffusion.Toolkit
             _search.ToggleInfo();
         }
 
-        private async Task RemoveMarked(object obj)
-        {
-            var files = _dataStore.GetMarkedImagePaths().ToList();
-            var count = 0;
-
-            var title = GetLocalizedText("Actions.Delete.Caption");
-
-            if (files.Count == 0)
-            {
-                var noFilesMessage = GetLocalizedText("Actions.Delete.NoFiles.Caption");
-                await ServiceLocator.MessageService.Show(noFilesMessage, title);
-                return;
-            }
-
-            var message = ServiceLocator.Settings.PermanentlyDelete
-                ? GetLocalizedText("Actions.Delete.PermanentlyDelete.Message")
-                : GetLocalizedText("Actions.Delete.Delete.Message");
-
-            var result = await ServiceLocator.MessageService.Show(message, title, PopupButtons.YesNo);
-
-            if (result == PopupResult.Yes)
-            {
-                if (await ServiceLocator.ProgressService.TryStartTask())
-                {
-                    try
-                    {
-                        await ServiceLocator.FileService.DeleteFiles(files, ServiceLocator.ProgressService.CancellationToken);
-                    }
-                    finally
-                    {
-                        ServiceLocator.ProgressService.CompleteTask();
-
-                        ServiceLocator.ScanningService.SetTotalFilesStatus();
-
-                        ServiceLocator.SearchService.RefreshResults();
-                    }
-                }
-            }
-            ;
-        }
-
-        private void ShowAbout()
+       private void ShowAbout()
         {
             var welcome = new WelcomeWindow(_settings!);
             welcome.Owner = this;

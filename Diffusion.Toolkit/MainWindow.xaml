@@ -34,16 +34,6 @@
         <KeyBinding Modifiers="Control" Key="D2" Command="{Binding GotoUrl}" CommandParameter="search/#images"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D3" Command="{Binding GotoUrl}" CommandParameter="search/#favorites"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="D4" Command="{Binding GotoUrl}" CommandParameter="search/#deleted"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D1" Command="{Binding OpenWithCommand}" CommandParameter="1"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D2" Command="{Binding OpenWithCommand}" CommandParameter="2"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D3" Command="{Binding OpenWithCommand}" CommandParameter="3"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D4" Command="{Binding OpenWithCommand}" CommandParameter="4"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D5" Command="{Binding OpenWithCommand}" CommandParameter="5"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D6" Command="{Binding OpenWithCommand}" CommandParameter="6"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D7" Command="{Binding OpenWithCommand}" CommandParameter="7"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D8" Command="{Binding OpenWithCommand}" CommandParameter="8"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D9" Command="{Binding OpenWithCommand}" CommandParameter="9"></KeyBinding>
-        <KeyBinding Modifiers="Shift" Key="D0" Command="{Binding OpenWithCommand}" CommandParameter="10"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="R" Command="{Binding Rescan}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleActualSize}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="P" Command="{Binding TogglePreview}"></KeyBinding>
@@ -121,7 +111,6 @@
                 <MenuItem Header="{lex:Loc Menu.Search.RemoveMatching}" Command="{Binding RemoveMatching}"/>
             </MenuItem>
             <MenuItem Header="{lex:Loc Menu.Tools}">
-                <MenuItem Header="{lex:Loc Menu.Tools.EmptyForDeletion}" Command="{Binding RemoveMarked}"/>
                 <MenuItem Header="{lex:Loc Menu.Tools.RebuildMetadata}" Command="{Binding Rebuild}"/>
                 <MenuItem Header="{lex:Loc Menu.Tools.ReloadModels}" Command="{Binding ReloadHashes}"/>
                 <MenuItem Header="{lex:Loc Menu.Tools.DownloadCivitaiModels}" Command="{Binding DownloadCivitai}"/>
@@ -149,7 +138,7 @@
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Horizontal" Grid.Column="1">
                 <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleNotificationsCommand}">
-                    <fa:ImageAwesome ToolTip="Show/Hide Notifications" Icon="Bell" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.ShowNotifications}" Icon="Bell" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <fa:ImageAwesome.Resources>
                             <Style TargetType="fa:ImageAwesome">
                                 <Setter Property="Opacity" Value="0.5"></Setter>
@@ -166,7 +155,7 @@
                     </fa:ImageAwesome>
                 </Button>
                 <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleTagsCommand}">
-                    <fa:ImageAwesome ToolTip="Show/Hide Tags" Icon="Star" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.ShowTags}" Icon="Star" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <fa:ImageAwesome.Resources>
                             <Style TargetType="fa:ImageAwesome">
                                 <Setter Property="Opacity" Value="0.5"></Setter>
@@ -183,7 +172,7 @@
                     </fa:ImageAwesome>
                 </Button>
                 <Button Style="{StaticResource StaticButton}" Margin="0,0,15,0" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleAutoAdvance}">
-                    <fa:ImageAwesome ToolTip="Advance on Tag" Icon="ArrowRight" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.AutoAdvance}" Icon="ArrowRight" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <fa:ImageAwesome.Resources>
                             <Style TargetType="fa:ImageAwesome">
                                 <Setter Property="Opacity" Value="0.5"></Setter>

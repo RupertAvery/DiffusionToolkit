@@ -12,6 +12,8 @@ public class AlbumListModel : BaseNotify
     private bool _isExistingAlbum;
     private Album? _selectedAlbum;
     private IEnumerable<Album> _albums;
+    private bool _canClickOk;
+
     public ICommand Escape { get; set; }
 
     public bool IsNewAlbum
@@ -43,4 +45,11 @@ public class AlbumListModel : BaseNotify
         get => _albums;
         set => SetField(ref _albums, value);
     }
+
+    public bool CanClickOk
+    {
+        get => _canClickOk;
+        set => SetField(ref _canClickOk, value);
+    }
+
 }
