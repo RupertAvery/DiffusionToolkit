@@ -32,7 +32,7 @@ public class SearchModel : BaseNotify
     private ImageViewModel? _currentImage;
     private float _imageOpacity;
     private bool _hideIcons;
-    private ObservableCollection<string?> _searchHistory;
+    private ObservableCollection<string> _searchHistory;
 
     private ICommand? _refresh;
     private ICommand? _focusSearch;
@@ -84,6 +84,7 @@ public class SearchModel : BaseNotify
         _sortBy = "Date Created";
         _sortDirection = "Z-A";
         _isFilterVisible = false;
+        _searchText = "";
         MetadataSection = new MetadataSection();
         NavigationSection = new NavigationSection();
         SearchSettings = new SearchSettings();
@@ -151,13 +152,13 @@ public class SearchModel : BaseNotify
         set => SetField(ref _totalFiles, value);
     }
 
-    public string? SearchText
+    public string SearchText
     {
         get => _searchText;
         set => SetField(ref _searchText, value);
     }
 
-    public ObservableCollection<string?> SearchHistory
+    public ObservableCollection<string> SearchHistory
     {
         get => _searchHistory;
         set

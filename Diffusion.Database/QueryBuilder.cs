@@ -88,13 +88,12 @@ public static partial class QueryBuilder
             );
     }
 
-
-    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) Parse(string? prompt)
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) ParseParameters(string prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
         var joins = new List<string>();
 
-        if (prompt is not null)
+        if (!string.IsNullOrWhiteSpace(prompt))
         {
             ParseAlbum(ref prompt, conditions, joins);
             ParseFolder(ref prompt, conditions, joins);
@@ -120,6 +119,56 @@ public static partial class QueryBuilder
             ParseInAlbum(ref prompt, conditions);
             ParseNoMetadata(ref prompt, conditions);
 
+            //ParseNegativePrompt(ref prompt, conditions);
+            //ParsePrompt(ref prompt, conditions);
+        }
+        
+        return (string.Join(" AND ", conditions.Select(c => c.Key)),
+            conditions.SelectMany(c =>
+            {
+                return c.Value switch
+                {
+                    IEnumerable<object> orConditions => orConditions.Select(o => o),
+                    _ => new[] { c.Value }
+                };
+            }).Where(o => o != null),
+            joins,
+            prompt.Trim()
+            );
+    }
+
+
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) Parse(string prompt)
+    {
+        var conditions = new List<KeyValuePair<string, object>>();
+        var joins = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(prompt))
+        {
+            //ParseAlbum(ref prompt, conditions, joins);
+            //ParseFolder(ref prompt, conditions, joins);
+            //ParsePath(ref prompt, conditions);
+            //ParseDate(ref prompt, conditions);
+            //ParseSeed(ref prompt, conditions);
+            //ParseSteps(ref prompt, conditions);
+            //ParseSampler(ref prompt, conditions);
+            //ParseHash(ref prompt, conditions);
+
+            //ParseModelName(ref prompt, conditions);
+            //ParseModelNameOrHash(ref prompt, conditions);
+
+            //ParseCFG(ref prompt, conditions);
+            //ParseSize(ref prompt, conditions);
+            //ParseAestheticScore(ref prompt, conditions);
+            //ParseRating(ref prompt, conditions);
+            //ParseHypernet(ref prompt, conditions);
+            //ParseHypernetStrength(ref prompt, conditions);
+            //ParseFavorite(ref prompt, conditions);
+            //ParseForDeletion(ref prompt, conditions);
+            //ParseNSFW(ref prompt, conditions);
+            //ParseInAlbum(ref prompt, conditions);
+            //ParseNoMetadata(ref prompt, conditions);
+
             ParseNegativePrompt(ref prompt, conditions);
             ParsePrompt(ref prompt, conditions);
         }
@@ -142,7 +191,7 @@ public static partial class QueryBuilder
                 };
             }).Where(o => o != null),
             joins,
-            prompt
+            prompt.Trim()
             );
     }
 

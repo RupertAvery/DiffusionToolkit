@@ -11,7 +11,7 @@ namespace Diffusion.Database
             _models = models;
         }
 
-        public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<string> Joins) Filter(Filter filter)
+        public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<string> Joins) PreFilter(Filter filter)
         {
             var conditions = new List<KeyValuePair<string, object>>();
             var joins = new List<string>();
@@ -55,6 +55,69 @@ namespace Diffusion.Database
             FilterNoMetadata(filter, conditions);
             FilterInAlbum(filter, conditions);
             FilterUnavailable(filter, conditions);
+
+            //FilterNegativePrompt(filter, conditions);
+            //FilterPrompt(filter, conditions);
+
+            //FilterNegativePromptEx(filter, conditions);
+            //FilterPromptEx(filter, conditions);
+
+            return (string.Join(" AND ", conditions.Select(c => c.Key)),
+                conditions.SelectMany(c =>
+                {
+                    return c.Value switch
+                    {
+                        IEnumerable<object> orConditions => orConditions.Select(o => o),
+                        _ => new[] { c.Value }
+                    };
+                }).Where(o => o != null),
+                joins);
+        }
+
+        public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<string> Joins) Filter(Filter filter)
+        {
+            var conditions = new List<KeyValuePair<string, object>>();
+            var joins = new List<string>();
+
+            //if (HideNSFW && !filter.UseNSFW)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+            //    filter.UseNSFW = false;
+            //}
+
+            //if (HideDeleted && !filter.UseForDeletion)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", false));
+            //    filter.UseForDeletion = false;
+            //}
+
+            //if (HideUnavailable && !filter.UseUnavailable)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(Unavailable = ?)", false));
+            //    filter.UseUnavailable = false;
+            //}
+
+            //FilterAlbum(filter, conditions, joins);
+            //FilterFolder(filter, conditions, joins);
+            //FilterPath(filter, conditions);
+            //FilterDate(filter, conditions);
+            //FilterSeed(filter, conditions);
+            //FilterSteps(filter, conditions);
+            //FilterSampler(filter, conditions);
+            //FilterHash(filter, conditions);
+            //FilterModelName(filter, conditions);
+            //FilterCFG(filter, conditions);
+            //FilterSize(filter, conditions);
+            //FilterAestheticScore(filter, conditions);
+            //FilterRating(filter, conditions);
+            //FilterHypernet(filter, conditions);
+            //FilterHypernetStrength(filter, conditions);
+            //FilterFavorite(filter, conditions);
+            //FilterForDeletion(filter, conditions);
+            //FilterNSFW(filter, conditions);
+            //FilterNoMetadata(filter, conditions);
+            //FilterInAlbum(filter, conditions);
+            //FilterUnavailable(filter, conditions);
 
             FilterNegativePrompt(filter, conditions);
             FilterPrompt(filter, conditions);

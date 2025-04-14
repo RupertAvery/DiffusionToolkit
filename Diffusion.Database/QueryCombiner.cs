@@ -80,7 +80,13 @@ public static class QueryCombiner
 
     public static (string Query, IEnumerable<object> Bindings) Parse(QueryOptions options)
     {
-        var q = QueryBuilder.Parse(options.Query);
+        var r = QueryBuilder.ParseParameters(options.Query);
+
+        var where0Clause = r.WhereClause is { Length: > 0 } ? $" WHERE {r.WhereClause}" : "";
+
+        var query0 = $"SELECT m1.Id FROM Image m1 {string.Join(' ', r.Joins)} {where0Clause}";
+
+        var q = QueryBuilder.Parse(r.TextPrompt);
 
         var where1Clause = q.WhereClause is { Length: > 0 } ? $" WHERE {q.WhereClause}" : "";
 
@@ -100,6 +106,11 @@ public static class QueryCombiner
             bindings = bindings.Concat(p.Bindings);
         }
 
+        query += " INTERSECT " +
+                 $"{query0}";
+
+        bindings = bindings.Concat(r.Bindings);
+
         ApplyFilters(ref query, ref bindings, options);
 
         return (query, bindings);
@@ -113,6 +124,12 @@ public static class QueryCombiner
             filter.UseForDeletion = false;
         }
 
+        var r = QueryBuilder.PreFilter(filter);
+
+        var where0Clause = r.WhereClause is { Length: > 0 } ? $" WHERE {r.WhereClause}" : "";
+
+        var query0 = $"SELECT m1.Id FROM Image m1 {string.Join(' ', r.Joins)} {where0Clause}";
+
         var q = QueryBuilder.Filter(filter);
 
         var where1Clause = q.WhereClause is { Length: > 0 } ? $" WHERE {q.WhereClause}" : "";
@@ -125,11 +142,16 @@ public static class QueryCombiner
         {
             var p = ComfyUIQueryBuilder.Filter(filter);
 
-            query = (where1Clause.Length > 0 ? query + " INTERSECT " : "") +
+            query = (where1Clause.Length > 0 ? query + " UNION " : "") +
                      $"SELECT Id FROM ({p.Query})";
 
             bindings = bindings.Concat(p.Bindings);
         }
+
+        query += " INTERSECT " +
+                 $"{query0}";
+
+        bindings = bindings.Concat(r.Bindings);
 
         ApplyFilters(ref query, ref bindings, options);
 

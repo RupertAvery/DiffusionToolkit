@@ -124,9 +124,18 @@ You can query `seed`, with a number, a range, or wildcards.
 ### Size
 
 * `size: <width>x<height>` 
-* `size: <width>:<height>` 
   
   `width` and `height` can be a number or a question mark (`?`) to match any value. e.g. `size:512x?` will match images with a width of `512` and any height.
+
+* `size: <width>:<height>` (ratio e.g 16:9)
+
+* `size: <orientation>`
+
+   `orientation` can be one of the following:
+
+   * `landscape`
+   * `portrait`
+   * `square`
 
 ### Model Hash
 
@@ -286,7 +295,7 @@ Pressing the Filter button will bring up the Filter dialog, with the **Metadata*
 
 ## Metadata tab
 
-Here you can select what parameters you want to filter on. Here, commas in the Prompt text boxes aren't parsed separately, they will be used as-is, so you can only search for specific prompts.  
+Here you can select what parameters you want to filter on. The Prompt is [parsed](#prompt-querying) the same way as in the query.
 
 Make sure the checkbox next to the parameter you want to search on is checked, otherwise it will be ignored.
 
