@@ -690,7 +690,6 @@
                                         PageChangedCommand="{Binding PageChangedCommand}"
                                         SelectedImageEntry="{Binding SelectedImageEntry, Mode=TwoWay}"
                                         OpenCommand="{Binding OpenCommand}"
-                                        Albums="{Binding MainModel.Albums}"
                                         AddAlbumCommand="{Binding MainModel.AddAlbumCommand}"
                                         AddToAlbumCommand="{Binding MainModel.AddToAlbumCommand}"
                                         RemoveFromAlbumCommand="{Binding MainModel.RemoveFromAlbumCommand}"

@@ -63,11 +63,9 @@ public class ThumbnailViewModel : BaseNotify
     private ICommand _moveCommand;
     private ICommand _copyCommand;
     private int _thumbnailSize;
-    private ObservableCollection<Control> _albumMenuItems;
     private ViewMode _viewMode;
     private int _pageSize;
     private ICommand _expandToFolderCommand;
-    private ObservableCollection<Control> _selectionAlbumMenuItems;
     
     public ThumbnailViewModel()
     {
@@ -398,19 +396,6 @@ public class ThumbnailViewModel : BaseNotify
         get => _viewMode;
         set => SetField(ref _viewMode, value);
     }
-
-    public ObservableCollection<Control> AlbumMenuItems
-    {
-        get => _albumMenuItems;
-        set => SetField(ref _albumMenuItems, value);
-    }
-
-    public ObservableCollection<Control> SelectionAlbumMenuItems
-    {
-        get => _selectionAlbumMenuItems;
-        set => SetField(ref _selectionAlbumMenuItems, value);
-    }
-
 
     public int PageSize
     {

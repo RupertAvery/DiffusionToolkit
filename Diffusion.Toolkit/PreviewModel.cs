@@ -43,5 +43,6 @@ public class PreviewModel : BaseNotify
     public ICommand ToggleInfo { get; set; }
     public ICommand ToggleFullScreen { get; set; }
 
+    public ICommand OpenWithCommand { get; set; }
     public MainModel MainModel => ServiceLocator.MainModel;
 }

@@ -39,6 +39,8 @@ public class ContextMenuService
 
         if (ServiceLocator.ExternalApplicationsService.HasExternalApplications)
         {
+            var window = ServiceLocator.WindowService.CurrentWindow;
+
             var index = 1;
             foreach (var externalApplication in ServiceLocator.ExternalApplicationsService.ExternalApplications)
             {
@@ -56,7 +58,7 @@ public class ContextMenuService
 
                 menuItem.Click += (o, eventArgs) =>
                 {
-                    _ = ServiceLocator.ExternalApplicationsService.OpenWith(externalApplication);
+                    _ = ServiceLocator.ExternalApplicationsService.OpenWith(window, externalApplication);
                 };
 
                 index++;

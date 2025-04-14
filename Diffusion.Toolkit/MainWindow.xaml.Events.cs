@@ -256,9 +256,9 @@ namespace Diffusion.Toolkit
             }
         }
 
-        private async Task OpenWith(string? arg)
+        private async Task OpenWith(object sender, string? arg)
         {
-            await ServiceLocator.ExternalApplicationsService.OpenWith(int.Parse(arg));
+            await ServiceLocator.ExternalApplicationsService.OpenWith(sender, int.Parse(arg));
         }
 
     }

@@ -5,6 +5,7 @@ using Diffusion.Toolkit.Models;
 using System;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -60,6 +61,7 @@ namespace Diffusion.Toolkit
             //_slideShowDelay = mainModel.Settings.SlideShowDelay;
             _model.ToggleFullScreen = new RelayCommand<object>((o) => ToggleFullScreen());
             _model.StartStopSlideShow = new RelayCommand<object>((o) => StartStopSlideShow());
+            _model.OpenWithCommand = new AsyncCommand<string>((o) => OpenWith(this, o));
 
             Closing += OnClosing;
         }
@@ -206,6 +208,10 @@ namespace Diffusion.Toolkit
             ServiceLocator.MainModel.AutoAdvance = !ServiceLocator.MainModel.AutoAdvance;
         }
 
+        private async Task OpenWith(object sender, string? arg)
+        {
+            await ServiceLocator.ExternalApplicationsService.OpenWith(sender, int.Parse(arg));
+        }
     }
 
 

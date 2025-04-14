@@ -7,6 +7,7 @@
        xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
        xmlns:fa="http://schemas.fontawesome.io/icons/"
        xmlns:lex="http://wpflocalizeextension.codeplex.com"
+       xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
        lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
        lex:LocalizeDictionary.Separation="."
        lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
@@ -94,9 +95,9 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding UseSteps}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Steps}"></CheckBox>
-                            <TextBox Text="{Binding Steps}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
-             ToolTip="Separate multiple values with commas"
-             ></TextBox>
+                            <TextBox behaviors:DTBehaviors.SelectOnFocus="True"  VerticalContentAlignment="Center" Text="{Binding Steps}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
+                                     ToolTip="Separate multiple values with commas"
+                            ></TextBox>
                         </Grid>
                         <Grid Margin="0,0,0,5">
                             <Grid.ColumnDefinitions>
@@ -104,9 +105,9 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding UseSampler}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Sampler}"></CheckBox>
-                            <TextBox Text="{Binding Sampler}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
-             ToolTip="Separate multiple values with commas"
-             ></TextBox>
+                            <TextBox behaviors:DTBehaviors.SelectOnFocus="True"  VerticalContentAlignment="Center" Text="{Binding Sampler}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
+                                     ToolTip="Separate multiple values with commas"
+                            ></TextBox>
                         </Grid>
                         <Grid Margin="0,0,0,5">
                             <Grid.ColumnDefinitions>
@@ -114,9 +115,9 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding UseCFGScale}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.CFGScale}"></CheckBox>
-                            <TextBox Text="{Binding CFGScale}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
-             ToolTip="Separate multiple values with commas"
-             ></TextBox>
+                            <TextBox behaviors:DTBehaviors.SelectOnFocus="True"  VerticalContentAlignment="Center" Text="{Binding CFGScale}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"
+                                     ToolTip="Separate multiple values with commas"
+                            ></TextBox>
                         </Grid>
                         <Grid Margin="0,0,0,5">
                             <Grid.ColumnDefinitions>
@@ -125,9 +126,26 @@
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding UseSeed}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Seed}"></CheckBox>
                             <StackPanel Orientation="Horizontal" Grid.Column="1" >
-                                <TextBox Text="{Binding SeedStart}" KeyDown="UIElement_OnKeyDown" Height="20" Width="100"></TextBox>
+                                <TextBox behaviors:DTBehaviors.SelectOnFocus="True" VerticalContentAlignment="Center" Text="{Binding SeedStart}" KeyDown="UIElement_OnKeyDown" Height="20" Width="100"></TextBox>
                                 <Label>to</Label>
-                                <TextBox Text="{Binding SeedEnd}" KeyDown="UIElement_OnKeyDown" Height="20" Width="100"></TextBox>
+                                <TextBox behaviors:DTBehaviors.SelectOnFocus="True" VerticalContentAlignment="Center" Text="{Binding SeedEnd}" KeyDown="UIElement_OnKeyDown" Height="20" Width="100"></TextBox>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Margin="0,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <CheckBox IsChecked="{Binding UseSize}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Size}"></CheckBox>
+                            <StackPanel Orientation="Horizontal" Grid.Column="1" >
+                                <TextBox behaviors:DTBehaviors.SelectOnFocus="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Text="{Binding Width}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
+                                <Label>x</Label>
+                                <TextBox behaviors:DTBehaviors.SelectOnFocus="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Text="{Binding Height}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
+                                <RadioButton Margin="10,0,0,0" VerticalAlignment="Center" Click="ButtonBase_OnClick" GroupName="SizeType" IsChecked="{Binding SizeOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='pixels'}">Pixels</RadioButton>
+                                <RadioButton Margin="10,0,0,0" VerticalAlignment="Center" Click="ButtonBase_OnClick" GroupName="SizeType" IsChecked="{Binding SizeOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='ratio'}">Ratio</RadioButton>
+                                <RadioButton Margin="10,0,0,0" VerticalAlignment="Center" Click="ButtonBase_OnClick" GroupName="SizeType" IsChecked="{Binding SizeOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='landscape'}">Landscape</RadioButton>
+                                <RadioButton Margin="10,0,0,0" VerticalAlignment="Center" Click="ButtonBase_OnClick" GroupName="SizeType" IsChecked="{Binding SizeOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='portrait'}">Portrait</RadioButton>
+                                <RadioButton Margin="10,0,0,0" VerticalAlignment="Center" Click="ButtonBase_OnClick" GroupName="SizeType" IsChecked="{Binding SizeOp, Mode=TwoWay, Converter={StaticResource isStrValueBool}, ConverterParameter='square'}">Square</RadioButton>
                             </StackPanel>
                         </Grid>
                         <Grid Margin="0,0,0,5">
@@ -135,13 +153,7 @@
                                 <ColumnDefinition Width="130"/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
-                            <CheckBox IsChecked="{Binding UseSize}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Size}"></CheckBox>
-                            <StackPanel Orientation="Horizontal" Grid.Column="1" >
-                                <TextBox Text="{Binding Width}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
-                                <Label>x</Label>
-                                <TextBox Text="{Binding Height}" KeyDown="UIElement_OnKeyDown" Height="20" Width="50"></TextBox>
-                                <Label Content="{lex:Loc Filter.Metadata.SizeWildCard}"></Label>
-                            </StackPanel>
+                            <Label Grid.Column="1" Content="{lex:Loc Filter.Metadata.SizeWildCard}"></Label>
                         </Grid>
                         <Grid Margin="0,0,0,5">
                             <Grid.ColumnDefinitions>
@@ -149,7 +161,7 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding UseModelHash}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.ModelHash}"></CheckBox>
-                            <TextBox Text="{Binding ModelHash}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
+                            <TextBox VerticalContentAlignment="Center" Text="{Binding ModelHash}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
                         </Grid>
                         <Grid Margin="0,0,0,5">
                             <Grid.ColumnDefinitions>
@@ -219,7 +231,7 @@
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding UsePath}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Path}"></CheckBox>
-                            <TextBox Text="{Binding Path}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
+                            <TextBox VerticalContentAlignment="Center" Text="{Binding Path}" KeyDown="UIElement_OnKeyDown" Grid.Column="1" Height="20"></TextBox>
                         </Grid>
                         <Grid Margin="0,0,0,5">
                             <Grid.ColumnDefinitions>
@@ -228,9 +240,9 @@
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding UseCreationDate}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.CreatedDate}"></CheckBox>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                <DatePicker SelectedDate="{Binding Start}" ></DatePicker>
+                                <DatePicker VerticalContentAlignment="Center" SelectedDate="{Binding Start}" ></DatePicker>
                                 <Label>to</Label>
-                                <DatePicker SelectedDate="{Binding End}" ></DatePicker>
+                                <DatePicker VerticalContentAlignment="Center" SelectedDate="{Binding End}" ></DatePicker>
                             </StackPanel>
                         </Grid>
                         <Grid Margin="0,0,0,5">

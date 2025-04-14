@@ -229,16 +229,6 @@ namespace Diffusion.Toolkit.Controls
                     FrameworkPropertyMetadataOptions.None,
                     propertyChangedCallback: PropertyChangedCallback));
 
-        public static readonly DependencyProperty AlbumsProperty =
-            DependencyProperty.Register(
-                name: nameof(Albums),
-                propertyType: typeof(ObservableCollection<AlbumModel>),
-                ownerType: typeof(ThumbnailView),
-                typeMetadata: new FrameworkPropertyMetadata(
-                    defaultValue: null,
-                    FrameworkPropertyMetadataOptions.None,
-                    propertyChangedCallback: PropertyChangedCallback));
-
         public static readonly DependencyProperty SelectedImagesProperty =
             DependencyProperty.Register(
                 name: nameof(SelectedImages),
@@ -308,9 +298,6 @@ namespace Diffusion.Toolkit.Controls
                         thumbnailView.Model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => thumbnailView.DeleteSelected());
                         thumbnailView.Model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => thumbnailView.FavoriteSelected());
                         break;
-                    case nameof(Albums):
-                        thumbnailView.ReloadAlbums();
-                        break;
                 }
             }
 
@@ -322,18 +309,11 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(SelectedImagesProperty, value);
         }
 
-        public ObservableCollection<AlbumModel> Albums
-        {
-            get => (ObservableCollection<AlbumModel>)GetValue(AlbumsProperty);
-            set => SetValue(AlbumsProperty, value);
-        }
-
         public bool IsEmpty
         {
             get => (bool)GetValue(IsEmptyProperty);
             set => SetValue(IsEmptyProperty, value);
         }
-
 
         public bool IsBusy
         {
@@ -476,21 +456,7 @@ namespace Diffusion.Toolkit.Controls
             {
                 Dispatcher.Invoke(() =>
                 {
-                    Model.SelectionAlbumMenuItems = new ObservableCollection<Control>();
-
-                    var ids = SelectedImages.Select(d => d.Id).ToList();
-
-                    if (ids.Any())
-                    {
-                        var albums = ServiceLocator.DataStore.GetImageAlbums(ids);
-
-                        foreach (var album in albums)
-                        {
-                            var menuItem = new MenuItem() { Header = album.Name, Tag = album };
-                            menuItem.Click += RemoveFromAlbum_OnClick;
-                            Model.SelectionAlbumMenuItems.Add(menuItem);
-                        }
-                    }
+                    ServiceLocator.AlbumService.UpdateSelectedImageAlbums();
                 });
             });
         }

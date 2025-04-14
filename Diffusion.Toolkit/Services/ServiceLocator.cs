@@ -13,17 +13,31 @@ using Diffusion.Toolkit.Classes;
 
 namespace Diffusion.Toolkit.Services;
 
+public class WindowService
+{
+    private Window _window;
+
+    public Window CurrentWindow => _window;
+
+    public void SetWindow(Window window)
+    {
+        _window = window;
+    }
+}
+
 public class ServiceLocator
 {
-    private static FileService _fileService;
-    private static NavigatorService _navigatorService;
-    private static ExternalApplicationsService _externalApplicationsService;
-    private static ThumbnailService _thumbnailService;
+    private static WindowService? _windowService;
+    private static AlbumService? _albumService;
+    private static FileService? _fileService;
+    private static NavigatorService? _navigatorService;
+    private static ExternalApplicationsService? _externalApplicationsService;
+    private static ThumbnailService? _thumbnailService;
     private static DatabaseWriterService? _databaseWriterService;
     private static MetadataScannerService? _metadataScannerService;
-    private static FolderService _folderService;
-    private static MessageService _messageServuce;
-    private static ProgressService _progressService;
+    private static FolderService? _folderService;
+    private static MessageService? _messageServuce;
+    private static ProgressService? _progressService;
     private static DataStore? _dataStore;
 
     private static NavigationService? _navigationService;
@@ -60,7 +74,7 @@ public class ServiceLocator
         _navigatorService = navigatorService;
     }
 
-public static PreviewService PreviewService
+    public static PreviewService PreviewService
     {
         get { return _previewService ??= new PreviewService(); }
     }
@@ -133,7 +147,7 @@ public static PreviewService PreviewService
 
     public static ExternalApplicationsService ExternalApplicationsService
     {
-        get { return _externalApplicationsService ?? new ExternalApplicationsService(); }
+        get { return _externalApplicationsService ??= new ExternalApplicationsService(); }
     }
 
     public static NavigatorService NavigatorService
@@ -143,7 +157,17 @@ public static PreviewService PreviewService
 
     public static FileService FileService
     {
-        get { return _fileService ?? new FileService(); }
+        get { return _fileService ??= new FileService(); }
+    }
+
+    public static AlbumService AlbumService
+    {
+        get { return _albumService ??= new AlbumService(); }
+    }
+
+    public static WindowService WindowService
+    {
+        get { return _windowService ??= new WindowService(); }
     }
 }
 

@@ -209,36 +209,38 @@ namespace Diffusion.Database
         
         public Image GetImage(int id)
         {
-            using var db = OpenConnection();
-
+            var db = OpenReadonlyConnection();
 
             var image = db.FindWithQuery<Image>($"SELECT Image.* FROM Image WHERE Id = ?", id);
-
-            db.Close();
 
             return image;
         }
 
+        public IEnumerable<ImageView> GetImagesView(IEnumerable<int> ids)
+        {
+            var db = OpenReadonlyConnection();
+
+            var selectedIds = InsertIds(db, "SelectedIds", ids);
+
+            return db.Query<ImageView>($"SELECT main.Id, Path, {columns}, (SELECT COUNT(1) FROM AlbumImage WHERE ImageId = main.Id) AS AlbumCount FROM Image main WHERE Id IN {selectedIds}");
+        }
+
         public IEnumerable<Album> GetImageAlbums(int id)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var albums = db.Query<Album>($"SELECT Album.* FROM Image INNER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id INNER JOIN Album ON AlbumImage.AlbumId = Album.Id WHERE Image.Id = ?", id);
-
-            db.Close();
 
             return albums;
         }
 
         public IEnumerable<Album> GetImageAlbums(IEnumerable<int> ids)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             InsertIds(db, "SelectedIds", ids);
 
             var albums = db.Query<Album>($"SELECT DISTINCT Album.* FROM Image INNER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id INNER JOIN Album ON AlbumImage.AlbumId = Album.Id WHERE Image.Id IN (SELECT Id FROM SelectedIds)");
-
-            db.Close();
 
             return albums;
         }
@@ -246,7 +248,7 @@ namespace Diffusion.Database
 
         public IEnumerable<Image> QueryAll()
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var query = $"SELECT Image.* FROM Image";
 
@@ -256,8 +258,6 @@ namespace Diffusion.Database
             {
                 yield return image;
             }
-
-            db.Close();
         }
 
 

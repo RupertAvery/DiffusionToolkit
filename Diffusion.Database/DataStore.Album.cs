@@ -16,6 +16,17 @@ namespace Diffusion.Database
             return lists;
         }
 
+        public AlbumListItem GetAlbumView(int id)
+        {
+            using var db = OpenConnection();
+
+            var lists = db.Query<AlbumListItem>($"SELECT A.Id, A.Name, A.[Order], A.LastUpdated, (SELECT COUNT(1) FROM {nameof(AlbumImage)} AI WHERE A.Id = AI.AlbumId) AS ImageCount FROM {nameof(Album)} A WHERE A.Id = ?", id);
+
+            db.Close();
+
+            return lists[0];
+        }
+
         public IEnumerable<Album> GetAlbums()
         {
             using var db = OpenConnection();

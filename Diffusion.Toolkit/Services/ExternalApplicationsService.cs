@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 
@@ -16,15 +17,15 @@ public class ExternalApplicationsService
 
     public bool HasExternalApplications => ServiceLocator.Settings.ExternalApplications is { Count: > 0 };
 
-    public async Task OpenWith(int index)
+    public async Task OpenWith(object sender, int index)
     {
         if (HasExternalApplications && index <= ServiceLocator.Settings.ExternalApplications.Count)
         {
-            await OpenWith(ServiceLocator.Settings.ExternalApplications[index - 1]);
+            await OpenWith(sender, ServiceLocator.Settings.ExternalApplications[index - 1]);
         }
     }
 
-    public async Task OpenWith(ExternalApplication externalApplication)
+    public async Task OpenWith(object sender, ExternalApplication externalApplication)
     {
         string args = "%1";
 
@@ -51,6 +52,18 @@ public class ExternalApplicationsService
                 };
 
                 Process.Start(ps);
+
+                if (sender is Window window)
+                {
+                    // Attempt to steal focus from the application
+                    Task.Delay(200).ContinueWith((t) =>
+                    {
+                        window.Dispatcher.Invoke(() =>
+                        {
+                            window.Activate();
+                        });
+                    });
+                }
             });
         }
         else

@@ -89,7 +89,7 @@ namespace Diffusion.Toolkit.Pages
 
         }
     }
-    
+
     public partial class Search : NavigationPage
     {
         private readonly SearchModel _model;
@@ -490,7 +490,7 @@ namespace Diffusion.Toolkit.Pages
                 switch (args.PropertyName)
                 {
                     case nameof(MainModel.Albums):
-                        ThumbnailListView.ReloadAlbums();
+                        ServiceLocator.AlbumService.ReloadContextMenus();
                         break;
                 }
             };
@@ -930,7 +930,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     if (d.IsFaulted)
                     {
-                        ServiceLocator.MessageService.ShowMessage(d.Exception.Message, "An error occured while searching");
+                        ServiceLocator.MessageService.Show(d.Exception.Message, "An error occured while searching", PopupButtons.OK);
                         _model.IsBusy = false;
                     }
                 });
@@ -1038,7 +1038,11 @@ namespace Diffusion.Toolkit.Pages
                 var imageViewModel = new ImageViewModel();
                 imageViewModel.IsParametersVisible = old;
                 imageViewModel.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
-                imageViewModel.OpenAlbumCommand = new RelayCommand<Album>(OpenAlbum);
+                imageViewModel.OpenAlbumCommand = new RelayCommand<Album>((o) =>
+                {
+                    var albumModel = ServiceLocator.MainModel.Albums.First(d => d.Id == o.Id);
+                    OpenAlbum(albumModel);
+                });
                 imageViewModel.RemoveFromAlbumCommand = new RelayCommand<Album>(RemoveFromAlbum);
 
                 if (image != null)
@@ -1217,6 +1221,9 @@ namespace Diffusion.Toolkit.Pages
                                 CursorPosition.End => _model.Images[lastIndex],
                                 _ => _model.Images[0]
                             };
+
+                            ServiceLocator.MainModel.SelectedImages.Clear();
+                            ServiceLocator.MainModel.SelectedImages.Add(_model.SelectedImageEntry);
 
                             //ThumbnailListView.SelectedImageEntry = _model.SelectedImageEntry;
                         }
@@ -1520,7 +1527,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.CurrentMode = mode;
             _model.CurrentViewMode = _currentModeSettings.ViewMode;
-            _model.SearchText = _currentModeSettings.LastQuery;
+            //_model.SearchText = _currentModeSettings.LastQuery;
 
             _model.SearchHistory = new ObservableCollection<string?>(_currentModeSettings.History);
 
@@ -1765,21 +1772,7 @@ namespace Diffusion.Toolkit.Pages
         private void Album_OnClick(object sender, RoutedEventArgs e)
         {
             var albumModel = ((AlbumModel)((FrameworkElement)sender).DataContext);
-
-            ServiceLocator.MainModel.CurrentAlbum = albumModel;
-
-            foreach (var album in ServiceLocator.MainModel.Albums)
-            {
-                album.IsTicked = false;
-            }
-
-            albumModel.IsTicked = true;
-
-            var selectedAlbums = ServiceLocator.MainModel.Albums.Where(d => d.IsTicked).ToList();
-            ServiceLocator.MainModel.SelectedAlbumsCount = selectedAlbums.Count;
-            ServiceLocator.MainModel.HasSelectedAlbums = selectedAlbums.Any();
-
-            SearchImages(null);
+            OpenAlbum(albumModel);
         }
 
         private void AlbumCheck_OnClick(object sender, RoutedEventArgs e)
@@ -1816,24 +1809,28 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void OpenAlbum(Album album)
+        private void OpenAlbum(AlbumModel albumModel)
         {
-            var albumModel = new AlbumModel()
+            ServiceLocator.MainModel.CurrentAlbum = albumModel;
+
+            foreach (var album in ServiceLocator.MainModel.Albums)
             {
-                Id = album.Id,
-                Name = album.Name,
-            };
+                album.IsTicked = false;
+            }
 
-            _model.MainModel.CurrentAlbum = albumModel;
+            albumModel.IsTicked = true;
 
-            SetView("albums", _model.MainModel.CurrentAlbum.Name);
+            var selectedAlbums = ServiceLocator.MainModel.Albums.Where(d => d.IsTicked).ToList();
+            ServiceLocator.MainModel.SelectedAlbumsCount = selectedAlbums.Count;
+            ServiceLocator.MainModel.HasSelectedAlbums = selectedAlbums.Any();
+
             SearchImages(null);
         }
 
         private void RemoveFromAlbum(Album albumModel)
         {
             ServiceLocator.DataStore.RemoveImagesFromAlbum(albumModel.Id, new[] { _model.CurrentImage.Id });
-            ReloadMatches(null);
+            UpdateImagesInPlace();
         }
 
         private void DropImagesOnFolder(object sender, DragEventArgs e)
@@ -1951,6 +1948,31 @@ namespace Diffusion.Toolkit.Pages
         private void HideSearchHelp_OnClick(object sender, RoutedEventArgs e)
         {
             CloseSearchHelp();
+        }
+
+        public void UpdateImagesInPlace()
+        {
+            if (_model.Images != null)
+            {
+                var ids = _model.Images.Select(d => d.Id).ToList();
+
+                var updatedImages = ServiceLocator.DataStore.GetImagesView(ids);
+
+                var imageLookup = _model.Images.ToDictionary(d => d.Id);
+
+                foreach (var image in updatedImages)
+                {
+                    if (imageLookup.TryGetValue(image.Id, out var img))
+                    {
+                        img.AlbumCount = image.AlbumCount;
+                    }
+                }
+            }
+
+            if (_model.CurrentImage != null)
+            {
+                _model.CurrentImage.Albums = ServiceLocator.DataStore.GetImageAlbums(_model.CurrentImage.Id);
+            }
         }
     }
 

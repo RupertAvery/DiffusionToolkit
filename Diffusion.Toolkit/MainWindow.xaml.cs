@@ -106,6 +106,7 @@ namespace Diffusion.Toolkit
 
                 SystemEvents.UserPreferenceChanged += SystemEventsOnUserPreferenceChanged;
 
+                ServiceLocator.WindowService.SetWindow(this);
 
                 _model = new MainModel();
                 _model.CurrentProgress = 0;
@@ -114,7 +115,7 @@ namespace Diffusion.Toolkit
                 ServiceLocator.MainModel = _model;
                 ServiceLocator.Dispatcher = Dispatcher;
 
-                _model.OpenWithCommand = new AsyncCommand<string>(OpenWith);
+                _model.OpenWithCommand = new AsyncCommand<string>((o) => OpenWith(this, o));
                 _model.Rescan = new AsyncCommand<object>(RescanTask);
                 _model.Rebuild = new AsyncCommand<object>(RebuildTask);
                 _model.ReloadHashes = new AsyncCommand<object>(async (o) =>

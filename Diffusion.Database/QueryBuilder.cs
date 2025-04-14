@@ -29,7 +29,7 @@ public static partial class QueryBuilder
 
     private static readonly Regex HashRegex = new Regex("\\b(?:model_hash|model hash):\\s*([0-9a-f]+)(?:\\s*\\|\\s*([0-9a-f]+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex CfgRegex = new Regex("\\b(?:cfg|cfg_scale|cfg scale):\\s*(\\d+(?:\\.\\d+)?)(?:\\s*\\|\\s*(\\d+(?:\\.\\d+)?))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex SizeRegex = new Regex("\\bsize:\\s*((?:(?<width>\\d+|\\?)\\s*x\\s*(?<height>\\d+|\\?))|(?:(?<width>\\d+|\\?)\\s*:\\s*(?<height>\\d+|\\?)))[\\b]?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex SizeRegex = new Regex("\\bsize:\\s*((?<width>\\d+|\\?)\\s*x\\s*(?<height>\\d+|\\?)|(?<orientation>portrait|landscape|square)|(?<ratio>\\d+:\\d+))[\\b]?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
     private static readonly Regex NumericRegex = new Regex("\\d+");
 
 
@@ -468,18 +468,47 @@ public static partial class QueryBuilder
         {
             prompt = SizeRegex.Replace(prompt, String.Empty);
 
-            var height = match.Groups["height"].Value;
-            if (NumericRegex.IsMatch(height))
+            if (match.Groups["ratio"].Success)
             {
-                conditions.Add(new KeyValuePair<string, object>("(Height = ?)", int.Parse(height, CultureInfo.InvariantCulture)));
-            }
+                var ratio = match.Groups["ratio"].Value.Split(":");
 
-            var width = match.Groups["width"].Value;
-            if (NumericRegex.IsMatch(width))
+                var values = ratio.Select(float.Parse).Cast<object>().AsEnumerable();
+
+                conditions.Add(new KeyValuePair<string, object>(
+                    "(CAST(Width as REAL) / CAST(Height as REAL)) = (CAST(? as REAL) / CAST(? as REAL))", values));
+            }
+            else if (match.Groups["orientation"].Success)
             {
-                conditions.Add(new KeyValuePair<string, object>("(Width = ?)", int.Parse(width, CultureInfo.InvariantCulture)));
+                switch (match.Groups["orientation"].Value)
+                {
+                    case "portrait":
+                        conditions.Add(new KeyValuePair<string, object>("(Width < Height)", null));
+                        break;
+                    case "landscape":
+                        conditions.Add(new KeyValuePair<string, object>("(Width > Height)", null));
+                        break;
+                    case "square":
+                        conditions.Add(new KeyValuePair<string, object>("(Width = Height)", null));
+                        break;
+                }
             }
+            else
+            {
 
+                var height = match.Groups["height"].Value;
+                if (NumericRegex.IsMatch(height))
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(Height = ?)",
+                        int.Parse(height, CultureInfo.InvariantCulture)));
+                }
+
+                var width = match.Groups["width"].Value;
+                if (NumericRegex.IsMatch(width))
+                {
+                    conditions.Add(new KeyValuePair<string, object>("(Width = ?)",
+                        int.Parse(width, CultureInfo.InvariantCulture)));
+                }
+            }
         }
     }
 

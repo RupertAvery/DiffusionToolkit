@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Windows.Forms;
 using System.Windows.Input;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
@@ -138,6 +139,7 @@ public class FilterControlModel : BaseNotify
     private bool _useUnavailable;
     private bool _unavailable;
     private ObservableCollection<NodeFilter> _nodeFilters;
+    private string _sizeOp;
 
     public FilterControlModel()
     {
@@ -161,6 +163,7 @@ public class FilterControlModel : BaseNotify
 
         NodeOperations = nops;
         NodePropertyComparisons = comps;
+        SizeOp = "pixels";
 
         AddNodeFilter();
     }
@@ -364,6 +367,12 @@ public class FilterControlModel : BaseNotify
     {
         get => _useSize;
         set => SetField(ref _useSize, value);
+    }
+
+    public string SizeOp
+    {
+        get => _sizeOp;
+        set => SetField(ref _sizeOp, value);
     }
 
     public string Width
@@ -659,6 +668,7 @@ public class FilterControlModel : BaseNotify
         CFGScale = String.Empty;
         Width = String.Empty;
         Height = String.Empty;
+        SizeOp = "pixels";
         ModelHash = String.Empty;
         ModelName = String.Empty;
         Favorite = false;

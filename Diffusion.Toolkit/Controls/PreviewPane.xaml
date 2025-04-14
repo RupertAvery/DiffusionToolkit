@@ -25,7 +25,6 @@
             <converters:IfGreaterThanConverter x:Key="ifGreaterThan"></converters:IfGreaterThanConverter>
         </ResourceDictionary>
     </UserControl.Resources>
-
     <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
 
         <Grid  Background="{x:Null}" Visibility="{Binding IsLoading, Converter={StaticResource boolToVis}}">
@@ -71,6 +70,10 @@
             >
                 <ScrollViewer.ContextMenu>
                     <ContextMenu>
+                        <MenuItem x:Name="AlbumMenu" ItemsSource="{Binding MainModel.AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
+                        </MenuItem>
+                        <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding MainModel.SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
+                        <Separator />
                         <MenuItem ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
                         <Separator></Separator>
                         <MenuItem Header="Fit to Preview" InputGestureText="CTRL+Shift+F" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>

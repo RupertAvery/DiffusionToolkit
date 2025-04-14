@@ -33,50 +33,11 @@ namespace Diffusion.Toolkit.Controls
         public ThumbnailViewModel Model { get; set; }
 
         private DataStore _dataStore => ServiceLocator.DataStore;
-
-        public void ReloadAlbums()
-        {
-            var albumMenuItem = new MenuItem()
-            {
-                Header = GetLocalizedText("Thumbnail.ContextMenu.AddToAlbum.NewAlbum"),
-            };
-            albumMenuItem.Click += CreateAlbum_OnClick;
-
-            var refreshAlbumMenuItem = new MenuItem()
-            {
-                Header = GetLocalizedText("Menu.View.Refresh"),
-            };
-            refreshAlbumMenuItem.Click += RefreshAlbum_OnClick;
-
-            Model.AlbumMenuItems = new ObservableCollection<Control>(new List<Control>()
-            {
-                albumMenuItem,
-                refreshAlbumMenuItem,
-                new Separator()
-            });
-
-
-            var albums = _dataStore.GetAlbumsByName();
-
-            foreach (var album in albums)
-            {
-                var menuItem = new MenuItem() { Header = album.Name, Tag = album };
-                menuItem.Click += AddToAlbum_OnClick;
-                Model.AlbumMenuItems.Add(menuItem);
-            }
-        }
-
+        
         private string GetLocalizedText(string key)
         {
             return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
         }
-
-
-        //private void AlbumMenuItem_Click(object sender, RoutedEventArgs e)
-        //{
-        //    var menuItem = (MenuItem)sender;
-        //    AddToAlbumCommand?.Execute(null);
-        //}
 
         public ThumbnailView()
         {
@@ -88,18 +49,7 @@ namespace Diffusion.Toolkit.Controls
             Model.Pages = 0;
             Model.TotalFiles = 100;
 
-            var albumMenuItem = new MenuItem()
-            {
-                Header = "_New Album",
-            };
-
-            albumMenuItem.Click += CreateAlbum_OnClick;
-
             Model.PropertyChanged += ModelOnPropertyChanged;
-            Model.AlbumMenuItems = new ObservableCollection<Control>(new List<Control>()
-            {
-                albumMenuItem
-            });
 
             Model.CopyPathCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyPath);
             Model.CopyPromptCommand = new RelayCommand<object>(ServiceLocator.ContextMenuService.CopyPrompt);
@@ -918,25 +868,7 @@ namespace Diffusion.Toolkit.Controls
             Model.ThumbnailSize = thumbnailSize;
         }
 
-        private void CreateAlbum_OnClick(object sender, RoutedEventArgs e)
-        {
-            AddAlbumCommand?.Execute(null);
-        }
 
-        private void RefreshAlbum_OnClick(object sender, RoutedEventArgs e)
-        {
-            ReloadAlbums();
-        }
-
-        private void AddToAlbum_OnClick(object sender, RoutedEventArgs e)
-        {
-            AddToAlbumCommand?.Execute(sender);
-        }
-
-        private void RemoveFromAlbum_OnClick(object sender, RoutedEventArgs e)
-        {
-            RemoveFromAlbumCommand?.Execute(sender);
-        }
 
         private void RenameAlbum_OnClick(object sender, RoutedEventArgs e)
         {

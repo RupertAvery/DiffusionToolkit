@@ -21,8 +21,9 @@ public class Filter
     public bool UseCFGScale { get; set; }
     public string CFGScale { get; set; }
     public bool UseSize { get; set; }
-    public string Width { get; set; }
-    public string Height { get; set; }
+    public string SizeOp { get; set; }
+    public string? Width { get; set; }
+    public string? Height { get; set; }
     public bool UseModelHash { get; set; }
     public string ModelHash { get; set; }
     public bool UseModelName { get; set; }

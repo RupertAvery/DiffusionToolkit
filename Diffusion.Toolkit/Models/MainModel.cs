@@ -98,6 +98,7 @@ public class MainModel : BaseNotify
     {
         _status = "Ready";
         _isPreviewVisible = true;
+        _selectedImages = new ObservableCollection<ImageEntry>();
     }
 
     public Page Page
@@ -554,6 +555,8 @@ public class MainModel : BaseNotify
     private bool _foldersBusy;
     private bool _showNotifications;
     private bool _permanentlyDelete;
+    private ObservableCollection<Control> _albumMenuItems;
+    private ObservableCollection<Control> _selectionAlbumMenuItems;
 
     public ModelViewModel? CurrentModel
     {
@@ -706,5 +709,17 @@ public class MainModel : BaseNotify
     {
         get => _permanentlyDelete;
         set => SetField(ref _permanentlyDelete, value);
+    }
+
+    public ObservableCollection<Control> AlbumMenuItems
+    {
+        get => _albumMenuItems;
+        set => SetField(ref _albumMenuItems, value);
+    }
+
+    public ObservableCollection<Control> SelectionAlbumMenuItems
+    {
+        get => _selectionAlbumMenuItems;
+        set => SetField(ref _selectionAlbumMenuItems, value);
     }
 }

@@ -31,6 +31,8 @@ public static class SearchControlModelExtensions
         model.UseCFGScale = filter.UseCFGScale;
         model.CFGScale = filter.CFGScale;
         model.UseSize = filter.UseSize;
+        model.SizeOp = filter.SizeOp;
+        model.UseSize = filter.UseSize;
         model.Width = filter.Width;
         model.Height = filter.Height;
         model.UseModelHash = filter.UseModelHash;
@@ -120,6 +122,7 @@ public static class SearchControlModelExtensions
         filter.UseCFGScale = model.UseCFGScale;
         filter.CFGScale = model.CFGScale;
         filter.UseSize = model.UseSize;
+        filter.SizeOp = model.SizeOp;
         filter.Width = model.Width;
         filter.Height = model.Height;
         filter.UseModelHash = model.UseModelHash;

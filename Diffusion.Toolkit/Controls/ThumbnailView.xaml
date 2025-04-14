@@ -215,11 +215,9 @@
             </ListView.InputBindings>
             <ListView.ContextMenu>
                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                    <MenuItem x:Name="AlbumMenu" IsEnabled="{Binding IsImage}" ItemsSource="{Binding AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
-                        <!--<MenuItem Header="_New Album" Click="CreateAlbum_OnClick"></MenuItem>
-                                                <Separator></Separator>-->
+                    <MenuItem x:Name="AlbumMenu" IsEnabled="{Binding IsImage}" ItemsSource="{Binding MainModel.AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
                     </MenuItem>
-                    <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
+                    <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding MainModel.SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
                     <Separator />
                     <MenuItem ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
                     <Separator />

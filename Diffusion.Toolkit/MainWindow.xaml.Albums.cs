@@ -63,13 +63,19 @@ namespace Diffusion.Toolkit
             _model.AddToAlbumCommand = new RelayCommand<object>((o) =>
             {
                 var album = (Album)((MenuItem)o).Tag;
-                var images = _model.SelectedImages.Select(x => x.Id).ToList();
+                var images = _model.SelectedImages.ToList();
 
-                if (_dataStore.AddImagesToAlbum(album.Id, images))
+                if (_dataStore.AddImagesToAlbum(album.Id, images.Select(x => x.Id)))
                 {
                     ServiceLocator.ToastService.Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
-                    LoadAlbums();
-                    _search.ReloadMatches(null);
+                    
+                    UpdateAlbumCount(album.Id);
+
+                    ServiceLocator.AlbumService.UpdateSelectedImageAlbums();
+
+                    UpdateImageAlbums();
+
+                    //_search.ReloadMatches(null);
                 }
                 else
                     MessageBox.Show("Album not found, please refresh and try again", "No Album");
@@ -92,17 +98,21 @@ namespace Diffusion.Toolkit
                     }
 
                     _dataStore.RenameAlbum(album.Id, name);
+
+                    UpdateAlbumName(album.Id, name);
+
+                    UpdateImageAlbums();
                     //UpdateAlbums();
                     //SearchImages(null);
-                    LoadAlbums();
+                    //LoadAlbums();
                 }
             });
 
             _model.RemoveFromAlbumCommand = new RelayCommand<object>((o) =>
             {
                 var album = ((MenuItem)o).Tag as Album;
-                var images = _model.SelectedImages.Select(x => x.Id).ToList();
-                var count = _dataStore.RemoveImagesFromAlbum(album.Id, images);
+                var images = _model.SelectedImages.ToList();
+                var count = _dataStore.RemoveImagesFromAlbum(album.Id, images.Select(x => x.Id));
 
                 var message = GetLocalizedText("Actions.Albums.RemoveImages.Toast")
                     .Replace("{images}", $"{count}")
@@ -110,8 +120,11 @@ namespace Diffusion.Toolkit
 
                 ServiceLocator.ToastService.Toast(message, "");
 
-                LoadAlbums();
-                _search.ReloadMatches(null);
+                UpdateAlbumCount(album.Id);
+
+                UpdateImageAlbums();
+
+                ServiceLocator.AlbumService.UpdateSelectedImageAlbums();
             });
 
             _model.RemoveAlbumCommand = new AsyncCommand<AlbumModel>(async (album) =>
@@ -134,11 +147,29 @@ namespace Diffusion.Toolkit
 
                     LoadAlbums();
 
+                    UpdateImageAlbums();
+
+                    // TODO: Detect whether we need to refresh?
                     _search.ReloadMatches(null);
                 }
             });
 
 
+        }
+
+        public void UpdateImageAlbums()
+        {
+            _search.UpdateImagesInPlace();
+        }
+
+        public void UpdateAlbumCount(int id)
+        {
+            _model.Albums.First(d => d.Id == id).ImageCount = _dataStore.GetAlbumView(id).ImageCount;
+        }
+
+        public void UpdateAlbumName(int id, string name)
+        {
+            _model.Albums.First(d => d.Id == id).Name = name;
         }
 
         private void LoadAlbums()
@@ -179,6 +210,7 @@ namespace Diffusion.Toolkit
                     break;
             }
 
+            ServiceLocator.AlbumService.UpdateSelectedImageAlbums();
 
         }
 
@@ -237,12 +269,11 @@ namespace Diffusion.Toolkit
 
                     ServiceLocator.ToastService.Toast(message, "");
 
-                    LoadAlbums();
+                    UpdateAlbumCount(album.Id);
 
-                    foreach (var image in _model.SelectedImages)
-                    {
-                        image.AlbumCount++;
-                    }
+                    UpdateImageAlbums();
+
+                    ServiceLocator.AlbumService.UpdateSelectedImageAlbums();
                     //_search.ReloadMatches(null);
                 }
                 else
