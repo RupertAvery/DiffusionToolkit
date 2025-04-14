@@ -206,54 +206,7 @@ namespace Diffusion.Database
 
             return countSize[0];
         }
-
-        public long CountFileSize(Filter filter)
-        {
-            using var db = OpenConnection();
-
-            //if (filter.IsEmpty)
-            //{
-            //    var query = $"SELECT SUM(FileSize) FROM Image";
-
-            //    var allcount = db.ExecuteScalar<long>(query + GetInitialWhereClause(filter.UseForDeletion && filter.ForDeletion));
-
-            //    return allcount;
-            //}
-
-            var q = QueryBuilder.Filter(filter);
-
-            var size = db.ExecuteScalar<long>($"SELECT SUM(FileSize) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.WhereClause}", q.Bindings.ToArray());
-
-            db.Close();
-
-            return size;
-        }
-
-        public int Count(Filter filter)
-        {
-            using var db = OpenConnection();
-
-            if (filter.IsEmpty)
-            {
-                var query = "SELECT COUNT(*) FROM Image";
-
-                var allcount = db.ExecuteScalar<int>(query + GetInitialWhereClause());
-
-                return allcount;
-            }
-
-            var q = QueryBuilder.Filter(filter);
-
-            string raw_query = $"SELECT COUNT(*) FROM Image m1 {string.Join(' ', q.Joins)} WHERE {q.Item1}";
-            var count = db.ExecuteScalar<int>(raw_query, q.Item2.ToArray());
-
-            db.Close();
-
-            return count;
-        }
-
-
-
+        
         public Image GetImage(int id)
         {
             using var db = OpenConnection();

@@ -890,7 +890,9 @@
                         Background="White"
                         ClickAction="OpenBrowser"
                         MarkdownStyle="{Binding SearchHelpStyle}"
-                        Markdown="{Binding SearchHelpMarkdown}">
+                        Markdown="{Binding SearchHelpMarkdown}"
+                        behaviors:ScrollSpeed.ScrollSpeed="4"
+                        >
                     </mdXaml:MarkdownScrollViewer>
 
                     <Grid Grid.Row="1">

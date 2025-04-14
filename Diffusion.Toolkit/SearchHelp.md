@@ -1,11 +1,15 @@
 # Search Help
 
+There are two ways to search:
+
 * [Querying](#querying)
 * [Filtering](#filtering)
 
 # Querying
 
-The text box above the thumbnail area is the Query input. Here you can type in what you want to look for. 
+The text box above the thumbnail area is the **Query** input. Here you can type in what you want to look for.  You can search on more than just the prompt, using the Query Syntax. You can search on the [path](#path) of a file for example, or a range of [dates](#date-created) as well. You can combine criteria as well for a more refined search.
+
+If the query syntax is a bit difficult to wrap your head around, or too verbose for you, you can use the [Filter](#filtering) instead.
 
 ## Prompt Querying
 
@@ -268,7 +272,29 @@ You can search on multiple values on most parameters. The results will be ORed, 
   * e.g. `cfg: 4.5|7|9|12`
   * e.g. `model_hash: aabbccdd | deadbeef | 12345678`
 
+## Querying Workflow Properties and Raw Metadata
+
+You can have Diffusion Toolkit search through ComfyUI Workflows or Raw Metadata through the Query input.
+
+First you must have enabled scanning workflow and raw metadata in Settings, then Rescanned your images.
+
+Then click on the Search Settings icon in the Query bar to configure what propeties you want to search on.
+
 # Filtering
 
-Pressing the Filter button will bring up the Filter dialog.
+Pressing the Filter button will bring up the Filter dialog, with the **Metadata** tab and the **Workflow** tab.
+
+## Metadata tab
+
+Here you can select what parameters you want to filter on. Here, commas in the Prompt text boxes aren't parsed separately, they will be used as-is, so you can only search for specific prompts.  
+
+Make sure the checkbox next to the parameter you want to search on is checked, otherwise it will be ignored.
+
+Near the bottom of the tab you will see a bunch of parameters with **True** and **False** options. These are used to search whether an image is *tagged*  (True) or *not tagged* (False).
+
+## Workflow tab
+
+The Workflow tab will filter images with ComfyUI metadata.  Here you can select what properties you want to search on and how to search on the values. For text properties you usually want to use *contains*, while other methods might be useful such as *starts with*.
+
+You can combine filters with *and*, *or*, *not* operators.  The order of the operators matters, as the results of a filter will be modified with the next filter, so try to plan your filters accordingly.
 
