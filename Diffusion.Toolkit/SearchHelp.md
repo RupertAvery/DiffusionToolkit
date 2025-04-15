@@ -7,13 +7,13 @@ There are two ways to search:
 
 # Querying
 
-The text box above the thumbnail area is the **Query** input. Here you can type in what you want to look for.  You can search on more than just the prompt, using the Query Syntax. You can search on the [path](#path) of a file for example, or a range of [dates](#date-created) as well. You can combine criteria as well for a more refined search.
+The text box above the thumbnail area is the **Query** input. Here you can type in what you want to look for.  You can search on more than just the prompt, using **Query Syntax**. You can search on the [path](#path) of a file for example, or a range of [dates](#date-created) as well. You can combine criteria as well for a more refined search.
 
 If the query syntax is a bit difficult to wrap your head around, or too verbose for you, you can use the [Filter](#filtering) instead.
 
-## Prompt Querying
+## Querying Syntax
 
-The basic way to search is by entering text that appears in the prompt. It will work the way yout expect most of the time.  However, commas are special and are used to **separate prompt terms**.
+The basic way to search is by entering text that appears in the prompt. It will work the way yout expect most of the time.  However, commas are treated differently from they way they are used in prompts. In Query Syntax, they are used to separate  **search terms**.
 
 Take this query for example:
 
@@ -28,13 +28,30 @@ This contains two search terms:
 
 The above query will match prompts that contain both `A man staring into a starry night sky` AND `by Van Gogh` in any order or position.
 
+This will match all of the following prompts:
+
+```
+A man staring into a starry night sky, by Van Gogh 
+A man staring into a starry night sky, pencil sketch, by Van Gogh 
+A man staring into a starry night sky, oil painting, by Van Gogh 
+by Van Gogh, a man staring into a starry night sky 
+```
+
 If you want to match an exact term that contains a comma, place the term in double quotes:
 
 ```
 "A man staring into a starry night sky, by Van Gogh"
 ```
 
-The above query will match prompts that contain ONLY `A man staring into a starry night sky, by Van Gogh` in that exact wording.
+The above query will match prompts that contain ONLY `A man staring into a starry night sky, by Van Gogh` in that exact wording (including spaces!).
+
+An exmaple of some prompts that will match the query above are:
+
+```
+A man staring into a starry night sky, by Van Gogh 
+A man staring into a starry night sky, by Van Gogh, pencil sketch
+oil painting, A man staring into a starry night sky, by Van Gogh 
+```
 
 Note that spaces are important. The following query
 
@@ -42,26 +59,26 @@ Note that spaces are important. The following query
 "A man staring into a starry night sky , by Van Gogh"
 ```
 
-is not the same as the previous term.
+Will not have the same results as the previous example.
 
 ## Parameter Querying 
 
-To be able to search by other parametersx, you need to use special tokens.  These are words referring to the parameter followed by a colon, for example `seed: 12345` will add a search term that filters images using a seed value of `12345`.
+To be able to filter on other parameters, you need to use special *query tokens*.  These are usually words referring to the parameter followed by a colon, for example `seed: 12345` will add a parameter query that filters images using a seed value of `12345`.
 
-The prompt query, if any, should always come first, in order to avoid being interpreted as an argument to the parameter token.
+The prompt query, if any, should always come first, in order to avoid being interpreted as an argument to the query tokens, for example:
 
 ```
 A man staring into a starry night sky, by Van Gogh steps: 20 cfg:12  
 ```
 
-Parameters will be ANDed, meaning adding more parameters will filter out more results. The above query will show images that have
+Parameter queries will be ANDed, meaning adding more parameters will give fewer results that are more filtered. 
+
+The above query will show images that match
 
 * prompt contains `A man staring into a starry night sky` 
 * AND `by Van Gogh` 
 * AND `steps` is `20` 
-* AND `cfg` is `12`  
-
-When parsing the query, each possible parameter is matched and then removed. Any remaining unmatched text will be considered as part of the prompt.
+* AND `cfg` is `12`
 
 ## Supported parameters
 
@@ -143,11 +160,13 @@ You can query `seed`, with a number, a range, or wildcards.
 
 ### Model Name
 
-Wildcards (`?`, `*`) are supported
+* `model: <model name>`
 
-* `model: <term>`
+Wildcards (`?`, `*`) are supported in the model name
 
-Some tools don't store the model name in metadata by default.
+*NOTE: The following information may be outdated:*
+
+Some iamge generators don't store the model name in metadata, instead storing the model hash.
 
 Diffusion Toolkit will try to perform a hash lookup using the information stored in the AUTOMATIC1111 `cache.json` file if it exists.  It will attempt to lookup the name (partial matches allowed), and take the hash of any matching models, and use a hash query to search for the images. Both old hash algorithm and the newer SHA256 hash are supported.
 
@@ -175,19 +194,21 @@ You can search for images that used a hypernetwork, and specify the strength use
 
 ### Favorites
 
-Favorite is a Diffusion Toolkit metadata with a value of true or false, entered by the user. See [Favorites](#favorites)
+Favorite is a Diffusion Toolkit metadata with a value of true or false. Use it to find images that you have tagged as favorite (true), or images you have not tagged as favorite (false).
 
 * `favorite: [true|false]`
 
 ### Rating
 
-Rating is a Diffusion Toolkit metadata with a value of 1-5, entered by the user. See [Rating](#rating)
+Rating is a Diffusion Toolkit metadata with a value of 1-10.
 
 * `rating: [<|>|<=|>=|<>] <number>`
 
+You can use an optional comparison operator.
+
 ### NSFW
 
-NSFW is a Diffusion Toolkit metadata with a value of true or false, entered by the user. See [NSFW Tag](#nsfw-tag). 
+NSFW is a Diffusion Toolkit metadata with a value of true or false. Use it to find images that you have tagged as NSFW (true), or images you have not tagged as NSFW (false).
 
 If you specify this term explicitly, it will override the **Hide NSFW from Results** option.
 
@@ -202,15 +223,15 @@ This filter will show images that do not have metadata.
 
 ### For Deletion
 
-**For Deletion** is a Diffusion Toolkit metadata with a value of true or false, entered by the user. See [Deleting](#deleting)
+Delete is a Diffusion Toolkit metadata with a value of true or false. Use it to find images that you have tagged as For Deletion (true), or images you have not tagged as For Deletion (false).
 
 * `delete: [true|false]` - Filters by files marked for deletion
 
 ### Date Created
 
- **Date Created** is a Diffusion Toolkit metadata taken from the image file's attributes during scanning.
+**Date Created** is a Diffusion Toolkit metadata taken from the image file's attributes during scanning.
 
-Allows you to search by the file's created date
+It allows you to search by the file's created date
 
 * `date: <criteria>`
 
@@ -228,7 +249,7 @@ Allows you to search by the file's created date
 
 ### Path
  
- **Path** is a Diffusion Toolkit metadata taken from the image file's attributes during scanning.
+**Path** is a Diffusion Toolkit metadata that uses the complete path of the file when it was scanned.
 
 You can use wildcards (`?`, `*`), or the criteria `starts with`, `contains`, or `ends with`. 
 
@@ -253,6 +274,7 @@ Path with wildcards will return matches in subfolders. If you want to search a s
    * using globs:
       * `path: "D:\My pics\images**"`      
       * `path: "**funny cats**"`      
+      
    * using criteria:
       * `path: starts with "D:\My pics\images"`      
       * `path: contains "funny cats"`      

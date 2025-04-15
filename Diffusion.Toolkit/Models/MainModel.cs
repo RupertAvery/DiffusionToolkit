@@ -197,6 +197,8 @@ public class MainModel : BaseNotify
         set => SetField(ref _aboutCommand, value);
     }
 
+    public ICommand ReleaseNotesCommand { get; set; }
+
     public ICommand HelpCommand
     {
         get => _helpCommand;

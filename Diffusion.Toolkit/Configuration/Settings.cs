@@ -68,6 +68,7 @@ public class Settings : SettingsContainer, IScanOptions
     private bool _showTags;
     private bool _permanentlyDelete;
     private bool _confirmDeletion;
+    private string _version;
 
     public Settings() : this(false)
     {
@@ -486,7 +487,11 @@ public class Settings : SettingsContainer, IScanOptions
         set => UpdateValue(ref _permanentlyDelete, value);
     }
 
-    public int Version { get; set; }
+    public string Version
+    {
+        get => _version;
+        set => UpdateValue(ref _version, value);
+    }
 
     public bool ConfirmDeletion
     {

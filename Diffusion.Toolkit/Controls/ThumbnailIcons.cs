@@ -22,6 +22,7 @@ public class ThumbnailIcons : FrameworkElement
     private static BitmapImage? _lightHideIcon;
 
     private static Typeface _typeFace = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+    private static Typeface _typeFaceBoldCondensed = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Bold, FontStretches.Condensed);
 
     public static readonly DependencyProperty DataProperty =
         DependencyProperty.Register(nameof(Data), typeof(ImageEntry), typeof(ThumbnailIcons),
@@ -154,10 +155,24 @@ public class ThumbnailIcons : FrameworkElement
         {
             drawingContext.DrawImage(_starIcon, new Rect(new Point(x, y), new Size(24, 24)));
             var value = Data.Rating.Value.ToString();
-            var formattedText = new FormattedText(value, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, _typeFace, 14, Brushes.Black, null, TextFormattingMode.Display, 92)
+
+            var fontSize = 14;
+            Typeface typeface = _typeFace;
+
+            if (Data.Rating.Value == 10)
+            {
+                fontSize = 12;
+                typeface = _typeFaceBoldCondensed;
+            }
+
+            var formattedText = new FormattedText(value, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, fontSize, Brushes.Black, null, TextFormattingMode.Display, 92)
             {
                 TextAlignment = TextAlignment.Center
             };
+            if (Data.Rating.Value == 10)
+            {
+                x += 3;
+            }
             drawingContext.DrawText(formattedText, new Point(x + 16 - formattedText.WidthIncludingTrailingWhitespace / 2, y + 5));
             x += xOffset;
         }

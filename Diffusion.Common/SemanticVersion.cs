@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text.RegularExpressions;
 
 namespace Diffusion.Common;
@@ -13,9 +14,33 @@ public class SemanticVersion : IComparable<SemanticVersion>
 
     public int Build { get; set; }
 
+    public static bool IsSemanticVersion(string text)
+    {
+        return versionRegex.IsMatch(text);
+    }
+
+    public static SemanticVersion Parse(string text)
+    {
+        var match = versionRegex.Match(text);
+
+        var version = new SemanticVersion()
+        {
+            Major = int.Parse(match.Groups["major"].Value),
+            Minor = int.Parse(match.Groups["minor"].Value)
+        };
+        
+        if (match.Groups["build"].Success)
+        {
+            version.Build = int.Parse(match.Groups["build"].Value);
+        }
+
+        return version;
+    }
+
     public static bool TryParse(string text, out SemanticVersion version)
     {
         var match = versionRegex.Match(text);
+       
         if (match.Success)
         {
             version = new SemanticVersion()
@@ -23,10 +48,12 @@ public class SemanticVersion : IComparable<SemanticVersion>
                 Major = int.Parse(match.Groups["major"].Value),
                 Minor = int.Parse(match.Groups["minor"].Value)
             };
+
             if (match.Groups["build"].Success)
             {
                 version.Build = int.Parse(match.Groups["build"].Value);
             }
+
             return true;
         }
 
@@ -37,7 +64,7 @@ public class SemanticVersion : IComparable<SemanticVersion>
 
     public override string ToString()
     {
-        return $"{Major}.{Minor}" + (Build > 0 ? $".{Build}" : "");
+        return $"v{Major}.{Minor}" + (Build > 0 ? $".{Build}" : "");
     }
 
     public int CompareTo(SemanticVersion? other)

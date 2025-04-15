@@ -64,6 +64,18 @@
     <None Remove="Localization\default.json" />
     <None Remove="Localization\es-ES.json" />
     <None Remove="Localization\fr-FR.json" />
+    <None Remove="Release Notes\What%27s New v1.0.md" />
+    <None Remove="Release Notes\What%27s New v1.1.md" />
+    <None Remove="Release Notes\What%27s New v1.2.md" />
+    <None Remove="Release Notes\What%27s New v1.3.md" />
+    <None Remove="Release Notes\What%27s New v1.4.md" />
+    <None Remove="Release Notes\What%27s New v1.5.1.md" />
+    <None Remove="Release Notes\What%27s New v1.5.md" />
+    <None Remove="Release Notes\What%27s New v1.6.1.md" />
+    <None Remove="Release Notes\What%27s New v1.6.md" />
+    <None Remove="Release Notes\What%27s New v1.7.0.md" />
+    <None Remove="Release Notes\What%27s New v1.8.0.md" />
+    <None Remove="Release Notes\What%27s New v1.9.0.md" />
     <None Remove="SearchHelp.md" />
     <None Remove="Tips.md" />
   </ItemGroup>
@@ -87,6 +99,40 @@
     <EmbeddedResource Include="Localization\default.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.0.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.1.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.2.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.3.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.4.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.5.1.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.5.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.6.1.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.6.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.7.0.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.8.0.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.9.0.md" />
   </ItemGroup>
 
   <ItemGroup>
@@ -168,6 +214,9 @@
     <Compile Update="TipsWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="ReleaseNotes.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -186,40 +235,7 @@
     <None Update="Localization\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Release Notes\What%27s New v1.0.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.1.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.2.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.3.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.4.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.5.1.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.5.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.6.1.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.6.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.7.0.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.8.0.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Release Notes\What%27s New v1.8.1.md">
+    <None Update="Localization\update.py">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="samplers.txt">

@@ -109,11 +109,18 @@ namespace Diffusion.Toolkit
             _search.ToggleInfo();
         }
 
-       private void ShowAbout()
+        private void ShowAbout()
         {
-            var welcome = new WelcomeWindow(_settings!);
-            welcome.Owner = this;
-            welcome.ShowDialog();
+            //var welcome = new WelcomeWindow(_settings!);
+            //welcome.Owner = this;
+            //welcome.ShowDialog();
+        }
+
+        private void ShowReleaseNotes()
+        {
+            var window = new ReleaseNotesWindow();
+            window.Owner = this;
+            window.ShowDialog();
         }
 
         private void ShowTips()

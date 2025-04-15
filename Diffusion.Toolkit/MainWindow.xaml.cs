@@ -27,6 +27,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Interop;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Diffusion.Civitai.Models;
 using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
@@ -126,6 +127,7 @@ namespace Diffusion.Toolkit
                 _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
                 _model.CancelCommand = new AsyncCommand<object>((o) => CancelProgress());
                 _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
+                _model.ReleaseNotesCommand = new RelayCommand<object>((o) => ShowReleaseNotes());
                 _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
                 _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
 
@@ -477,6 +479,7 @@ namespace Diffusion.Toolkit
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
             var dataStore = new DataStore(_dbPath);
+            var _showReleaseNotes = false;
 
             ServiceLocator.SetDataStore(dataStore);
 
@@ -535,17 +538,24 @@ namespace Diffusion.Toolkit
 
             }
 
+            if (!SemanticVersion.TryParse(_settings.Version, out var semVer))
+            {
+                semVer = SemanticVersion.Parse("v0.0.0");
+            }
+
+
             // TODO: Find a better place to put this:
             // Set defaults for new version features
-            if (_settings.Version < 190)
+            if (semVer < SemanticVersion.Parse("v1.9.0"))
             {
-                _settings.Version = 190;
                 _settings.ShowTags = true;
                 _settings.NavigationSection.ShowQueries = true;
                 _settings.ConfirmDeletion = true;
                 _settings.PermanentlyDelete = false;
+                _showReleaseNotes = true;
             }
 
+            _settings.Version = AppInfo.Version.ToString();
 
 
             _settings.PropertyChanged += (s, args) =>
@@ -754,7 +764,7 @@ namespace Diffusion.Toolkit
             {
                 ServiceLocator.FolderService.CreateWatchers();
             }
-            
+
             //_navigatorService.Goto("search");
 
             Logger.Log($"Loading models");
@@ -856,6 +866,10 @@ namespace Diffusion.Toolkit
 
             Logger.Log($"Init completed");
 
+            if (_showReleaseNotes)
+            {
+                ShowReleaseNotes();
+            }
             // Cleanup();
         }
 
