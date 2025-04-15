@@ -157,12 +157,10 @@ public class ThumbnailIcons : FrameworkElement
             var value = Data.Rating.Value.ToString();
 
             var fontSize = 14;
-            Typeface typeface = _typeFace;
+            Typeface typeface = _typeFaceBoldCondensed;
 
             if (Data.Rating.Value == 10)
             {
-                fontSize = 12;
-                typeface = _typeFaceBoldCondensed;
             }
 
             var formattedText = new FormattedText(value, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, fontSize, Brushes.Black, null, TextFormattingMode.Display, 92)
@@ -173,7 +171,7 @@ public class ThumbnailIcons : FrameworkElement
             {
                 x += 3;
             }
-            drawingContext.DrawText(formattedText, new Point(x + 16 - formattedText.WidthIncludingTrailingWhitespace / 2, y + 5));
+            drawingContext.DrawText(formattedText, new Point(x + 15 - formattedText.WidthIncludingTrailingWhitespace / 2, y + 5));
             x += xOffset;
         }
 
