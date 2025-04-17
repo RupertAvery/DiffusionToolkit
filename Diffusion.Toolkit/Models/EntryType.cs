@@ -4,5 +4,5 @@ public enum EntryType
 {
     File,
     Folder,
-    Album
+    SpecialFolder,
 }

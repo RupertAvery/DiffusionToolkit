@@ -14,9 +14,9 @@ public class MessageService
         _messagePopupManager = messagePopupManager;
     }
 
-    public Task<(PopupResult, string?)> ShowInput(string message, string title, string? defaultText = null)
+    public Task<(PopupResult, string?)> ShowInput(string message, string title, string? defaultText = null, bool selectAll = true)
     {
-        return _messagePopupManager.ShowInput(message, title, defaultText);
+        return _messagePopupManager.ShowInput(message, title, defaultText, selectAll);
     }
 
     public MessagePopupHandle ShowMessage(string message, string title, int timeout = 0)

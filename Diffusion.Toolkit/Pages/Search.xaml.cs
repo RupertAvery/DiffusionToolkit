@@ -23,6 +23,7 @@ using Diffusion.IO;
 using Diffusion.Toolkit.Common;
 using WPFLocalizeExtension.Engine;
 using System.Windows.Media;
+using Diffusion.Common;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 using Diffusion.Database.Models;
@@ -58,15 +59,9 @@ namespace Diffusion.Toolkit.Pages
 
         public string LastQuery { get; set; }
         public List<string?> History { get; set; }
-        public int LastPage { get; set; }
-        //public string ExtraQuery { get; set; }
         public string Name { get; set; }
-
-        public bool IsMarkedForDeletion { get; set; }
-        public bool IsFavorite { get; set; }
         public ViewMode ViewMode { get; set; }
-        public string? CurrentFolderPath { get; set; }
-        //public Album CurrentAlbum { get; set; }
+        public string Key { get; set; }
     }
 
     public abstract class NavigationPage : Page
@@ -92,6 +87,8 @@ namespace Diffusion.Toolkit.Pages
 
     public partial class Search : NavigationPage
     {
+        const string RootFolders = "Root Folders";
+
         private readonly SearchModel _model;
         private Dictionary<string, ModeSettings> _modeSettings = new Dictionary<string, ModeSettings>();
 
@@ -242,6 +239,11 @@ namespace Diffusion.Toolkit.Pages
                 ReloadMatches(null);
             };
 
+            ServiceLocator.SearchService.OpenFolder += (obj, args) =>
+            {
+                OpenFolder(args);
+            };
+
             _model.Page = 0;
             _model.Pages = 0;
             _model.TotalFiles = 100;
@@ -323,22 +325,9 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.SelectedImageEntry.EntryType == EntryType.Folder)
                 {
-                    _currentModeSettings.CurrentFolderPath = _model.SelectedImageEntry.Path;
-
-                    _model.FolderPath = _currentModeSettings.CurrentFolderPath;
+                    _model.FolderPath = _model.SelectedImageEntry.Path;
 
                     await ExpandToPath(_model.FolderPath);
-
-                    SearchImages(null);
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Album && _model.SelectedImageEntry.EntryType == EntryType.Album)
-                {
-                    _model.MainModel.CurrentAlbum = new AlbumModel()
-                    {
-                        Name = _model.SelectedImageEntry.Name,
-                        Id = _model.SelectedImageEntry.Id
-                    };
-
 
                     SearchImages(null);
                 }
@@ -353,27 +342,17 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (_currentModeSettings.ViewMode == ViewMode.Folder)
                 {
-                    _model.FolderPath = "Watched Folders";
-                    _currentModeSettings.CurrentFolderPath = null;
-                    SearchImages(null);
-                }
-                else if (_currentModeSettings.ViewMode == ViewMode.Album)
-                {
-                    _model.Album = "Albums";
-
-                    _model.MainModel.CurrentAlbum = null;
-
-                    //_currentModeSettings.CurrentAlbum = new Album() { Id = -1, Name = "$" };
-                    SearchImages(null);
+                    OpenFolder(null);
                 }
             });
 
             _model.GoUp = new RelayCommand<object>((o) =>
             {
-                _currentModeSettings.CurrentFolderPath = Path.Combine(_currentModeSettings.CurrentFolderPath.Split(Path.DirectorySeparatorChar)[0..^1]);
-                _model.FolderPath = _currentModeSettings.CurrentFolderPath;
+                //_currentModeSettings.CurrentFolderPath = Path.Combine(_currentModeSettings.CurrentFolderPath.Split(Path.DirectorySeparatorChar)[0..^1]);
+                //_model.FolderPath = _currentModeSettings.CurrentFolderPath;
 
-                SearchImages(null);
+                //SearchImages(null);
+                ServiceLocator.FolderService.NavigateToParentFolder();
             });
 
             _model.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
@@ -385,12 +364,12 @@ namespace Diffusion.Toolkit.Pages
             {
                 _modeSettings = new Dictionary<string, ModeSettings>()
                 {
-                    { "images", new ModeSettings() { Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
+                    { "images", new ModeSettings() { Key = "images", Name = GetLocalizedText("Search.Diffusions"), ViewMode = ViewMode.Search } },
                     //{ "models", new ModeSettings() { Name = GetLocalizedText("Search.Models"), ViewMode = ViewMode.Model } },
-                    { "folders", new ModeSettings() { Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder, CurrentFolderPath = null } },
+                    { "folders", new ModeSettings() { Key = "folders", Name = GetLocalizedText("Search.Folders"), ViewMode = ViewMode.Folder  } },
                     // { "albums", new ModeSettings() { Name = GetLocalizedText("Search.Albums"), ViewMode = ViewMode.Album } },
-                    { "favorites", new ModeSettings() { Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search, IsFavorite = true } },
-                    { "deleted", new ModeSettings() { Name = GetLocalizedText("Search.ForDeletion"), ViewMode = ViewMode.Search, IsMarkedForDeletion = true } },
+                    { "favorites", new ModeSettings() { Key = "favorites", Name = GetLocalizedText("Search.Favorites"), ViewMode = ViewMode.Search } },
+                    { "deleted", new ModeSettings() { Key = "deleted", Name = GetLocalizedText("Search.ForDeletion"), ViewMode = ViewMode.Search } },
                 };
             }
 
@@ -686,6 +665,7 @@ namespace Diffusion.Toolkit.Pages
         public Action<ImageViewModel> OnCurrentImageChange { get; set; }
 
         public ImageViewModel? CurrentImage => _model.CurrentImage;
+        public IEnumerable<ImageEntry> Images => _model.Images;
 
         public Action<ImageViewModel> OnCurrentImageOpen { get; set; }
 
@@ -779,24 +759,15 @@ namespace Diffusion.Toolkit.Pages
                     {
                         case SearchView.Search:
                             _currentModeSettings.ViewMode = ViewMode.Search;
-                            _currentModeSettings.IsFavorite = false;
-                            _currentModeSettings.IsMarkedForDeletion = false;
                             break;
                         case SearchView.Folder:
                             _currentModeSettings.ViewMode = ViewMode.Folder;
-                            _currentModeSettings.CurrentFolderPath = queryOptions.Folder;
-                            _currentModeSettings.IsFavorite = false;
-                            _currentModeSettings.IsMarkedForDeletion = false;
                             break;
                         case SearchView.Favorites:
                             _currentModeSettings.ViewMode = ViewMode.Search;
-                            _currentModeSettings.IsFavorite = true;
-                            _currentModeSettings.IsMarkedForDeletion = false;
                             break;
                         case SearchView.Deleted:
                             _currentModeSettings.ViewMode = ViewMode.Search;
-                            _currentModeSettings.IsFavorite = false;
-                            _currentModeSettings.IsMarkedForDeletion = true;
                             break;
                     }
 
@@ -819,7 +790,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         AlbumIds = albums,
                         Models = models,
-                        Folder = _currentModeSettings.CurrentFolderPath,
+                        Folder = _model.FolderPath == RootFolders ? null : _model.FolderPath,
                         SearchNodes = _model.SearchSettings.SearchNodes,
                         SearchAllProperties = _model.SearchSettings.SearchAllProperties,
                         SearchRawData = _model.SearchSettings.SearchRawData,
@@ -843,11 +814,11 @@ namespace Diffusion.Toolkit.Pages
                     QueryOptions.SearchView = SearchView.Folder;
                 }
 
-                if (_currentModeSettings.IsFavorite)
+                if (_currentModeSettings.Key == "favorite")
                 {
                     QueryOptions.SearchView = SearchView.Favorites;
                 }
-                else if (_currentModeSettings.IsMarkedForDeletion)
+                else if (_currentModeSettings.Key == "deleted")
                 {
                     QueryOptions.SearchView = SearchView.Deleted;
                 }
@@ -994,7 +965,7 @@ namespace Diffusion.Toolkit.Pages
         {
             try
             {
-                if (image.EntryType == EntryType.Folder)
+                if (image is { EntryType: EntryType.Folder })
                 {
                     var emptyModel = new ImageViewModel();
                     emptyModel.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
@@ -1255,27 +1226,20 @@ namespace Diffusion.Toolkit.Pages
             {
                 IEnumerable<string> folders = Enumerable.Empty<string>();
 
-                if (_currentModeSettings.CurrentFolderPath == null)
+                if (QueryOptions.Folder == null)
                 {
                     folders = ServiceLocator.FolderService.RootFolders.Select(d => d.Path);
                 }
                 else
                 {
-                    var currentFolderPath = _currentModeSettings.CurrentFolderPath;
-
-                    if (!Directory.Exists(currentFolderPath))
+                    if (!Directory.Exists(QueryOptions.Folder))
                     {
                         _ = ServiceLocator.MessageService.ShowMedium(GetLocalizedText("Search.Folders.Unavailable"), GetLocalizedText("Search.Folders.Unavailable.Title"), PopupButtons.OK);
                         ServiceLocator.MainModel.CurrentFolder.IsUnavailable = true;
                         return;
                     }
 
-                    if (!ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Contains(_currentModeSettings.CurrentFolderPath))
-                    {
-                        folders = folders.Concat(new[] { ".." });
-                    }
-
-                    folders = folders.Concat(Directory.GetDirectories(currentFolderPath));
+                    folders = folders.Concat(Directory.GetDirectories(QueryOptions.Folder));
                 }
 
                 foreach (var folder in folders)
@@ -1283,7 +1247,7 @@ namespace Diffusion.Toolkit.Pages
                     var imageEntry = new ImageEntry(rId)
                     {
                         Id = 0,
-                        Path = folder == ".." ? Path.Combine(_currentModeSettings.CurrentFolderPath.Split(Path.DirectorySeparatorChar)[0..^1]) : folder,
+                        Path = folder,
                         FileName = Path.GetFileName(folder),
                         Name = Path.GetFileName(folder),
                         EntryType = EntryType.Folder
@@ -1328,6 +1292,7 @@ namespace Diffusion.Toolkit.Pages
                     Path = file.Path,
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
+                    Name = Path.GetFileName(file.Path),
                     NSFW = file.NSFW,
                     EntryType = EntryType.File,
                     AlbumCount = file.AlbumCount,
@@ -1503,31 +1468,33 @@ namespace Diffusion.Toolkit.Pages
             _model.IsFilterVisible = false;
 
 
-            if (_currentModeSettings.IsFavorite)
-            {
-                _model.Filter.UseFavorite = true;
-                _model.Filter.Favorite = true;
-                _model.Filter.UseForDeletion = false;
-                _model.Filter.ForDeletion = false;
-            }
-            else if (_currentModeSettings.IsMarkedForDeletion)
-            {
-                _model.Filter.UseFavorite = false;
-                _model.Filter.Favorite = false;
-                _model.Filter.UseForDeletion = true;
-                _model.Filter.ForDeletion = true;
-            }
-            else
-            {
-                _model.Filter.UseFavorite = false;
-                _model.Filter.Favorite = false;
-                _model.Filter.UseForDeletion = false;
-                _model.Filter.ForDeletion = false;
-            }
+            //if (_currentModeSettings.Key == "favorites")
+            //{
+            //    _model.Filter.UseFavorite = true;
+            //    _model.Filter.Favorite = true;
+            //    _model.Filter.UseForDeletion = false;
+            //    _model.Filter.ForDeletion = false;
+            //}
+            //else if (_currentModeSettings.Key == "deleted")
+            //{
+            //    _model.Filter.UseFavorite = false;
+            //    _model.Filter.Favorite = false;
+            //    _model.Filter.UseForDeletion = true;
+            //    _model.Filter.ForDeletion = true;
+            //}
+            //else
+            //{
+            //    _model.Filter.UseFavorite = false;
+            //    _model.Filter.Favorite = false;
+            //    _model.Filter.UseForDeletion = false;
+            //    _model.Filter.ForDeletion = false;
+            //}
 
             _model.CurrentMode = mode;
             _model.CurrentViewMode = _currentModeSettings.ViewMode;
             //_model.SearchText = _currentModeSettings.LastQuery;
+
+            ServiceLocator.SearchService.CurrentViewMode = _currentModeSettings.ViewMode;
 
             _model.SearchHistory = new ObservableCollection<string?>(_currentModeSettings.History);
 
@@ -1682,10 +1649,19 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                if (!e.Data.GetDataPresent("DTCustomDragSource"))
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                try
                 {
-                    string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                    if ((File.GetAttributes(files[0]) & FileAttributes.Directory) != 0)
+                    {
+                        return;
+                    }
                     LoadPreviewImage(files[0]);
+                }
+                catch (Exception exception)
+                {
+                    Logger.Log(exception);
+                    MessageBox.Show(exception.Message, "Error loading image", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
 
@@ -1833,12 +1809,7 @@ namespace Diffusion.Toolkit.Pages
             UpdateImagesInPlace();
         }
 
-        private void DropImagesOnFolder(object sender, DragEventArgs e)
-        {
-            var folder = (FolderViewModel)((FrameworkElement)sender).DataContext;
-            _model.MainModel.MoveSelectedImagesToFolder(folder);
 
-        }
 
         public void ResetLayout()
         {

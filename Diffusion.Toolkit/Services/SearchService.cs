@@ -1,5 +1,6 @@
 ﻿using System;
 using Diffusion.Database;
+using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;
 
@@ -10,6 +11,7 @@ public class SearchService
     public event EventHandler<string> SortBy;
     public event EventHandler<string> SortOrder;
     public event EventHandler<SearchFilter> SearchFilter;
+    public event EventHandler<FolderViewModel> OpenFolder;
     public event EventHandler Search;
     public event EventHandler Refresh;
     public event EventHandler<SearchView> View;
@@ -39,6 +41,8 @@ public class SearchService
 
     public SearchSettings SearchSettings { get; }
 
+    public ViewMode CurrentViewMode { get; set; }
+
     public void ExecuteSearch()
     {
         Search?.Invoke(this, EventArgs.Empty);
@@ -62,5 +66,10 @@ public class SearchService
     public void AddDefaultSearchProperty(string property)
     {
         SearchSettings.AddDefaultSearchProperty(property);
+    }
+
+    public void ExecuteOpenFolder(FolderViewModel folder)
+    {
+        OpenFolder?.Invoke(this, folder);
     }
 }

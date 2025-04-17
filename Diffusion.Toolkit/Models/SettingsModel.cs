@@ -48,6 +48,7 @@ public class SettingsModel : BaseNotify
     private bool _isFoldersDirty;
     private bool _confirmDeletion;
     private bool _permanentlyDelete;
+    private bool _showFilenames;
 
     public SettingsModel()
     {
@@ -291,6 +292,12 @@ public class SettingsModel : BaseNotify
     {
         get => _scanUnavailable;
         set => SetField(ref _scanUnavailable, value);
+    }
+
+    public bool ShowFilenames
+    {
+        get => _showFilenames;
+        set => SetField(ref _showFilenames, value);
     }
 
     public bool PermanentlyDelete

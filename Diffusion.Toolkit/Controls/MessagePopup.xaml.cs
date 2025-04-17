@@ -62,6 +62,7 @@ namespace Diffusion.Toolkit.Controls
 
         public void Close()
         {
+            _manager.Close(this);
             t = new Timer(Callback, null, 1000, Timeout.Infinite);
         }
 
@@ -75,7 +76,6 @@ namespace Diffusion.Toolkit.Controls
         {
             t?.Dispose();
             t2?.Dispose();
-            _manager.Close(this);
         }
 
 
@@ -223,8 +223,10 @@ namespace Diffusion.Toolkit.Controls
         }
 
         private PopupResult _defaultResult;
+        private bool _selectAll;
 
-        public Task<PopupResult> Show(string message, string title, PopupButtons buttons, PopupResult defaultResult)
+        public Task<PopupResult> Show(string message, string title, PopupButtons buttons, PopupResult defaultResult,
+            bool selectAll = true)
         {
             _model.Width = 400;
             _model.Height = 200;
@@ -237,6 +239,8 @@ namespace Diffusion.Toolkit.Controls
             _model.HasCancel = buttons.HasFlag(PopupButtons.Cancel);
             _model.HasYes = buttons.HasFlag(PopupButtons.Yes);
             _model.HasNo = buttons.HasFlag(PopupButtons.No);
+
+            _selectAll = selectAll;
 
             _defaultResult = defaultResult;
 
@@ -310,6 +314,22 @@ namespace Diffusion.Toolkit.Controls
             {
                 InputTextBox.Focus();
                 Keyboard.Focus(InputTextBox);
+
+                if (_selectAll && Text is { Length: > 0 })
+                {
+                    InputTextBox.Text = Text;
+                    InputTextBox.SelectionStart = 0;
+                    InputTextBox.SelectionLength = Text.Length;
+
+                    //Task.Delay(200).ContinueWith((t) =>
+                    //{
+                    //    Dispatcher.Invoke(() =>
+                    //    {
+                    //        InputTextBox.SelectionStart = 0;
+                    //        InputTextBox.SelectionLength = Text.Length;
+                    //    });
+                    //});
+                }
             }
         }
     }

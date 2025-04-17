@@ -5,12 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Shapes;
+using System.Windows;
 using System.Windows.Threading;
 using Diffusion.Common;
 using Diffusion.Database;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
+using Path = System.IO.Path;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -56,7 +59,7 @@ public class FileService
 
                 ServiceLocator.ProgressService.SetProgress(count, $"Deleting {filename}");
 
-                ServiceLocator.DataStore.DeleteImage(imagePath.Id);
+                ServiceLocator.DataStore.RemoveImage(imagePath.Id);
 
                 ServiceLocator.FileService.Delete(imagePath.Path);
 
@@ -107,6 +110,62 @@ public class FileService
 
     }
 
+    public async Task RenameFile(int imageId, string path)
+    {
+        var title = GetLocalizedText("Actions.Files.Rename.Title");
+
+        var oldPath = Path.GetDirectoryName(path);
+        var oldFilename = Path.GetFileNameWithoutExtension(path);
+        var extension = Path.GetExtension(path);
+
+        var (result, newName) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Files.Rename.Message"),
+            title, oldFilename);
+
+        var window = ServiceLocator.WindowService.CurrentWindow;
+
+        if (result == PopupResult.OK)
+        {
+            newName = newName.Trim();
+
+            if (FileUtility.IsValidFilename(newName))
+            {
+                var newFilename = $"{newName}{extension}";
+                var newPath = Path.Combine(oldPath, newFilename);
+
+                try
+                {
+                    ServiceLocator.FolderService.DisableWatchers();
+                    File.Move(path, newPath);
+
+                    ServiceLocator.DataStore.UpdateImageFilename(imageId, newPath, newFilename);
+
+                    ServiceLocator.MainModel.CurrentImageEntry.Path = newPath;
+                    ServiceLocator.MainModel.CurrentImageEntry.FileName = newFilename;
+                    ServiceLocator.MainModel.CurrentImageEntry.Name = newFilename;
+                    ServiceLocator.MainModel.CurrentImage.Path = newPath;
+
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e.Message + "\r\n" + e.StackTrace);
+                    MessageBox.Show(window, e.Message, GetLocalizedText("Actions.Files.Rename.Error.Title"),
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    ServiceLocator.FolderService.EnableWatchers();
+                }
+
+            }
+            else
+            {
+                await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Files.Rename.Invalid.Message"),
+                    title, PopupButtons.OK);
+            }
+
+        }
+    }
+
     public async Task RemoveImagesTaggedForDeletion()
     {
         var files = ServiceLocator.DataStore.GetImagesTaggedForDeletion().ToList();
@@ -150,5 +209,10 @@ public class FileService
             });
         }
         ;
+    }
+
+    public void MoveImages(int[] files, int folderId)
+    {
+        throw new NotImplementedException();
     }
 }

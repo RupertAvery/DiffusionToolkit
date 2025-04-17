@@ -151,12 +151,7 @@ public class MetadataScannerService
         {
             _isCompleted = true;
 
-            if (!t.IsCanceled)
-            {
-                return t.Result.Sum();
-            }
-
-            return 0;
+            return consumers.Where(q => q.IsCompletedSuccessfully).Select(p => p.Result).Sum();
         });
 
         return new StartResult<int>() { Task = _currentTask };

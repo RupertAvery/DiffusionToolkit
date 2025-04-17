@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit.Configuration;
 
@@ -69,6 +70,9 @@ public class Settings : SettingsContainer, IScanOptions
     private bool _permanentlyDelete;
     private bool _confirmDeletion;
     private string _version;
+    private bool _showFilenames;
+    private int _thumbnailSpacing;
+    private ThumbnailViewMode _thumbnailViewMode;
 
     public Settings() : this(false)
     {
@@ -497,5 +501,24 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _confirmDeletion;
         set => UpdateValue(ref _confirmDeletion, value);
+    }
+
+
+    public bool ShowFilenames
+    {
+        get => _showFilenames;
+        set => UpdateValue(ref _showFilenames, value);
+    }
+
+    public int ThumbnailSpacing
+    {
+        get => _thumbnailSpacing;
+        set => UpdateValue(ref _thumbnailSpacing, value);
+    }
+
+    public ThumbnailViewMode ThumbnailViewMode
+    {
+        get => _thumbnailViewMode;
+        set => UpdateValue(ref _thumbnailViewMode, value);
     }
 }

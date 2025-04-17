@@ -1,17 +1,43 @@
 # Search Help
 
-There are two ways to search:
-
 * [Querying](#querying)
+  * [Querying Syntax](#querying-syntax)
+  * [Simple Prompt Search](#simple-prompt-search)
+  * [Parameter Search](#parameter-search)
+  * [Supported parameters](#supported-parameters)
+    * [Negative Prompt](#negative-prompt)
+    * [Steps](#steps)
+    * [Sampler](#sampler)
+    * [Classifier-Free Guidance Scale (CFG/Scale)](#classifier-free-guidance-scale-cfgscale)
+    * [Seed](#seed)
+    * [Size](#size)
+    * [Model Hash](#model-hash)
+    * [Model Name](#model-name)
+    * [Aesthetic Score](#aesthetic-score)
+    * [Hyper Networks](#hyper-networks)
+    * [Favorites](#favorites)
+    * [Rating](#rating)
+    * [NSFW](#nsfw)
+    * [No Metadata](#no-metadata)
+    * [For Deletion](#for-deletion)
+    * [Date Created](#date-created)
+    * [Path](#path)
+    * [Folder](#folder)
+  * [Notes About Search](#notes-about-search)
+  * [Searching on Multiple Values](#searching-on-multiple-values)
+  * [Querying Workflow Properties and Raw Metadata](#querying-workflow-properties-and-raw-metadata)
 * [Filtering](#filtering)
+  * [Metadata tab](#metadata-tab)
+  * [Workflow tab](#workflow-tab)
 
-# Querying
 
-The text box above the thumbnail area is the **Query** input. Here you can type in what you want to look for.  You can search on more than just the prompt, using **Query Syntax**. You can search on the [path](#path) of a file for example, or a range of [dates](#date-created) as well. You can combine criteria as well for a more refined search.
+# Query Syntax
+
+The text box above the thumbnail area is the **Query** input. Here you can type in what you want to look for.  You can search on more than just the prompt, using **Query Syntax**. You can search on the [path](#path) of a file for example, or a range of [dates](#date*created) as well. You can combine criteria as well for a more refined search.
 
 If the query syntax is a bit difficult to wrap your head around, or too verbose for you, you can use the [Filter](#filtering) instead.
 
-## Querying Syntax
+## Simple Prompt Search
 
 The basic way to search is by entering text that appears in the prompt. It will work the way yout expect most of the time.  However, commas are treated differently from they way they are used in prompts. In Query Syntax, they are used to separate  **search terms**.
 
@@ -61,7 +87,7 @@ Note that spaces are important. The following query
 
 Will not have the same results as the previous example.
 
-## Parameter Querying 
+## Parameter Search 
 
 To be able to filter on other parameters, you need to use special *query tokens*.  These are usually words referring to the parameter followed by a colon, for example `seed: 12345` will add a parameter query that filters images using a seed value of `12345`.
 
@@ -274,7 +300,7 @@ Path with wildcards will return matches in subfolders. If you want to search a s
    * using globs:
       * `path: "D:\My pics\images**"`      
       * `path: "**funny cats**"`      
-      
+
    * using criteria:
       * `path: starts with "D:\My pics\images"`      
       * `path: contains "funny cats"`      
@@ -288,7 +314,7 @@ Path with wildcards will return matches in subfolders. If you want to search a s
 ## Notes About Search
 
 * The parameters e.g. `steps:`, `sampler:` are not case sensitive. You can use `Steps:`, `Sampler:`, so you can copy it from a prompt.
-* You can have 0 or more spaces *after* the colon (`:`) and before the parameter value.
+* You can have 0 or more spaces *after* the colon (`:`) but not before it 
     * e.g. `steps:20`, `steps: 20`, `steps:   20` are OK
     * but `steps  :20`, `steps :20` are not
 
@@ -309,7 +335,9 @@ You can have Diffusion Toolkit search through ComfyUI Workflows or Raw Metadata 
 
 First you must have enabled scanning workflow and raw metadata in Settings, then Rescanned your images.
 
-Then click on the Search Settings icon in the Query bar to configure what propeties you want to search on.
+Then click on the Settings icon in the Query bar to configure what properties you want to search on.
+
+To find property names, look in the Metadata Pane Workflow tab and press the ... button on the right of each property. for the option Copy Property Name.
 
 # Filtering
 

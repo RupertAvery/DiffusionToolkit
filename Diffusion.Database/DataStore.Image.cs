@@ -2,26 +2,12 @@
 using System.Text;
 using Diffusion.Common;
 using Diffusion.Database.Models;
-using System.IO;
-using static Diffusion.Database.DataStore;
 
 namespace Diffusion.Database
 {
     public partial class DataStore
     {
-        public void AddImage(SQLiteConnection connection, Image image)
-        {
-            connection.Insert(image);
-        }
-
-        public void AddImage(Image image)
-        {
-            using var db = OpenConnection();
-            db.Insert(image);
-            db.Close();
-        }
-
-        public void DeleteImage(int id)
+        public void RemoveImage(int id)
         {
             RemoveImages(new[] { id });
         }
@@ -107,9 +93,7 @@ namespace Diffusion.Database
 
         public IEnumerable<ImagePath> GetImagesTaggedForDeletion()
         {
-            //List<ImagePath> paths = new List<ImagePath>();
-
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var images = db.Query<ImagePath>("SELECT Id, Path FROM Image WHERE ForDeletion = 1");
 
@@ -119,13 +103,11 @@ namespace Diffusion.Database
             }
 
             db.Close();
-
-            //return paths;
         }
 
         public IEnumerable<ImagePath> GetAllPathImages(string path)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var images = db.Query<ImagePath>("SELECT Id, FolderId, Path, Unavailable FROM Image WHERE PATH LIKE ? || '%'", path);
 
@@ -133,55 +115,37 @@ namespace Diffusion.Database
             {
                 yield return image;
             }
-
-            db.Close();
         }
 
         public int CountAllPathImages(string path)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var count = db.ExecuteScalar<int>("SELECT COUNT(*) FROM Image WHERE PATH LIKE ? || '%'", path);
-
-            db.Close();
 
             return count;
         }
 
-        public IEnumerable<ImagePath> GetFolderImages(int folderId)
+        public IEnumerable<ImagePath> GetFolderImages(int folderId, bool recursive)
         {
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
-            var images = db.Query<ImagePath>("SELECT Id, FolderId, Path FROM Image WHERE FolderId = ?", folderId);
+            var query = recursive
+                ? $"{DirectoryTreeCTE} SELECT Id, FolderId, Path FROM Image WHERE FolderId IN (SELECT Id FROM directoryTree WHERE RootId = ?)"
+                : "SELECT Id, FolderId, Path FROM Image WHERE FolderId = ?";
+
+            var images = db.Query<ImagePath>(query, folderId);
 
             foreach (var image in images)
             {
                 yield return image;
             }
 
-            db.Close();
         }
-
-        //public int DeleteMarkedImages()
-        //{
-        //    using var db = OpenConnection();
-
-        //    var query = "DELETE FROM Image WHERE ForDeletion = 1";
-
-        //    var command = db.CreateCommand(query);
-        //    var result = command.ExecuteNonQuery();
-
-        //    return result;
-        //}
-
-
 
         public int UpdateImagesByPath(SQLiteConnection db, IEnumerable<Image> images, IEnumerable<string> includeProperties, Dictionary<string, Folder> folderCache, CancellationToken cancellationToken)
         {
             var updated = 0;
-
-
-            //db.BeginTransaction();
 
             // These are user-defined metadata and should NOT be overwritten when the user
             // re-scans the images
@@ -388,21 +352,14 @@ namespace Diffusion.Database
 
         public IEnumerable<ImagePath> GetImagePaths()
         {
-            //List<ImagePath> paths = new List<ImagePath>();
-
-            using var db = OpenConnection();
+            var db = OpenReadonlyConnection();
 
             var images = db.Query<ImagePath>("SELECT Id, FolderId, Path FROM Image");
 
             foreach (var image in images)
             {
-                //paths.Add(image);
                 yield return image;
             }
-
-            db.Close();
-
-            //return paths;
         }
 
         public void UpdateImageFolderId(int id, string path, Dictionary<string, Folder> folderCache)
@@ -515,24 +472,32 @@ namespace Diffusion.Database
 
         public int UpdateImagePath(int id, string path)
         {
-            var db = OpenConnection();
-
             lock (_lock)
             {
+                using var db = OpenConnection();
                 return db.Execute("UPDATE Image SET Path = ? WHERE Id = ?", path, id);
             }
         }
 
         public int UpdateViewed(int id)
         {
-            var db = OpenConnection();
 
             lock (_lock)
             {
+                using var db = OpenConnection();
                 return db.Execute("UPDATE Image SET ViewedDate = ? WHERE Id = ?", DateTime.Now, id);
             }
         }
 
+        public int UpdateImageFilename(int id, string path, string filename)
+        {
+
+            lock (_lock)
+            {
+                using var db = OpenConnection();
+                return db.Execute("UPDATE Image SET Path = ?, FileName = ? WHERE Id = ?", path, filename, id);
+            }
+        }
     }
 
     public class HashMatch

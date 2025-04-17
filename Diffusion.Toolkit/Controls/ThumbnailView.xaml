@@ -29,45 +29,42 @@
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:FileEntryTypeVisibilityConverter x:Key="fileEntryTypeVis"></converters:FileEntryTypeVisibilityConverter>
-            <converters:AlbumModeVisibilityConverter x:Key="albumModeVis"></converters:AlbumModeVisibilityConverter>
+            <converters:AddConverter x:Key="add"></converters:AddConverter>
+            <converters:FilenameVisibilityConverter x:Key="filenameVis"></converters:FilenameVisibilityConverter>
             <local:ThumbnailTemplateSelector x:Key="ThumbnailTemplateSelector"></local:ThumbnailTemplateSelector>
+
 
             <DataTemplate x:Key="FolderDataTemplate" DataType="{x:Type models:ImageEntry}">
                 <Grid
-                    Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                     Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
                     >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" />
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
+
                     <fa:ImageAwesome 
-                        Height="128"
+                        Height="64"
                         Icon="FolderOutlinepenOutline"
                         Foreground="{DynamicResource ForegroundBrush}" 
                         HorizontalAlignment="Center" VerticalAlignment="Center"></fa:ImageAwesome>
+                    <Label Grid.Row="1" Foreground="{DynamicResource ForegroundBrush}"  HorizontalContentAlignment="Center" >
+                        <Label>
+                            <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding Name}"></TextBlock>
+                        </Label>
+                    </Label>
                 </Grid>
 
-            </DataTemplate>
-
-            <DataTemplate x:Key="AlbumDataTemplate" DataType="{x:Type models:ImageEntry}">
-                <Grid
-                    Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                    Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                >
-                    <fa:ImageAwesome Icon="FilePhotoOutline"
-                                     Height="128"
-                                     Foreground="{DynamicResource ForegroundBrush}" 
-                                     HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <fa:ImageAwesome.ContextMenu>
-                            <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                <MenuItem Header="Rename Album" Click="RenameAlbum_OnClick"></MenuItem>
-                                <MenuItem Header="Remove Album" Click="RemoveAlbum_OnClick"></MenuItem>
-                            </ContextMenu>
-                        </fa:ImageAwesome.ContextMenu>
-
-                    </fa:ImageAwesome>
-                </Grid>
             </DataTemplate>
 
             <DataTemplate x:Key="FileDataTemplate" DataType="{x:Type models:ImageEntry}">
-                <Grid Background="Transparent">
+                <Grid Background="Transparent"
+                      Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
+                      >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" />
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
                     <local:Thumbnail 
                         Source="{Binding Thumbnail}" 
                         Foreground="{DynamicResource ForegroundBrush}"
@@ -98,13 +95,142 @@
                         Height="32"
                         ></local:ThumbnailIcons>
                     </Grid>
+                    <Label Grid.Row="1" Foreground="{DynamicResource ForegroundBrush}"  HorizontalContentAlignment="Center">
+                        <Label.Style>
+                            <Style TargetType="Label">
+                                <Setter Property="Visibility" Value="Visible"></Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Model.MainModel.ShowFilenames, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Value="{StaticResource FalseValue}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Label.Style>
+                        <Label>
+                            <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding Name}"></TextBlock>
+                        </Label>
+                    </Label>
                 </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="CompactFileView" DataType="{x:Type models:ImageEntry}">
+                <Grid Background="Transparent"
+                      Width="{Binding ThumbnailWidth}" 
+                      >
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <local:Thumbnail 
+                        Source="{Binding Thumbnail}" 
+                        Foreground="{DynamicResource ForegroundBrush}"
+                        Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}"
+                        Data="{Binding .}"
+                        Height="{Binding ThumbnailHeight}" 
+                        Width="{Binding ThumbnailWidth}" 
+                        HorizontalAlignment="Stretch" VerticalAlignment="Top">
+
+                        <local:Thumbnail.Effect>
+                            <BlurEffect  KernelType="Gaussian">
+                                <BlurEffect.Radius>
+                                    <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
+                                        <Binding Path="NSFW"></Binding>
+                                        <Binding ElementName="ThumbnailListView" Path="DataContext.NSFWBlur" ></Binding>
+                                    </MultiBinding>
+                                </BlurEffect.Radius>
+                            </BlurEffect>
+                        </local:Thumbnail.Effect>
+                    </local:Thumbnail>
+                    <Grid Background="{x:Null}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="32"/>
+                        </Grid.RowDefinitions>
+                        <local:ThumbnailIcons Grid.Row="1"
+                                              Data="{Binding .}"
+                                              Height="32"
+                        ></local:ThumbnailIcons>
+                    </Grid>
+                    <Label Grid.Row="1" Foreground="{DynamicResource ForegroundBrush}"  HorizontalContentAlignment="Center" >
+                        <Label.Style>
+                            <Style TargetType="Label">
+                                <Setter Property="Visibility" Value="Visible"></Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Model.MainModel.ShowFilenames, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Value="{StaticResource FalseValue}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Label.Style>
+                        <Label>
+                            <TextBlock TextTrimming="CharacterEllipsis" Text="{Binding Name}"></TextBlock>
+                        </Label>
+                    </Label>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="ClassicView"  DataType="{x:Type models:ImageEntry}">
+                <Border Margin="12" >
+                    <!--<ContentControl Content="{Binding Path=Self}" ContentTemplate="{StaticResource FileDataTemplate}" ContentTemplateSelector="{DynamicResource ThumbnailTemplateSelector}"/>-->
+                    <ContentControl Content="{Binding Path=.}">
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Folder}">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource FolderDataTemplate}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.File}">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+                </Border>
+            </DataTemplate>
+
+            <DataTemplate x:Key="CompactView"  DataType="{x:Type models:ImageEntry}">
+                <Border Margin="{Binding Model.ThumbnailSpacing, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
+                    <ContentControl Content="{Binding Path=.}">
+                        <ContentControl.Style>
+                            <Style TargetType="ContentControl">
+                                <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Folder}">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource FolderDataTemplate}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.File}">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource CompactFileView}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ContentControl.Style>
+                    </ContentControl>
+                </Border>
+            </DataTemplate>
+
+            <DataTemplate x:Key="SwitchingTemplate">
+                <ContentControl Content="{Binding}">
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Setter Property="ContentTemplate" Value="{StaticResource ClassicView}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Model.MainModel.ThumbnailViewMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Value="{x:Static local:ThumbnailViewMode.Compact}">
+                                    <Setter Property="ContentTemplate" Value="{StaticResource CompactView}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
             </DataTemplate>
 
         </ResourceDictionary>
 
     </UserControl.Resources>
     <UserControl.InputBindings>
+        <KeyBinding Key="Back" Command="{Binding Model.MainModel.NavigateToParentFolderCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"></KeyBinding>
+        <KeyBinding Key="F2" Command="{Binding Model.MainModel.RenameFileCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="1"></KeyBinding>
         <KeyBinding Modifiers="Shift" Key="D1" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="1"></KeyBinding>
         <KeyBinding Modifiers="Shift" Key="D2" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="2"></KeyBinding>
         <KeyBinding Modifiers="Shift" Key="D3" Command="{Binding Model.MainModel.OpenWithCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" CommandParameter="3"></KeyBinding>
@@ -160,6 +286,7 @@
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                   behaviors:ScrollSpeed.ScrollSpeed="11.5"
                   Tag="{Binding Path=.}"
+                  ItemTemplate="{StaticResource SwitchingTemplate}"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <ListView.Resources>
                 <Style TargetType="ListViewItem">
@@ -287,41 +414,7 @@
                     <WrapPanel Orientation="Horizontal" Background="Transparent" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Grid Background="Transparent">
-                        <Grid.RowDefinitions>
-                            <RowDefinition></RowDefinition>
-                            <RowDefinition></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Border 
-                                Height="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" 
-                                Width="{Binding DataContext.ThumbnailSize, RelativeSource={RelativeSource AncestorType={x:Type ListView}}}" Margin="12" >
-                            <!--<ContentControl Content="{Binding Path=Self}" ContentTemplate="{StaticResource FileDataTemplate}" ContentTemplateSelector="{DynamicResource ThumbnailTemplateSelector}"/>-->
-                            <ContentControl Content="{Binding Path=.}">
-                                <ContentControl.Style>
-                                    <Style TargetType="ContentControl">
-                                        <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Folder}">
-                                                <Setter Property="ContentTemplate" Value="{StaticResource FolderDataTemplate}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.File}">
-                                                <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Album}">
-                                                <Setter Property="ContentTemplate" Value="{StaticResource AlbumDataTemplate}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ContentControl.Style>
-                            </ContentControl>
-                        </Border>
-                        <Label Grid.Row="1" HorizontalContentAlignment="Center" Content="{Binding Name}">
-                        </Label>
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
+
         </ListView>
 
         <Grid  Background="#80000000" Visibility="{Binding IsBusy, Converter={StaticResource boolToVis}}">
@@ -333,6 +426,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <Label Grid.Column="0"  
@@ -341,7 +435,8 @@
                          VerticalContentAlignment="Center"
                          Content="{Binding Results}"
                 ></Label>
-            <StackPanel Grid.Column="1"   Orientation="Horizontal">
+            <Slider Grid.Column="1" Width="90" VerticalAlignment="Center" Minimum="0" Maximum="20" Value="{Binding ThumbnailSpacing}"></Slider>
+            <StackPanel Grid.Column="2"   Orientation="Horizontal">
                 <Button Style="{DynamicResource BorderlessButton}" Width="24" IsEnabled="{Binding FirstPageEnabled}" ToolTip="{lex:Loc Thumbnail.Pagination.First}" Click="FirstPage_OnClick">
                     <fa:ImageAwesome Icon="FastBackward" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                     </fa:ImageAwesome>

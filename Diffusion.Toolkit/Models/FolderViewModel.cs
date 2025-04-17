@@ -17,7 +17,8 @@ public class FolderViewModel : BaseNotify
     private bool _isExcluded;
     private bool _isUnavailable;
     private bool _isScanned;
-    private ArchivedStatus _archivedStatus;
+    private bool _isBusy;
+    private ObservableCollection<FolderViewModel>? _children;
 
     public MainModel MainModel => ServiceLocator.MainModel;
 
@@ -41,7 +42,7 @@ public class FolderViewModel : BaseNotify
         set => SetField(ref _hasChildren, value);
     }
 
-    public FolderViewModel Parent { get; set; }
+    public FolderViewModel? Parent { get; set; }
 
     public bool Visible
     {
@@ -49,7 +50,11 @@ public class FolderViewModel : BaseNotify
         set => SetField(ref _visible, value);
     }
 
-    public ObservableCollection<FolderViewModel>? Children { get; set; }
+    public ObservableCollection<FolderViewModel>? Children
+    {
+        get => _children;
+        set => SetField(ref _children, value);
+    }
 
     public int Depth { get; set; }
     public string Path { get; set; }
@@ -72,19 +77,12 @@ public class FolderViewModel : BaseNotify
         get => _isArchived;
         set => SetField(ref _isArchived, value);
     }
-
-    public ArchivedStatus ArchivedStatus
-    {
-        get => _archivedStatus;
-        set => SetField(ref _archivedStatus, value);
-    }
-
+    
     public bool IsExcluded
     {
         get => _isExcluded;
         set => SetField(ref _isExcluded, value);
     }
-
 
     public bool IsScanned
     {
@@ -101,6 +99,12 @@ public class FolderViewModel : BaseNotify
         get => !_isScanned;
     }
 
+    public bool IsBusy
+    {
+        get => _isBusy;
+        set => SetField(ref _isBusy, value);
+    }
+
     public override bool Equals(object? obj)
     {
         if (obj is FolderViewModel folder)
@@ -115,11 +119,4 @@ public class FolderViewModel : BaseNotify
     {
         return this.Path.GetHashCode();
     }
-}
-
-public enum ArchivedStatus
-{
-    Archived,
-    Unarchived,
-    PartiallyArchived
 }

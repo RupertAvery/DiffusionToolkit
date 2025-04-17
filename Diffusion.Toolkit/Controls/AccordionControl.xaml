@@ -80,7 +80,7 @@
                         <ScrollViewer Margin="0,5,0,5" behaviors:DTBehaviors.IsScrollDisabledAttached="True">
                             <ContentPresenter Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" />
                         </ScrollViewer>
-                         </Border>
+                    </Border>
 
                     <Grid Visibility="{Binding CanResize, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource boolToVisCol}}" Grid.Row="1" Background="Transparent" Height="10" 
                           Opacity="50"

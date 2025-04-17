@@ -97,6 +97,10 @@ public class SearchModel : BaseNotify
         {
             ServiceLocator.MainModel.CurrentImage = CurrentImage;
         }
+        if (e.PropertyName == nameof(SelectedImageEntry))
+        {
+            ServiceLocator.MainModel.SelectedImageEntry = SelectedImageEntry;
+        }
     }
 
     //public SearchModel(MainModel mainModel)

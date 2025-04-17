@@ -244,7 +244,7 @@ namespace Diffusion.Toolkit
 
                     if (remove)
                     {
-                        _dataStore.DeleteImage(image.Id);
+                        _dataStore.RemoveImage(image.Id);
                     }
                     else
                     {
@@ -307,7 +307,7 @@ namespace Diffusion.Toolkit
                 var folder = _dataStore.GetFolder(excludedPath);
                 if (folder != null)
                 {
-                    var images = _dataStore.GetFolderImages(folder.Id).ToList();
+                    var images = _dataStore.GetFolderImages(folder.Id, false).ToList();
                     if (images.Any())
                     {
                         _dataStore.RemoveImages(images.Select(i => i.Id));

@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Data;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit.Converters;
 
-public class FolderUnavailableConverter : IValueConverter
+public class ThumbnailViewModeConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value == null) return new TextDecorationCollection();
+        if (value == null) return false;
 
-        return (bool)value ? TextDecorations.Strikethrough : new TextDecorationCollection();
+        return (ThumbnailViewMode)value == (ThumbnailViewMode)parameter;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -15,4 +15,11 @@ public class Logger
         }
     }
 
+    public static void Log(Exception exception)
+    {
+        lock (_lock)
+        {
+            File.AppendAllText("DiffusionToolkit.log", $"{DateTime.Now:G}: {exception}\r\n");
+        }
+    }
 }

@@ -85,7 +85,12 @@ public class ThumbnailService
 
             if (d.Success)
             {
-                _dispatcher.Invoke(() => { image.Thumbnail = d.Image; });
+                _dispatcher.Invoke(() =>
+                {
+                    image.Thumbnail = d.Image;
+                    image.ThumbnailHeight = d.Image.Height;
+                    image.ThumbnailWidth = d.Image.Width;
+                });
             }
             else
             {

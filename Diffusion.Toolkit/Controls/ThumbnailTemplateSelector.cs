@@ -25,7 +25,6 @@ public class ThumbnailTemplateSelector : DataTemplateSelector
             {
                 EntryType.File => "FileDataTemplate",
                 EntryType.Folder => "FolderDataTemplate",
-                EntryType.Album => "AlbumDataTemplate",
                 _ => throw new ArgumentOutOfRangeException()
             };
 

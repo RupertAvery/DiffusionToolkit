@@ -458,7 +458,7 @@ namespace Diffusion.Toolkit.Controls
                 {
                     ServiceLocator.AlbumService.UpdateSelectedImageAlbums();
                 });
-            });
+            }, 1000);
         }
     }
 }

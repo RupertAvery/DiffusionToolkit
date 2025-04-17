@@ -23,6 +23,12 @@ using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit.Controls
 {
+    public enum ThumbnailViewMode
+    {
+        Classic,
+        Compact
+    }
+
     /// <summary>
     /// Interaction logic for ThumbnailView.xaml
     /// </summary>
@@ -83,10 +89,16 @@ namespace Diffusion.Toolkit.Controls
 
             _debounceRedrawThumbnails = Utility.Debounce(() => Dispatcher.Invoke(() => ReloadThumbnailsView()));
 
+            Model.ThumbnailSpacing = ServiceLocator.Settings.ThumbnailSpacing;
+            
+            //GotFocus += ThumbnailView_GotFocus;
             Init();
         }
 
-
+        //private void ThumbnailView_GotFocus(object sender, RoutedEventArgs e)
+        //{
+        //    FocusCurrentItem();
+        //}
 
         private readonly Action _debounceRedrawThumbnails;
 
@@ -140,6 +152,9 @@ namespace Diffusion.Toolkit.Controls
                     break;
                 case nameof(ThumbnailViewModel.Page):
                     Page = Model.Page;
+                    break;
+                case nameof(ThumbnailViewModel.ThumbnailSpacing):
+                    ServiceLocator.Settings.ThumbnailSpacing = Model.ThumbnailSpacing;
                     break;
             }
         }
@@ -342,6 +357,11 @@ namespace Diffusion.Toolkit.Controls
                             _ => 0
                         };
 
+                        if (Model.MainModel.ThumbnailViewMode == ThumbnailViewMode.Compact)
+                        {
+                            return;
+                        }
+
                         var visibleCount = 0;
 
                         foreach (var item1 in ThumbnailListView.Items)
@@ -408,6 +428,11 @@ namespace Diffusion.Toolkit.Controls
                             Key.Down => columnWidth,
                             _ => 0
                         };
+
+                        if (Model.MainModel.ThumbnailViewMode == ThumbnailViewMode.Compact)
+                        {
+                            return;
+                        }
 
                         if (currentItemIndex + delta < 0 || currentItemIndex + delta >= wrapPanel.Children.Count)
                         {
@@ -694,7 +719,7 @@ namespace Diffusion.Toolkit.Controls
                 if (item.VisualHit is FrameworkElement { DataContext: ImageEntry { IsEmpty: false } entry })
                 {
                     //currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
-
+                    Model.MainModel.CurrentImageEntry = entry;
                     SelectedImageEntry = entry;
                 }
 
@@ -752,7 +777,7 @@ namespace Diffusion.Toolkit.Controls
 
                 DataObject dataObject = new DataObject();
                 dataObject.SetData(DataFormats.FileDrop, _selItems.Select(t => t.Path).ToArray());
-                dataObject.SetData("DTCustomDragSource", true);
+                dataObject.SetData(DragAndDrop.DragFiles, _selItems.Select(t => t.Id).ToArray());
 
                 DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
             }

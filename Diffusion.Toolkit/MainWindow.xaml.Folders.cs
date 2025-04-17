@@ -19,9 +19,14 @@ namespace Diffusion.Toolkit
         {
             _model.MoveSelectedImagesToFolder = MoveSelectedImagesToFolder;
 
-            _model.ScanFolderCommand = new RelayCommand<FolderViewModel>((o) =>
+            _model.RescanFolderCommand = new RelayCommand<FolderViewModel>((folder) =>
             {
-                ServiceLocator.ScanningService.ScanFolder(o);
+                ServiceLocator.ScanningService.ScanFolder(folder, true);
+            });
+
+            _model.ScanFolderCommand = new RelayCommand<FolderViewModel>((folder) =>
+            {
+                ServiceLocator.ScanningService.ScanFolder(folder, false);
             });
 
             _model.CreateFolderCommand = new RelayCommand<FolderViewModel>((o) =>
@@ -29,9 +34,39 @@ namespace Diffusion.Toolkit
                 ShowCreateFolderDialog(o);
             });
 
-            _model.RenameFolderCommand = new RelayCommand<FolderViewModel>((o) =>
+            _model.RenameFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>
             {
-                ShowRenameFolderDialog(o);
+                var oldPath = o.Path;
+
+                var (success, newName, newPath) = await ServiceLocator.FolderService.RenameFolder(o.Id, o.Name, o.Path);
+                if (success)
+                {
+                    o.Name = newName;
+                    o.Path = newPath;
+
+                    if (o.HasChildren && o.Children != null)
+                    {
+                        foreach (var child in o.Children)
+                        {
+                            child.Path = Path.Combine(newPath, Path.GetFileName(child.Path));
+                        }
+                    }
+
+                    if (_search.QueryOptions.Folder == oldPath)
+                    {
+                        _search.OpenFolder(o);
+                    }
+
+                    var existingEntry = _search.Images.FirstOrDefault(d => d.EntryType == EntryType.Folder && d.Path == oldPath);
+
+                    if (existingEntry != null)
+                    {
+                        existingEntry.Name = newName;
+                        existingEntry.Path = newPath;
+                    }
+
+                }
+
             });
 
             _model.DeleteFolderCommand = new RelayCommand<FolderViewModel>((o) =>
@@ -41,27 +76,31 @@ namespace Diffusion.Toolkit
 
             _model.ArchiveFolderCommand = new RelayCommand<bool>((o) =>
             {
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    var folders = ServiceLocator.MainModel.Folders.Where(d => d.IsSelected);
+                    var folders = ServiceLocator.FolderService.SelectedFolders;
+
                     foreach (var folder in folders)
                     {
                         ServiceLocator.DataStore.SetFolderArchived(folder.Id, o, false);
                     }
-                    ServiceLocator.FolderService.LoadFolders();
+
+                    await ServiceLocator.FolderService.LoadFolders();
                 });
             });
 
             _model.ArchiveFolderRecursiveCommand = new RelayCommand<bool>((o) =>
             {
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    var folders = ServiceLocator.MainModel.Folders.Where(d => d.IsSelected);
+                    var folders = ServiceLocator.FolderService.SelectedFolders;
+
                     foreach (var folder in folders)
                     {
                         ServiceLocator.DataStore.SetFolderArchived(folder.Id, o, true);
                     }
-                    ServiceLocator.FolderService.LoadFolders();
+
+                    await ServiceLocator.FolderService.LoadFolders();
                 });
             });
 
@@ -77,45 +116,6 @@ namespace Diffusion.Toolkit
 
             await ServiceLocator.FolderService.LoadFolders();
 
-
-            ServiceLocator.DataStore.DataChanged += DataChanged;
-        }
-
-        private void DataChanged(object? sender, DataChangedEventArgs e)
-        {
-            if (e is { EntityType: EntityType.Folder, SourceType: SourceType.Collection })
-            {
-                _ = ServiceLocator.FolderService.LoadFolders();
-            }
-        }
-
-        static bool IsValidFolderName(string folderName)
-        {
-            string[] reservedNames = { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
-
-            if (Array.IndexOf(reservedNames, folderName.ToUpper()) != -1)
-            {
-                return false;
-            }
-
-            char[] invalidChars = Path.GetInvalidFileNameChars();
-
-            if (folderName.IndexOfAny(invalidChars) != -1)
-            {
-                return false;
-            }
-
-            if (folderName.Trim() != folderName)
-            {
-                return false;
-            }
-
-            if (string.IsNullOrWhiteSpace(folderName))
-            {
-                return false;
-            }
-
-            return true;
         }
 
         private void RemoveFolder(FolderViewModel folder)
@@ -128,12 +128,7 @@ namespace Diffusion.Toolkit
                 }
             }
 
-            var listItem = _model.Folders.FirstOrDefault(d => d.Path == folder.Path);
-
-            if (listItem != null)
-            {
-                _model.Folders.Remove(listItem);
-            }
+            _model.Folders.Remove(folder);
         }
 
         private async void ShowDeleteFolderDialog(FolderViewModel folder)
@@ -142,7 +137,7 @@ namespace Diffusion.Toolkit
 
             PopupResult result;
 
-            var title = GetLocalizedText("Actions.Folders.Delete.Message");
+            var title = GetLocalizedText("Actions.Folders.Delete.Title");
 
             if (selectedFolders.Count > 1)
             {
@@ -159,34 +154,31 @@ namespace Diffusion.Toolkit
                 var count = 0;
                 foreach (var model in selectedFolders)
                 {
-                    ServiceLocator.DataStore.RemoveFolder(model.Path, count == selectedFolders.Count - 1);
-
                     if (Directory.Exists(model.Path))
                     {
                         ThumbnailCache.Instance.Unload(model.Path);
                         ServiceLocator.FolderService.Delete(model.Path);
                     }
 
+                    ServiceLocator.DataStore.RemoveFolder(model.Path);
+
                     Dispatcher.Invoke(() =>
                     {
                         ServiceLocator.MainModel.Folders.Remove(model);
-                        //RemoveFolder(model);
+                        RemoveFolder(model);
                         model.IsSelected = false;
-                        folder.Parent!.Children!.Remove(model);
-                        folder.Parent!.HasChildren = folder.Parent!.Children.Any();
+                        model.Parent!.Children!.Remove(model);
                     });
 
                     count++;
                 }
 
-                
-
-                _search.OpenFolder(selectedFolders[0]);
+                _search.OpenFolder(selectedFolders[0].Parent);
             }
         }
 
 
-        private async void ShowCreateFolderDialog(FolderViewModel folder)
+        private async void ShowCreateFolderDialog(FolderViewModel parentFolder)
         {
             var title = GetLocalizedText("Actions.Folders.Create.Title");
 
@@ -194,15 +186,15 @@ namespace Diffusion.Toolkit
 
             if (result == PopupResult.OK)
             {
-                var currentFolder = _model.CurrentFolder;
 
-                if (!IsValidFolderName(name))
+
+                if (!FileUtility.IsValidFilename(name))
                 {
                     await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Invalid.Message"), title);
                     return;
                 }
 
-                var newPath = Path.Combine(currentFolder.Path, name);
+                var newPath = Path.Combine(parentFolder.Path, name);
 
                 if (Directory.Exists(newPath))
                 {
@@ -210,184 +202,26 @@ namespace Diffusion.Toolkit
                     return;
                 }
 
-
-                var directory = new DirectoryInfo(currentFolder.Path);
+                var directory = new DirectoryInfo(parentFolder.Path);
 
                 if (directory.Exists)
                 {
                     directory.CreateSubdirectory(name);
-
-                    Dispatcher.Invoke(() =>
+                    
+                    ServiceLocator.FolderService.AppendChild(parentFolder, new FolderViewModel()
                     {
-                        _search.RefreshFolder(currentFolder);
-                    });
-                }
- 
-            }
-        }
-
-        private async void ShowRenameFolderDialog(FolderViewModel folder)
-        {
-            var title = GetLocalizedText("Actions.Folders.Rename.Title");
-
-            var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Folders.Rename.Message"), title, folder.Name);
-
-            if (result == PopupResult.OK)
-            {
-                var parentPath = Path.GetDirectoryName(folder.Path);
-                var newPath = Path.Combine(parentPath, name);
-
-                if (!IsValidFolderName(name))
-                {
-                    await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Invalid.Message"), title);
-                    return;
-                }
-
-                if (Directory.Exists(newPath))
-                {
-                    await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Exists.Message").Replace("{folder}", name), title);
-                    return;
-                }
-
-                if (folder.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
-                {
-                    return;
-                }
-
-                await Task.Run(async () =>
-                {
-                    // TODO: Lock? Prevent other tasks from running?
-
-                    using (var db = _dataStore.OpenConnection())
-                    {
-                        db.BeginTransaction();
-
-                        try
-                        {
-                            if (await MovePath(db, folder.Path, newPath))
-                            {
-                                Directory.Move(folder.Path, newPath);
-
-                                RenameFolderViews(folder, folder.Path, newPath);
-
-                                Dispatcher.Invoke(() =>
-                                {
-                                    folder.Path = newPath;
-                                    folder.Name = name;
-                                });
-
-                                db.Commit();
-                            }
-                            else
-                            {
-                                db.Rollback();
-                            }
-
-                            _search.OpenFolder(folder);
-
-                        }
-                        catch (Exception ex)
-                        {
-                            db.Rollback();
-                            throw;
-                        }
-                    }
-                });
-
-
-            }
-        }
-
-        private void RenameFolderViews(FolderViewModel folder, string source, string dest)
-        {
-            if (folder.Children != null)
-            {
-                foreach (var child in folder.Children)
-                {
-                    RenameFolderViews(child, source, dest);
-                }
-            }
-
-            var subPath = folder.Path.Substring(source.Length);
-            var newPath = Path.Join(dest, subPath);
-
-            folder.Path = newPath;
-        }
-
-
-        private async Task<bool> MovePath(SQLiteConnection db, string sourcePath, string destinationPath)
-        {
-            //TODO: Check that destinationPath is under a watched folder
-            var moved = 0;
-
-            if (await ServiceLocator.ProgressService.TryStartTask())
-            {
-                try
-                {
-                    ThumbnailCache.Instance.Unload(sourcePath);
-
-                    var images = _dataStore.GetAllPathImages(sourcePath).ToList();
-
-                    ServiceLocator.FolderService.DisableWatchers();
-
-                    Dispatcher.Invoke(() =>
-                    {
-                        _model.TotalProgress = images.Count;
-                        _model.CurrentProgress = 0;
+                        Parent = parentFolder,
+                        Name = name,
+                        Depth = parentFolder.Depth + 1,
+                        Path = newPath,
+                        IsScanned = false
                     });
 
 
-                    var folderCache = ServiceLocator.FolderService.AllFolders.ToDictionary(d => d.Path);
-
-                    foreach (var image in images)
-                    {
-                        var subPath = image.Path.Substring(sourcePath.Length);
-                        var newPath = Path.Join(destinationPath, subPath);
-
-                        if (image.Path != newPath)
-                        {
-                            _dataStore.MoveImage(db, image.Id, newPath, folderCache);
-
-                            var moved1 = moved;
-                            if (moved % 33 == 0)
-                            {
-                                image.Path = newPath;
-
-                                ServiceLocator.ProgressService.SetProgress(moved1);
-                                ServiceLocator.ProgressService.SetStatus(
-                                    $"Moving {_model.CurrentProgress:#,###,###} of {_model.TotalProgress:#,###,###}...");
-                            }
-
-                            moved++;
-                        }
-                        else
-                        {
-                            _model.TotalProgress--;
-                        }
-                    }
-
-                    return true;
+                    //ServiceLocator.FolderService.RefreshFolder(parentFolder);
                 }
-                catch (Exception e)
-                {
-                    Logger.Log("MovePath: " + e.Message);
-                    await ServiceLocator.MessageService.ShowMedium($"An error occured while moving a folder:\r\n{e.Message}", "Move images", PopupButtons.OK);
-                    return false;
-                }
-                finally
-                {
-                    ServiceLocator.ToastService.Toast($"{moved} files were moved.", "Move images");
 
-                    ServiceLocator.ProgressService.CompleteTask();
-                    ServiceLocator.ProgressService.ClearProgress();
-                    ServiceLocator.ProgressService.SetStatus("");
-                    ServiceLocator.FolderService.EnableWatchers();
-                }
             }
-
-            return false;
         }
-
-
     }
 }

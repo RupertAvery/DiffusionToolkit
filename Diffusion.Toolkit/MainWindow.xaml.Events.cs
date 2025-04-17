@@ -19,6 +19,8 @@ using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Thumbnails;
 using WPFLocalizeExtension.Engine;
 using MessageBox = System.Windows.MessageBox;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit
 {
@@ -42,6 +44,70 @@ namespace Diffusion.Toolkit
             //}
 
         }
+
+        private void InitEvents()
+        {
+            _model.ReleaseNotesCommand = new RelayCommand<object>((o) => ShowReleaseNotes());
+            _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
+            _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
+
+            _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
+
+            _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
+            _model.ToggleHideDeleted = new RelayCommand<object>((o) => ToggleHideDeleted());
+            _model.ToggleHideUnavailable = new RelayCommand<object>((o) => ToggleHideUnavailable());
+
+            _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
+            _model.ToggleActualSize = new RelayCommand<object>((o) => ToggleActualSize());
+
+            _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
+            _model.ToggleTagsCommand = new RelayCommand<object>((o) => ToggleTags());
+            _model.ToggleNotificationsCommand = new RelayCommand<object>((o) => ToggleNotifications());
+
+            _model.NavigateToParentFolderCommand = new RelayCommand<object>((o) => NavigateToParentFolder());
+
+            _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
+            _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
+            _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
+
+            _model.ToggleFilenamesCommand = new RelayCommand<object>((o) => ToggleFilenames());
+
+            _model.ResetLayout = new RelayCommand<object>((o) => ResetLayout());
+
+            _model.RescanResults = new RelayCommand<object>((o) => RescanResults());
+            _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
+            _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
+            _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
+            _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
+            _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
+            _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
+
+            _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
+            _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
+            _model.CleanRemovedFoldersCommand = new AsyncCommand<object>(CleanRemovedFolders);
+
+            _model.UnavailableFilesCommand = new AsyncCommand<object>(UnavailableFiles);
+
+            _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
+            _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
+
+            _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
+            _model.ClearAlbumsCommand = new RelayCommand<object>((o) => ClearAlbums());
+            _model.ClearModelsCommand = new RelayCommand<object>((o) => ClearModels());
+
+            _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
+            _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
+            _model.ToggleThumbnailViewModeCommand = new RelayCommand<ThumbnailViewMode>((p) => ToggleThumbnailViewMode(p));
+            _model.ShowInExplorerCommand = new RelayCommand<FolderViewModel>((p) => ShowInExplorer(p));
+        }
+
+        private void ToggleThumbnailViewMode(ThumbnailViewMode thumbnailViewMode)
+        {
+            _settings.ThumbnailViewMode = thumbnailViewMode;
+        }
+
+        // TODO: Move these to the property changed handlers and trigger on setting change
+
         private void ToggleHideNSFW()
         {
             _model.HideNSFW = !_model.HideNSFW;
@@ -78,8 +144,7 @@ namespace Diffusion.Toolkit
 
         private void ToggleNSFWBlur()
         {
-            _model.NSFWBlur = !_model.NSFWBlur;
-            _settings.NSFWBlur = _model.NSFWBlur;
+            _settings.NSFWBlur = !_settings.NSFWBlur;
         }
 
         private void ToggleFitToPreview()
@@ -102,6 +167,22 @@ namespace Diffusion.Toolkit
         {
             _model.ShowNotifications = !_model.ShowNotifications;
             _settings.ShowNotifications = _model.ShowNotifications;
+        }
+
+        private void ToggleAutoAdvance()
+        {
+            _settings.AutoAdvance = !_settings.AutoAdvance;
+        }
+
+        private void ToggleFilenames()
+        {
+            _settings.ShowFilenames = !_settings.ShowFilenames;
+        }
+
+        private void ToggleTags()
+        {
+            _model.ShowTags = !_model.ShowTags;
+            _model.Settings.ShowTags = _model.ShowTags;
         }
 
         private void ToggleInfo()
@@ -218,6 +299,26 @@ namespace Diffusion.Toolkit
             // Don't do any database updates here
             switch (args.PropertyName)
             {
+                case nameof(Settings.ThumbnailViewMode):
+                    _model.ThumbnailViewMode = _settings.ThumbnailViewMode;
+                    break;
+
+                case nameof(Settings.NSFWBlur):
+                    _model.NSFWBlur = _settings.NSFWBlur;
+                    break;
+
+                case nameof(Settings.AutoAdvance):
+                    _model.AutoAdvance = _settings.AutoAdvance;
+                    break;
+
+                case nameof(Settings.AutoRefresh):
+                    _model.AutoRefresh = _settings.AutoRefresh;
+                    break;
+
+                case nameof(Settings.ShowFilenames):
+                    _model.ShowFilenames = _settings.ShowFilenames;
+                    break;
+
                 case nameof(Settings.PermanentlyDelete):
                     _model.PermanentlyDelete = _settings.PermanentlyDelete;
                     break;
@@ -268,6 +369,67 @@ namespace Diffusion.Toolkit
             await ServiceLocator.ExternalApplicationsService.OpenWith(sender, int.Parse(arg));
         }
 
+        private async Task RenameImageEntry()
+        {
+            var selectedImageEntry = ServiceLocator.MainModel.SelectedImageEntry;
+
+            if (selectedImageEntry == null) return;
+
+            var id = selectedImageEntry.Id;
+            var oldPath = selectedImageEntry.Path;
+            var entryType = selectedImageEntry.EntryType;
+
+            if (entryType == EntryType.File)
+            {
+                ServiceLocator.FileService.RenameFile(id, oldPath);
+            }
+            else if (entryType == EntryType.Folder)
+            {
+                var name = selectedImageEntry.FileName;
+                
+
+                var (success, newName, newPath) = await ServiceLocator.FolderService.RenameFolder(id, name, oldPath);
+                if (success)
+                {
+                    selectedImageEntry.FileName = newName;
+                    selectedImageEntry.Name = newName;
+                    selectedImageEntry.Path = newPath;
+ 
+                    foreach (var folder in ServiceLocator.MainModel.Folders)
+                    {
+                        if (folder.Path == oldPath)
+                        {
+                            folder.Path = newPath;
+                            folder.Name = newName;
+                            
+
+                            if (folder.HasChildren && folder.Children != null)
+                            {
+                                foreach (var child in folder.Children)
+                                {
+                                    child.Path = Path.Combine(newPath, Path.GetFileName(child.Path));
+                                }
+                            }
+
+                        }
+
+
+
+                    }
+                    
+                    // find folder. update details
+                }
+            }
+            
+            //_search.ThumbnailListView.Focus();
+            _search.ThumbnailListView.FocusCurrentItem();
+
+        }
+
+        public void NavigateToParentFolder()
+        {
+            ServiceLocator.FolderService.NavigateToParentFolder();
+        }
     }
 
 }

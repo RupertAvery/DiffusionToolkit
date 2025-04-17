@@ -29,7 +29,7 @@ public class ScanningService
 
     public async Task CheckUnavailableFolders()
     {
-        if(ServiceLocator.MainModel.FoldersBusy) return;
+        if (ServiceLocator.MainModel.FoldersBusy) return;
 
         await Task.Run(() =>
         {
@@ -126,7 +126,7 @@ public class ScanningService
     }
 
 
-    public async Task ScanFolder(FolderViewModel folder)
+    public async Task ScanFolder(FolderViewModel folder, bool fullScan)
     {
         if (await ServiceLocator.ProgressService.TryStartTask())
         {
@@ -134,9 +134,15 @@ public class ScanningService
 
             var cancellationToken = ServiceLocator.ProgressService.CancellationToken;
 
-            foreach (var model in ServiceLocator.MainModel.Folders.Where(d => d.IsSelected).ToList())
+            var selectedFolders = ServiceLocator.FolderService.SelectedFolders.ToList();
+
+            foreach (var selectedFolder in selectedFolders)
             {
-                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(model.Path, new HashSet<string>(), cancellationToken));
+                var existingFiles = fullScan
+                    ? new HashSet<string>()
+                    : ServiceLocator.FolderService.GetFiles(selectedFolder.Id, true).Select(d => d.Path).ToHashSet();
+
+                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(selectedFolder.Path, existingFiles, cancellationToken));
             }
 
             await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan,
@@ -354,7 +360,7 @@ public class ScanningService
             }
             catch (Exception ex)
             {
-               // db.Rollback();
+                // db.Rollback();
                 Logger.Log("AddImages: " + ex.Message + " " + ex.StackTrace);
             }
 

@@ -7,6 +7,7 @@ using System.Windows.Input;
 using Diffusion.Common;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -112,6 +113,8 @@ public class MainModel : BaseNotify
         get => _rescan;
         set => SetField(ref _rescan, value);
     }
+
+    public ICommand RenameFileCommand { get; set; }
 
     public ICommand OpenWithCommand
     {
@@ -267,6 +270,12 @@ public class MainModel : BaseNotify
     {
         get => _toggleHideUnavailable;
         set => SetField(ref _toggleHideUnavailable, value);
+    }
+
+    public ICommand ToggleFilenamesCommand
+    {
+        get => _toggleFilenamesCommand;
+        set => SetField(ref _toggleFilenamesCommand, value);
     }
 
     public bool NSFWBlur
@@ -559,6 +568,11 @@ public class MainModel : BaseNotify
     private bool _permanentlyDelete;
     private ObservableCollection<Control> _albumMenuItems;
     private ObservableCollection<Control> _selectionAlbumMenuItems;
+    private bool _showFilenames;
+    private ICommand _toggleFilenamesCommand;
+    private ImageEntry _currentImageEntry;
+    private ImageEntry _selectedImageEntry;
+    private ThumbnailViewMode _thumbnailViewMode;
 
     public ModelViewModel? CurrentModel
     {
@@ -660,6 +674,7 @@ public class MainModel : BaseNotify
     }
 
     public ICommand ScanFolderCommand { get; set; }
+    public ICommand RescanFolderCommand { get; set; }
     public ICommand CreateFolderCommand { get; set; }
     public ICommand RenameFolderCommand { get; set; }
     public ICommand DeleteFolderCommand { get; set; }
@@ -691,8 +706,6 @@ public class MainModel : BaseNotify
         set => SetField(ref _openWithMenuItems, value);
     }
 
-    public ImageViewModel CurrentImage { get; set; }
-
     public bool FoldersBusy
     {
         get => _foldersBusy;
@@ -706,6 +719,8 @@ public class MainModel : BaseNotify
     }
 
     public ICommand ToggleNotificationsCommand { get; set; }
+
+    public ICommand NavigateToParentFolderCommand { get; set; }
 
     public bool PermanentlyDelete
     {
@@ -724,4 +739,34 @@ public class MainModel : BaseNotify
         get => _selectionAlbumMenuItems;
         set => SetField(ref _selectionAlbumMenuItems, value);
     }
+
+
+    public bool ShowFilenames
+    {
+        get => _showFilenames;
+        set => SetField(ref _showFilenames, value);
+    }
+
+    // TODO: Consolidate these
+    public ImageEntry SelectedImageEntry
+    {
+        get => _selectedImageEntry;
+        set => SetField(ref _selectedImageEntry, value);
+    }
+
+    public ImageEntry CurrentImageEntry
+    {
+        get => _currentImageEntry;
+        set => SetField(ref _currentImageEntry, value);
+    }
+
+    public ImageViewModel CurrentImage { get; set; }
+
+    public ThumbnailViewMode ThumbnailViewMode
+    {
+        get => _thumbnailViewMode;
+        set => SetField(ref _thumbnailViewMode, value);
+    }
+
+    public ICommand ToggleThumbnailViewModeCommand { get; set;  }
 }

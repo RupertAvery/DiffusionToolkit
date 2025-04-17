@@ -1,30 +1,11 @@
-﻿using SQLite;
+﻿using System.Net.Sockets;
+using SQLite;
 using System.Text;
 using Diffusion.Common;
 using Diffusion.Database.Models;
 
 namespace Diffusion.Database
 {
-    public enum EntityType
-    {
-        Image,
-        Album,
-        Folder,
-    }
-
-    public enum SourceType
-    {
-        Item,
-        Collection,
-    }
-
-    public class DataChangedEventArgs : EventArgs
-    {
-        public EntityType EntityType { get; set; }
-        public SourceType SourceType { get; set; }
-        public string Property { get; set; }
-    }
-
     public partial class DataStore
     {
         private string DirectoryTreeWithPathCTE => @"WITH RECURSIVE
@@ -43,7 +24,6 @@ namespace Diffusion.Database
 		SELECT f.Id, f.ParentId, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
 	)";
 
-        public EventHandler<DataChangedEventArgs> DataChanged;
 
         public void SetFolderExcluded(string path, bool excluded, bool recursive)
         {
@@ -60,12 +40,6 @@ namespace Diffusion.Database
 
             db.Close();
 
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Item,
-                Property = "Excluded"
-            });
         }
 
         public void SetFolderExcluded(int id, bool excluded, bool recursive)
@@ -82,13 +56,6 @@ namespace Diffusion.Database
             }
 
             db.Close();
-
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Item,
-                Property = "Excluded"
-            });
         }
 
         public void SetFolderUnavailable(int id, bool unavailable, bool recursive)
@@ -111,13 +78,6 @@ namespace Diffusion.Database
 
                 //db.Execute(query, unavailable, id);
             }
-
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Item,
-                Property = "Unavailable"
-            });
         }
 
         public void SetFolderArchived(int id, bool archived, bool recursive)
@@ -134,13 +94,6 @@ namespace Diffusion.Database
             }
 
             db.Close();
-
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Item,
-                Property = "Archived"
-            });
         }
 
         // TODO: Per-folder Recursive?
@@ -158,11 +111,6 @@ namespace Diffusion.Database
 
             db.Close();
 
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Collection
-            });
             return id;
         }
 
@@ -171,12 +119,6 @@ namespace Diffusion.Database
             using var db = OpenConnection();
 
             db.Execute("DELETE FROM Folder WHERE Id = ?", id);
-
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Collection
-            });
 
             db.Close();
         }
@@ -526,17 +468,10 @@ LEFT JOIN (SELECT RootId, COUNT(*) AS Children FROM directoryTree WHERE Depth = 
                 db.Close();
             }
 
-
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Collection,
-            });
-
             return imagesUpdated;
         }
 
-        public int RemoveFolder(string path, bool raiseEvent = true)
+        public int RemoveFolder(string path)
         {
             using var db = OpenConnection();
 
@@ -576,15 +511,6 @@ LEFT JOIN (SELECT RootId, COUNT(*) AS Children FROM directoryTree WHERE Depth = 
 
             db.Close();
 
-            if (raiseEvent)
-            {
-                DataChanged?.Invoke(this, new DataChangedEventArgs()
-                {
-                    EntityType = EntityType.Folder,
-                    SourceType = SourceType.Collection,
-                });
-            }
-
             return images;
         }
 
@@ -616,41 +542,53 @@ LEFT JOIN (SELECT RootId, COUNT(*) AS Children FROM directoryTree WHERE Depth = 
             return images;
         }
 
-        public IEnumerable<ArchivedStatus> GetArchivedStatus()
+        public IEnumerable<FolderArchived> GetArchivedStatus()
         {
             var db = OpenReadonlyConnection();
 
-            var query = @"WITH RECURSIVE
-	directoryTree(Id, ParentId, Archived, RootId, Depth) AS
-	(
-		SELECT Id, ParentId, Archived, Id AS RootId, 0 AS Depth FROM Folder 
-		UNION ALL
-		SELECT f.Id, f.ParentId, f.Archived, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
-	)
-SELECT Q.RootId FolderId, CASE WHEN Q.Archived = P.Total THEN 1 ELSE 0 END Complete FROM 
-(
-	(SELECT RootId, Count(*) AS Archived FROM directoryTree WHERE Archived = 1 GROUP BY RootId) Q
-		JOIN 
-		(SELECT RootId, Count(*) AS Total FROM directoryTree GROUP BY RootId) P
-		ON P.RootId = Q.RootId
-)
-";
-            return db.Query<ArchivedStatus>(query);
+//            var query = @"WITH RECURSIVE
+//	directoryTree(Id, ParentId, Archived, RootId, Depth) AS
+//	(
+//		SELECT Id, ParentId, Archived, Id AS RootId, 0 AS Depth FROM Folder 
+//		UNION ALL
+//		SELECT f.Id, f.ParentId, f.Archived, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
+//	)
+//SELECT 
+//	F.RootId FolderId, 
+//	--F.Path,
+//	F.Archived FolderState,
+//	CASE 
+//		WHEN Q.ArchivedTotal IS NULL AND P.Total IS NULL THEN 1 
+//		WHEN Q.ArchivedTotal = P.Total THEN 1 
+//		ELSE 0 END ChildState,
+//	F.Archived * 2 + CASE 
+//		WHEN Q.ArchivedTotal IS NULL AND P.Total IS NULL THEN 1 
+//		WHEN Q.ArchivedTotal = P.Total THEN 1 
+//		ELSE 0 END State 
+//FROM 
+//(SELECT Id AS RootId, Path, Archived FROM Folder) F
+//LEFT JOIN 
+//(SELECT RootId, Count(*) AS ArchivedTotal FROM directoryTree WHERE Archived = 1 AND Depth > 0  GROUP BY RootId) Q  ON Q.RootId = F.RootId
+//LEFT JOIN 
+//(SELECT RootId, Count(*) AS Total FROM directoryTree WHERE Depth > 0  GROUP BY RootId) P ON P.RootId = F.RootId
+//ORDER BY FolderId
+//";
+            return db.Query<FolderArchived>("SELECT Id, Archived FROM Folder ORDER BY Id");
         }
-
-        public void UpdateFolder()
+        
+        public bool FolderHasImages(string path)
         {
-            DataChanged?.Invoke(this, new DataChangedEventArgs()
-            {
-                EntityType = EntityType.Folder,
-                SourceType = SourceType.Collection,
-            });
+            var db = OpenReadonlyConnection();
+
+            var count = db.ExecuteScalar<int>("SELECT Count(1) FROM Image i INNER JOIN Folder f ON i.FolderId = f.Id WHERE f.Path = ?", path);
+
+            return count > 0;
         }
     }
 
-    public class ArchivedStatus
+    public class FolderArchived
     {
-        public int FolderId { get; set; }
-        public bool Complete { get; set; }
+        public int Id { get; set; }
+        public bool Archived { get; set; }
     }
 }

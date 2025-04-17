@@ -76,7 +76,7 @@ public class MessagePopupManager
         });
     }
 
-    public Task<(PopupResult, string?)> ShowInput(string message, string title, string? defaultText = null)
+    public Task<(PopupResult, string?)> ShowInput(string message, string title, string? defaultText = null, bool selectAll = true)
     {
         return _dispatcher.Invoke(() =>
         {
@@ -86,7 +86,7 @@ public class MessagePopupManager
             _popups.Add(popup);
             _host.Children.Add(popup);
 
-            return popup.Show(message, title, PopupButtons.OkCancel, PopupResult.Cancel)
+            return popup.Show(message, title, PopupButtons.OkCancel, PopupResult.Cancel, selectAll)
                 .ContinueWith(t =>
                 {
                     _dispatcher.Invoke(() => { _host.Visibility = Visibility.Hidden; });

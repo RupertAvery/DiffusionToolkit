@@ -66,7 +66,8 @@ public class ThumbnailViewModel : BaseNotify
     private ViewMode _viewMode;
     private int _pageSize;
     private ICommand _expandToFolderCommand;
-    
+    private int _thumbnailSpacing;
+
     public ThumbnailViewModel()
     {
         _images = new ObservableCollection<ImageEntry>();
@@ -391,6 +392,7 @@ public class ThumbnailViewModel : BaseNotify
         set => SetField(ref _thumbnailSize, value);
     }
 
+
     public ViewMode ViewMode
     {
         get => _viewMode;
@@ -405,4 +407,10 @@ public class ThumbnailViewModel : BaseNotify
 
     public ICommand RescanCommand { get; set; }
     public ICommand PermanentlyDeleteCommand { get; set; }
+
+    public int ThumbnailSpacing
+    {
+        get => _thumbnailSpacing;
+        set => SetField(ref _thumbnailSpacing, value);
+    }
 }

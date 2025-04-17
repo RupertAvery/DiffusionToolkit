@@ -116,64 +116,23 @@ namespace Diffusion.Toolkit
                 ServiceLocator.MainModel = _model;
                 ServiceLocator.Dispatcher = Dispatcher;
 
+                _model.RenameFileCommand = new AsyncCommand<string>((o) => RenameImageEntry());
                 _model.OpenWithCommand = new AsyncCommand<string>((o) => OpenWith(this, o));
                 _model.Rescan = new AsyncCommand<object>(RescanTask);
                 _model.Rebuild = new AsyncCommand<object>(RebuildTask);
+
                 _model.ReloadHashes = new AsyncCommand<object>(async (o) =>
                 {
                     LoadModels();
                     await _messagePopupManager.Show("Models have been reloaded", "Diffusion Toolkit", PopupButtons.OK);
                 });
+
                 _model.SettingsCommand = new RelayCommand<object>(ShowSettings);
+
                 _model.CancelCommand = new AsyncCommand<object>((o) => CancelProgress());
                 _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
-                _model.ReleaseNotesCommand = new RelayCommand<object>((o) => ShowReleaseNotes());
-                _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
-                _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
 
-                _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
-
-                _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
-                _model.ToggleHideDeleted = new RelayCommand<object>((o) => ToggleHideDeleted());
-                _model.ToggleHideUnavailable = new RelayCommand<object>((o) => ToggleHideUnavailable());
-
-                _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
-                _model.ToggleActualSize = new RelayCommand<object>((o) => ToggleActualSize());
-
-                _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
-                _model.ToggleTagsCommand = new RelayCommand<object>((o) => ToggleTags());
-                _model.ToggleNotificationsCommand = new RelayCommand<object>((o) => ToggleNotifications());
-
-                _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
-                _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
-                _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
-                _model.ResetLayout = new RelayCommand<object>((o) => ResetLayout());
-
-                _model.RescanResults = new RelayCommand<object>((o) => RescanResults());
-                _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
-                _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
-                _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
-                _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
-                _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
-                _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
-
-                _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
-                _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
-                _model.CleanRemovedFoldersCommand = new AsyncCommand<object>(CleanRemovedFolders);
-
-                _model.UnavailableFilesCommand = new AsyncCommand<object>(UnavailableFiles);
-
-                _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
-                _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
-
-                _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
-                _model.ClearAlbumsCommand = new RelayCommand<object>((o) => ClearAlbums());
-                _model.ClearModelsCommand = new RelayCommand<object>((o) => ClearModels());
-
-                _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
-                _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
-                _model.ShowInExplorerCommand = new RelayCommand<FolderViewModel>((p) => ShowInExplorer(p));
-
+                InitEvents();
                 InitAlbums();
                 InitQueries();
 
@@ -242,19 +201,6 @@ namespace Diffusion.Toolkit
             Process.Start(processInfo);
 
             //Process.Start("explorer.exe", $"/select,\"{p}\"");
-        }
-
-        private void ToggleAutoAdvance()
-        {
-            _model.AutoAdvance = !_model.AutoAdvance;
-            _model.Settings.AutoAdvance = _model.AutoAdvance;
-        }
-
-
-        private void ToggleTags()
-        {
-            _model.ShowTags = !_model.ShowTags;
-            _model.Settings.ShowTags = _model.ShowTags;
         }
 
         private async Task UnavailableFiles(object o)
@@ -327,7 +273,6 @@ namespace Diffusion.Toolkit
         private void ToggleAutoRefresh()
         {
             _settings.AutoRefresh = !_settings.AutoRefresh;
-            _model.AutoRefresh = _settings.AutoRefresh;
         }
 
         private void Escape()
@@ -615,6 +560,7 @@ namespace Diffusion.Toolkit
             _model.AutoAdvance = _settings.AutoAdvance;
             _model.ShowTags = _settings.ShowTags;
             _model.ShowNotifications = _settings.ShowNotifications;
+            _model.ShowFilenames = _settings.ShowFilenames;
 
             _model.Settings = _settings;
 

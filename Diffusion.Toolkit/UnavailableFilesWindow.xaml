@@ -20,7 +20,7 @@
                         ResizeMode="NoResize"
                         Title="{lex:Loc UnavailableFiles}" Height="450" Width="600">
     <Window.Resources>
-        <converters:UnavailableConverter x:Key="UnavailableConverter"></converters:UnavailableConverter>
+        <converters:FolderUnavailableConverter x:Key="FolderUnavailableConverter"></converters:FolderUnavailableConverter>
     </Window.Resources>
     <Grid Margin="10,30,10,10">
         <Grid.RowDefinitions>
@@ -45,7 +45,7 @@
                         <StackPanel Orientation="Horizontal">
                             <CheckBox IsChecked="{Binding IsSelected}">
                                 <CheckBox.Content>
-                                    <TextBlock TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" Text="{Binding Path}"></TextBlock>
+                                    <TextBlock TextDecorations="{Binding IsUnavailable, Converter={StaticResource FolderUnavailableConverter}}" Text="{Binding Path}"></TextBlock>
                                 </CheckBox.Content>
                             </CheckBox>
                         </StackPanel>

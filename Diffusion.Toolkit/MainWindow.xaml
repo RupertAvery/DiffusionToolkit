@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Diffusion.Toolkit"
+        xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
         xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
         xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
@@ -47,6 +48,7 @@
             <converters:ThumbnailSizeCheckedConverter x:Key="thumbSizeChecked"></converters:ThumbnailSizeCheckedConverter>
             <converters:StringMatchConverter x:Key="StringMatchConverter"></converters:StringMatchConverter>
             <converters:PopoutIconConverter x:Key="PopoutIconConverter"></converters:PopoutIconConverter>
+            <converters:ThumbnailViewModeConverter x:Key="ThumbnailViewModeConverter"></converters:ThumbnailViewModeConverter>
         </ResourceDictionary>
     </Window.Resources>
 
@@ -92,6 +94,11 @@
                 <MenuItem Header="{lex:Loc Menu.View.ToggleInfo}" Command="{Binding ToggleInfoCommand}" InputGestureText="I"/>
                 <MenuItem Header="{lex:Loc Menu.View.TogglePreview}" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
                 <MenuItem Header="{lex:Loc Menu.View.PopoutPreview}" Command="{Binding PoputPreview}"/>
+                <Separator/>
+                <MenuItem Header="{lex:Loc Menu.View.ShowFilenames}" IsChecked="{Binding Settings.ShowFilenames}" Command="{Binding ToggleFilenamesCommand}"/>
+                <Separator/>
+                <MenuItem Header="{lex:Loc Menu.View.ClassicThumbnails}" IsChecked="{Binding ThumbnailViewMode, Converter={StaticResource ThumbnailViewModeConverter}, ConverterParameter={x:Static controls:ThumbnailViewMode.Classic}}" Command="{Binding ToggleThumbnailViewModeCommand}"  CommandParameter="{x:Static controls:ThumbnailViewMode.Classic}"/>
+                <MenuItem Header="{lex:Loc Menu.View.CompactThumbnails}" IsChecked="{Binding ThumbnailViewMode, Converter={StaticResource ThumbnailViewModeConverter}, ConverterParameter={x:Static controls:ThumbnailViewMode.Compact}}" Command="{Binding ToggleThumbnailViewModeCommand}"  CommandParameter="{x:Static controls:ThumbnailViewMode.Compact}"/>
                 <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.ResetLayout}" Command="{Binding ResetLayout}"/>
             </MenuItem>
@@ -199,7 +206,7 @@
                 </Button>
             </StackPanel>
         </Grid>
-     
+
         <Grid Grid.Row="1">
             <DockPanel>
                 <Grid Margin="0,5,10,0">

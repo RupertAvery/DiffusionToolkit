@@ -24,6 +24,11 @@ public class ImageEntry : BaseNotify
     private bool _unavailable;
     private bool _hasError;
     private bool _isEmpty;
+    private string _path;
+    private int _width;
+    private int _height;
+    private double _thumbnailHeight;
+    private double _thumbnailWidth;
 
     public ImageEntry(long batchId)
     {
@@ -111,9 +116,36 @@ public class ImageEntry : BaseNotify
         set => SetField(ref _unavailable, value);
     }
 
-    public int Height { get; set; }
-    public int Width { get; set; }
-    public string Path { get; set; }
+    public int Height
+    {
+        get => _height;
+        set => SetField(ref _height, value);
+    }
+
+    public int Width
+    {
+        get => _width;
+        set => SetField(ref _width, value);
+    }
+
+    public double ThumbnailHeight
+    {
+        get => _thumbnailHeight;
+        set => SetField(ref _thumbnailHeight, value);
+    }
+
+    public double ThumbnailWidth
+    {
+        get => _thumbnailWidth;
+        set => SetField(ref _thumbnailWidth, value);
+    }
+
+    public string Path
+    {
+        get => _path;
+        set => SetField(ref _path, value);
+    }
+
     public DateTime CreatedDate { get; set; }
 
     public int AlbumCount

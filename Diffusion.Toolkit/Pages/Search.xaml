@@ -32,10 +32,10 @@
             <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
             <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
             <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
+            <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
             <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
             <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVisCol"></converters:InverseBoolToVisibilityConverter>
             <converters:FolderModeVisibilityConverter x:Key="addrVis"></converters:FolderModeVisibilityConverter>
-            <converters:AlbumModeVisibilityConverter x:Key="albVis"></converters:AlbumModeVisibilityConverter>
             <converters:FilterActiveConverter x:Key="FilterActiveConverter"></converters:FilterActiveConverter>
             <converters:SizeConverter x:Key="SizeConverter"></converters:SizeConverter>
             <converters:ZeroConverter x:Key="ZeroConverter"></converters:ZeroConverter>
@@ -43,13 +43,10 @@
             <converters:FolderDepthConverter x:Key="FolderDepthConverter"></converters:FolderDepthConverter>
             <converters:FolderStateConverter x:Key="FolderStateConverter"></converters:FolderStateConverter>
             <converters:FolderStateVisibilityConverter x:Key="FolderStateVisibilityConverter"></converters:FolderStateVisibilityConverter>
-            <converters:UnavailableConverter x:Key="UnavailableConverter"></converters:UnavailableConverter>
+            <converters:FolderUnavailableConverter x:Key="FolderUnavailableConverter"></converters:FolderUnavailableConverter>
             <converters:InvBoolToOpacityConverter x:Key="InvBoolToOpacityConverter"></converters:InvBoolToOpacityConverter>
             <converters:MultiBoolToVisibilityCollapsedConverter x:Key="MultiBoolToVisibilityCollapsedConverter"></converters:MultiBoolToVisibilityCollapsedConverter>
             <converters:InvertBoolConverter x:Key="InvertBoolConverter"></converters:InvertBoolConverter>
-            <models:ArchivedStatus x:Key="Archived">Archived</models:ArchivedStatus>
-            <models:ArchivedStatus x:Key="Unarchived">Unarchived</models:ArchivedStatus>
-            <models:ArchivedStatus x:Key="PartiallyArchived">PartiallyArchived</models:ArchivedStatus>
         </ResourceDictionary>
     </local:NavigationPage.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -261,6 +258,7 @@
                                     </controls:AccordionControl>-->
 
                                     <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
+                                                               PreviewKeyDown="Folder_OnKeyDown"
                                                                Header="{lex:Loc Search.Navigation.Folders}"
                                                                State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
@@ -293,6 +291,8 @@
                                                         <Grid
                                                         Tag="{Binding}" 
                                                         MouseDown="Folder_OnClick"
+                                                        MouseMove="Folder_Move"
+                                                        MouseUp="Folder_Release"
                                                         Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
                                                         AllowDrop="True" 
                                                         behaviors:DTBehaviors.IsFocused="{Binding IsSelected}"
@@ -300,9 +300,12 @@
                                                         Drop="DropImagesOnFolder">
                                                             <Grid.ContextMenu>
                                                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ScanFolderCommand}"
+                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.RescanFolderCommand}"
                                                                           CommandParameter="{Binding .}"
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Rescan}"></MenuItem>
+                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ScanFolderCommand}"
+                                                                              CommandParameter="{Binding .}"
+                                                                              Header="{lex:Loc Search.Navigation.Folders.ContextMenu.ScanNew}"></MenuItem>
                                                                     <Separator></Separator>
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.CreateFolderCommand}"
                                                                           CommandParameter="{Binding .}"
@@ -354,6 +357,9 @@
                                                                 <Style TargetType="Grid">
                                                                     <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"></Setter>
                                                                     <Style.Triggers>
+                                                                        <Trigger Property="behaviors:DTBehaviors.IsDraggedOn" Value="True" >
+                                                                            <Setter Property="Background" Value="{DynamicResource BgHighlightBrush}"></Setter>
+                                                                        </Trigger>
                                                                         <DataTrigger Binding="{Binding IsSelected}" Value="true">
                                                                             <Setter Property="Background" Value="{DynamicResource HighlightBrush}"></Setter>
                                                                         </DataTrigger>
@@ -375,31 +381,62 @@
                                                                 <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"  />
                                                             </Grid>
                                                             <TextBlock Foreground="{DynamicResource ForegroundBrush}" Grid.Column="3" HorizontalAlignment="Left" FontFamily="Calibri" 
-                                                                   TextDecorations="{Binding IsUnavailable, Converter={StaticResource UnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left" PreviewMouseDown="Folder_OnClick">
+                                                                   TextDecorations="{Binding IsUnavailable, Converter={StaticResource FolderUnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left" PreviewMouseDown="Folder_OnClick">
                                                                 <TextBlock.Resources>
-                                                                    <Style TargetType="TextBlock">
+                                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                                                         <Setter Property="Opacity" Value="0.25"></Setter>
                                                                         <Style.Triggers>
                                                                             <DataTrigger Binding="{Binding Path=IsScanned, Mode=OneWay}" Value="True">
                                                                                 <Setter  Property="Opacity" Value="1"></Setter>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Value="True">
+                                                                                <DataTrigger.Binding>
+                                                                                    <Binding Path="(behaviors:DTBehaviors.IsDraggedOn)" 
+                                                                                        RelativeSource="{RelativeSource AncestorType=Grid}" />
+                                                                                </DataTrigger.Binding>
+                                                                                <Setter Property="Text" Value="Red"/>
                                                                             </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>
                                                                 </TextBlock.Resources>
 
                                                             </TextBlock>
-                                                            <fa:FontAwesome Grid.Column="4" Icon="Lock" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" >
+                                                            <!--<TextBlock Foreground="{DynamicResource ForegroundBrush}"  Grid.Column="3" Text="{Binding (behaviors:DTBehaviors.IsDraggedOn), RelativeSource={RelativeSource AncestorType={x:Type Grid}}}">
+                                                                <TextBlock.Resources>
+                                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding (behaviors:DTBehaviors.IsDraggedOn), RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Value="{StaticResource TrueValue}">
+                                                                                <Setter  Property="Foreground" Value="Red"></Setter>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Resources>
+                                                            </TextBlock>-->
+                                                            <fa:FontAwesome Grid.Column="4" Icon="Lock" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                                            Visibility="{Binding IsBusy, Converter={StaticResource invBoolToVis}}">
                                                                 <fa:FontAwesome.Resources>
                                                                     <Style TargetType="fa:FontAwesome">
                                                                         <Setter Property="Opacity" Value="0.25"></Setter>
                                                                         <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
                                                                         <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding Path=ArchivedStatus, Mode=OneWay}" Value="{StaticResource Archived}">
+                                                                            <DataTrigger Binding="{Binding Path=IsArchived, Mode=OneWay}" Value="{StaticResource TrueValue}">
                                                                                 <Setter  Property="Opacity" Value="1"></Setter>
                                                                             </DataTrigger>
-                                                                            <DataTrigger Binding="{Binding Path=ArchivedStatus, Mode=OneWay}" Value="{StaticResource PartiallyArchived}">
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </fa:FontAwesome.Resources>
+
+                                                            </fa:FontAwesome>
+                                                            <fa:FontAwesome Grid.Column="4" Icon="Spinner" Spin="True" SpinDuration="1" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                                            Visibility="{Binding IsBusy, Converter={StaticResource boolToVis}}"
+                                                                            >
+                                                                <fa:FontAwesome.Resources>
+                                                                    <Style TargetType="fa:FontAwesome">
+                                                                        <Setter Property="Opacity" Value="0.25"></Setter>
+                                                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding Path=IsArchived, Mode=OneWay}" Value="{StaticResource TrueValue}">
                                                                                 <Setter  Property="Opacity" Value="1"></Setter>
-                                                                                <Setter  Property="Foreground" Value="#3672ff"></Setter>
                                                                             </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>
@@ -410,6 +447,11 @@
                                                         </Grid>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemContainerStyle>
+                                                    <Style TargetType="ContentPresenter">
+                                                        <EventSetter Event="PreviewKeyDown" Handler="Folder_OnKeyDown"/>
+                                                    </Style>
+                                                </ItemsControl.ItemContainerStyle>
                                             </ItemsControl>
                                             <Grid Background="#60000000" Visibility="{Binding MainModel.FoldersBusy, Converter={StaticResource boolToVisCol}}"></Grid>
                                         </Grid>
@@ -591,7 +633,6 @@
                                                         </Grid.ColumnDefinitions>
                                                         <Button Grid.Column="0" Style="{StaticResource SmallButton}" 
                                                                 Tag="{Binding .}"
-                                                                AllowDrop="True" 
                                                                 ToolTip="{Binding Name}"
                                                                 Click="Query_OnClick" RenderTransformOrigin="0.179,0.476">
                                                             <Button.ContextMenu>

@@ -473,8 +473,13 @@ public class Metadata
             fileParameters = ReadA111Parameters(metadata);
         }
 
-        fileParameters.Hash = hash;
-
+        if (fileParameters == null)
+        {
+            fileParameters = new FileParameters();
+            fileParameters.NoMetadata = true;
+            fileParameters.Hash = hash;
+        }
+        
         return fileParameters;
     }
 

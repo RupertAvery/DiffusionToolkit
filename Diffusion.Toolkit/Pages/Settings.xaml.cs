@@ -88,7 +88,7 @@ namespace Diffusion.Toolkit.Pages
             _model.SlideShowDelay = _settings.SlideShowDelay;
             _model.ScrollNavigation = _settings.ScrollNavigation;
             _model.AdvanceOnTag = _settings.AutoAdvance;
-
+            _model.ShowFilenames = _settings.ShowFilenames;
             _model.PermanentlyDelete = _settings.PermanentlyDelete;
             _model.ConfirmDeletion = _settings.ConfirmDeletion;
 
@@ -605,7 +605,7 @@ namespace Diffusion.Toolkit.Pages
                 _settings.SlideShowDelay = _model.SlideShowDelay;
                 _settings.ScrollNavigation = _model.ScrollNavigation;
                 _settings.AutoAdvance = _model.AdvanceOnTag;
-
+                _settings.ShowFilenames = _model.ShowFilenames;
                 _settings.PermanentlyDelete = _model.PermanentlyDelete;
                 _settings.ConfirmDeletion = _model.ConfirmDeletion;
 
