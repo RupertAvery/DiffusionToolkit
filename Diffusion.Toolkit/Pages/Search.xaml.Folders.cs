@@ -68,22 +68,13 @@ namespace Diffusion.Toolkit.Pages
 
             var currentNode = root;
 
-            var loop = 1;
-
             while (currentNode != null && !currentNode.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase))
             {
-                Debug.WriteLine($"Loop: {loop}");
-                loop++;
-
                 if (currentNode.State == FolderState.Collapsed)
                 {
                     await ToggleFolder(currentNode);
                 }
 
-                if (currentNode == null)
-                {
-                    var x = 1;
-                }
                 var children = ServiceLocator.FolderService.GetVisualChildren(currentNode);
 
                 var enumerator = children.GetEnumerator();
@@ -103,7 +94,6 @@ namespace Diffusion.Toolkit.Pages
                 {
                     currentNode = null;
                 }
-
             }
 
             if (currentNode == null) return;

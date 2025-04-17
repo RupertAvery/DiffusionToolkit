@@ -46,29 +46,29 @@ namespace Diffusion.Toolkit
                 var (success, newName, newPath) = await ServiceLocator.FolderService.RenameFolder(o.Id, o.Name, o.Path);
                 if (success)
                 {
-                    o.Name = newName;
-                    o.Path = newPath;
+                    //o.Name = newName;
+                    //o.Path = newPath;
 
-                    if (o.HasChildren && o.Children != null)
-                    {
-                        foreach (var child in o.Children)
-                        {
-                            child.Path = Path.Combine(newPath, Path.GetFileName(child.Path));
-                        }
-                    }
+                    //if (o.HasChildren && o.Children != null)
+                    //{
+                    //    foreach (var child in o.Children)
+                    //    {
+                    //        child.Path = Path.Combine(newPath, Path.GetFileName(child.Path));
+                    //    }
+                    //}
 
-                    if (_search.QueryOptions.Folder == oldPath)
-                    {
-                        _search.OpenFolder(o);
-                    }
+                    //if (_search.QueryOptions.Folder == oldPath)
+                    //{
+                    //    _search.OpenFolder(o);
+                    //}
 
-                    var existingEntry = _search.Images.FirstOrDefault(d => d.EntryType == EntryType.Folder && d.Path == oldPath);
+                    //var existingEntry = _search.Images.FirstOrDefault(d => d.EntryType == EntryType.Folder && d.Path == oldPath);
 
-                    if (existingEntry != null)
-                    {
-                        existingEntry.Name = newName;
-                        existingEntry.Path = newPath;
-                    }
+                    //if (existingEntry != null)
+                    //{
+                    //    existingEntry.Name = newName;
+                    //    existingEntry.Path = newPath;
+                    //}
 
                 }
 

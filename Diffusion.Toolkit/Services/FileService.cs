@@ -215,4 +215,10 @@ public class FileService
     {
         throw new NotImplementedException();
     }
+
+    public bool IsRegisteredExtension(string path)
+    {
+        return ServiceLocator.Settings.FileExtensions.IndexOf(Path.GetExtension(path),
+            StringComparison.InvariantCultureIgnoreCase) > -1;
+    }
 }

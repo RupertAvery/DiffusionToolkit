@@ -152,7 +152,6 @@ public class ScanningService
                     {
                         if (folder.Id == 0)
                         {
-                            ServiceLocator.FolderService.SetFoldersDirty();
                             var dbEntity = ServiceLocator.DataStore.GetFolder(folder.Path);
                             if (dbEntity != null)
                             {
@@ -160,6 +159,7 @@ public class ScanningService
                                 folder.Id = dbEntity.Id;
                             }
                         }
+                        ServiceLocator.FolderService.RefreshData();
                         ServiceLocator.SearchService.RefreshResults();
                         ServiceLocator.FolderService.LoadFolders();
                     }
@@ -569,6 +569,7 @@ public class ScanningService
 
                     var folderImages = _dataStore.GetAllPathImages(folder.Path).ToDictionary(f => f.Path);
 
+                    // TODO remove images from excluded paths, otherwise they appear as Unavailable
 
                     if (Directory.Exists(folder.Path))
                     {
