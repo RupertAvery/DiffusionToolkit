@@ -17,7 +17,7 @@ public partial class DataStore
 
     public SQLiteConnection OpenReadonlyConnection()
     {
-        if (_readOnlyConnection == null)
+        if (_readOnlyConnection == null || _readOnlyConnection.IsClosed)
         {
             _readOnlyConnection = new SQLiteConnection(DatabasePath, SQLiteOpenFlags.ReadOnly);
             _readOnlyConnection.Execute("pragma cache_size=-1000000");

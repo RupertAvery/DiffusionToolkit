@@ -278,6 +278,12 @@ namespace SQLite
         static readonly Sqlite3DatabaseHandle NullHandle = default(Sqlite3DatabaseHandle);
         static readonly Sqlite3BackupHandle NullBackupHandle = default(Sqlite3BackupHandle);
 
+
+        /// <summary>
+        /// Gets the database path used by this connection.
+        /// </summary>
+        public bool IsClosed => !_open;
+
         /// <summary>
         /// Gets the database path used by this connection.
         /// </summary>
