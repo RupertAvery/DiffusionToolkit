@@ -30,7 +30,6 @@ using Diffusion.Database.Models;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.MdStyles;
 using SearchView = Diffusion.Database.SearchView;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -258,15 +257,9 @@ namespace Diffusion.Toolkit.Pages
 
             _model.Refresh = new RelayCommand<object>((o) =>
             {
-                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
-                {
-                    SearchImages(null);
-                }
-                else
-                {
-                    ReloadMatches(null);
-                }
+                Refresh();
             });
+
             _model.CurrentImage.ToggleParameters = new RelayCommand<object>((o) => ToggleInfo());
             _model.CopyFiles = new RelayCommand<object>((o) => CopyFiles(ThumbnailListView.SelectedImages));
 
@@ -333,9 +326,8 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else
                 {
-                    OpenImage(o);
+                    OpenImage(null);
                 }
-
             });
 
             _model.GoHome = new RelayCommand<object>((o) =>
@@ -581,6 +573,18 @@ namespace Diffusion.Toolkit.Pages
             GetRandomHint();
         }
 
+        public void Refresh()
+        {
+            if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+            {
+                SearchImages(null);
+            }
+            else
+            {
+                ReloadMatches(null);
+            }
+        }
+
         private void AdvanceOnTag()
         {
             if (ServiceLocator.Settings.AutoAdvance)
@@ -595,7 +599,7 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        private void ClearQueryFilter()
+        public void ClearQueryFilter()
         {
             _model.Filter.Clear();
             _currentModeSettings.LastQuery = "";
@@ -1853,7 +1857,7 @@ namespace Diffusion.Toolkit.Pages
             CloseSearchSettings();
         }
 
-        private void OpenSearchSettings()
+        public void OpenSearchSettings()
         {
             _model.IsSearchSettingsVisible = true;
         }
@@ -1864,7 +1868,7 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        private void OpenSearchHelp()
+        public void OpenSearchHelp()
         {
             _model.SearchHelpMarkdown = ResourceHelper.GetString("Diffusion.Toolkit.SearchHelp.md");
             _model.SearchHelpStyle = CustomStyles.BetterGithub;
@@ -1943,6 +1947,11 @@ namespace Diffusion.Toolkit.Pages
             {
                 _model.CurrentImage.Albums = ServiceLocator.DataStore.GetImageAlbums(_model.CurrentImage.Id);
             }
+        }
+
+        public void SetQuery(string queryInputText)
+        {
+            _model.SearchText = queryInputText;
         }
     }
 

@@ -339,7 +339,6 @@
                 <KeyBinding Command="{Binding FirstPage}" Key="Home" Modifiers="Alt" Gesture="ALT+Home"></KeyBinding>
                 <KeyBinding Command="{Binding LastPage}" Key="End" Modifiers="Alt" Gesture="ALT+End"></KeyBinding>
                 <KeyBinding Command="{Binding CopyFiles}" Key="C" Modifiers="Control" Gesture="Control+C"></KeyBinding>
-                <KeyBinding Command="{Binding FocusSearch}" Key="F6" Gesture="F6"></KeyBinding>
                 <KeyBinding Command="{Binding ToggleParameters}" Key="I"></KeyBinding>
             </ListView.InputBindings>
             <ListView.ContextMenu>

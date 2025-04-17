@@ -34,5 +34,72 @@ namespace Diffusion.Toolkit
             var point = new Point(width - popupSize.Width, height - popupSize.Height - 50);
             return new[] { new CustomPopupPlacement(point, PopupPrimaryAxis.None) };
         }
+
+        public CustomPopupPlacement[] GetQueryPopupPlacement(Size popupSize, Size targetSize, Point offset)
+        {
+            PresentationSource source = PresentationSource.FromVisual(this);
+
+            double dpiX = 96, dpiY = 96;
+            if (source != null)
+            {
+                dpiX = 96.0 * source.CompositionTarget.TransformToDevice.M11;
+                dpiY = 96.0 * source.CompositionTarget.TransformToDevice.M22;
+            }
+
+            var width = ActualWidth * dpiX / 96.0;
+            var height = ActualHeight * dpiY / 96.0;
+
+            var point = new Point(width / 2 - popupSize.Width / 2, 50);
+            return new[] { new CustomPopupPlacement(point, PopupPrimaryAxis.None) };
+        }
+
+        private void QueryBar_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            QueryPopup.IsOpen = true;
+            QueryInput.SelectionStart = 0;
+            QueryInput.SelectionLength = QueryInput.Text.Length;
+            QueryInput.Focus();
+            e.Handled = true;
+        }
+
+        private void QueryInput_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                QueryPopup.IsOpen = false;
+                _search.SetQuery(QueryInput.Text);
+                _search.SearchImages();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                QueryPopup.IsOpen = false;
+                e.Handled = true;
+            }
+        }
+
+        private void QueryFilter_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.ShowFilter();
+            e.Handled = true;
+        }
+
+        private void QuerySettings_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.OpenSearchSettings();
+            e.Handled = true;
+        }
+
+        private void QueryRefresh_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.Refresh();
+            e.Handled = true;
+        }
+
+        private void QueryClear_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.ClearQueryFilter();
+            e.Handled = true;
+        }
     }
 }

@@ -129,22 +129,24 @@
                                 </Grid.ColumnDefinitions>
                                 <Border Visibility="Hidden" BorderBrush="{x:Null}" BorderThickness="1" Grid.Column="0">
                                 </Border>
-                                <Grid x:Name="PART_TitleBar" Background="Transparent" Grid.Column="1">
+                                <Grid Background="Transparent" x:Name="PART_TitleBar" Grid.Column="1">
                                 </Grid>
                             </Grid>
 
-                            <Grid Background="{x:Null}" Height="36" IsHitTestVisible="False" VerticalAlignment="Top">
+                            <Grid Background="{x:Null}" Height="36" VerticalAlignment="Top">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Label Content="{TemplateBinding Title}" 
-                                       
+                                       Margin="0,10,0,0"
                                        Grid.Column="1"
+                                       IsHitTestVisible="False"
                                        HorizontalAlignment="Stretch" 
                                        HorizontalContentAlignment="Center"
                                        VerticalContentAlignment="Center"></Label>
+                                <ContentPresenter Grid.Column="1" Content="{TemplateBinding TitleContent}"></ContentPresenter>
                             </Grid>
 
 

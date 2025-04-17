@@ -364,6 +364,7 @@ namespace Diffusion.Toolkit.Controls
                     }
                     e.Handled = true;
                     break;
+
                 case Key.Left or Key.Right:
                     {
                         delta = e.Key switch

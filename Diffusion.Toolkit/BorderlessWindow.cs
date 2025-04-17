@@ -41,7 +41,13 @@ namespace Diffusion.Toolkit
             get => (GridLength)GetValue(MenuWidthProperty);
             set => SetValue(MenuWidthProperty, value);
         }
+        
 
+        public static readonly DependencyProperty TitleContentProperty =
+            DependencyProperty.Register(
+                name: nameof(TitleContent),
+                propertyType: typeof(object),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(null));
 
         public static readonly DependencyProperty TitleWidthProperty =
             DependencyProperty.Register(
@@ -63,7 +69,12 @@ namespace Diffusion.Toolkit
             get => (GridLength)GetValue(TitleWidthProperty);
             set => SetValue(TitleWidthProperty, value);
         }
-
+        
+        public object TitleContent
+        {
+            get => (object)GetValue(TitleContentProperty);
+            set => SetValue(TitleContentProperty, value);
+        }
 
         public GridLength ExtraButtonWidth
         {
