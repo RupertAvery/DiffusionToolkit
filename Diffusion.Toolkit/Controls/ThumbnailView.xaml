@@ -435,7 +435,18 @@
                          VerticalContentAlignment="Center"
                          Content="{Binding Results}"
                 ></Label>
-            <Slider Grid.Column="1" Width="90" VerticalAlignment="Center" Minimum="0" Maximum="20" Value="{Binding ThumbnailSpacing}"></Slider>
+            <Slider Grid.Column="1" Width="90" VerticalAlignment="Center" Minimum="0" Maximum="20" Value="{Binding ThumbnailSpacing}">
+                <Slider.Style>
+                    <Style TargetType="Slider">
+                        <Setter Property="Visibility" Value="Hidden"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Model.MainModel.ThumbnailViewMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Value="{x:Static local:ThumbnailViewMode.Compact}">
+                                <Setter Property="Visibility" Value="Visible"></Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Slider.Style>
+            </Slider>
             <StackPanel Grid.Column="2"   Orientation="Horizontal">
                 <Button Style="{DynamicResource BorderlessButton}" Width="24" IsEnabled="{Binding FirstPageEnabled}" ToolTip="{lex:Loc Thumbnail.Pagination.First}" Click="FirstPage_OnClick">
                     <fa:ImageAwesome Icon="FastBackward" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">

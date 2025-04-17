@@ -669,6 +669,7 @@ namespace Diffusion.Toolkit
 
 
             _model.ThumbnailSize = _settings.ThumbnailSize;
+            _model.ThumbnailViewMode = _settings.ThumbnailViewMode;
 
             _search.SetThumbnailSize(_settings.ThumbnailSize);
             _search.SetPageSize(_settings.PageSize);
