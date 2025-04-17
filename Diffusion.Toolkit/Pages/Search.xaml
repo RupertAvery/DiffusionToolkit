@@ -370,18 +370,18 @@
                                                                 </Style>
                                                             </Grid.Resources>
                                                             <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="0"></ColumnDefinition>
                                                                 <ColumnDefinition Width="{Binding Depth, Converter={StaticResource FolderDepthConverter}}"/>
                                                                 <ColumnDefinition Width="15"/>
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="15"/>
                                                             </Grid.ColumnDefinitions>
-                                                            <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
-                                                            <Grid Grid.Column="2" Background="Transparent"  PreviewMouseLeftButtonDown="Expander_OnMouseDown">
+                                                            <Grid Grid.Column="1" Background="Transparent"  PreviewMouseLeftButtonDown="Expander_OnMouseDown">
                                                                 <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"  />
                                                             </Grid>
-                                                            <TextBlock Foreground="{DynamicResource ForegroundBrush}" Grid.Column="3" HorizontalAlignment="Left" FontFamily="Calibri" 
-                                                                   TextDecorations="{Binding IsUnavailable, Converter={StaticResource FolderUnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="WrapWithOverflow" TextAlignment="Left" PreviewMouseDown="Folder_OnClick">
+                                                            <TextBlock Foreground="{DynamicResource ForegroundBrush}" Grid.Column="2" HorizontalAlignment="Left" FontFamily="Calibri"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       ToolTip="{Binding Name}"
+                                                                   TextDecorations="{Binding IsUnavailable, Converter={StaticResource FolderUnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="NoWrap" TextAlignment="Left" PreviewMouseDown="Folder_OnClick">
                                                                 <TextBlock.Resources>
                                                                     <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                                                         <Setter Property="Opacity" Value="0.25"></Setter>
@@ -401,18 +401,7 @@
                                                                 </TextBlock.Resources>
 
                                                             </TextBlock>
-                                                            <!--<TextBlock Foreground="{DynamicResource ForegroundBrush}"  Grid.Column="3" Text="{Binding (behaviors:DTBehaviors.IsDraggedOn), RelativeSource={RelativeSource AncestorType={x:Type Grid}}}">
-                                                                <TextBlock.Resources>
-                                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                                                                        <Style.Triggers>
-                                                                            <DataTrigger Binding="{Binding (behaviors:DTBehaviors.IsDraggedOn), RelativeSource={RelativeSource AncestorType={x:Type Grid}}}" Value="{StaticResource TrueValue}">
-                                                                                <Setter  Property="Foreground" Value="Red"></Setter>
-                                                                            </DataTrigger>
-                                                                        </Style.Triggers>
-                                                                    </Style>
-                                                                </TextBlock.Resources>
-                                                            </TextBlock>-->
-                                                            <fa:FontAwesome Grid.Column="4" Icon="Lock" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                            <fa:FontAwesome Grid.Column="3" Icon="Lock" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center" 
                                                                             Visibility="{Binding IsBusy, Converter={StaticResource invBoolToVis}}">
                                                                 <fa:FontAwesome.Resources>
                                                                     <Style TargetType="fa:FontAwesome">

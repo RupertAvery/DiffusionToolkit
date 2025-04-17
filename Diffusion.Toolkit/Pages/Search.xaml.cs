@@ -809,12 +809,11 @@ namespace Diffusion.Toolkit.Pages
                 QueryOptions.Filter = _model.Filter.AsFilter();
 
 
-                if (_currentModeSettings.ViewMode == ViewMode.Folder)
+                if (_currentModeSettings.Key == "folders")
                 {
                     QueryOptions.SearchView = SearchView.Folder;
                 }
-
-                if (_currentModeSettings.Key == "favorite")
+                if (_currentModeSettings.Key == "favorites")
                 {
                     QueryOptions.SearchView = SearchView.Favorites;
                 }

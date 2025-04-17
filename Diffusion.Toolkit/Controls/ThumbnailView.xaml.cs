@@ -20,6 +20,7 @@ using Diffusion.Common;
 using Diffusion.Toolkit.Localization;
 using Settings = Diffusion.Toolkit.Configuration.Settings;
 using Diffusion.Database.Models;
+using System.Reflection;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -331,6 +332,13 @@ namespace Diffusion.Toolkit.Controls
                 }
             }
 
+            var visibleCount = 0;
+
+            foreach (var item1 in ThumbnailListView.Items)
+            {
+                visibleCount += ((ImageEntry)item1).IsEmpty ? 0 : 1;
+            }
+
 
             int delta = 0;
             var item = wrapPanel.Children[0] as ListViewItem;
@@ -338,6 +346,14 @@ namespace Diffusion.Toolkit.Controls
 
             switch (e.Key)
             {
+                case Key.End:
+                    var index = visibleCount - 1;
+                    SelectedImageEntry = (ImageEntry)ThumbnailListView.Items[index];
+                    ThumbnailListView.SelectedItem = SelectedImageEntry;
+                    wrapPanel.Children[index].Focus();
+                    e.Handled = true;
+                    break;
+
                 //case Key.Left or Key.Right or Key.Up or Key.Down when ThumbnailListView.SelectedItems == null || ThumbnailListView.SelectedIndex == -1:
                 //    return;
                 case Key.A when (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) && !Keyboard.IsKeyDown(Key.LeftAlt) && !Keyboard.IsKeyDown(Key.RightAlt) && !Keyboard.IsKeyDown(Key.LeftShift) && !Keyboard.IsKeyDown(Key.RightShift)):
@@ -356,18 +372,6 @@ namespace Diffusion.Toolkit.Controls
                             Key.Right => 1,
                             _ => 0
                         };
-
-                        if (Model.MainModel.ThumbnailViewMode == ThumbnailViewMode.Compact)
-                        {
-                            return;
-                        }
-
-                        var visibleCount = 0;
-
-                        foreach (var item1 in ThumbnailListView.Items)
-                        {
-                            visibleCount += ((ImageEntry)item1).IsEmpty ? 0 : 1;
-                        }
 
                         switch (delta)
                         {
@@ -399,6 +403,11 @@ namespace Diffusion.Toolkit.Controls
                                 return;
                         }
 
+
+                        if (Model.MainModel.ThumbnailViewMode == ThumbnailViewMode.Compact)
+                        {
+                            return;
+                        }
 
                         if (delta != 0)
                         {
