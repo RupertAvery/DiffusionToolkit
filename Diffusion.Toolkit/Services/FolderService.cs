@@ -241,6 +241,19 @@ namespace Diffusion.Toolkit.Services
             }
         }
 
+        public void RefreshFolder2(FolderViewModel folder)
+        {
+            var folders = ServiceLocator.DataStore.GetFoldersView().ToList();
+
+            var lookup = folders.ToDictionary(d => d.Path);
+            
+            var comparer = new PathComparer();
+
+            UpdateFolder(folder, lookup);
+
+            UpdateFolderChildren(folder, comparer);
+        }
+
         public async Task LoadFolders()
         {
             var folders = ServiceLocator.DataStore.GetFoldersView().ToList();
@@ -289,7 +302,10 @@ namespace Diffusion.Toolkit.Services
 
             var folder = ServiceLocator.MainModel.Folders.FirstOrDefault(d => d.Path == path);
 
-            UpdateFolderChildren(folder, comparer);
+            if (folder != null)
+            {
+                UpdateFolderChildren(folder, comparer);
+            }
         }
 
         private void UpdateFolderChildren(FolderViewModel folder, PathComparer comparer)
@@ -298,11 +314,6 @@ namespace Diffusion.Toolkit.Services
             {
                 var driveFolders = GetDriveSubFolders(folder);
 
-                if (folder.Children != null)
-                {
-                    driveFolders = driveFolders.Except(folder.Children, comparer);
-                }
-
                 if (driveFolders.Any())
                 {
                     if (folder.Children == null)
@@ -310,21 +321,29 @@ namespace Diffusion.Toolkit.Services
                         folder.Children = new ObservableCollection<FolderViewModel>();
                     }
 
-                    foreach (var subFolder in driveFolders.Reverse())
-                    {
-                        if (folder.Children.FirstOrDefault(d => d.Path == subFolder.Path) == null)
-                        {
-                            var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folder) + 1;
-                            var targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
+                    driveFolders = driveFolders.Except(folder.Children, comparer);
 
-                            while (subFolder.Path.CompareTo(targetFolder.Path) > 0 && targetFolder.Depth == subFolder.Depth)
-                            {
-                                insertPoint++;
-                                targetFolder = ServiceLocator.MainModel.Folders[insertPoint];
-                            }
-                            ServiceLocator.MainModel.Folders.Insert(insertPoint, subFolder);
-                            folder.Children.Add(subFolder);
+                    var insertPoint = ServiceLocator.MainModel.Folders.IndexOf(folder) + 1;
+
+                    ServiceLocator.Dispatcher.Invoke(() =>
+                    {
+                        foreach (var subFolder in driveFolders)
+                        {
+                            InsertChild(insertPoint, folder.Depth, subFolder);
                         }
+                    });
+                }
+
+                var visualChildren = ServiceLocator.Dispatcher.Invoke(() => GetVisualChildren(folder).ToList());
+
+                foreach (var child in visualChildren)
+                {
+                    if (!Directory.Exists(child.Path))
+                    {
+                        ServiceLocator.Dispatcher.Invoke(() =>
+                        {
+                            ServiceLocator.MainModel.Folders.Remove(child); 
+                        });
                     }
                 }
             }
@@ -342,6 +361,25 @@ namespace Diffusion.Toolkit.Services
                     UpdateChildPaths(child);
                 }
             }
+        }
+
+        public IEnumerable<FolderViewModel> GetVisualChildren(FolderViewModel folder)
+        {
+            var currentIndex = ServiceLocator.MainModel.Folders.IndexOf(folder);
+            var parentDepth = folder.Depth;
+
+            FolderViewModel currentFolder;
+            do
+            {
+                currentIndex++;
+                currentFolder = ServiceLocator.MainModel.Folders[currentIndex];
+                if (currentFolder.Depth <= parentDepth || currentIndex > ServiceLocator.MainModel.Folders.Count - 1)
+                {
+                    yield break;
+                }
+                yield return currentFolder;
+            }
+            while (currentFolder.Depth > parentDepth && currentIndex < ServiceLocator.MainModel.Folders.Count);
         }
 
         /// <summary>

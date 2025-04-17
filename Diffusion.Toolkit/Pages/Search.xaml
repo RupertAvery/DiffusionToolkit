@@ -60,8 +60,8 @@
 
         <Grid  Grid.Row="0" Grid.Column="0">
             <Grid.RowDefinitions>
-                <RowDefinition Height="38"></RowDefinition>
-                <RowDefinition Height="30"></RowDefinition>
+                <RowDefinition Height="28"></RowDefinition>
+                <RowDefinition Height="0"></RowDefinition>
                 <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
@@ -117,7 +117,7 @@
                 </ComboBox>
 
             </Grid>
-            <Grid Grid.Row="1" Margin="2">
+            <Grid Grid.Row="1" Margin="2" Visibility="Collapsed">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="28"/>
@@ -307,10 +307,14 @@
                                                                               CommandParameter="{Binding .}"
                                                                               Header="{lex:Loc Search.Navigation.Folders.ContextMenu.ScanNew}"></MenuItem>
                                                                     <Separator></Separator>
+                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.RefreshFolderCommand}"
+                                                                              CommandParameter="{Binding .}"
+                                                                              Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Refresh}"></MenuItem>
+                                                                    <Separator></Separator>
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.CreateFolderCommand}"
-                                                                          CommandParameter="{Binding .}"
-                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanCreateFolder}" 
-                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.CreateFolder}"></MenuItem>
+                                                                              CommandParameter="{Binding .}"
+                                                                              IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanCreateFolder}" 
+                                                                              Header="{lex:Loc Search.Navigation.Folders.ContextMenu.CreateFolder}"></MenuItem>
                                                                     <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Add to Album"></MenuItem>-->
                                                                     <!--<MenuItem IsEnabled="{Binding NavigationSection.Folders.CanDelete}" Header="Send to Recycle Bin"></MenuItem>-->
 

@@ -110,7 +110,7 @@ public class Thumbnail : FrameworkElement
 
             var margin = 5;
 
-            var borderRect = new Rect(margin, margin, Width - margin, Height - margin);
+            var borderRect = new Rect(margin, margin, Math.Max(Width - margin, 128), Math.Max(Height - margin, 128));
 
             var pen = new Pen(Foreground, 1);
 

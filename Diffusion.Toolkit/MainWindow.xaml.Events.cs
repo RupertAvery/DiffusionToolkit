@@ -98,6 +98,7 @@ namespace Diffusion.Toolkit
             _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
             _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
             _model.ToggleThumbnailViewModeCommand = new RelayCommand<ThumbnailViewMode>((p) => ToggleThumbnailViewMode(p));
+            _model.FocusSearch = new RelayCommand<object>((p) => OpenQueryBar());
             _model.ShowInExplorerCommand = new RelayCommand<FolderViewModel>((p) => ShowInExplorer(p));
         }
 

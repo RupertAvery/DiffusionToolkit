@@ -24,6 +24,11 @@ namespace Diffusion.Toolkit
                 ServiceLocator.ScanningService.ScanFolder(folder, true);
             });
 
+            _model.RefreshFolderCommand = new RelayCommand<FolderViewModel>((folder) =>
+            {
+                ServiceLocator.FolderService.RefreshFolder(folder);
+            });
+
             _model.ScanFolderCommand = new RelayCommand<FolderViewModel>((folder) =>
             {
                 ServiceLocator.ScanningService.ScanFolder(folder, false);

@@ -53,12 +53,17 @@ namespace Diffusion.Toolkit
             return new[] { new CustomPopupPlacement(point, PopupPrimaryAxis.None) };
         }
 
-        private void QueryBar_OnMouseDown(object sender, MouseButtonEventArgs e)
+        private void OpenQueryBar()
         {
             QueryPopup.IsOpen = true;
             QueryInput.SelectionStart = 0;
             QueryInput.SelectionLength = QueryInput.Text.Length;
             QueryInput.Focus();
+        }
+
+        private void QueryBar_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            OpenQueryBar();
             e.Handled = true;
         }
 
@@ -98,6 +103,7 @@ namespace Diffusion.Toolkit
 
         private void QueryClear_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
+            QueryInput.Text = "";
             _search.ClearQueryFilter();
             e.Handled = true;
         }

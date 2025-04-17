@@ -3,6 +3,7 @@ using Diffusion.Toolkit.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -63,33 +64,46 @@ namespace Diffusion.Toolkit.Pages
 
         private async Task ExpandToPath(string path)
         {
-            var root = _model.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
+            var root = ServiceLocator.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
 
             var currentNode = root;
 
+            var loop = 1;
+
             while (currentNode != null && !currentNode.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase))
             {
+                Debug.WriteLine($"Loop: {loop}");
+                loop++;
+
                 if (currentNode.State == FolderState.Collapsed)
                 {
                     await ToggleFolder(currentNode);
                 }
 
-                if (currentNode.Children != null)
+                if (currentNode == null)
                 {
-                    var nextNode = currentNode.Children.FirstOrDefault(f => path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
-                    if (nextNode != null)
+                    var x = 1;
+                }
+                var children = ServiceLocator.FolderService.GetVisualChildren(currentNode);
+
+                var enumerator = children.GetEnumerator();
+
+                var found = false;
+                while (enumerator.MoveNext())
+                {
+                    currentNode = enumerator.Current;
+                    if (path.StartsWith(currentNode.Path, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        currentNode = nextNode;
-                    }
-                    else
-                    {
+                        found = true;
                         break;
                     }
                 }
-                else
+
+                if (!found)
                 {
-                    break;
+                    currentNode = null;
                 }
+
             }
 
             if (currentNode == null) return;
@@ -265,6 +279,10 @@ namespace Diffusion.Toolkit.Pages
 
         private async Task ToggleFolder(FolderViewModel folder)
         {
+            var parentIndex = ServiceLocator.MainModel.Folders.IndexOf(folder);
+            var parentDepth = folder.Depth;
+
+
             if (folder.State == FolderState.Collapsed)
             {
                 var subFolders = folder.Children;
@@ -273,36 +291,31 @@ namespace Diffusion.Toolkit.Pages
                 {
                     folder.IsBusy = true;
 
-                    await Task.Run(() =>
+                    subFolders = await Task.Run(() =>
                     {
-                        subFolders = ServiceLocator.FolderService.GetSubFolders(folder);
-
-                        Dispatcher.Invoke(async () =>
+                        try
                         {
-                            folder.Children = subFolders;
-
-                            if (subFolders.Any())
-                            {
-                                var insertPoint = _model.MainModel.Folders.IndexOf(folder) + 1;
-
-                                foreach (var subFolder in subFolders)
-                                {
-                                    _model.MainModel.Folders.Insert(insertPoint++, subFolder);
-                                    await Task.Delay(10);
-                                }
-                            }
-                        });
-                    }).ContinueWith(t =>
-                    {
-                        Dispatcher.Invoke(() => { folder.IsBusy = false; });
+                            return ServiceLocator.FolderService.GetSubFolders(folder);
+                        }
+                        finally
+                        {
+                            Dispatcher.Invoke(() => { folder.IsBusy = false; });
+                        }
                     });
+
+                    folder.Children = subFolders;
+
+                    if (subFolders.Any())
+                    {
+                        foreach (var subFolder in subFolders)
+                        {
+                            ServiceLocator.FolderService.InsertChild(parentIndex, parentDepth, subFolder);
+                        }
+                    }
 
                 }
                 else
                 {
-                    var parentIndex = ServiceLocator.MainModel.Folders.IndexOf(folder);
-                    var parentDepth = folder.Depth;
-
                     foreach (var child in folder.Children)
                     {
                         if (!ServiceLocator.MainModel.Folders.Contains(child))
@@ -316,8 +329,6 @@ namespace Diffusion.Toolkit.Pages
                         }
                     }
                 }
-
-
 
                 folder.State = FolderState.Expanded;
             }
@@ -458,7 +469,7 @@ namespace Diffusion.Toolkit.Pages
                 }
             }
 
-          
+
         }
     }
 }

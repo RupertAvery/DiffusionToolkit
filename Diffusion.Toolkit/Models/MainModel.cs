@@ -770,4 +770,5 @@ public class MainModel : BaseNotify
 
     public ICommand ToggleThumbnailViewModeCommand { get; set;  }
     public ICommand FocusSearch { get; set; }
+    public ICommand RefreshFolderCommand { get; set; }
 }
