@@ -471,6 +471,54 @@ LEFT JOIN (SELECT RootId, COUNT(*) AS Children FROM directoryTree WHERE Depth = 
             return imagesUpdated;
         }
 
+        public int RemoveFolder(int id)
+        {
+            using var db = OpenConnection();
+
+            int images = 0;
+
+            lock (_lock)
+            {
+                db.BeginTransaction();
+
+                var insertQuery = $"{DirectoryTreeCTE} INSERT INTO {{table}} SELECT Id FROM Image WHERE FolderId IN (SELECT Id FROM directoryTree WHERE RootId = @Id)";
+
+                var deletedIds = CustomInsertIds(db, "DeletedIds", insertQuery, new Dictionary<string, object>() { { "@Id", id } });
+
+                var propsQuery = $"DELETE FROM NodeProperty WHERE NodeId IN (Select Id FROM Node WHERE ImageId IN {deletedIds})";
+                var propsCommand = db.CreateCommand(propsQuery);
+                propsCommand.ExecuteNonQuery();
+
+                var nodesQuery = $"DELETE FROM Node WHERE ImageId IN {deletedIds}";
+                var nodesCommand = db.CreateCommand(nodesQuery);
+                nodesCommand.ExecuteNonQuery();
+
+                var albumQuery = $"DELETE FROM AlbumImage WHERE ImageId IN {deletedIds}";
+                var albumCommand = db.CreateCommand(albumQuery);
+                albumCommand.ExecuteNonQuery();
+
+                var query = $"DELETE FROM Image WHERE Id IN {deletedIds}";
+                var command = db.CreateCommand(query);
+                images = command.ExecuteNonQuery();
+
+                var deleteSubFolderQuery = $"{DirectoryTreeCTE} DELETE FROM Folder WHERE Id IN (SELECT Id FROM directoryTree WHERE RootId = @Id)";
+                var deleteSubFolderCommand = db.CreateCommand(deleteSubFolderQuery);
+                deleteSubFolderCommand.Bind("@Id", id);
+                deleteSubFolderCommand.ExecuteNonQuery();
+
+                var deleteFolderQuery = "DELETE FROM Folder WHERE Id = @Id";
+                var deleteFolderCommand = db.CreateCommand(deleteFolderQuery);
+                deleteFolderCommand.Bind("@Id", id);
+                deleteFolderCommand.ExecuteNonQuery();
+
+                db.Commit();
+            }
+
+            db.Close();
+
+            return images;
+        }
+
         public int RemoveFolder(string path)
         {
             using var db = OpenConnection();

@@ -677,6 +677,7 @@ public class MainModel : BaseNotify
     public ICommand RescanFolderCommand { get; set; }
     public ICommand CreateFolderCommand { get; set; }
     public ICommand RenameFolderCommand { get; set; }
+    public ICommand RemoveFolderCommand { get; set; }
     public ICommand DeleteFolderCommand { get; set; }
     public ICommand ArchiveFolderCommand { get; set; }
     public ICommand ArchiveFolderRecursiveCommand { get; set; }

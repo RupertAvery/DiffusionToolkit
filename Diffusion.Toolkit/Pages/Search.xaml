@@ -323,6 +323,11 @@
                                                                           IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanRename}" 
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Rename}"></MenuItem>
 
+                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveFolderCommand}" 
+                                                                              CommandParameter="{Binding .}"
+                                                                              IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanRemove}" 
+                                                                              Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Remove}"></MenuItem>
+
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.DeleteFolderCommand}" 
                                                                           CommandParameter="{Binding .}"
                                                                           IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanDelete}" 

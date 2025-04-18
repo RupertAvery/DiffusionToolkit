@@ -33,6 +33,32 @@ namespace Diffusion.Database
             return $"(SELECT Id FROM {table})";
         }
 
+        private string CustomInsertIds(SQLiteConnection db, string table, string insertQuery, Dictionary<string, object>? bindings = null)
+        {
+            var dropTableQuery = $"DROP TABLE IF EXISTS {table}";
+            var dropCommand = db.CreateCommand(dropTableQuery);
+            dropCommand.ExecuteNonQuery();
+
+            var tempTableQuery = $"CREATE TEMP TABLE {table} (Id INT)";
+            var tempCommand = db.CreateCommand(tempTableQuery);
+            tempCommand.ExecuteNonQuery();
+
+            insertQuery = insertQuery.Replace("{table}", table);
+            var insertCommand = db.CreateCommand(insertQuery);
+
+            if (bindings != null)
+            {
+                foreach (var binding in bindings)
+                {
+                    insertCommand.Bind(binding.Key, binding.Value);
+                }
+            }
+
+            insertCommand.ExecuteNonQuery();
+
+            return $"(SELECT Id FROM {table})";
+        }
+
         private string InsertIds(SQLiteConnection db, string table, string whereClause, Dictionary<string, object>? bindings = null)
         {
             var dropTableQuery = $"DROP TABLE IF EXISTS {table}";

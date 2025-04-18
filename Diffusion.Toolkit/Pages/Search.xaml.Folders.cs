@@ -141,13 +141,15 @@ namespace Diffusion.Toolkit.Pages
 
             var isRoot = folder.Depth == 0;
             var isAvailable = !folder.IsUnavailable;
+            var isScanned = !folder.IsScanned;
 
             _model.NavigationSection.FoldersSection.CanCreateFolder = selectedFolders.Count == 1 && isAvailable;
-            _model.NavigationSection.FoldersSection.CanDelete = !isRoot;
+            _model.NavigationSection.FoldersSection.CanDelete = !isRoot && isAvailable;
             _model.NavigationSection.FoldersSection.CanRename = !isRoot && selectedFolders.Count == 1 && isAvailable;
+            _model.NavigationSection.FoldersSection.CanRemove = !isRoot && selectedFolders.Count == 1;
             _model.NavigationSection.FoldersSection.CanShowInExplorer = selectedFolders.Count == 1 && isAvailable;
-            _model.NavigationSection.FoldersSection.CanArchive = isAvailable;
-            _model.NavigationSection.FoldersSection.CanUnarchive = isAvailable;
+            _model.NavigationSection.FoldersSection.CanArchive = isScanned && isAvailable;
+            _model.NavigationSection.FoldersSection.CanUnarchive = isScanned && isAvailable;
 
 
             if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Grid or TextBlock))
@@ -174,7 +176,12 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else
                 {
-                    OpenFolder(folder);
+                    ServiceLocator.FolderService.ClearSelection();
+
+                    if (!folder.IsUnavailable)
+                    {
+                        OpenFolder(folder);
+                    }
 
                     folder.IsSelected = true;
                 }
@@ -243,7 +250,6 @@ namespace Diffusion.Toolkit.Pages
                 //    folder.Children = subFolders;
                 //}
 
-                ServiceLocator.FolderService.ClearSelection();
 
                 _model.MainModel.CurrentFolder = folder;
                 _model.MainModel.ActiveView = "Folders";

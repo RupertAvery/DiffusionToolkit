@@ -34,49 +34,31 @@ namespace Diffusion.Toolkit
                 ServiceLocator.ScanningService.ScanFolder(folder, false);
             });
 
-            _model.CreateFolderCommand = new RelayCommand<FolderViewModel>((o) =>
+            _model.CreateFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>
             {
-                ShowCreateFolderDialog(o);
+                await ServiceLocator.FolderService.ShowCreateFolderDialog(o);
             });
+
 
             _model.RenameFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>
             {
-                var oldPath = o.Path;
-
-                var (success, newName, newPath) = await ServiceLocator.FolderService.RenameFolder(o.Id, o.Name, o.Path);
-                if (success)
-                {
-                    //o.Name = newName;
-                    //o.Path = newPath;
-
-                    //if (o.HasChildren && o.Children != null)
-                    //{
-                    //    foreach (var child in o.Children)
-                    //    {
-                    //        child.Path = Path.Combine(newPath, Path.GetFileName(child.Path));
-                    //    }
-                    //}
-
-                    //if (_search.QueryOptions.Folder == oldPath)
-                    //{
-                    //    _search.OpenFolder(o);
-                    //}
-
-                    //var existingEntry = _search.Images.FirstOrDefault(d => d.EntryType == EntryType.Folder && d.Path == oldPath);
-
-                    //if (existingEntry != null)
-                    //{
-                    //    existingEntry.Name = newName;
-                    //    existingEntry.Path = newPath;
-                    //}
-
-                }
-
+                await ServiceLocator.FolderService.ShowRenameFolderDialog(o);
             });
 
-            _model.DeleteFolderCommand = new RelayCommand<FolderViewModel>((o) =>
+            _model.RemoveFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>
             {
-                ShowDeleteFolderDialog(o);
+                await ServiceLocator.FolderService.ShowRemoveFolderDialog(o);
+            });
+
+            _model.DeleteFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>
+            {
+                var selectedFolders = ServiceLocator.FolderService.SelectedFolders.ToList();
+
+                if (await ServiceLocator.FolderService.ShowDeleteFolderDialog(selectedFolders))
+                {
+                    _search.OpenFolder(selectedFolders[0].Parent);
+                }
+
             });
 
             _model.ArchiveFolderCommand = new RelayCommand<bool>((o) =>
@@ -123,110 +105,7 @@ namespace Diffusion.Toolkit
 
         }
 
-        private void RemoveFolder(FolderViewModel folder)
-        {
-            if (folder.Children != null)
-            {
-                foreach (var child in folder.Children)
-                {
-                    RemoveFolder(child);
-                }
-            }
 
-            _model.Folders.Remove(folder);
-        }
-
-        private async void ShowDeleteFolderDialog(FolderViewModel folder)
-        {
-            var selectedFolders = ServiceLocator.MainModel.Folders.Where(d => d.IsSelected).ToList();
-
-            PopupResult result;
-
-            var title = GetLocalizedText("Actions.Folders.Delete.Title");
-
-            if (selectedFolders.Count > 1)
-            {
-                result = await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.DeleteSelection.Message"), title, PopupButtons.YesNo);
-            }
-            else
-            {
-                result = await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Delete.Message").Replace("{folder}", folder.Name), title, PopupButtons.YesNo);
-            }
-
-            if (result == PopupResult.Yes)
-            {
-
-                var count = 0;
-                foreach (var model in selectedFolders)
-                {
-                    if (Directory.Exists(model.Path))
-                    {
-                        ThumbnailCache.Instance.Unload(model.Path);
-                        ServiceLocator.FolderService.Delete(model.Path);
-                    }
-
-                    ServiceLocator.DataStore.RemoveFolder(model.Path);
-
-                    Dispatcher.Invoke(() =>
-                    {
-                        ServiceLocator.MainModel.Folders.Remove(model);
-                        RemoveFolder(model);
-                        model.IsSelected = false;
-                        model.Parent!.Children!.Remove(model);
-                    });
-
-                    count++;
-                }
-
-                _search.OpenFolder(selectedFolders[0].Parent);
-            }
-        }
-
-
-        private async void ShowCreateFolderDialog(FolderViewModel parentFolder)
-        {
-            var title = GetLocalizedText("Actions.Folders.Create.Title");
-
-            var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Folders.Create.Message"), title);
-
-            if (result == PopupResult.OK)
-            {
-
-
-                if (!FileUtility.IsValidFilename(name))
-                {
-                    await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Invalid.Message"), title);
-                    return;
-                }
-
-                var newPath = Path.Combine(parentFolder.Path, name);
-
-                if (Directory.Exists(newPath))
-                {
-                    await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Folders.Exists.Message").Replace("{folder}", name), title);
-                    return;
-                }
-
-                var directory = new DirectoryInfo(parentFolder.Path);
-
-                if (directory.Exists)
-                {
-                    directory.CreateSubdirectory(name);
-                    
-                    ServiceLocator.FolderService.AppendChild(parentFolder, new FolderViewModel()
-                    {
-                        Parent = parentFolder,
-                        Name = name,
-                        Depth = parentFolder.Depth + 1,
-                        Path = newPath,
-                        IsScanned = false
-                    });
-
-
-                    //ServiceLocator.FolderService.RefreshFolder(parentFolder);
-                }
-
-            }
-        }
+      
     }
 }

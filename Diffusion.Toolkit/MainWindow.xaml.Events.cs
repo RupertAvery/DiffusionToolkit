@@ -387,39 +387,15 @@ namespace Diffusion.Toolkit
             else if (entryType == EntryType.Folder)
             {
                 var name = selectedImageEntry.FileName;
-                
 
-                var (success, newName, newPath) = await ServiceLocator.FolderService.RenameFolder(id, name, oldPath);
-                if (success)
+                var folder = new FolderViewModel()
                 {
-                    selectedImageEntry.FileName = newName;
-                    selectedImageEntry.Name = newName;
-                    selectedImageEntry.Path = newPath;
- 
-                    foreach (var folder in ServiceLocator.MainModel.Folders)
-                    {
-                        if (folder.Path == oldPath)
-                        {
-                            folder.Path = newPath;
-                            folder.Name = newName;
-                            
+                    Id = id,
+                    Name = name, 
+                    Path = oldPath,
+                };
 
-                            if (folder.HasChildren && folder.Children != null)
-                            {
-                                foreach (var child in folder.Children)
-                                {
-                                    child.Path = Path.Combine(newPath, Path.GetFileName(child.Path));
-                                }
-                            }
-
-                        }
-
-
-
-                    }
-                    
-                    // find folder. update details
-                }
+                await ServiceLocator.FolderService.ShowRenameFolderDialog(folder);
             }
             
             //_search.ThumbnailListView.Focus();

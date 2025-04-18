@@ -6,6 +6,7 @@ using System.Windows.Navigation;
 
 namespace Diffusion.Toolkit.Models;
 
+[DebuggerDisplay("{Path}")]
 public class FolderViewModel : BaseNotify
 {
     private FolderState _state;

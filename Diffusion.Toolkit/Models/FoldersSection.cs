@@ -9,6 +9,7 @@ public class FoldersSection : BaseNotify
     private bool _canArchive;
     private bool _canUnarchive;
     private bool _canShowInExplorer;
+    private bool _canRemove;
 
     public bool CanRescan
     {
@@ -52,5 +53,9 @@ public class FoldersSection : BaseNotify
         set => SetField(ref _canShowInExplorer, value);
     }
 
-
+    public bool CanRemove
+    {
+        get => _canRemove;
+        set => SetField(ref _canRemove, value);
+    }
 }
