@@ -1,4 +1,8 @@
-﻿namespace Diffusion.Database;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Diffusion.Common;
 
 public class Filter
 {
@@ -112,30 +116,4 @@ public class Filter
 
     public IEnumerable<NodeFilter>? NodeFilters { get; set; }
     public IReadOnlyCollection<int>? AlbumIds { get; set; }
-}
-
-public enum NodeOperation
-{
-    INTERSECT,
-    UNION,
-    EXCEPT
-}
-
-public enum NodeComparison
-{
-    Contains,
-    StartsWith,
-    EndsWith,
-    Equals
-}
-
-public class NodeFilter
-{
-    public bool IsActive { get; set; }
-    public NodeOperation Operation { get; set; }
-    public string Node { get; set; }
-    public string Property { get; set; }
-    public NodeComparison Comparison { get; set; }
-    public string Value { get; set; }
-
 }

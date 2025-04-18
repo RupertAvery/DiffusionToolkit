@@ -56,12 +56,18 @@
         <Grid Background="{x:Null}">
             <Border Background="{x:Null}" Margin="0,10,0,0" BorderThickness="1" CornerRadius="10" BorderBrush="{DynamicResource SecondaryBrush}" Width="300">
                 <Grid Background="{x:Null}" MouseDown="QueryBar_OnMouseDown">
-                    <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Foreground="{DynamicResource ForegroundBrush}" Width="12" MouseDown="QueryBar_OnMouseDown">
+                    <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Width="12" ToolTip="{lex:Loc QueryBar.Query.ToolTip}" MouseDown="QueryBar_OnMouseDown">
                         <fa:ImageAwesome.Style>
                             <Style TargetType="fa:ImageAwesome">
                                 <Setter Property="Opacity" Value="0.2"></Setter>
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasQuery}" Value="True">
+                                        <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                        <Setter Property="Opacity" Value="1"></Setter>
+                                    </DataTrigger>
                                     <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
                                         <Setter Property="Opacity" Value="1"></Setter>
                                     </Trigger>
                                 </Style.Triggers>
@@ -69,7 +75,7 @@
                         </fa:ImageAwesome.Style>
                     </fa:ImageAwesome>
 
-                    <fa:ImageAwesome  HorizontalAlignment="Right" Margin="0,0,10,0" Icon="Close" Foreground="{DynamicResource ForegroundBrush}" Width="12" MouseDown="QueryClear_OnMouseDown">
+                    <fa:ImageAwesome  HorizontalAlignment="Right" Margin="0,0,10,0" Icon="Close" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Clear.ToolTip}" MouseDown="QueryClear_OnMouseDown">
                         <fa:ImageAwesome.Style>
                             <Style TargetType="fa:ImageAwesome">
                                 <Setter Property="Opacity" Value="0.2"></Setter>
@@ -90,7 +96,7 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
-                <fa:ImageAwesome Grid.Column="2" Icon="Refresh" Margin="0,0,0,0"  Foreground="{DynamicResource ForegroundBrush}" Width="12" MouseDown="QueryRefresh_OnMouseDown">
+                <fa:ImageAwesome Grid.Column="2" Icon="Refresh" Margin="0,0,0,0"  Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Refresh.ToolTip}" MouseDown="QueryRefresh_OnMouseDown">
                     <fa:ImageAwesome.Style>
                         <Style TargetType="fa:ImageAwesome">
                             <Setter Property="Opacity" Value="0.2"></Setter>
@@ -102,7 +108,7 @@
                         </Style>
                     </fa:ImageAwesome.Style>
                 </fa:ImageAwesome>
-                <fa:ImageAwesome Grid.Column="2" Icon="Sliders" Margin="0,0,-40,0" Foreground="{DynamicResource ForegroundBrush}" Width="12" MouseDown="QuerySettings_OnMouseDown">
+                <fa:ImageAwesome Grid.Column="2" Icon="Sliders" Margin="0,0,-40,0" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Settings.ToolTip}" MouseDown="QuerySettings_OnMouseDown">
                     <fa:ImageAwesome.Style>
                         <Style TargetType="fa:ImageAwesome">
                             <Setter Property="Opacity" Value="0.2"></Setter>
@@ -114,19 +120,27 @@
                         </Style>
                     </fa:ImageAwesome.Style>
                 </fa:ImageAwesome>
-                <fa:ImageAwesome Grid.Column="2" Icon="Filter" Margin="0,0,-80,0"  Foreground="{DynamicResource ForegroundBrush}" Width="12"  MouseDown="QueryFilter_OnMouseDown">
+                <fa:ImageAwesome Grid.Column="2" Icon="Filter" Margin="0,0,-80,0" 
+                                 Width="12" ToolTip="{lex:Loc QueryBar.Filter.ToolTip}"
+                                 MouseDown="QueryFilter_OnMouseDown">
                     <fa:ImageAwesome.Style>
                         <Style TargetType="fa:ImageAwesome">
                             <Setter Property="Opacity" Value="0.2"></Setter>
+                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
                             <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasFilter}" Value="True">
+                                    <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                    <Setter Property="Opacity" Value="1"></Setter>
+                                </DataTrigger>
                                 <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
                                     <Setter Property="Opacity" Value="1"></Setter>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
                     </fa:ImageAwesome.Style>
                 </fa:ImageAwesome>
-                <fa:ImageAwesome Grid.Column="2" Icon="Question" Margin="0,0,-120,0"  Foreground="{DynamicResource ForegroundBrush}" Width="10"  MouseDown="QueryFilter_OnMouseDown">
+                <fa:ImageAwesome Grid.Column="2" Icon="Question" Margin="0,0,-120,0"  Foreground="{DynamicResource ForegroundBrush}" Width="10" ToolTip="{lex:Loc QueryBar.Help.ToolTip}" MouseDown="QueryHelp_OnMouseDown">
                     <fa:ImageAwesome.Style>
                         <Style TargetType="fa:ImageAwesome">
                             <Setter Property="Opacity" Value="0.2"></Setter>
@@ -413,7 +427,7 @@
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
                     </Border.Effect>
-                    <TextBox x:Name="QueryInput" FontSize="18" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="WrapWithOverflow" Padding="2" VerticalContentAlignment="Center" KeyDown="QueryInput_OnKeyDown"></TextBox>
+                    <TextBox x:Name="QueryInput" FontSize="18" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="WrapWithOverflow" Padding="2" VerticalContentAlignment="Center" KeyDown="QueryInput_OnKeyDown" Text="{Binding QueryText, UpdateSourceTrigger=PropertyChanged}"></TextBox>
                 </Border>
             </Grid>
         </Popup>

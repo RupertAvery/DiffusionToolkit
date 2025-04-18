@@ -1,4 +1,6 @@
-﻿namespace Diffusion.Database;
+﻿using System.Collections.Generic;
+
+namespace Diffusion.Common;
 
 public class ComfyQueryOptions
 {

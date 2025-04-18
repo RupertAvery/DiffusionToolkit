@@ -210,10 +210,15 @@ public class MetadataScannerService
                     {
                         await ServiceLocator.DatabaseWriterService.QueueAddAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
                     }
-
-
+                } else
+                {
+                    await ServiceLocator.DatabaseWriterService.QueueSkipAsync(new FileParameters()
+                    {
+                        Path = job.Path
+                    });
 
                 }
+
             }
             catch (Exception ex)
             {
@@ -274,6 +279,11 @@ public class MetadataScannerService
 
 
                 }
+                else
+                {
+                    await ServiceLocator.DatabaseWriterService.QueueAsync(new FileParameters() { Path = job.Path }, QueueType.Skip, _settings.StoreMetadata, _settings.StoreWorkflow);
+                }
+
             }
             catch (Exception ex)
             {

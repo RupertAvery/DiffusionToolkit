@@ -134,6 +134,11 @@ namespace Diffusion.Toolkit.Pages
         {
             this._start = e.GetPosition(null);
 
+            if (sender is Grid grid)
+            {
+                grid.Focus();
+            }
+
             var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
 
@@ -273,13 +278,24 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
-        private async Task ToggleFolder(FolderViewModel folder)
+        private async Task ToggleFolder(FolderViewModel folder, FolderState? forceState = null)
         {
             var parentIndex = ServiceLocator.MainModel.Folders.IndexOf(folder);
             var parentDepth = folder.Depth;
 
+            void Collapse()
+            {
+                if (folder.Children != null)
+                {
+                    CollapseVisualTree(folder);
 
-            if (folder.State == FolderState.Collapsed)
+                    //model.Children = null;
+                }
+
+                folder.State = FolderState.Collapsed;
+            }
+
+            async Task Expand()
             {
                 var subFolders = folder.Children;
 
@@ -328,16 +344,25 @@ namespace Diffusion.Toolkit.Pages
 
                 folder.State = FolderState.Expanded;
             }
+
+
+            switch (forceState)
+            {
+                case FolderState.Collapsed:
+                    Collapse();
+                    return;
+                case FolderState.Expanded:
+                    await Expand();
+                    return;
+            }
+
+            if (folder.State == FolderState.Collapsed)
+            {
+                await Expand();
+            }
             else
             {
-                if (folder.Children != null)
-                {
-                    CollapseVisualTree(folder);
-
-                    //model.Children = null;
-                }
-
-                folder.State = FolderState.Collapsed;
+                Collapse();
             }
         }
 
@@ -435,35 +460,52 @@ namespace Diffusion.Toolkit.Pages
 
         private void Folder_OnKeyDown(object sender, KeyEventArgs e)
         {
-            var folder = ServiceLocator.MainModel.CurrentFolder;
-
-            if (folder != null)
+            if (sender is ContentPresenter { DataContext: FolderViewModel folder })
             {
-                var index = ServiceLocator.MainModel.Folders.IndexOf(folder);
-
-                if (e.Key == Key.Down)
+                if (e.Key == Key.Enter)
                 {
-                    index++;
-                    if (index <= ServiceLocator.MainModel.Folders.Count - 1)
-                    {
-                        ServiceLocator.FolderService.ClearSelection();
-                        var currentFolder = ServiceLocator.MainModel.Folders[index];
-                        ServiceLocator.MainModel.CurrentFolder = currentFolder;
-                        currentFolder.IsSelected = true;
-                    }
+                    ServiceLocator.FolderService.ClearSelection();
+                    OpenFolder(folder);
+                    ServiceLocator.MainModel.CurrentFolder = folder;
+                    folder.IsSelected = true;
                 }
-                else if (e.Key == Key.Up)
+                else if (e.Key == Key.Left)
                 {
-                    index--;
-                    if (index >= 0)
-                    {
-                        ServiceLocator.FolderService.ClearSelection();
-                        var currentFolder = ServiceLocator.MainModel.Folders[index];
-                        ServiceLocator.MainModel.CurrentFolder = currentFolder;
-                        currentFolder.IsSelected = true;
-                    }
+                    _ = ToggleFolder(folder, FolderState.Collapsed);
+                }
+                else if (e.Key == Key.Right)
+                {
+                    _ = ToggleFolder(folder, FolderState.Expanded);
                 }
             }
+
+            //var folder = ServiceLocator.MainModel.CurrentFolder;
+
+            //if (folder != null)
+            //{
+            //    var index = ServiceLocator.MainModel.Folders.IndexOf(folder);
+
+            //    if (e.Key == Key.Down)
+            //    {
+            //        index++;
+            //        if (index <= ServiceLocator.MainModel.Folders.Count - 1)
+            //        {
+            //            ServiceLocator.FolderService.ClearSelection();
+            //            var currentFolder = ServiceLocator.MainModel.Folders[index];
+            //            currentFolder.IsSelected = true;
+            //        }
+            //    }
+            //    else if (e.Key == Key.Up)
+            //    {
+            //        index--;
+            //        if (index >= 0)
+            //        {
+            //            ServiceLocator.FolderService.ClearSelection();
+            //            var currentFolder = ServiceLocator.MainModel.Folders[index];
+            //            currentFolder.IsSelected = true;
+            //        }
+            //    }
+            //}
 
 
         }

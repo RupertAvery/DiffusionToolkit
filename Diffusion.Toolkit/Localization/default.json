@@ -370,5 +370,11 @@
   "Common.Controls.ShowTags": "Show/Hide Tags",
   "Common.Controls.AutoAdvance": "Advance on Tag",
   "SelectAlbum.NewAlbum": "New Album",
-  "SelectAlbum.ExistingAlbum": "Existing Album"
+  "SelectAlbum.ExistingAlbum": "Existing Album",
+  "QueryBar.Query.ToolTip": "Search (F6)",
+  "QueryBar.Clear.ToolTip": "Clear",
+  "QueryBar.Refresh.ToolTip": "Refresh (F5)",
+  "QueryBar.Filter.ToolTip": "Filter (Ctrl+F)",
+  "QueryBar.Settings.ToolTip": "Settings",
+  "QueryBar.Help.ToolTip": "Search Help"
 }

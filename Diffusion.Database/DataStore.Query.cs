@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Diffusion.Common;
 
 namespace Diffusion.Database
 {

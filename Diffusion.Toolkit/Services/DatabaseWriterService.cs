@@ -8,6 +8,8 @@ using Diffusion.Common;
 using Diffusion.Database.Models;
 using Diffusion.IO;
 using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.Thumbnails;
+using Node = Diffusion.IO.Node;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -28,12 +30,42 @@ public delegate int WriteDelegate(IReadOnlyCollection<Image> images, IReadOnlyCo
     IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow,
     CancellationToken cancellationToken);
 
+public class SkipQueue : UnboundDataWriterQueue
+{
+    public SkipQueue(string completionMessage) : base(completionMessage)
+    {
+    }
+
+    protected override int ProcessJob(RecordJob job, List<Image> newImages, List<Node> newNodes, IReadOnlyCollection<string> includeProperties,
+        Dictionary<string, Folder> folderCache, bool storeWorkflow, int completed, CancellationToken cancellationToken)
+    {
+        completed += 1;
+
+        if ( _queueChannel.Reader.Count == 0) {
+            _debounceQueueNotification(completed);
+        }
+
+        var path = job.FileParameters.Path;
+        if (path.Length > 100)
+        {
+            path = "...\\" + path[path.LastIndexOf("\\", 100, StringComparison.Ordinal)..];
+        }
+        else if (path.Length > 70)
+        {
+            path = "...\\" + path[path.LastIndexOf("\\", 70, StringComparison.Ordinal)..];
+        }
+        ServiceLocator.ProgressService.SetStatus($"Skipping: {path}");
+
+        return completed;
+    }
+}
+
 public class UnboundDataWriterQueue
 {
     private static Settings Settings => ServiceLocator.Settings!;
-    private readonly Channel<RecordJob> _queueChannel = Channel.CreateUnbounded<RecordJob>();
+    protected readonly Channel<RecordJob> _queueChannel = Channel.CreateUnbounded<RecordJob>();
     private int _queueTotal = 0;
-    private readonly Action<int> _debounceQueueNotification;
+    protected readonly Action<int> _debounceQueueNotification;
     private bool _queueRunning;
 
     public UnboundDataWriterQueue(string completionMessage)
@@ -81,7 +113,7 @@ public class UnboundDataWriterQueue
     //    IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow,
     //    CancellationToken cancellationToken);
 
-    public WriteDelegate Write { get; set; }
+    public WriteDelegate? Write { get; set; }
 
 
     private async Task ProcessQueueTask(CancellationToken token)
@@ -109,48 +141,58 @@ public class UnboundDataWriterQueue
         {
             var job = await _queueChannel.Reader.ReadAsync(token);
 
-            var fp = job.FileParameters;
+            completed = ProcessJob(job, newImages, newNodes, includeProperties, folderCache, Settings.StoreWorkflow, completed, token);
+        }
+    }
 
+    protected virtual int ProcessJob(RecordJob job, List<Image> newImages, List<IO.Node> newNodes,
+        IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, int completed,
+        CancellationToken cancellationToken)
+    {
+        var fp = job.FileParameters;
+
+        try
+        {
             try
             {
-                try
-                {
-                    var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, Settings.StoreMetadata, Settings.StoreWorkflow);
+                var (image, nodes) = ServiceLocator.ScanningService.ProcessFile(fp, Settings.StoreMetadata, Settings.StoreWorkflow);
 
-                    newImages.Add(image);
-                    newNodes.AddRange(nodes);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log(ex.Message);
-                }
-
-                if (newImages.Count == 33 || _queueChannel.Reader.Count == 0)
-                {
-                    completed += Write(newImages, newNodes, includeProperties, folderCache, Settings.StoreWorkflow, token);
-                    _debounceQueueNotification(completed);
-
-                    newNodes.Clear();
-                    newImages.Clear();
-                }
-
-                var path = job.FileParameters.Path;
-                if (path.Length > 100)
-                {
-                    path = "...\\" + path[path.LastIndexOf("\\", 100, StringComparison.Ordinal)..];
-                }
-                else if (path.Length > 70)
-                {
-                    path = "...\\" + path[path.LastIndexOf("\\", 70, StringComparison.Ordinal)..];
-                }
-                ServiceLocator.ProgressService.SetStatus($"Scanning: {path}");
-
+                newImages.Add(image);
+                newNodes.AddRange(nodes);
             }
             catch (Exception ex)
             {
                 Logger.Log(ex.Message);
             }
+
+            if (newImages.Count == 33 || _queueChannel.Reader.Count == 0)
+            {
+                completed += Write(newImages, newNodes, includeProperties, folderCache, Settings.StoreWorkflow, cancellationToken);
+                _debounceQueueNotification(completed);
+
+                newNodes.Clear();
+                newImages.Clear();
+            }
+
+            var path = job.FileParameters.Path;
+            if (path.Length > 100)
+            {
+                path = "...\\" + path[path.LastIndexOf("\\", 100, StringComparison.Ordinal)..];
+            }
+            else if (path.Length > 70)
+            {
+                path = "...\\" + path[path.LastIndexOf("\\", 70, StringComparison.Ordinal)..];
+            }
+            ServiceLocator.ProgressService.SetStatus($"Scanning: {path}");
+
+
         }
+        catch (Exception ex)
+        {
+            Logger.Log(ex.Message);
+        }
+
+        return completed;
     }
 }
 
@@ -158,7 +200,8 @@ public enum QueueType
 {
     Add,
     Update,
-    Move
+    Move,
+    Skip
 }
 
 public class DatabaseWriterService
@@ -172,6 +215,7 @@ public class DatabaseWriterService
     private readonly UnboundDataWriterQueue _addQueue;
     private readonly UnboundDataWriterQueue _updateQueue;
     private readonly UnboundDataWriterQueue _moveQueue;
+    private readonly SkipQueue _skipQueue;
 
     public DatabaseWriterService()
     {
@@ -189,6 +233,10 @@ public class DatabaseWriterService
         {
             Write = ServiceLocator.ScanningService.UpdateImages
         };
+
+        _skipQueue = new SkipQueue("Skipped {0} images")
+        {
+        };
     }
 
 
@@ -203,7 +251,8 @@ public class DatabaseWriterService
             var taskA = _addQueue.StartAsync(token);
             var taskB = _updateQueue.StartAsync(token);
             var taskC = _moveQueue.StartAsync(token);
-            _queueTask = Task.WhenAll(taskA, taskB, taskC);
+            var taskD = _skipQueue.StartAsync(token);
+            _queueTask = Task.WhenAll(taskA, taskB, taskC, taskD);
             _queueRunning = true;
         }
         return _queueTask;
@@ -217,6 +266,8 @@ public class DatabaseWriterService
                 return _addQueue.QueueAsync(fileParameters, storeMetadata, storeWorkflow);
             case QueueType.Update:
                 return _updateQueue.QueueAsync(fileParameters, storeMetadata, storeWorkflow);
+            case QueueType.Skip:
+                return _skipQueue.QueueAsync(fileParameters, storeMetadata, storeWorkflow);
             case QueueType.Move:
                 return _moveQueue.QueueAsync(fileParameters, storeMetadata, storeWorkflow);
         }
@@ -248,6 +299,20 @@ public class DatabaseWriterService
                 FileParameters = fileParameters,
                 StoreMetadata = storeMetadata,
                 StoreWorkflow = storeWorkflow
+            };
+
+            await _updateChannel.Writer.WriteAsync(job);
+        }
+    }
+
+    public async Task QueueSkipAsync(FileParameters fileParameters)
+    {
+        if (!_cancellationTokenSource.IsCancellationRequested)
+        {
+            var job = new RecordJob()
+            {
+                Skip = true,
+                FileParameters = fileParameters
             };
 
             await _updateChannel.Writer.WriteAsync(job);
@@ -426,6 +491,13 @@ public class DatabaseWriterService
             while (await _updateChannel.Reader.WaitToReadAsync(token))
             {
                 var job = await _updateChannel.Reader.ReadAsync(token);
+
+                if (job.Skip)
+                {
+                    ServiceLocator.ProgressService.AddProgress(newImages.Count);
+                    UpdateStatus();
+                    continue;
+                }
 
                 var fp = job.FileParameters;
 

@@ -12,6 +12,7 @@ using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
 using System.Text;
 using System.Security.Cryptography;
+using SixLabors.ImageSharp;
 
 namespace Diffusion.IO;
 
@@ -296,7 +297,7 @@ public class Metadata
                         }
                     }
 
-    
+
                     if (aestheticScore > 0)
                     {
                         fileParameters ??= new FileParameters();
@@ -479,10 +480,23 @@ public class Metadata
             fileParameters.NoMetadata = true;
             fileParameters.Hash = hash;
         }
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        var (width, height) = GetImageSize(stream);
+
+        fileParameters.Width = width;
+        fileParameters.Height = height;
         
         return fileParameters;
     }
 
+
+    public static (int width, int height) GetImageSize(Stream stream)
+    {
+        ImageInfo info = Image.Identify(stream);
+        return (info.Width, info.Height);
+    }
 
     private static FileParameters DetectAndReadMetaType(string parameters)
     {
@@ -679,12 +693,12 @@ public class Metadata
             fp.Workflow = json;
 
             var root = JsonDocument.Parse(json);
-            
+
             fp.WorkflowId = GetHashCode(root.RootElement).ToString("X");
 
             var parser = new ComfyUIParser();
             var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
-            
+
             fp.Nodes = pnodes;
 
             return fp;
@@ -1169,7 +1183,7 @@ public class Metadata
         fileParameters.Parameters = data;
 
         var state = 0;
-        
+
         fileParameters.Prompt = "";
         fileParameters.NegativePrompt = "";
 
@@ -1270,7 +1284,7 @@ public class Metadata
                         {
 
                         }
-                      
+
                     }
 
                     state = 3;

@@ -567,9 +567,14 @@ public class ScanningService
 
                     HashSet<string> ignoreFiles = new HashSet<string>();
 
-                    var folderImages = _dataStore.GetAllPathImages(folder.Path).ToDictionary(f => f.Path);
+                    var folderImages = _dataStore.GetAllPathImages(folder.Path);
 
-                    // TODO remove images from excluded paths, otherwise they appear as Unavailable
+                    // Remove images from excluded paths, otherwise they appear as Unavailable
+                    folderImages = folderImages.Where(d => !excludePaths.Any(p =>
+                        p.Equals(Path.GetDirectoryName(d.Path), StringComparison.OrdinalIgnoreCase)));
+
+                    var imageLookup = folderImages.ToDictionary(d => d.Path);
+
 
                     if (Directory.Exists(folder.Path))
                     {
@@ -583,14 +588,14 @@ public class ScanningService
                                 break;
                             }
 
-                            if (folderImages.TryGetValue(file, out var imagePath))
+                            if (imageLookup.TryGetValue(file, out var imagePath))
                             {
                                 if (imagePath.Unavailable)
                                 {
                                     restoredImages.Add(imagePath.Id);
                                 }
 
-                                folderImages.Remove(file);
+                                imageLookup.Remove(file);
                             }
 
                             current++;
@@ -601,18 +606,18 @@ public class ScanningService
                             }
                         }
 
-                        foreach (var folderImage in folderImages)
+                        foreach (var image in imageLookup)
                         {
-                            candidateImages.Add(folderImage.Value.Id);
+                            candidateImages.Add(image.Value.Id);
                         }
                     }
                     else
                     {
                         if (options.ShowUnavailableRootFolders)
                         {
-                            foreach (var folderImage in folderImages)
+                            foreach (var image in imageLookup)
                             {
-                                candidateImages.Add(folderImage.Value.Id);
+                                candidateImages.Add(image.Value.Id);
 
                                 current++;
 

@@ -1,11 +1,23 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-namespace Diffusion.Database;
+namespace Diffusion.Common;
 
-public class QueryOptions
+public class QueryOptions 
 {
+    public QueryOptions()
+    {
+        Filter = new Filter();
+        ComfyQueryOptions = new ComfyQueryOptions();
+        SearchView = SearchView.Search;
+    }
+
     public string Query { get; set; }
     public Filter Filter { get; set; }
+    [JsonIgnore]
+    public bool HasQuery => Filter.IsEmpty && !string.IsNullOrEmpty(Query);
+
+    [JsonIgnore] public bool HasFilter => !Filter.IsEmpty;
     public bool HideDeleted { get; set; }
     public bool HideUnavailable { get; set; }
     public bool HideNSFW { get; set; }
@@ -17,28 +29,7 @@ public class QueryOptions
     public string? Folder { get; set; }
     public bool SearchRawData { get; set; }
     public bool SearchAllProperties { get; set; }
-    
+
     [JsonIgnore]
     public bool IsEmpty => Filter.IsEmpty && string.IsNullOrEmpty(Query);
-}
-
-
-public class ModelInfo
-{
-    public string Name { get; set; }
-    public string Hash { get; set; }
-    public string HashV2 { get; set; }
-}
-
-
-public class CountSize
-{
-    public int Total { get; set; }
-    public long Size { get; set; }
-
-    public void Deconstruct(out int total, out long size)
-    {
-        total = Total;
-        size = Size;
-    }
 }

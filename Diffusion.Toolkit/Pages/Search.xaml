@@ -207,7 +207,8 @@
                                 <ColumnDefinition Width="*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
 
-                            <ScrollViewer x:Name="NavigationScrollViewer" Grid.Column="0" VerticalScrollBarVisibility="Auto">
+
+                            <ScrollViewer Focusable="True" x:Name="NavigationScrollViewer" Grid.Column="0" VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
                                     <!--<controls:AccordionControl HeaderBackground="#80000000" Margin="0,0,0,5"
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowDate, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
@@ -258,7 +259,6 @@
                                     </controls:AccordionControl>-->
 
                                     <controls:AccordionControl HeaderBackground="#80000000"  Margin="0,0,0,5"
-                                                               PreviewKeyDown="Folder_OnKeyDown"
                                                                Header="{lex:Loc Search.Navigation.Folders}"
                                                                State="{Binding DataContext.NavigationSection.FolderState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}" 
                                                                Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowFolders, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
@@ -285,10 +285,11 @@
                                         </controls:AccordionControl.ButtonAreaContent>
 
                                         <Grid>
-                                            <ItemsControl IsEnabled="True" ItemsSource="{Binding Path=MainModel.Folders}" PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
+                                            <ItemsControl ItemsSource="{Binding Path=MainModel.Folders}" PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Grid
+                                                            Focusable="True"
                                                         Tag="{Binding}" 
                                                         MouseDown="Folder_OnClick"
                                                         MouseMove="Folder_Move"
@@ -372,6 +373,9 @@
                                                                         <DataTrigger Binding="{Binding IsSelected}" Value="true">
                                                                             <Setter Property="Background" Value="{DynamicResource HighlightBrush}"></Setter>
                                                                         </DataTrigger>
+                                                                        <Trigger Property="IsFocused" Value="True">
+                                                                            <Setter Property="Background" Value="{DynamicResource HighlightBrush}"></Setter>
+                                                                        </Trigger>
                                                                         <Trigger Property="IsMouseOver" Value="True">
                                                                             <Setter Property="Background" Value="{DynamicResource BgHighlightBrush}"></Setter>
                                                                         </Trigger>

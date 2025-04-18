@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Net.Sockets;
+using Diffusion.Common;
 
 namespace Diffusion.Database;
 

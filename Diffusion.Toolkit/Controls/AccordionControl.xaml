@@ -10,6 +10,7 @@
              xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
              xmlns:configuration="clr-namespace:Diffusion.Toolkit.Configuration"
              mc:Ignorable="d" 
+             Focusable="True"
              d:DesignHeight="200" d:DesignWidth="400">
     <UserControl.Resources>
         <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
@@ -68,7 +69,7 @@
                         </fa:ImageAwesome>
                     </Button>
                     <Label Style="{StaticResource SmallCaps}" Grid.Column="1" Margin="0,0,0,0" Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"></Label>
-                    <ContentControl Grid.Column="2" Content="{Binding ButtonAreaContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+                    <ContentControl  Focusable="True" Grid.Column="2" Content="{Binding ButtonAreaContent, RelativeSource={RelativeSource TemplatedParent}}"/>
                 </Grid>
 
                 <Grid Background="Transparent" Margin="0,0,0,0" Visibility="{Binding ContentVisibility, RelativeSource={RelativeSource TemplatedParent}}">

@@ -1,4 +1,4 @@
-﻿namespace Diffusion.Database;
+﻿namespace Diffusion.Common;
 
 public enum SearchView
 {

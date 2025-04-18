@@ -29,7 +29,7 @@
             </Style>
 
             <Style TargetType="Paragraph">
-                <Setter Property="Margin" Value="0, 0, 0, 5"/>
+                <Setter Property="Margin" Value="0, 0, 0, 10"/>
 
                 <Style.Triggers>
                     <Trigger Property="Tag" Value="Heading1">
@@ -41,7 +41,7 @@
                     </Trigger>
 
                     <Trigger Property="Tag" Value="Heading2">
-                        <Setter Property="Margin" Value="0, 20, 15, 20"/>
+                        <Setter Property="Margin" Value="0, 20, 0, 20"/>
 
                         <Setter Property="Foreground"  Value="#ff000000" />
                         <Setter Property="FontSize"    Value="21"/>
@@ -49,7 +49,7 @@
                     </Trigger>
 
                     <Trigger Property="Tag" Value="Heading3">
-                        <Setter Property="Margin" Value="0, 10, 10, 20"/>
+                        <Setter Property="Margin" Value="0, 10, 0, 20"/>
 
                         <Setter Property="Foreground"  Value="#ff000000" />
                         <Setter Property="FontSize"    Value="17.5" />
@@ -57,7 +57,7 @@
                     </Trigger>
 
                     <Trigger Property="Tag" Value="Heading4">
-                        <Setter Property="Margin" Value="0, 10, 5, 20"/>
+                        <Setter Property="Margin" Value="0, 10, 0, 20"/>
 
                         <Setter Property="Foreground"  Value="#ff000000" />
                         <Setter Property="FontSize"    Value="14"/>

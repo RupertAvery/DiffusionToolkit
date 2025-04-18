@@ -103,8 +103,8 @@ public class Thumbnail : FrameworkElement
                 1
             );
 
-            double centerX = (ActualWidth - formattedText.Width) / 2;
-            double centerY = (ActualHeight - formattedText.Height) / 2;
+            double centerX = (Width - formattedText.Width) / 2;
+            double centerY = (Height - formattedText.Height) / 2;
 
             drawingContext.DrawText(formattedText, new Point(centerX, centerY));
 
@@ -121,6 +121,7 @@ public class Thumbnail : FrameworkElement
                 DrawDeleted(drawingContext, 25);
             }
 
+            return;
         }
 
         if (Source == null)

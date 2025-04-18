@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -105,6 +106,12 @@ namespace Diffusion.Toolkit
         {
             QueryInput.Text = "";
             _search.ClearQueryFilter();
+            e.Handled = true;
+        }
+
+        private void QueryHelp_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.OpenSearchHelp();
             e.Handled = true;
         }
     }

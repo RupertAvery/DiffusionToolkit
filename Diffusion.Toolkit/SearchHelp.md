@@ -1,34 +1,42 @@
 # Search Help
 
+You can search images using querying or filtering. 
+
+[Querying](#querying) lets you type in your query and is intended for quick searches. You can search on more than just the prompt, see [Parameter Search](#parameter-search) for more information.
+
+[Filtering](#filtering) gives you a bit more control, with each parameter separated, and more control over ComfyUI property searching and is intended for those who don't want to learn the Query Syntax (it's quite simple though) or who just want an interface-based approach to searching.
+
+Either way, you can save your queries using the **Search > Save Query / Filter** option.
+
 * [Querying](#querying)
-  * [Querying Syntax](#querying-syntax)
-  * [Simple Prompt Search](#simple-prompt-search)
-  * [Parameter Search](#parameter-search)
-  * [Supported parameters](#supported-parameters)
-    * [Negative Prompt](#negative-prompt)
-    * [Steps](#steps)
-    * [Sampler](#sampler)
-    * [Classifier-Free Guidance Scale (CFG/Scale)](#classifier-free-guidance-scale-cfgscale)
-    * [Seed](#seed)
-    * [Size](#size)
-    * [Model Hash](#model-hash)
-    * [Model Name](#model-name)
-    * [Aesthetic Score](#aesthetic-score)
-    * [Hyper Networks](#hyper-networks)
-    * [Favorites](#favorites)
-    * [Rating](#rating)
-    * [NSFW](#nsfw)
-    * [No Metadata](#no-metadata)
-    * [For Deletion](#for-deletion)
-    * [Date Created](#date-created)
-    * [Path](#path)
-    * [Folder](#folder)
-  * [Notes About Search](#notes-about-search)
-  * [Searching on Multiple Values](#searching-on-multiple-values)
-  * [Querying Workflow Properties and Raw Metadata](#querying-workflow-properties-and-raw-metadata)
+    * [Query Syntax](#query-syntax)
+    * [Simple Prompt Search](#simple-prompt-search)
+    * [Parameter Search](#parameter-search)
+    * [Supported parameters](#supported-parameters)
+        * [Negative Prompt](#negative-prompt)
+        * [Steps](#steps)
+        * [Sampler](#sampler)
+        * [Classifier-Free Guidance Scale (CFG/Scale)](#classifier-free-guidance-scale-cfgscale)
+        * [Seed](#seed)
+        * [Size](#size)
+        * [Model Hash](#model-hash)
+        * [Model Name](#model-name)
+        * [Aesthetic Score](#aesthetic-score)
+        * [Hyper Networks](#hyper-networks)
+        * [Favorites](#favorites)
+        * [Rating](#rating)
+        * [NSFW](#nsfw)
+        * [No Metadata](#no-metadata)
+        * [For Deletion](#for-deletion)
+        * [Date Created](#date-created)
+        * [Path](#path)
+        * [Folder](#folder)
+    * [Notes About Search](#notes-about-search)
+    * [Searching on Multiple Values](#searching-on-multiple-values)
+    * [Querying Workflow Properties and Raw Metadata](#querying-workflow-properties-and-raw-metadata)
 * [Filtering](#filtering)
-  * [Metadata tab](#metadata-tab)
-  * [Workflow tab](#workflow-tab)
+    * [Metadata tab](#metadata-tab)
+    * [Workflow tab](#workflow-tab)
 
 
 # Query Syntax

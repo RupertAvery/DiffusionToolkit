@@ -97,6 +97,7 @@ namespace Diffusion.Toolkit.Services
                 //    updated += _dataStore.ChangeFolderPath(folderChange.Path, folderChange.NewPath);
                 //}
             }
+
         }
 
         public IEnumerable<FolderViewModel> SelectedFolders => ServiceLocator.MainModel.Folders.Where(d => d.IsSelected);
@@ -107,6 +108,16 @@ namespace Diffusion.Toolkit.Services
             {
                 return RootFolders.Any();
             }
+        }
+
+        public void ClearCache()
+        {
+            _rootFolders = null;
+            _allFolders = null;
+            _archivedStatus = null;
+            _excludedFolders = null;
+            _archivedFolders = null;
+            _excludedOrArchivedFolderPaths = null;
         }
 
         private IReadOnlyCollection<Folder>? _rootFolders;
@@ -140,7 +151,7 @@ namespace Diffusion.Toolkit.Services
 
         public bool IsExcludedOrArchived(string path)
         {
-            return ServiceLocator.FolderService.ExcludedOrArchivedFolderPaths.Any(d => path.StartsWith(d));
+            return ServiceLocator.FolderService.ExcludedOrArchivedFolderPaths.Any(d => path.Equals(d, StringComparison.OrdinalIgnoreCase));
         }
 
         public IDictionary<int, bool> ArchivedStatus
@@ -228,6 +239,8 @@ namespace Diffusion.Toolkit.Services
 
         public async Task LoadFolders()
         {
+            ClearCache();
+
             var folders = ServiceLocator.DataStore.GetFoldersView().ToList();
 
             _dispatcher.Invoke(() =>
@@ -721,7 +734,7 @@ namespace Diffusion.Toolkit.Services
                 {
                     if (ServiceLocator.FileService.IsRegisteredExtension(e.FullPath))
                     {
-                        if (!IsExcludedOrArchived(e.FullPath))
+                        if (!IsExcludedOrArchived(Path.GetDirectoryName(e.FullPath)))
                         {
                             ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
                             {
@@ -961,7 +974,7 @@ namespace Diffusion.Toolkit.Services
             var oldName = folder.Name;
             var oldPath = folder.Path;
             var id = folder.Id;
-            
+
             var (result, newName) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Folders.Rename.Message"), title, oldName);
 
             if (result == PopupResult.OK)

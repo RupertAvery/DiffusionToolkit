@@ -564,6 +564,12 @@ namespace Diffusion.Toolkit
 
             _model.Settings = _settings;
 
+            KeyDown += (o, args) =>
+            {
+                IInputElement focusedControl = Keyboard.FocusedElement;
+                IInputElement focusedControl2 = FocusManager.GetFocusedElement(this);
+            };
+
             Activated += OnActivated;
             StateChanged += OnStateChanged;
             SizeChanged += OnSizeChanged;
@@ -1057,6 +1063,7 @@ namespace Diffusion.Toolkit
             }
         }
 
+ 
     }
 
 

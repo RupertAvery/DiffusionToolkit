@@ -100,6 +100,32 @@ public class MainModel : BaseNotify
         _status = "Ready";
         _isPreviewVisible = true;
         _selectedImages = new ObservableCollection<ImageEntry>();
+        _queryOptions = new QueryOptions();
+        _folders = new ObservableCollection<FolderViewModel>();
+    }
+
+    public QueryOptions QueryOptions
+    {
+        get => _queryOptions;
+        set => SetField(ref _queryOptions, value);
+    }
+
+    public string QueryText
+    {
+        get => _queryText;
+        set => SetField(ref _queryText, value);
+    }
+
+    public bool HasQuery
+    {
+        get => _hasQuery;
+        set => SetField(ref _hasQuery, value);
+    }
+
+    public bool HasFilter
+    {
+        get => _hasFilter;
+        set => SetField(ref _hasFilter, value);
     }
 
     public Page Page
@@ -573,6 +599,10 @@ public class MainModel : BaseNotify
     private ImageEntry _currentImageEntry;
     private ImageEntry _selectedImageEntry;
     private ThumbnailViewMode _thumbnailViewMode;
+    private QueryOptions _queryOptions;
+    private bool _hasQuery;
+    private bool _hasFilter;
+    private string _queryText;
 
     public ModelViewModel? CurrentModel
     {
