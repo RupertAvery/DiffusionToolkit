@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
@@ -34,14 +35,17 @@ public class ToastService
         {
             _dispatcher.Invoke(() =>
             {
-                _popup.IsOpen = true;
-                var toast = _toastMessages.Dequeue();
-                ServiceLocator.MainModel.ToastMessage = toast.Message;
-
-                Task.Delay(toast.Timeout * 1000).ContinueWith((_) =>
+                if (_toastMessages.Any())
                 {
-                    DismissToast();
-                });
+                    var toast = _toastMessages.Dequeue();
+                    _popup.IsOpen = true;
+                    ServiceLocator.MainModel.ToastMessage = toast.Message;
+
+                    Task.Delay(toast.Timeout * 1000).ContinueWith((_) =>
+                    {
+                        DismissToast();
+                    });
+                }
             });
         }
 

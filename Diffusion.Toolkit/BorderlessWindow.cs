@@ -20,7 +20,6 @@ namespace Diffusion.Toolkit
         private Point mouseDownPosition;
         private Point positionBeforeDrag;
 
-        public bool IsFullScreen { get; private set; }
         public Grid WindowRoot { get; private set; }
         public Grid LayoutRoot { get; private set; }
         public Button MinimizeButton { get; private set; }
@@ -30,11 +29,35 @@ namespace Diffusion.Toolkit
         public Grid HeaderBar { get; private set; }
         public Grid TitleBar { get; private set; }
 
+        public static readonly DependencyProperty IsFullScreenProperty =
+            DependencyProperty.Register(
+                name: nameof(IsFullScreen),
+                propertyType: typeof(bool),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata());
+
+        public static readonly DependencyProperty TitleVisibilityProperty =
+            DependencyProperty.Register(
+                name: nameof(TitleVisibility),
+                propertyType: typeof(Visibility),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(Visibility.Visible));
+
         public static readonly DependencyProperty MenuWidthProperty =
             DependencyProperty.Register(
                 name: nameof(MenuWidth),
                 propertyType: typeof(GridLength),
                 ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(new GridLength(1, GridUnitType.Star)));
+
+        public bool IsFullScreen
+        {
+            get => (bool)GetValue(IsFullScreenProperty);
+            set => SetValue(IsFullScreenProperty, value);
+        }
+        
+        public Visibility TitleVisibility
+        {
+            get => (Visibility)GetValue(TitleVisibilityProperty);
+            set => SetValue(TitleVisibilityProperty, value);
+        }
 
         public GridLength MenuWidth
         {

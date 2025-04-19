@@ -205,6 +205,15 @@ public class MessagePopupManager
         });
     }
 
+    public void CloseAll()
+    {
+        foreach (var popup in _popups.ToList())
+        {
+            Close(popup);
+            popup.Close();
+        }
+    }
+
     public void Cancel()
     {
         _dispatcher.Invoke(() =>

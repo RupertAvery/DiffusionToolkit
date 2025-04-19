@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -64,6 +65,8 @@ namespace Diffusion.Toolkit
 
         private void QueryBar_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
+            Debug.WriteLine($"Level 1 - {sender.GetType().Name}");
+
             OpenQueryBar();
             e.Handled = true;
         }

@@ -144,15 +144,17 @@ namespace Diffusion.Toolkit.Pages
 
             var selectedFolders = ServiceLocator.FolderService.SelectedFolders.ToList();
 
+            var isInSelection = selectedFolders.Contains(folder);
+            var isSingleSelection = selectedFolders.Count == 1;
             var isRoot = folder.Depth == 0;
             var isAvailable = !folder.IsUnavailable;
             var isScanned = !folder.IsScanned;
 
-            _model.NavigationSection.FoldersSection.CanCreateFolder = selectedFolders.Count == 1 && isAvailable;
+            _model.NavigationSection.FoldersSection.CanCreateFolder = isSingleSelection && isAvailable;
             _model.NavigationSection.FoldersSection.CanDelete = !isRoot && isAvailable;
-            _model.NavigationSection.FoldersSection.CanRename = !isRoot && selectedFolders.Count == 1 && isAvailable;
-            _model.NavigationSection.FoldersSection.CanRemove = !isRoot && selectedFolders.Count == 1;
-            _model.NavigationSection.FoldersSection.CanShowInExplorer = selectedFolders.Count == 1 && isAvailable;
+            _model.NavigationSection.FoldersSection.CanRename = !isRoot && isSingleSelection && isAvailable;
+            _model.NavigationSection.FoldersSection.CanRemove = !isRoot && isSingleSelection;
+            _model.NavigationSection.FoldersSection.CanShowInExplorer = isSingleSelection && isAvailable;
             _model.NavigationSection.FoldersSection.CanArchive = isScanned && isAvailable;
             _model.NavigationSection.FoldersSection.CanUnarchive = isScanned && isAvailable;
 
@@ -181,7 +183,10 @@ namespace Diffusion.Toolkit.Pages
                 }
                 else
                 {
-                    ServiceLocator.FolderService.ClearSelection();
+                    if (!isInSelection)
+                    {
+                        ServiceLocator.FolderService.ClearSelection();
+                    }
 
                     if (!folder.IsUnavailable)
                     {
@@ -402,32 +407,32 @@ namespace Diffusion.Toolkit.Pages
 
         private void Folder_Move(object sender, MouseEventArgs e)
         {
-            Point mpos = e.GetPosition(null);
-            Vector diff = this._start - mpos;
+            //Point mpos = e.GetPosition(null);
+            //Vector diff = this._start - mpos;
 
-            if (_dragStarted && e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Grid or TextBlock) &&
-                (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                 Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
-            {
-                var selectedFolders = ServiceLocator.FolderService.SelectedFolders.ToList();
+            //if (_dragStarted && e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Grid or TextBlock) &&
+            //    (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+            //     Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+            //{
+            //    var selectedFolders = ServiceLocator.FolderService.SelectedFolders.ToList();
 
-                if (!selectedFolders.Any())
-                {
-                    return;
-                }
+            //    if (!selectedFolders.Any())
+            //    {
+            //        return;
+            //    }
 
-                if (selectedFolders.Any(d => d.Parent == null))
-                {
-                    return;
-                }
+            //    if (selectedFolders.Any(d => d.Parent == null))
+            //    {
+            //        return;
+            //    }
 
 
-                DataObject dataObject = new DataObject();
-                dataObject.SetData(DataFormats.FileDrop, selectedFolders.Select(t => t.Path).ToArray());
-                dataObject.SetData(DragAndDrop.DragFolders, selectedFolders.Select(t => t.Id).ToArray());
+            //    DataObject dataObject = new DataObject();
+            //    dataObject.SetData(DataFormats.FileDrop, selectedFolders.Select(t => t.Path).ToArray());
+            //    dataObject.SetData(DragAndDrop.DragFolders, selectedFolders.Select(t => t.Id).ToArray());
 
-                DragDrop.DoDragDrop((DependencyObject)sender, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
-            }
+            //    DragDrop.DoDragDrop((DependencyObject)sender, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
+            //}
         }
 
         private void Folder_Release(object sender, MouseButtonEventArgs e)
@@ -449,13 +454,21 @@ namespace Diffusion.Toolkit.Pages
             }
             else if (e.Data.GetDataPresent(DragAndDrop.DragFiles))
             {
-                int[] files = (int[])e.Data.GetData(DragAndDrop.DragFiles);
+                ImageEntry[] files = (ImageEntry[])e.Data.GetData(DragAndDrop.DragFiles);
 
-                ServiceLocator.FileService.MoveImages(files, folder.Id);
+                var imagePaths = files.Where(d => d.EntryType == EntryType.File).Select(d => new ImagePath() { Id = d.Id, Path = d.Path }).ToList();
+
+                ServiceLocator.FileService.MoveFiles(imagePaths, folder.Path, false).ContinueWith(d =>
+                {
+                    if (d.IsCompletedSuccessfully)
+                    {
+                        if (d.Result)
+                        {
+                            SearchImages(null);
+                        }
+                    }
+                });
             }
-
-            //_model.MainModel.MoveSelectedImagesToFolder(folder);
-
         }
 
         private void Folder_OnKeyDown(object sender, KeyEventArgs e)
@@ -477,36 +490,41 @@ namespace Diffusion.Toolkit.Pages
                 {
                     _ = ToggleFolder(folder, FolderState.Expanded);
                 }
+                else if (e.Key == Key.PageUp)
+                {
+                    var index = ServiceLocator.MainModel.Folders.IndexOf(folder);
+
+                    index -= 10;
+                    if (index < 0)
+                    {
+                        index = 0;
+                    }
+
+                    var currentFolder = ServiceLocator.MainModel.Folders[index];
+
+                    ServiceLocator.FolderService.ClearSelection();
+                    ServiceLocator.MainModel.CurrentFolder = currentFolder;
+                    currentFolder.IsSelected = true;
+
+                }
+                else if (e.Key == Key.PageDown)
+                {
+                    var index = ServiceLocator.MainModel.Folders.IndexOf(folder);
+
+                    index += 10;
+                    if (index > ServiceLocator.MainModel.Folders.Count - 1)
+                    {
+                        index = ServiceLocator.MainModel.Folders.Count - 1;
+                    }
+
+                    var currentFolder = ServiceLocator.MainModel.Folders[index];
+
+                    ServiceLocator.FolderService.ClearSelection();
+                    ServiceLocator.MainModel.CurrentFolder = currentFolder;
+                    currentFolder.IsSelected = true;
+
+                }
             }
-
-            //var folder = ServiceLocator.MainModel.CurrentFolder;
-
-            //if (folder != null)
-            //{
-            //    var index = ServiceLocator.MainModel.Folders.IndexOf(folder);
-
-            //    if (e.Key == Key.Down)
-            //    {
-            //        index++;
-            //        if (index <= ServiceLocator.MainModel.Folders.Count - 1)
-            //        {
-            //            ServiceLocator.FolderService.ClearSelection();
-            //            var currentFolder = ServiceLocator.MainModel.Folders[index];
-            //            currentFolder.IsSelected = true;
-            //        }
-            //    }
-            //    else if (e.Key == Key.Up)
-            //    {
-            //        index--;
-            //        if (index >= 0)
-            //        {
-            //            ServiceLocator.FolderService.ClearSelection();
-            //            var currentFolder = ServiceLocator.MainModel.Folders[index];
-            //            currentFolder.IsSelected = true;
-            //        }
-            //    }
-            //}
-
 
         }
     }

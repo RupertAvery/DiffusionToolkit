@@ -73,6 +73,7 @@ public class UnboundDataWriterQueue
         _debounceQueueNotification = Utility.Debounce<int>((a) =>
         {
             var diff = a - _queueTotal;
+            ServiceLocator.MainModel.HasQueued = false;
             ServiceLocator.ToastService.Toast(string.Format(completionMessage, diff), "");
             _queueRunning = false;
             ServiceLocator.ProgressService.CompleteTask();
@@ -173,6 +174,8 @@ public class UnboundDataWriterQueue
                 newNodes.Clear();
                 newImages.Clear();
             }
+            
+            ServiceLocator.MainModel.HasQueued = true;
 
             var path = job.FileParameters.Path;
             if (path.Length > 100)

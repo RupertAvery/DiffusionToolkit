@@ -342,10 +342,6 @@ namespace Diffusion.Toolkit.Pages
 
             _model.GoUp = new RelayCommand<object>((o) =>
             {
-                //_currentModeSettings.CurrentFolderPath = Path.Combine(_currentModeSettings.CurrentFolderPath.Split(Path.DirectorySeparatorChar)[0..^1]);
-                //_model.FolderPath = _currentModeSettings.CurrentFolderPath;
-
-                //SearchImages(null);
                 ServiceLocator.FolderService.NavigateToParentFolder();
             });
 
@@ -1129,7 +1125,7 @@ namespace Diffusion.Toolkit.Pages
 
                 _model.CurrentImage = imageViewModel;
 
-                ServiceLocator.DataStore.UpdateViewed(imageViewModel.Id);
+                ServiceLocator.FileService.UpdateViewed(imageViewModel.Id);
 
                 //PreviewPane.ResetZoom();
 

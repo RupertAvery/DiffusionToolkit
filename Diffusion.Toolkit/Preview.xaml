@@ -15,7 +15,6 @@
         MenuWidth="300"
         TitleWidth="*"
         mc:Ignorable="d"
-        Style="{StaticResource BorderlessWindowStyle}"
         d:DataContext="{d:DesignInstance local:PreviewModel, IsDesignTimeCreatable=True}"
         BorderThickness="0"
         Height="450" Width="800">
@@ -37,10 +36,24 @@
         <converters:SizeConverter x:Key="SizeConverter"></converters:SizeConverter>
         <converters:ZeroConverter x:Key="ZeroConverter"></converters:ZeroConverter>
     </Window.Resources>
+    <Window.Style >
+        <Style TargetType="{x:Type local:BorderlessWindow}" BasedOn="{StaticResource BorderlessWindowStyle}">
+            <Setter Property="TitleVisibility" Value="Hidden"/>
+            <Style.Triggers>
+                <Trigger Property="IsFullScreen" Value="True">
+                    <Setter Property="TitleVisibility" Value="Hidden"/>
+                </Trigger>
+                <Trigger Property="IsFullScreen" Value="False">
+                    <Setter Property="TitleVisibility" Value="Visible"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Close}"></KeyBinding>
         <KeyBinding Key="F" Modifiers="Control+Shift" Command="{Binding ToggleFitToPreview}"></KeyBinding>
         <KeyBinding Key="A" Modifiers="Control+Shift" Command="{Binding ToggleActualSize}"></KeyBinding>
+        <KeyBinding Key="T" Command="{Binding ToggleTagsCommand}"></KeyBinding>
         <KeyBinding Key="T" Modifiers="Control+Shift" Command="{Binding ToggleAutoAdvance}"></KeyBinding>
         <KeyBinding Key="I" Command="{Binding ToggleInfo}"></KeyBinding>
         <KeyBinding Key="F11" Command="{Binding ToggleFullScreen}"></KeyBinding>
@@ -150,68 +163,130 @@
                 </Grid>
 
 
-  
+
 
             </Grid>
 
-            <Grid Background="{x:Null}" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="10">
-                <StackPanel Orientation="Horizontal">
-                    <fa:ImageAwesome Icon="Play" ToolTip="{lex:Loc Preview.Controls.Slideshow}" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" MouseDown="Play_OnMouseDown">
-                        <fa:ImageAwesome.Resources>
-                            <Style TargetType="fa:ImageAwesome">
-                                <Setter Property="Opacity" Value="0.25"></Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SlideShowActive}" Value="{StaticResource TrueValue}">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </DataTrigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </fa:ImageAwesome.Resources>
-                        <fa:ImageAwesome.Effect>
-                            <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                        </fa:ImageAwesome.Effect>
-                    </fa:ImageAwesome>
-                    <fa:ImageAwesome Margin="10,0,0,0" Icon="Star" ToolTip="{lex:Loc Common.Controls.ShowTags}" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" MouseDown="Star_OnMouseDown">
-                        <fa:ImageAwesome.Resources>
-                            <Style TargetType="fa:ImageAwesome">
-                                <Setter Property="Opacity" Value="0.25"></Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding MainModel.ShowTags}" Value="{StaticResource TrueValue}">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </DataTrigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </fa:ImageAwesome.Resources>
-                        <fa:ImageAwesome.Effect>
-                            <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                        </fa:ImageAwesome.Effect>
-                    </fa:ImageAwesome>
-                    <fa:ImageAwesome Margin="10,0,0,0" Icon="ArrowRight" ToolTip="{lex:Loc Common.Controls.AutoAdvance}" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" MouseDown="AutoAdvance_OnMouseDown">
-                        <fa:ImageAwesome.Resources>
-                            <Style TargetType="fa:ImageAwesome">
-                                <Setter Property="Opacity" Value="0.25"></Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding MainModel.AutoAdvance}" Value="{StaticResource TrueValue}">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </DataTrigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </fa:ImageAwesome.Resources>
-                        <fa:ImageAwesome.Effect>
-                            <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
-                        </fa:ImageAwesome.Effect>
-                    </fa:ImageAwesome>
-                </StackPanel>
+            <Grid Background="Transparent" IsHitTestVisible="True" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0" MouseEnter="UIElement_OnMouseEnter" MouseLeave="UIElement_OnMouseLeave">
+
+                <Grid Background="{x:Null}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="150"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal"  Grid.Row="0" Grid.Column="0" Margin="10">
+                        <fa:ImageAwesome Icon="Play" ToolTip="{lex:Loc Preview.Controls.Slideshow}" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" MouseDown="Play_OnMouseDown">
+                            <fa:ImageAwesome.Resources>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Setter Property="Opacity" Value="0.25"></Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SlideShowActive}" Value="{StaticResource TrueValue}">
+                                            <Setter Property="Opacity" Value="1.0"></Setter>
+                                        </DataTrigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1.0"></Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </fa:ImageAwesome.Resources>
+                            <fa:ImageAwesome.Effect>
+                                <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                            </fa:ImageAwesome.Effect>
+                        </fa:ImageAwesome>
+                        <fa:ImageAwesome Margin="10,0,0,0" Icon="Star" ToolTip="{lex:Loc Preview.Controls.ShowTags}" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" MouseDown="Star_OnMouseDown">
+                            <fa:ImageAwesome.Resources>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Setter Property="Opacity" Value="0.25"></Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding MainModel.ShowTags}" Value="{StaticResource TrueValue}">
+                                            <Setter Property="Opacity" Value="1.0"></Setter>
+                                        </DataTrigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1.0"></Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </fa:ImageAwesome.Resources>
+                            <fa:ImageAwesome.Effect>
+                                <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                            </fa:ImageAwesome.Effect>
+                        </fa:ImageAwesome>
+                        <fa:ImageAwesome Margin="10,0,0,0" Icon="ArrowRight" ToolTip="{lex:Loc Common.Controls.AutoAdvance}" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" MouseDown="AutoAdvance_OnMouseDown">
+                            <fa:ImageAwesome.Resources>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Setter Property="Opacity" Value="0.25"></Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding MainModel.AutoAdvance}" Value="{StaticResource TrueValue}">
+                                            <Setter Property="Opacity" Value="1.0"></Setter>
+                                        </DataTrigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1.0"></Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </fa:ImageAwesome.Resources>
+                            <fa:ImageAwesome.Effect>
+                                <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                            </fa:ImageAwesome.Effect>
+                        </fa:ImageAwesome>
+                        <fa:ImageAwesome Margin="10,0,0,0" ToolTip="{lex:Loc Preview.Controls.ToggleFullScreen}" Width="20"  Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" MouseDown="FullScreen_OnMouseDown">
+                            <fa:ImageAwesome.Resources>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Setter Property="Opacity" Value="0.25"></Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsFullScreen, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}}" Value="True">
+                                            <Setter Property="Icon" Value="Compress"></Setter>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsFullScreen, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}}" Value="False">
+                                            <Setter Property="Icon" Value="Expand"></Setter>
+                                        </DataTrigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1.0"></Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </fa:ImageAwesome.Resources>
+                            <fa:ImageAwesome.Effect>
+                                <DropShadowEffect BlurRadius="4" Opacity="0.8" ShadowDepth="3" Direction="-90"></DropShadowEffect>
+                            </fa:ImageAwesome.Effect>
+                        </fa:ImageAwesome>
+                    </StackPanel>
+
+                    <Grid.RenderTransform>
+                        <TranslateTransform Y="-50"></TranslateTransform>
+                    </Grid.RenderTransform>
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsTopHover}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)" 
+                                                             From="-50" To="0" 
+                                                             Duration="0:0:0.1" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                             From="0" To="-50" 
+                                                             Duration="0:0:0.1" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                </Grid>
             </Grid>
         </Grid>
+
     </Grid>
 </local:BorderlessWindow>

@@ -11,6 +11,7 @@ public class PreviewModel : BaseNotify
     private bool _nsfwBlur;
     private bool _fitToPreview;
     private bool _slideShowActive;
+    private bool _isTopHover;
 
     public PreviewModel()
     {
@@ -38,11 +39,19 @@ public class PreviewModel : BaseNotify
     public ICommand Close { get; set;  }
     public ICommand ToggleFitToPreview { get; set; }
     public ICommand ToggleActualSize { get; set; }
+    public ICommand ToggleTagsCommand { get; set; }
     public ICommand ToggleAutoAdvance { get; set; }
     public ICommand StartStopSlideShow { get; set; }
     public ICommand ToggleInfo { get; set; }
     public ICommand ToggleFullScreen { get; set; }
 
     public ICommand OpenWithCommand { get; set; }
+
+    public bool IsTopHover
+    {
+        get => _isTopHover;
+        set => SetField(ref _isTopHover, value);
+    }
+
     public MainModel MainModel => ServiceLocator.MainModel;
 }

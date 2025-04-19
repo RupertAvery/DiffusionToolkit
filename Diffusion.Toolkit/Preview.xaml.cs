@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Diffusion.Common;
 using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit
@@ -57,14 +58,33 @@ namespace Diffusion.Toolkit
             _model.ToggleActualSize = mainModel.ToggleActualSize;
             _model.ToggleAutoAdvance = mainModel.ToggleAutoAdvance;
             _model.ToggleInfo = mainModel.ToggleInfoCommand;
+            _model.ToggleTagsCommand = mainModel.ToggleTagsCommand;
 
             //_slideShowDelay = mainModel.Settings.SlideShowDelay;
             _model.ToggleFullScreen = new RelayCommand<object>((o) => ToggleFullScreen());
             _model.StartStopSlideShow = new RelayCommand<object>((o) => StartStopSlideShow());
             _model.OpenWithCommand = new AsyncCommand<string>((o) => OpenWith(this, o));
 
+            _model.IsTopHover = true;
+
+            Task.Delay(3000).ContinueWith(t =>
+            {
+                if (_mouseTriggered) return;
+                Dispatcher.Invoke(() =>
+                {
+                    _model.IsTopHover = false;
+                });
+            });
+
+            _debounceCloseTopBar = Utility.Debounce(() =>
+            {
+                _model.IsTopHover = false;
+            }, 2000);
+
             Closing += OnClosing;
         }
+
+        private Action _debounceCloseTopBar;
 
         private void RestartSlideShowTimer()
         {
@@ -118,6 +138,7 @@ namespace Diffusion.Toolkit
         //private WindowStyle _lastWindowStyle;
 
         private Brush _background;
+        private bool _mouseTriggered;
 
         private void ToggleFullScreen()
         {
@@ -211,6 +232,23 @@ namespace Diffusion.Toolkit
         private async Task OpenWith(object sender, string? arg)
         {
             await ServiceLocator.ExternalApplicationsService.OpenWith(sender, int.Parse(arg));
+        }
+
+        private void UIElement_OnMouseEnter(object sender, MouseEventArgs e)
+        {
+            _mouseTriggered = true;
+            _model.IsTopHover = true;
+        }
+
+        private void UIElement_OnMouseLeave(object sender, MouseEventArgs e)
+        {
+            _debounceCloseTopBar();
+            //_model.IsTopHover = false;
+        }
+
+        private void FullScreen_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ToggleFullScreen();
         }
     }
 

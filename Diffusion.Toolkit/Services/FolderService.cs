@@ -1159,11 +1159,30 @@ namespace Diffusion.Toolkit.Services
         {
             if (ServiceLocator.SearchService.CurrentViewMode == ViewMode.Folder)
             {
-                if (ServiceLocator.MainModel.CurrentFolder != null)
+                var path = ServiceLocator.MainModel.CurrentFolder.Path;
+
+                var parentPath = Path.GetDirectoryName(path);
+
+                var folder = ServiceLocator.MainModel.Folders.FirstOrDefault(d => d.Path == parentPath);
+
+                if (folder == null)
                 {
-                    var folder = ServiceLocator.MainModel.CurrentFolder.Parent;
-                    ServiceLocator.SearchService.ExecuteOpenFolder(folder);
+                    // Fake the folder
+                    folder = new FolderViewModel()
+                    {
+                        Path = path,
+                        IsScanned = false
+                    };
+
+                    if (!Directory.Exists(parentPath))
+                    {
+                        folder.IsUnavailable = true;
+                    }
                 }
+
+                ServiceLocator.FolderService.ClearSelection();
+
+                ServiceLocator.SearchService.ExecuteOpenFolder(folder);
             }
         }
 

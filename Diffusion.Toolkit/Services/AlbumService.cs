@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -17,7 +18,7 @@ public class AlbumService
 
     public void UpdateSelectedImageAlbums()
     {
-        var ids = ServiceLocator.MainModel.SelectedImages.Select(d => d.Id).ToList();
+        var ids = ServiceLocator.MainModel.SelectedImages.Where(d => d.EntryType == EntryType.File).Select(d => d.Id).ToList();
 
         ServiceLocator.MainModel.SelectionAlbumMenuItems = new ObservableCollection<Control>();
 

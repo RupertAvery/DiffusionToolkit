@@ -32,10 +32,13 @@ using Diffusion.Civitai.Models;
 using WPFLocalizeExtension.Engine;
 using Diffusion.Toolkit.Controls;
 using System.Windows.Input;
+using System.Windows.Markup;
+using System.Xml;
 using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Common;
 using Settings = Diffusion.Toolkit.Configuration.Settings;
 using Diffusion.Database.Models;
+using Image = System.Windows.Controls.Image;
 
 namespace Diffusion.Toolkit
 {
@@ -167,20 +170,41 @@ namespace Diffusion.Toolkit
                 ServiceLocator.MessageService = new MessageService(_messagePopupManager);
                 ServiceLocator.ToastService = new ToastService(ToastPopup);
 
+                PreviewMouseDown += (sender, args) =>
+                {
+                    QueryPopup.IsOpen = false;
+                };
+
+                Deactivated += (sender, args) =>
+                {
+                    QueryPopup.IsOpen = false;
+                    ToastPopup.IsOpen = false;
+                    _messagePopupManager.Cancel();
+                };
+
+
+                StateChanged += (sender, args) =>
+                {
+                    if (WindowState == WindowState.Minimized)
+                    {
+                        QueryPopup.IsOpen = false;
+                        ToastPopup.IsOpen = false;
+                        _messagePopupManager.Cancel();
+                    }
+                };
+
                 //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
                 //Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-PT");
                 //FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(
                 //    XmlLanguage.GetLanguage(CultureInfo.CurrentCulture.IetfLanguageTag)));
 
-                //var str = new System.Text.StringBuilder();
-                //using (var writer = new System.IO.StringWriter(str))
-                //    System.Windows.Markup.XamlWriter.Save(EditMenu.Template, writer);
-                //System.Diagnostics.Debug.Write(str);
+                //var control = Application.Current.FindResource(typeof(Slider));
+                //using (XmlTextWriter writer = new XmlTextWriter(@"slider.xaml", System.Text.Encoding.UTF8))
+                //{
+                //    writer.Formatting = Formatting.Indented;
+                //    XamlWriter.Save(control, writer);
+                //}
 
-                //var str = new System.Text.StringBuilder();
-                //using (var writer = new System.IO.StringWriter(str))
-                //    System.Windows.Markup.XamlWriter.Save(((Separator)Hello.ContextMenu.Items[1]).Template, writer);
-                //System.Diagnostics.Debug.Write(str);
             }
             catch (Exception ex)
             {
@@ -658,8 +682,7 @@ namespace Diffusion.Toolkit
 
                     Task.Run(async () =>
                     {
-                        await MoveFiles(files, path, !isInPath);
-
+                        await ServiceLocator.FileService.MoveFiles(files.Select(d => new ImagePath() { Id = d.Id, Path = d.Path }).ToList(), path, !isInPath);
 
                         if (!isInPath)
                         {
@@ -847,7 +870,7 @@ namespace Diffusion.Toolkit
             //if (obj == null) return;
             var p = obj.Path;
 
-            ServiceLocator.DataStore.UpdateViewed(obj.Id);
+            ServiceLocator.FileService.UpdateViewed(obj.Id);
 
             if (_settings.UseBuiltInViewer.GetValueOrDefault(true))
             {
@@ -1063,7 +1086,7 @@ namespace Diffusion.Toolkit
             }
         }
 
- 
+
     }
 
 

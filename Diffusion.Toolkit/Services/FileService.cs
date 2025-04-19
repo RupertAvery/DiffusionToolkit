@@ -5,20 +5,41 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Shapes;
 using System.Windows;
 using System.Windows.Threading;
 using Diffusion.Common;
 using Diffusion.Database;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
-using Diffusion.Toolkit.Services;
 using Path = System.IO.Path;
 
 namespace Diffusion.Toolkit.Services;
 
 public class FileService
 {
+    //private BufferedChannel<UpdateViewed> _viewedChannel;
+
+    private Action<int> _debounceUpdateViewed;
+
+    public FileService()
+    {
+        //_viewedChannel = new BufferedChannel<UpdateViewed>(new BufferedChannelOptions()
+        //{
+        //    MaxLifetime = TimeSpan.FromSeconds(2),
+        //    MaxSize = 30
+        //}, (batch, token) =>
+        //{
+        //    ServiceLocator.DataStore.UpdateViewed(batch);
+        //    return Task.CompletedTask;
+        //});
+        _debounceUpdateViewed = Utility.Debounce<int>((id) =>
+        {
+            ServiceLocator.DataStore.UpdateViewed(id);
+        }, 2000);
+
+        //Task.Run(() => _viewedChannel.ConsumeAsync());
+    }
+
     private string GetLocalizedText(string key)
     {
         return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
@@ -211,14 +232,122 @@ public class FileService
         ;
     }
 
-    public void MoveImages(int[] files, int folderId)
+    public async Task<bool> MoveFiles(ICollection<ImagePath> images, string targetPath, bool remove)
     {
-        throw new NotImplementedException();
+        if (await ServiceLocator.ProgressService.TryStartTask())
+        {
+            await Task.Run(() =>
+            {
+                ServiceLocator.FolderService.DisableWatchers();
+
+                try
+                {
+                    ServiceLocator.ProgressService.InitializeProgress(images.Count);
+
+                    var moved = 0;
+
+                    var folderCache = ServiceLocator.DataStore.GetFolders().ToDictionary(d => d.Path);
+
+                    var message = GetLocalizedText("Actions.Files.Move.Message");
+
+                    foreach (var image in images)
+                    {
+                        string newPath = "";
+                        string newTxtPath = "";
+                        string fileName = "";
+                        string fileNameOnly = "";
+                        string extension = "";
+                        int increment = 0;
+
+                        var directoryName = Path.GetDirectoryName(image.Path);
+
+                        string originalFileNameOnly = Path.GetFileNameWithoutExtension(image.Path);
+
+                        fileName = Path.GetFileName(image.Path);
+                        extension = Path.GetExtension(image.Path);
+
+                        var txtFileName = $"{originalFileNameOnly}.txt";
+                        var txtPath = Path.Join(directoryName, txtFileName);
+
+                        newPath = Path.Join(targetPath, fileName);
+                        newTxtPath = Path.Join(targetPath, txtFileName);
+
+                        // append number if file exists at target 
+                        while (File.Exists(newPath))
+                        {
+                            increment++;
+                            fileNameOnly = $"{originalFileNameOnly} ({increment})";
+                            fileName = $"{fileNameOnly}{extension}";
+                            txtFileName = $"{fileNameOnly}.txt";
+
+                            newPath = Path.Join(targetPath, fileName);
+                            newTxtPath = Path.Join(targetPath, txtFileName);
+                        }
+
+                        if (image.Path != newPath)
+                        {
+                            File.Move(image.Path, newPath);
+
+                            if (File.Exists(txtPath))
+                            {
+                                File.Move(txtPath, newTxtPath);
+                            }
+
+                            if (remove)
+                            {
+                                ServiceLocator.DataStore.RemoveImage(image.Id);
+                            }
+                            else
+                            {
+                                ServiceLocator.DataStore.MoveImage(image.Id, newPath, folderCache);
+                            }
+
+                            var moved1 = moved;
+                            if (moved % 33 == 0)
+                            {
+                                ServiceLocator.ProgressService.SetProgress(moved1, message);
+                            }
+
+                            moved++;
+                        }
+                        else
+                        {
+                            ServiceLocator.MainModel.TotalProgress--;
+                        }
+                    }
+
+                    ServiceLocator.ToastService.Toast(GetLocalizedText("Actions.Files.Move.Success").Replace("{count}", $"{moved}"), "");
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e);
+                    MessageBox.Show(ServiceLocator.WindowService.CurrentWindow, $"An error occured while moving files: {e.Message}", "Moving Files", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    ServiceLocator.ProgressService.ClearProgress();
+                    ServiceLocator.ProgressService.ClearStatus();
+                    ServiceLocator.ProgressService.CompleteTask();
+                    ServiceLocator.FolderService.EnableWatchers();
+                }
+            });
+
+            return true;
+        }
+
+        return false;
     }
 
     public bool IsRegisteredExtension(string path)
     {
         return ServiceLocator.Settings.FileExtensions.IndexOf(Path.GetExtension(path),
             StringComparison.InvariantCultureIgnoreCase) > -1;
+    }
+
+
+    public void UpdateViewed(int imageId)
+    {
+        _debounceUpdateViewed(imageId);
+        //_viewedChannel.Writer.WriteAsync(new UpdateViewed() { Id = imageId, Viewed = DateTime.Now });
     }
 }

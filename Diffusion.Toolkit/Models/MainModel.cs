@@ -199,8 +199,24 @@ public class MainModel : BaseNotify
     public bool IsBusy
     {
         get => _isBusy;
-        set => SetField(ref _isBusy, value);
+        set
+        {
+            SetField(ref _isBusy, value);
+            OnPropertyChanged(nameof(HasPendingTask));
+        }
     }
+
+    public bool HasQueued
+    {
+        get => _hasQueued;
+        set
+        {
+            SetField(ref _hasQueued, value);
+            OnPropertyChanged(nameof(HasPendingTask));
+        }
+    }
+
+    public bool HasPendingTask => IsBusy || HasQueued;
 
     public int CurrentProgress
     {
@@ -603,6 +619,7 @@ public class MainModel : BaseNotify
     private bool _hasQuery;
     private bool _hasFilter;
     private string _queryText;
+    private bool _hasQueued;
 
     public ModelViewModel? CurrentModel
     {

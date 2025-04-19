@@ -407,6 +407,17 @@ namespace Diffusion.Toolkit.Controls
 
                         if (Model.MainModel.ThumbnailViewMode == ThumbnailViewMode.Compact)
                         {
+                            switch (delta)
+                            {
+                                case < 0:
+                                    ServiceLocator.ThumbnailNavigationService.MovePrevious();
+                                    break;
+                                case > 0:
+                                    ServiceLocator.ThumbnailNavigationService.MoveNext();
+                                    break;
+                            }
+                            FocusItem(ThumbnailListView.SelectedIndex);
+                            e.Handled = true;
                             return;
                         }
 

@@ -236,13 +236,16 @@ namespace Diffusion.Database
 
         public IEnumerable<Album> GetImageAlbums(IEnumerable<int> ids)
         {
-            var db = OpenReadonlyConnection();
+            using var db = OpenConnection();
 
-            InsertIds(db, "SelectedIds", ids);
+            lock (_lock)
+            {
+                InsertIds(db, "SelectedIds", ids);
 
-            var albums = db.Query<Album>($"SELECT DISTINCT Album.* FROM Image INNER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id INNER JOIN Album ON AlbumImage.AlbumId = Album.Id WHERE Image.Id IN (SELECT Id FROM SelectedIds)");
+                var albums = db.Query<Album>($"SELECT DISTINCT Album.* FROM Image INNER JOIN AlbumImage ON AlbumImage.ImageId = Image.Id INNER JOIN Album ON AlbumImage.AlbumId = Album.Id WHERE Image.Id IN (SELECT Id FROM SelectedIds)");
 
-            return albums;
+                return albums;
+            }
         }
 
 

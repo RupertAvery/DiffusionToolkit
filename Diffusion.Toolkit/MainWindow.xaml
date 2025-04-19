@@ -55,8 +55,8 @@
     <local:BorderlessWindow.TitleContent>
         <Grid Background="{x:Null}">
             <Border Background="{x:Null}" Margin="0,10,0,0" BorderThickness="1" CornerRadius="10" BorderBrush="{DynamicResource SecondaryBrush}" Width="300">
-                <Grid Background="{x:Null}" MouseDown="QueryBar_OnMouseDown">
-                    <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Width="12" ToolTip="{lex:Loc QueryBar.Query.ToolTip}" MouseDown="QueryBar_OnMouseDown">
+                <Grid Background="Transparent" MouseDown="QueryBar_OnMouseDown">
+                    <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Width="12" ToolTip="{lex:Loc QueryBar.Query.ToolTip}" PreviewMouseDown="QueryBar_OnMouseDown">
                         <fa:ImageAwesome.Style>
                             <Style TargetType="fa:ImageAwesome">
                                 <Setter Property="Opacity" Value="0.2"></Setter>
@@ -374,9 +374,9 @@
         </Grid>
 
 
-        <Grid Grid.Row="2" ColumnSpan="3"  Visibility="{Binding IsBusy, Converter={StaticResource boolToVisCol}}" >
+        <Grid Grid.Row="2" ColumnSpan="3" Visibility="{Binding HasPendingTask, Converter={StaticResource boolToVisCol}}" >
             <DockPanel HorizontalAlignment="Stretch">
-                <Button Background="Red" Foreground="White" FontWeight="DemiBold" DockPanel.Dock="Left"  Width="120" Command="{Binding CancelCommand}" Content="{lex:Loc Common.Buttons.Cancel}"></Button>
+                <Button Background="Red" Visibility="{Binding IsBusy, Converter={StaticResource boolToVisCol}}" Foreground="White" FontWeight="DemiBold" DockPanel.Dock="Left"  Width="120" Command="{Binding CancelCommand}" Content="{lex:Loc Common.Buttons.Cancel}"></Button>
                 <Grid DockPanel.Dock="Right" HorizontalAlignment="Stretch">
                     <ProgressBar Value="{Binding CurrentProgress}" Maximum="{Binding TotalProgress}" HorizontalAlignment="Stretch"></ProgressBar>
                     <Label VerticalContentAlignment="Center" Content="{Binding Status}"></Label>

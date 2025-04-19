@@ -120,7 +120,7 @@
                             </Grid>
 
 
-                            <Grid Background="{x:Null}" Height="36" VerticalAlignment="Top">
+                            <Grid Background="{x:Null}" Visibility="{TemplateBinding TitleVisibility}" Height="36" VerticalAlignment="Top">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="{TemplateBinding MenuWidth}"/>
                                     <ColumnDefinition Width="{TemplateBinding TitleWidth}"/>

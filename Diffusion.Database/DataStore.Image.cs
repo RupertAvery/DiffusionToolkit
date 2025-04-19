@@ -1,10 +1,17 @@
-﻿using SQLite;
+﻿using System.Reflection;
+using SQLite;
 using System.Text;
 using Diffusion.Common;
 using Diffusion.Database.Models;
 
 namespace Diffusion.Database
 {
+    public class UpdateViewed
+    {
+        public int Id { get; set; }
+        public DateTime Viewed { get; set; }
+    }
+
     public partial class DataStore
     {
         public void RemoveImage(int id)
@@ -83,6 +90,77 @@ namespace Diffusion.Database
             insertCommand.ExecuteNonQuery();
 
             return $"(SELECT Id FROM {table})";
+        }
+
+        private Dictionary<string, PropertyInfo[]> _propertiesCache = new Dictionary<string, PropertyInfo[]>();
+        
+        private (string, string, PropertyInfo[]) InsertTable<T>(SQLiteConnection db, string table, IEnumerable<T> views)
+        {
+            var dropTableQuery = $"DROP TABLE IF EXISTS {table}";
+            var dropCommand = db.CreateCommand(dropTableQuery);
+            dropCommand.ExecuteNonQuery();
+
+            var key = typeof(T).FullName;
+
+            if (!_propertiesCache.TryGetValue(key, out var props))
+            {
+                props = typeof(T).GetProperties();
+                _propertiesCache[key] = props;
+            }
+            
+            var propNamesList = new List<string>();
+            var columnsList = new List<string>();
+            
+            foreach (var prop in props)
+            {
+                var columnType = prop.PropertyType.Name switch
+                {
+                    "String" => "varchar",
+                    "Int32" => "INT",
+                    "Int64" => "INT",
+                    "DateTime" => "bigint",
+                    _ => ""
+                };
+
+                propNamesList.Add(prop.Name);
+                columnsList.Add($"{prop.Name} {columnType}");
+
+            }
+
+            var tempTableQuery = $"CREATE TEMP TABLE {table} ({string.Join(",", columnsList)})";
+            var tempCommand = db.CreateCommand(tempTableQuery);
+            tempCommand.ExecuteNonQuery();
+
+            var insertQuery = new StringBuilder();
+            insertQuery.Append($"INSERT INTO {table} ({string.Join(",", propNamesList)}) VALUES ");
+
+            var valuesList = new List<string>();
+            var bindings = new List<object>();
+            var placeHoldersList = new List<string>();
+
+            foreach (var prop in props)
+            {
+                placeHoldersList.Add("?");
+            }
+
+            var valuePlaceholder = $"({string.Join(", ", placeHoldersList)})";
+
+            foreach (var view in views)
+            {
+                foreach (var prop in props)
+                {
+                    bindings.Add(prop.GetValue(view));
+                }
+                valuesList.Add(valuePlaceholder);
+            }
+
+            insertQuery.Append(string.Join(", ", valuesList));
+
+            db.Execute(insertQuery.ToString(), bindings.ToArray());
+
+            var alias = "c";
+
+            return ($"(SELECT {string.Join(", ", propNamesList)} FROM {table}) {alias}", alias, props);
         }
 
         public void RemoveImages(IEnumerable<int> ids)
@@ -388,6 +466,20 @@ namespace Diffusion.Database
             }
         }
 
+        public IEnumerable<ImagePath> GetImagePaths(IEnumerable<int> ids)
+        {
+            var db = OpenReadonlyConnection();
+
+            var selectedIds = InsertIds(db, "SelectedIds", ids);
+
+            var images = db.Query<ImagePath>($"SELECT Id, FolderId, Path FROM Image WHERE Id IN {selectedIds}");
+
+            foreach (var image in images)
+            {
+                yield return image;
+            }
+        }
+
         public void UpdateImageFolderId(int id, string path, Dictionary<string, Folder> folderCache)
         {
             using var db = OpenConnection();
@@ -507,11 +599,22 @@ namespace Diffusion.Database
 
         public int UpdateViewed(int id)
         {
-
             lock (_lock)
             {
                 using var db = OpenConnection();
                 return db.Execute("UPDATE Image SET ViewedDate = ? WHERE Id = ?", DateTime.Now, id);
+            }
+        }
+
+        public int UpdateViewed(IReadOnlyCollection<UpdateViewed> views)
+        {
+            lock (_lock)
+            {
+                using var db = OpenConnection();
+
+                var (table, alias, props) = InsertTable(db, "UpdateViews", views);
+
+                return db.Execute($"UPDATE Image SET ViewedDate = {alias}.Viewed FROM {table} WHERE {alias}.Id = Image.Id");
             }
         }
 

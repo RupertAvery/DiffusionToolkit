@@ -68,7 +68,7 @@ namespace Diffusion.Toolkit
                 if (_dataStore.AddImagesToAlbum(album.Id, images.Select(x => x.Id)))
                 {
                     ServiceLocator.ToastService.Toast($"{images.Count} image{(images.Count == 1 ? "" : "s")} added to \"{album.Name} \".", "Add to Album");
-                    
+
                     UpdateAlbumCount(album.Id);
 
                     ServiceLocator.AlbumService.UpdateSelectedImageAlbums();
@@ -80,7 +80,7 @@ namespace Diffusion.Toolkit
                 else
                     MessageBox.Show("Album not found, please refresh and try again", "No Album");
             });
-            
+
             _model.RenameAlbumCommand = new AsyncCommand<AlbumModel>(async (album) =>
             {
                 var title = GetLocalizedText("Actions.Albums.Rename.Title");
@@ -285,9 +285,9 @@ namespace Diffusion.Toolkit
         {
             if (_model.SelectedImages != null)
             {
-                Task.Run(async () =>
+                var imagePaths = _model.SelectedImages.Select(d => new ImagePath() { Id = d.Id, Path = d.Path }).ToList();
+                ServiceLocator.FileService.MoveFiles(imagePaths, folder.Path, false).ContinueWith(d =>
                 {
-                    await MoveFiles(_model.SelectedImages, folder.Path, false);
                     _search.SearchImages(null);
                 });
             }

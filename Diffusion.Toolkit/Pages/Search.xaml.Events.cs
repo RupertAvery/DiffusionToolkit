@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -71,15 +72,48 @@ namespace Diffusion.Toolkit.Pages
 
         private void UIElement_OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (!e.Handled)
+            if (sender is ItemsControl itemsControl)
             {
-                e.Handled = true;
-                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
-                eventArg.Source = sender;
-                var parent = NavigationScrollViewer;
-                parent.RaiseEvent(eventArg);
+                var scrollViewer = FindParentScrollViewer(itemsControl);
+                if (scrollViewer != null)
+                {
+                    bool canScrollUp = scrollViewer.VerticalOffset > 0;
+                    bool canScrollDown = scrollViewer.VerticalOffset < scrollViewer.ScrollableHeight;
+
+                    // If it can't scroll in the direction, let parent handle it
+                    if ((e.Delta > 0 && !canScrollUp) || (e.Delta < 0 && !canScrollDown))
+                    {
+                        e.Handled = true;
+                        var parentEvent = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
+                        {
+                            RoutedEvent = UIElement.MouseWheelEvent,
+                            Source = sender
+                        };
+                        NavigationScrollViewer.RaiseEvent(parentEvent);
+
+
+                    }
+                    else
+                    {
+                        e.Handled = false;
+                    }
+                }
             }
+        }
+
+        private ScrollViewer FindParentScrollViewer(DependencyObject current)
+        {
+            while (current != null)
+            {
+                if (current is ScrollViewer sv)
+                    return sv;
+
+                current = VisualTreeHelper.GetParent(current);
+                if (current == null && current is FrameworkElement fe)
+                    current = fe.Parent;
+            }
+
+            return null;
         }
 
         private void HideSearchSettings_OnClick(object sender, RoutedEventArgs e)

@@ -444,9 +444,9 @@
                          VerticalContentAlignment="Center"
                          Content="{Binding Results}"
                 ></Label>
-            <Slider Grid.Column="1" Width="90" VerticalAlignment="Center" Minimum="0" Maximum="20" Value="{Binding ThumbnailSpacing}">
+            <Slider Grid.Column="1" Width="90" VerticalAlignment="Center" Minimum="0" Maximum="20" ToolTip="{lex:Loc Thumbnail.Controls.Spacing}" Value="{Binding ThumbnailSpacing}">
                 <Slider.Style>
-                    <Style TargetType="Slider">
+                    <Style TargetType="Slider" BasedOn="{StaticResource {x:Type Slider}}">
                         <Setter Property="Visibility" Value="Hidden"></Setter>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding Model.MainModel.ThumbnailViewMode, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Value="{x:Static local:ThumbnailViewMode.Compact}">

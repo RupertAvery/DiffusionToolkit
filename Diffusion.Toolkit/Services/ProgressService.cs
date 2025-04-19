@@ -31,17 +31,7 @@ public class ProgressService
         await _syncLock.WaitAsync();
         try
         {
-            if (!ServiceLocator.MainModel.IsBusy)
-            {
-                _progressCancellationTokenSource = new CancellationTokenSource();
-            }
-
-            //if (!ServiceLocator.MainModel.IsBusy)
-            //{
-            //    _progressCancellationTokenSource = new CancellationTokenSource();
-
-            //    _dispatcher.Invoke(() => { ServiceLocator.MainModel.IsBusy = true; });
-            //}
+            ServiceLocator.MainModel.HasQueued = true;
         }
         finally
         {
@@ -146,6 +136,11 @@ public class ProgressService
         });
     }
 
+    /// <summary>
+    /// Updates the progress
+    /// </summary>
+    /// <param name="value">The CurrentProgress value</param>
+    /// <param name="statusFormat">A string that with tokens {current} and {total}</param>
     public void SetProgress(int value, string? statusFormat = null)
     {
         _dispatcher.Invoke(() =>
