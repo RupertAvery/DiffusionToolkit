@@ -380,10 +380,10 @@
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.Hash}"  Command="{Binding CopyHashCommand}"/>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.All}"  Command="{Binding CopyParametersCommand}"/>
                     </MenuItem>
-                    <Separator />
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.CopyPath}" Command="{Binding CopyPathCommand}" />
+                    <Separator />
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Copy}" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Move}" Command="{Binding MoveCommand}"/>
+                    <!--<MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Move}" Command="{Binding MoveCommand}"/>-->
                     <Separator />
                     <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.ShowInExplorer}"  Command="{Binding ShowInExplorerCommand}"/>
                     <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.ExpandToFolder}"  Command="{Binding ExpandToFolderCommand}"/>

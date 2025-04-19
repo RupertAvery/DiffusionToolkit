@@ -783,7 +783,7 @@ namespace Diffusion.Toolkit.Controls
             Point pt = e.GetPosition(ThumbnailListView);
             var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
 
-            if (!_dragStarted && e.LeftButton == MouseButtonState.Pressed &&
+            if (e.LeftButton == MouseButtonState.Pressed && item != null && !_dragStarted && 
                 (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                  Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
             {
