@@ -4,6 +4,7 @@ using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -242,6 +243,7 @@ namespace Diffusion.Toolkit
 
         private void UIElement_OnMouseLeave(object sender, MouseEventArgs e)
         {
+            Debug.WriteLine("Left Top bar");
             _debounceCloseTopBar();
             //_model.IsTopHover = false;
         }

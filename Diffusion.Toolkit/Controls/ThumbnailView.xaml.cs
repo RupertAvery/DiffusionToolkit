@@ -41,7 +41,7 @@ namespace Diffusion.Toolkit.Controls
         public ThumbnailViewModel Model { get; set; }
 
         private DataStore _dataStore => ServiceLocator.DataStore;
-        
+
         private string GetLocalizedText(string key)
         {
             return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
@@ -92,7 +92,7 @@ namespace Diffusion.Toolkit.Controls
             _debounceRedrawThumbnails = Utility.Debounce(() => Dispatcher.Invoke(() => ReloadThumbnailsView()));
 
             Model.ThumbnailSpacing = ServiceLocator.Settings.ThumbnailSpacing;
-            
+
             //GotFocus += ThumbnailView_GotFocus;
             Init();
         }
@@ -184,22 +184,22 @@ namespace Diffusion.Toolkit.Controls
 
                 case Key.Delete:
                 case Key.X:
-                {
-                    switch (e.KeyboardDevice.Modifiers)
                     {
-                        case ModifierKeys.Control:
-                            RemoveEntry();
-                            break;
-                        case ModifierKeys.None:
-                            DeleteSelected();
-                            break;
-                        case ModifierKeys.Shift:
-                            PermanentlyDeleteSelected();
-                            break;
-                    }
+                        switch (e.KeyboardDevice.Modifiers)
+                        {
+                            case ModifierKeys.Control:
+                                RemoveEntry();
+                                break;
+                            case ModifierKeys.None:
+                                DeleteSelected();
+                                break;
+                            case ModifierKeys.Shift:
+                                PermanentlyDeleteSelected();
+                                break;
+                        }
 
-                    break;
-                }
+                        break;
+                    }
 
                 case Key.F when e.KeyboardDevice.Modifiers == ModifierKeys.None:
                     FavoriteSelected();
@@ -408,24 +408,25 @@ namespace Diffusion.Toolkit.Controls
 
                         if (Model.MainModel.ThumbnailViewMode == ThumbnailViewMode.Compact)
                         {
-                            switch (delta)
-                            {
-                                case < 0:
-                                    ServiceLocator.ThumbnailNavigationService.MovePrevious();
-                                    break;
-                                case > 0:
-                                    ServiceLocator.ThumbnailNavigationService.MoveNext();
-                                    break;
-                            }
-                            FocusItem(ThumbnailListView.SelectedIndex);
-                            e.Handled = true;
-                            return;
+                            //switch (delta)
+                            //{
+                            //    case < 0:
+                            //        ServiceLocator.ThumbnailNavigationService.MovePrevious();
+                            //        break;
+                            //    case > 0:
+                            //        ServiceLocator.ThumbnailNavigationService.MoveNext();
+                            //        break;
+                            //}
+                            //FocusItem(ThumbnailListView.SelectedIndex);
+                            //e.Handled = true;
+                            //return;
                         }
 
                         if (delta != 0)
                         {
                             if (currentItemIndex + delta < 0 || currentItemIndex + delta >= wrapPanel.Children.Count)
                             {
+
                                 e.Handled = true;
                                 return;
                             }
@@ -679,7 +680,7 @@ namespace Diffusion.Toolkit.Controls
                         }
                     }
                 });
-               
+
             }
         }
 
@@ -719,41 +720,50 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
-        private List<ImageEntry> _selItems = new List<ImageEntry>();
         private Point _start;
-        private bool _restoreSelection;
         private bool _dragStarted;
 
         private void ThumbnailListView_OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            //if (ThumbnailListView.SelectedItems.Count == 0)
-            //    return;
-            ImageEntry? currentShape = ThumbnailListView.SelectedItem as ImageEntry;
-
             Point pt = e.GetPosition(ThumbnailListView);
             var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
-
 
             if (item != null)
             {
                 var thumbnail = item.VisualHit as Thumbnail;
+
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    Debug.WriteLine(e.OriginalSource.GetType().Name);
+                }
 
                 if (item.VisualHit is FrameworkElement { DataContext: ImageEntry { IsEmpty: false } entry })
                 {
                     //currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
                     Model.MainModel.CurrentImageEntry = entry;
                     SelectedImageEntry = entry;
-                }
 
-                if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border or Grid or ImageAwesome))
-                {
-                    _dragStarted = true;
+                    if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border or Grid or ImageAwesome))
+                    {
+                        if (ThumbnailListView.SelectedItems.Contains(entry))
+                        {
+                            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 || (Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                            {
+
+                            }
+                            else
+                            {
+                                if (ThumbnailListView.SelectedItems.Count > 1)
+                                {
+                                    e.Handled = true;
+                                }
+                            }
+                        }
+                    }
+
                 }
 
                 this._start = e.GetPosition(null);
-                _selItems.Clear();
-                _selItems.AddRange(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
-
 
             }
 
@@ -770,57 +780,30 @@ namespace Diffusion.Toolkit.Controls
             Point mpos = e.GetPosition(null);
             Vector diff = this._start - mpos;
 
-            if (_dragStarted && e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border) &&
+            Point pt = e.GetPosition(ThumbnailListView);
+            var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
+
+            if (!_dragStarted && e.LeftButton == MouseButtonState.Pressed &&
                 (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                  Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
             {
-                if (this.ThumbnailListView.SelectedItems.Count == 0)
+                if (item.VisualHit is FrameworkElement { DataContext: ImageEntry { IsEmpty: false } entry })
                 {
-                    return;
-                }
+                    _dragStarted = true;
 
-                if (_selItems.Contains(ThumbnailListView.SelectedItems[0]))
-                {
-                    foreach (object selItem in _selItems)
-                    {
-                        if (!ThumbnailListView.SelectedItems.Contains(selItem))
-                            ThumbnailListView.SelectedItems.Add(selItem);
-                    }
-                }
-                else
-                {
-                    _selItems.Clear();
-                    _selItems.AddRange(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
-                }
+                    var source = (ListView)sender;
 
+                    var items = ThumbnailListView.SelectedItems.Cast<ImageEntry>();
 
-                var source = (ListView)sender;
-                //var path = ((ImageEntry)source.DataContext).Path;
+                    DataObject dataObject = new DataObject();
+                    dataObject.SetData(DataFormats.FileDrop, items.Select(t => t.Path).ToArray());
+                    dataObject.SetData(DragAndDrop.DragFiles, items.ToArray());
 
-                DataObject dataObject = new DataObject();
-                dataObject.SetData(DataFormats.FileDrop, _selItems.Select(t => t.Path).ToArray());
-                dataObject.SetData(DragAndDrop.DragFiles, _selItems.ToArray());
-
-                DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
-            }
-
-        }
-
-        private void ThumbnailListView_OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            // This doesn't get called, probably handled by some object
-            // Instead, see Preview*
-
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                Point pt = e.GetPosition(ThumbnailListView);
-                var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
-                if (item?.VisualHit is FrameworkElement { DataContext: ImageEntry } f)
-                {
-                    //currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
+                    DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
+                    _dragStarted = false;
+                    e.Handled = true;
                 }
             }
-
         }
 
         private void Unrate_OnClick(object sender, RoutedEventArgs e)
@@ -940,7 +923,40 @@ namespace Diffusion.Toolkit.Controls
 
         private void ThumbnailListView_OnPreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            _dragStarted = false;
+            Point pt = e.GetPosition(ThumbnailListView);
+            var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
+
+
+            if (item != null)
+            {
+                var thumbnail = item.VisualHit as Thumbnail;
+
+                if (e.LeftButton == MouseButtonState.Pressed)
+                {
+                    Debug.WriteLine(e.OriginalSource.GetType().Name);
+                }
+
+                if (item.VisualHit is FrameworkElement { DataContext: ImageEntry { IsEmpty: false } entry })
+                {
+                    if (e.LeftButton == MouseButtonState.Released && (e.OriginalSource is Thumbnail or Border or Grid or ImageAwesome))
+                    {
+                        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0 || (Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                        {
+
+                        }
+                        else
+                        {
+                            if (ThumbnailListView.SelectedItems.Count > 1)
+                            {
+                                ThumbnailListView.SelectedIndex = ThumbnailListView.Items.IndexOf(entry);
+                                FocusCurrentItem();
+                                ThumbnailListView.SelectedItems.Clear();
+                            }
+                        }
+                    }
+                }
+            }
+
         }
 
     }

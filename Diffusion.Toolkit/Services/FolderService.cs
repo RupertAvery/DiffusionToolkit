@@ -738,7 +738,7 @@ namespace Diffusion.Toolkit.Services
                         {
                             ServiceLocator.ProgressService.StartTask().ContinueWith(t =>
                             {
-                                _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, ServiceLocator.ProgressService.CancellationToken);
+                                _ = ServiceLocator.MetadataScannerService.QueueAsync(e.FullPath, CancellationToken.None);
                             });
                         }
                     }

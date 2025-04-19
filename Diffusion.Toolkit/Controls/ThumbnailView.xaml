@@ -288,7 +288,6 @@
                   KeyDown="ThumbnailListView_OnKeyDown"
                   PreviewKeyDown="ThumbnailListView_OnPreviewKeyDown"
                   PreviewMouseLeftButtonDown="ThumbnailListView_OnPreviewMouseLeftButtonDown"
-                  MouseDown="ThumbnailListView_OnMouseDown"
                   MouseUp="ThumbnailListView_OnMouseUp"
                   PreviewMouseLeftButtonUp="ThumbnailListView_OnPreviewMouseLeftButtonUp"
                   MouseMove="ThumbnailListView_OnMouseMove"
