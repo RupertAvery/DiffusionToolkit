@@ -21,6 +21,7 @@ using Diffusion.Toolkit.Localization;
 using Settings = Diffusion.Toolkit.Configuration.Settings;
 using Diffusion.Database.Models;
 using System.Reflection;
+using FontAwesome.WPF;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -744,7 +745,7 @@ namespace Diffusion.Toolkit.Controls
                     SelectedImageEntry = entry;
                 }
 
-                if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border))
+                if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Thumbnail or Border or Grid or ImageAwesome))
                 {
                     _dragStarted = true;
                 }
@@ -798,7 +799,7 @@ namespace Diffusion.Toolkit.Controls
 
                 DataObject dataObject = new DataObject();
                 dataObject.SetData(DataFormats.FileDrop, _selItems.Select(t => t.Path).ToArray());
-                dataObject.SetData(DragAndDrop.DragFiles, _selItems.Select(t => t.Id).ToArray());
+                dataObject.SetData(DragAndDrop.DragFiles, _selItems.ToArray());
 
                 DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
             }
