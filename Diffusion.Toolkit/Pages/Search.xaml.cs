@@ -1200,17 +1200,34 @@ namespace Diffusion.Toolkit.Pages
                                 lastIndex = _model.Images.IndexOf(empty) - 1;
                             }
 
+                            ThumbnailListView.SelectedIndex = options.CursorPosition switch
+                            {
+                                CursorPosition.Start => 0,
+                                CursorPosition.End => lastIndex,
+                                _ => 0
+                            };
+
                             _model.SelectedImageEntry = options.CursorPosition switch
                             {
                                 CursorPosition.Start => _model.Images[0],
                                 CursorPosition.End => _model.Images[lastIndex],
                                 _ => _model.Images[0]
                             };
+              
 
-                            ServiceLocator.MainModel.SelectedImages.Clear();
-                            ServiceLocator.MainModel.SelectedImages.Add(_model.SelectedImageEntry);
+                            ThumbnailListView.FocusCurrentItem();
 
-                            //ThumbnailListView.SelectedImageEntry = _model.SelectedImageEntry;
+                            if (options.CursorPosition == CursorPosition.Start)
+                            {
+                                ThumbnailListView.ScrollToTop();
+                            }
+                            else if (options.CursorPosition == CursorPosition.End)
+                            {
+                                ThumbnailListView.ScrollToBottom();
+                            }
+
+                            //ServiceLocator.MainModel.SelectedImages.Clear();
+                            //ServiceLocator.MainModel.SelectedImages.Add(_model.SelectedImageEntry);
                         }
                         else
                         {

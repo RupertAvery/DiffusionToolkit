@@ -169,8 +169,8 @@ public class Thumbnail : FrameworkElement
     {
         var margin = 5;
 
-        double centerX = ActualWidth / 2;
-        double centerY = ActualHeight / 2;
+        double centerX = Width / 2;
+        double centerY = Width / 2;
 
         drawingContext.PushOpacity(0.6);
         drawingContext.DrawImage(_lightTrashIcon, new Rect(new Point(centerX - 16 + 2, centerY - 16 + 2 + yOffset), new Size(32, 32)));

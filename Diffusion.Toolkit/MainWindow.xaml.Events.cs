@@ -64,7 +64,11 @@ namespace Diffusion.Toolkit
             _model.ToggleTagsCommand = new RelayCommand<object>((o) => ToggleTags());
             _model.ToggleNotificationsCommand = new RelayCommand<object>((o) => ToggleNotifications());
 
-            _model.NavigateToParentFolderCommand = new RelayCommand<object>((o) => NavigateToParentFolder());
+            _model.NavigateToParentFolderCommand = new RelayCommand<object>((o) =>
+            {
+                NavigateToParentFolder();
+                _search.ThumbnailListView.FocusCurrentItem();
+            });
 
             _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
             _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());

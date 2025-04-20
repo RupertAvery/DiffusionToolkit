@@ -732,11 +732,6 @@ namespace Diffusion.Toolkit.Controls
             {
                 var thumbnail = item.VisualHit as Thumbnail;
 
-                if (e.LeftButton == MouseButtonState.Pressed)
-                {
-                    Debug.WriteLine(e.OriginalSource.GetType().Name);
-                }
-
                 if (item.VisualHit is FrameworkElement { DataContext: ImageEntry { IsEmpty: false } entry })
                 {
                     //currentItemIndex = ThumbnailListView.Items.IndexOf(f.DataContext);
@@ -783,7 +778,7 @@ namespace Diffusion.Toolkit.Controls
             Point pt = e.GetPosition(ThumbnailListView);
             var item = VisualTreeHelper.HitTest(ThumbnailListView, pt);
 
-            if (e.LeftButton == MouseButtonState.Pressed && item != null && !_dragStarted && 
+            if (e.LeftButton == MouseButtonState.Pressed && item != null && !_dragStarted &&
                 (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
                  Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
             {
@@ -959,5 +954,38 @@ namespace Diffusion.Toolkit.Controls
 
         }
 
+        public void ScrollToBottom()
+        {
+            var scrollViewer = FindScrollViewer(ThumbnailListView);
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollToBottom();
+            }
+        }
+
+        public void ScrollToTop()
+        {
+            var scrollViewer = FindScrollViewer(ThumbnailListView);
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollToTop();
+            }
+        }
+
+
+        private ScrollViewer? FindScrollViewer(DependencyObject d)
+        {
+            if (d is ScrollViewer)
+                return (ScrollViewer)d;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(d); i++)
+            {
+                var child = VisualTreeHelper.GetChild(d, i);
+                var result = FindScrollViewer(child);
+                if (result != null)
+                    return result;
+            }
+            return null;
+        }
     }
 }

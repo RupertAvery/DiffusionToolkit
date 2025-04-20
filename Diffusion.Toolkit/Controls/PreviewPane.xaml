@@ -139,11 +139,11 @@
 
         </Grid>
 
-        <!--<Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=Image.ForDeletion, Converter={StaticResource boolToVisCol}}">
+        <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=Image.ForDeletion, Converter={StaticResource boolToVisCol}}">
             <Image.Effect>
                 <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
             </Image.Effect>
-        </Image>-->
+        </Image>
 
         <!--<Grid  Background="{x:Null}" Visibility="{Binding Image.ForDeletion, Converter={StaticResource boolToVis}}" VerticalAlignment="Center" HorizontalAlignment="Center">
             <Border BorderBrush="White" BorderThickness="2" Background="#FF000000" CornerRadius="5">

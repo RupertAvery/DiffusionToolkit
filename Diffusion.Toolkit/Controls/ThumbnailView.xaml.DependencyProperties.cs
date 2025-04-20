@@ -17,6 +17,16 @@ namespace Diffusion.Toolkit.Controls
 {
     public partial class ThumbnailView
     {
+        public static readonly DependencyProperty SelectedIndexProperty =
+            DependencyProperty.Register(
+                name: nameof(SelectedIndex),
+                propertyType: typeof(int),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: -1,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
         public static readonly DependencyProperty ImagesProperty =
          DependencyProperty.Register(
              name: nameof(Images),
@@ -29,11 +39,11 @@ namespace Diffusion.Toolkit.Controls
 
         public static readonly DependencyProperty SelectedImageEntryProperty =
             DependencyProperty.Register(
-                nameof(SelectedImageEntry), 
-                typeof(ImageEntry), 
+                nameof(SelectedImageEntry),
+                typeof(ImageEntry),
                 typeof(ThumbnailView),
                 new FrameworkPropertyMetadata(
-                    null, 
+                    null,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)
                 );
 
@@ -178,11 +188,11 @@ namespace Diffusion.Toolkit.Controls
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
-        public static readonly DependencyProperty RemoveFromAlbumCommandProperty = 
+        public static readonly DependencyProperty RemoveFromAlbumCommandProperty =
             DependencyProperty.Register(
-                nameof(RemoveFromAlbumCommand), 
-                typeof(ICommand), 
-                typeof(ThumbnailView), 
+                nameof(RemoveFromAlbumCommand),
+                typeof(ICommand),
+                typeof(ThumbnailView),
                 new PropertyMetadata(default(object)));
 
         public static readonly DependencyProperty RenameAlbumCommandProperty =
@@ -245,6 +255,12 @@ namespace Diffusion.Toolkit.Controls
             {
                 switch (e.Property.Name)
                 {
+                    case nameof(SelectedIndex):
+                        {
+                            thumbnailView.ThumbnailListView.SelectedIndex = (int)e.NewValue;
+                            thumbnailView.FocusCurrentItem();
+                            break;
+                        }
                     case nameof(Images):
                         {
                             thumbnailView.Model.Images = (ObservableCollection<ImageEntry>)e.NewValue;
@@ -386,6 +402,12 @@ namespace Diffusion.Toolkit.Controls
         {
             get => (ObservableCollection<ImageEntry>)GetValue(ImagesProperty);
             set => SetValue(ImagesProperty, value);
+        }
+
+        public int SelectedIndex
+        {
+            get => (int)GetValue(SelectedIndexProperty);
+            set => SetValue(SelectedIndexProperty, value);
         }
 
         public ImageEntry? SelectedImageEntry
