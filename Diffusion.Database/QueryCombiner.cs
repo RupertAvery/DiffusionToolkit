@@ -81,7 +81,7 @@ public static class QueryCombiner
 
     public static (string Query, IEnumerable<object> Bindings) Parse(QueryOptions options)
     {
-        var r = QueryBuilder.ParseParameters(options.Query);
+        var r = QueryBuilder.ParseParameters(options.Query ?? string.Empty);
 
         var where0Clause = r.WhereClause is { Length: > 0 } ? $" WHERE {r.WhereClause}" : "";
 

@@ -788,7 +788,6 @@ namespace Diffusion.Toolkit
                 });
             }
 
-            ServiceLocator.NavigatorService.Goto("search");
 
             if (isFirstTime)
             {
@@ -798,17 +797,23 @@ namespace Diffusion.Toolkit
                     ChangeType = ChangeType.Add,
                     FolderType = FolderType.Watched,
                     Path = d,
-                }), confirmScan: false);
-
-                // Wait for a bit, then show thumbnails
-                _ = Task.Delay(10000).ContinueWith(t =>
+                }), confirmScan: false).ContinueWith(d =>
                 {
-                    ServiceLocator.SearchService.ExecuteSearch();
-                    ServiceLocator.MessageService.ShowMedium(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
+                    ServiceLocator.NavigatorService.Goto("search");
+
+                    // Wait for a bit, then show thumbnails
+                    _ = Task.Delay(10000).ContinueWith(t =>
+                    {
+                        ServiceLocator.SearchService.ExecuteSearch();
+                        ServiceLocator.MessageService.ShowMedium(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
+                    });
+
                 });
             }
             else
             {
+                ServiceLocator.NavigatorService.Goto("search");
+
                 if (ServiceLocator.FolderService.HasRootFolders)
                 {
                     if (_settings.ScanForNewImagesOnStartup)
@@ -832,11 +837,6 @@ namespace Diffusion.Toolkit
                             }
                         });
                     }
-                    else
-                    {
-                        _search.SearchImages(null);
-                    }
-
                 }
             }
 

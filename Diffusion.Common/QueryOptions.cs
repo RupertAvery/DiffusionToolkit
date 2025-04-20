@@ -12,7 +12,7 @@ public class QueryOptions
         SearchView = SearchView.Search;
     }
 
-    public string Query { get; set; }
+    public string? Query { get; set; }
     public Filter Filter { get; set; }
     [JsonIgnore]
     public bool HasQuery => Filter.IsEmpty && !string.IsNullOrEmpty(Query);

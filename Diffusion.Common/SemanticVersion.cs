@@ -37,8 +37,14 @@ public class SemanticVersion : IComparable<SemanticVersion>
         return version;
     }
 
-    public static bool TryParse(string text, out SemanticVersion version)
+    public static bool TryParse(string? text, out SemanticVersion version)
     {
+        if (text == null)
+        {
+            version = new SemanticVersion();
+            return false;
+        }
+
         var match = versionRegex.Match(text);
        
         if (match.Success)
