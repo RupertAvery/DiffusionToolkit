@@ -75,7 +75,7 @@ namespace Diffusion.Toolkit
         {
             get
             {
-                switch(Step)
+                switch (Step)
                 {
                     case 1:
                         return false;
@@ -110,8 +110,17 @@ namespace Diffusion.Toolkit
 
             InitializeComponent();
 
-            //_model.PropertyChanged += ModelOnPropertyChanged;
-            _model.ImagePaths = new ObservableCollection<string>();
+            var folders = ServiceLocator.DataStore.GetFolders().Where(d => d.IsRoot).ToList();
+
+            if (folders.Any())
+            {
+                _model.ImagePaths = new ObservableCollection<string>(folders.Select(d => d.Path));
+            }
+            else
+            {
+                _model.ImagePaths = new ObservableCollection<string>();
+            }
+
 
             Closing += (sender, args) =>
             {

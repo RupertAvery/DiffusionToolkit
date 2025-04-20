@@ -554,12 +554,21 @@ namespace Diffusion.Toolkit.Pages
 
             if (_model.IsFoldersDirty)
             {
-                Task.Run(async () =>
+                if (ServiceLocator.MainModel.IsBusy)
                 {
-                    await ServiceLocator.FolderService.ApplyFolderChanges(_folderChanges);
+                    MessageBox.Show(ServiceLocator.WindowService.CurrentWindow, GetLocalizedText("Settings.Apply.Folders.Busy"), "Settings", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                }
+                else
+                {
+                    var changes = _folderChanges.ToList();
                     _folderChanges.Clear();
                     _model.SetFoldersPristine();
-                });
+
+                    Task.Run(async () =>
+                    {
+                        await ServiceLocator.FolderService.ApplyFolderChanges(changes);
+                    });
+                }
             }
 
             _model.SetPristine();

@@ -144,6 +144,7 @@
   "Settings.Database.OpenFolder": "Open folder",
   "Settings.Database.Backup": "Backup",
   "Settings.Database.Restore": "Restore",
+  "Settings.Apply.Folders.Busy": "Unable to update folders at this time. Please stop any ongoing tasks, then try again.",
   "Search.Diffusions": "Diffusions",
   "Search.Folders": "Folders",
   "Search.Models": "Models",
@@ -378,8 +379,8 @@
   "SelectAlbum.ExistingAlbum": "Existing Album",
   "QueryBar.Query.ToolTip": "Search (F6)",
   "QueryBar.Clear.ToolTip": "Clear",
-  "QueryBar.Refresh.ToolTip": "Refresh (F5)",
-  "QueryBar.Filter.ToolTip": "Filter (Ctrl+F)",
+  "QueryBar.Refresh.ToolTip": "Refresh (F5) / Reload (CTRL+F5)",
+  "QueryBar.Filter.ToolTip": "Filter (CTRL+F)",
   "QueryBar.Settings.ToolTip": "Settings",
   "QueryBar.Help.ToolTip": "Search Help"
 }

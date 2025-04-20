@@ -106,7 +106,7 @@ namespace Diffusion.Database
 
             lock (_lock)
             {
-                id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 0, 1)", path);
+                id = db.ExecuteScalar<int>($"INSERT OR IGNORE INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 0, 1) RETURNING Id", path);
             }
 
             db.Close();

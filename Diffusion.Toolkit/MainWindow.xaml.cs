@@ -801,12 +801,16 @@ namespace Diffusion.Toolkit
                 {
                     ServiceLocator.NavigatorService.Goto("search");
 
-                    // Wait for a bit, then show thumbnails
-                    _ = Task.Delay(10000).ContinueWith(t =>
+                    if (ServiceLocator.FolderService.HasRootFolders)
                     {
-                        ServiceLocator.SearchService.ExecuteSearch();
-                        ServiceLocator.MessageService.ShowMedium(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
-                    });
+                        // Wait for a bit, then show thumbnails
+                        _ = Task.Delay(5000).ContinueWith(t =>
+                        {
+                            ServiceLocator.SearchService.ExecuteSearch();
+                            ServiceLocator.MessageService.ShowMedium(GetLocalizedText("FirstScan.Message"),
+                                GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
+                        });
+                    }
 
                 });
             }
@@ -824,16 +828,7 @@ namespace Diffusion.Toolkit
                         {
                             if (await ServiceLocator.ProgressService.TryStartTask())
                             {
-
                                 await ServiceLocator.ScanningService.ScanWatchedFolders(false, false, ServiceLocator.ProgressService.CancellationToken);
-                                //try
-                                //{
-                                //}
-                                //finally
-                                //{
-                                //    //ServiceLocator.ProgressService.CompleteTask();
-                                //    //ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                                //}
                             }
                         });
                     }

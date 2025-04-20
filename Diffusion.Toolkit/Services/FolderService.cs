@@ -61,23 +61,19 @@ namespace Diffusion.Toolkit.Services
 
         private void ApplyDBFolderChanges(IEnumerable<FolderChange> folderChanges)
         {
-            var removed = 0;
-            var updated = 0;
-            var added = 0;
-
             foreach (var folderChange in folderChanges.Where(d => d.FolderType == FolderType.Watched))
             {
                 if (folderChange.ChangeType == ChangeType.Add)
                 {
-                    added += _dataStore.AddRootFolder(folderChange.Path, folderChange.Recursive);
+                    _dataStore.AddRootFolder(folderChange.Path, folderChange.Recursive);
                 }
                 else if (folderChange.ChangeType == ChangeType.Remove)
                 {
-                    removed += _dataStore.RemoveFolder(folderChange.Path);
+                    _dataStore.RemoveFolder(folderChange.Path);
                 }
                 else if (folderChange.ChangeType == ChangeType.ChangePath)
                 {
-                    updated += _dataStore.ChangeFolderPath(folderChange.Path, folderChange.NewPath);
+                    _dataStore.ChangeFolderPath(folderChange.Path, folderChange.NewPath);
                 }
             }
 
