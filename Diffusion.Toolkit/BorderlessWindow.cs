@@ -41,6 +41,12 @@ namespace Diffusion.Toolkit
                 propertyType: typeof(Visibility),
                 ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(Visibility.Visible));
 
+        public static readonly DependencyProperty TitleTextVisibilityProperty =
+            DependencyProperty.Register(
+                name: nameof(TitleTextVisibility),
+                propertyType: typeof(Visibility),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(Visibility.Visible));
+
         public static readonly DependencyProperty MenuWidthProperty =
             DependencyProperty.Register(
                 name: nameof(MenuWidth),
@@ -57,6 +63,12 @@ namespace Diffusion.Toolkit
         {
             get => (Visibility)GetValue(TitleVisibilityProperty);
             set => SetValue(TitleVisibilityProperty, value);
+        }
+
+        public Visibility TitleTextVisibility
+        {
+            get => (Visibility)GetValue(TitleTextVisibilityProperty);
+            set => SetValue(TitleTextVisibilityProperty, value);
         }
 
         public GridLength MenuWidth
@@ -84,6 +96,13 @@ namespace Diffusion.Toolkit
                 propertyType: typeof(GridLength),
                 ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(GridLength.Auto));
 
+        public static readonly DependencyProperty ExtraButtonThresholdWidthProperty =
+            DependencyProperty.Register(
+                name: nameof(ExtraButtonThresholdWidth),
+                propertyType: typeof(GridLength),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(GridLength.Auto));
+
+
         private Point previousScreenBounds;
         private bool isManualDrag;
 
@@ -103,6 +122,12 @@ namespace Diffusion.Toolkit
         {
             get => (GridLength)GetValue(ExtraButtonWidthProperty);
             set => SetValue(ExtraButtonWidthProperty, value);
+        }
+
+        public GridLength ExtraButtonThresholdWidth
+        {
+            get => (GridLength)GetValue(ExtraButtonThresholdWidthProperty);
+            set => SetValue(ExtraButtonThresholdWidthProperty, value);
         }
 
         public T GetRequiredTemplateChild<T>(string childName) where T : DependencyObject

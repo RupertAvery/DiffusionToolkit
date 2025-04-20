@@ -1,8 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:fa="http://schemas.fontawesome.io/icons/"
-                    xmlns:local="clr-namespace:Diffusion.Toolkit">
-
+                    xmlns:local="clr-namespace:Diffusion.Toolkit"
+                    xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters">
+    <converters:IfLessThanConverter x:Key="IfLessThanConverter"></converters:IfLessThanConverter>
 
     <Style TargetType="{x:Type Button}" x:Key="WindowButtonStyle">
         <Setter Property="Template">
@@ -124,13 +125,11 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="{TemplateBinding MenuWidth}"/>
                                     <ColumnDefinition Width="{TemplateBinding TitleWidth}"/>
-                                    <ColumnDefinition Width="{TemplateBinding ExtraButtonWidth}"/>
                                     <ColumnDefinition Width="132"/>
                                 </Grid.ColumnDefinitions>
-                                <Border Visibility="Hidden" BorderBrush="{x:Null}" BorderThickness="1" Grid.Column="0">
-                                </Border>
                                 <Grid Background="Transparent" x:Name="PART_TitleBar" Grid.Column="1">
                                 </Grid>
+                                <ContentPresenter Grid.Column="1" Content="{TemplateBinding TitleContent}"></ContentPresenter>
                             </Grid>
 
                             <Grid Background="{x:Null}" Height="36" VerticalAlignment="Top">
@@ -140,16 +139,14 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Label Content="{TemplateBinding Title}" 
+                                       Visibility="{TemplateBinding TitleTextVisibility}"
                                        Margin="0,10,0,0"
                                        Grid.Column="1"
                                        IsHitTestVisible="False"
                                        HorizontalAlignment="Stretch" 
                                        HorizontalContentAlignment="Center"
                                        VerticalContentAlignment="Center"></Label>
-                                <ContentPresenter Grid.Column="1" Content="{TemplateBinding TitleContent}"></ContentPresenter>
                             </Grid>
-
-
 
                         </Grid>
                     </Grid>

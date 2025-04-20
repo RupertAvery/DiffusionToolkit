@@ -18,10 +18,11 @@
         ResizeMode="CanResizeWithGrip"
         Style="{StaticResource BorderlessWindowStyle}"
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
-        MenuWidth="300"
+        MenuWidth="215"
         TitleWidth="*"
-        ExtraButtonWidth="190"
-        Title="Diffusion Toolkit" Height="450" Width="800">
+        Title="Diffusion Toolkit"
+        TitleTextVisibility="Hidden"
+        Height="450" Width="800">
     <Window.InputBindings>
         <common:BareKeyBinding Key="I" Command="{Binding ToggleInfoCommand}"></common:BareKeyBinding>
         <common:BareKeyBinding Key="B" Command="{Binding ToggleNSFWBlurCommand}"></common:BareKeyBinding>
@@ -50,111 +51,306 @@
             <converters:StringMatchConverter x:Key="StringMatchConverter"></converters:StringMatchConverter>
             <converters:PopoutIconConverter x:Key="PopoutIconConverter"></converters:PopoutIconConverter>
             <converters:ThumbnailViewModeConverter x:Key="ThumbnailViewModeConverter"></converters:ThumbnailViewModeConverter>
+            <converters:IfLessThanConverter x:Key="IfLessThanConverter"></converters:IfLessThanConverter>
         </ResourceDictionary>
     </Window.Resources>
     <local:BorderlessWindow.TitleContent>
         <Grid Background="{x:Null}">
-            <Border Background="{x:Null}" Margin="0,10,0,0" BorderThickness="1" CornerRadius="10" BorderBrush="{DynamicResource SecondaryBrush}" Width="300">
-                <Grid Background="Transparent" MouseDown="QueryBar_OnMouseDown">
-                    <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Width="12" ToolTip="{lex:Loc QueryBar.Query.ToolTip}" PreviewMouseDown="QueryBar_OnMouseDown">
-                        <fa:ImageAwesome.Style>
-                            <Style TargetType="fa:ImageAwesome">
-                                <Setter Property="Opacity" Value="0.2"></Setter>
-                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding HasQuery}" Value="True">
-                                        <Setter Property="Foreground" Value="LawnGreen"></Setter>
-                                        <Setter Property="Opacity" Value="1"></Setter>
-                                    </DataTrigger>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
-                                        <Setter Property="Opacity" Value="1"></Setter>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </fa:ImageAwesome.Style>
-                    </fa:ImageAwesome>
-
-                    <fa:ImageAwesome  HorizontalAlignment="Right" Margin="0,0,10,0" Icon="Close" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Clear.ToolTip}" MouseDown="QueryClear_OnMouseDown">
-                        <fa:ImageAwesome.Style>
-                            <Style TargetType="fa:ImageAwesome">
-                                <Setter Property="Opacity" Value="0.2"></Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1"></Setter>
-                                    </Trigger>
-                                </Style.Triggers>
-                            </Style>
-                        </fa:ImageAwesome.Style>
-                    </fa:ImageAwesome>
-                </Grid>
-            </Border>
-            <Grid Background="{x:Null}" Margin="0,10,0,0">
+            <Grid Background="{x:Null}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="330"/>
-                    <ColumnDefinition/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <fa:ImageAwesome Grid.Column="2" Icon="Refresh" Margin="0,0,0,0"  Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Refresh.ToolTip}" MouseDown="QueryRefresh_OnMouseDown">
-                    <fa:ImageAwesome.Style>
-                        <Style TargetType="fa:ImageAwesome">
-                            <Setter Property="Opacity" Value="0.2"></Setter>
+                <Grid Background="{x:Null}" Grid.Column="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
                             <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" Value="1"></Setter>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </fa:ImageAwesome.Style>
-                </fa:ImageAwesome>
-                <fa:ImageAwesome Grid.Column="2" Icon="Sliders" Margin="0,0,-40,0" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Settings.ToolTip}" MouseDown="QuerySettings_OnMouseDown">
-                    <fa:ImageAwesome.Style>
-                        <Style TargetType="fa:ImageAwesome">
-                            <Setter Property="Opacity" Value="0.2"></Setter>
-                            <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" Value="1"></Setter>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </fa:ImageAwesome.Style>
-                </fa:ImageAwesome>
-                <fa:ImageAwesome Grid.Column="2" Icon="Filter" Margin="0,0,-80,0" 
-                                 Width="12" ToolTip="{lex:Loc QueryBar.Filter.ToolTip}"
-                                 MouseDown="QueryFilter_OnMouseDown">
-                    <fa:ImageAwesome.Style>
-                        <Style TargetType="fa:ImageAwesome">
-                            <Setter Property="Opacity" Value="0.2"></Setter>
-                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasFilter}" Value="True">
-                                    <Setter Property="Foreground" Value="LawnGreen"></Setter>
-                                    <Setter Property="Opacity" Value="1"></Setter>
+                                <DataTrigger Binding="{Binding Width, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}, Converter={StaticResource IfLessThanConverter}, ConverterParameter=780}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Hidden"></Setter>
                                 </DataTrigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
-                                    <Setter Property="Opacity" Value="1"></Setter>
-                                </Trigger>
                             </Style.Triggers>
                         </Style>
-                    </fa:ImageAwesome.Style>
-                </fa:ImageAwesome>
-                <fa:ImageAwesome Grid.Column="2" Icon="Question" Margin="0,0,-120,0"  Foreground="{DynamicResource ForegroundBrush}" Width="10" ToolTip="{lex:Loc QueryBar.Help.ToolTip}" MouseDown="QueryHelp_OnMouseDown">
-                    <fa:ImageAwesome.Style>
-                        <Style TargetType="fa:ImageAwesome">
-                            <Setter Property="Opacity" Value="0.2"></Setter>
+                    </Grid.Style>
+                    <Grid Background="{x:Null}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="310"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="{x:Null}" Grid.Column="1" Margin="0,10,0,0" BorderThickness="1" CornerRadius="10" BorderBrush="{DynamicResource SecondaryBrush}" Width="300">
+                            <Grid Background="Transparent" MouseDown="QueryBar_OnMouseDown">
+                                <Label Foreground="{DynamicResource ForegroundBrush}" HorizontalContentAlignment="Center">Diffusion Toolkit</Label>
+                                <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Width="12" ToolTip="{lex:Loc QueryBar.Query.ToolTip}" PreviewMouseDown="QueryBar_OnMouseDown">
+                                    <fa:ImageAwesome.Style>
+                                        <Style TargetType="fa:ImageAwesome">
+                                            <Setter Property="Opacity" Value="0.2"></Setter>
+                                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasQuery}" Value="True">
+                                                    <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:ImageAwesome.Style>
+                                </fa:ImageAwesome>
+
+                                <fa:ImageAwesome  HorizontalAlignment="Right" Margin="0,0,10,0" Icon="Close" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Clear.ToolTip}" MouseDown="QueryClear_OnMouseDown">
+                                    <fa:ImageAwesome.Style>
+                                        <Style TargetType="fa:ImageAwesome">
+                                            <Setter Property="Opacity" Value="0.2"></Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:ImageAwesome.Style>
+                                </fa:ImageAwesome>
+                            </Grid>
+                        </Border>
+                        <StackPanel Margin="5,10,0,0"  Grid.Column="2" Orientation="Horizontal">
+                            <fa:ImageAwesome Margin="0,0,0,0" Icon="Refresh" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Refresh.ToolTip}" MouseDown="QueryRefresh_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <fa:ImageAwesome Margin="10,0,0,0" Icon="Sliders" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Settings.ToolTip}" MouseDown="QuerySettings_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <fa:ImageAwesome Margin="10,0,0,0" Icon="Filter"
+                                             Width="12" ToolTip="{lex:Loc QueryBar.Filter.ToolTip}"
+                                             MouseDown="QueryFilter_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasFilter}" Value="True">
+                                                <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </DataTrigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <fa:ImageAwesome Margin="10,0,10,0" Icon="Question" Foreground="{DynamicResource ForegroundBrush}" Width="10" ToolTip="{lex:Loc QueryBar.Help.ToolTip}" MouseDown="QueryHelp_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+
+                <Grid Background="{x:Null}" Grid.Column="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Hidden"></Setter>
                             <Style.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Opacity" Value="1"></Setter>
-                                </Trigger>
+                                <DataTrigger Binding="{Binding Width, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}, Converter={StaticResource IfLessThanConverter}, ConverterParameter=780}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Visible"></Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Width, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}, Converter={StaticResource IfLessThanConverter}, ConverterParameter=620}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Hidden"></Setter>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
-                    </fa:ImageAwesome.Style>
-                </fa:ImageAwesome>
+                    </Grid.Style>
+                    <Grid Background="{x:Null}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="{x:Null}" Grid.Column="1" Margin="0,10,0,0" BorderThickness="1" CornerRadius="10" BorderBrush="{DynamicResource SecondaryBrush}" Width="200">
+                            <Grid Background="Transparent" MouseDown="QueryBar_OnMouseDown">
+                                <Label Foreground="{DynamicResource ForegroundBrush}" HorizontalContentAlignment="Center">Diffusion Toolkit</Label>
+                                <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Width="12" ToolTip="{lex:Loc QueryBar.Query.ToolTip}" PreviewMouseDown="QueryBar_OnMouseDown">
+                                    <fa:ImageAwesome.Style>
+                                        <Style TargetType="fa:ImageAwesome">
+                                            <Setter Property="Opacity" Value="0.2"></Setter>
+                                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasQuery}" Value="True">
+                                                    <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:ImageAwesome.Style>
+                                </fa:ImageAwesome>
+
+                                <fa:ImageAwesome  HorizontalAlignment="Right" Margin="0,0,10,0" Icon="Close" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Clear.ToolTip}" MouseDown="QueryClear_OnMouseDown">
+                                    <fa:ImageAwesome.Style>
+                                        <Style TargetType="fa:ImageAwesome">
+                                            <Setter Property="Opacity" Value="0.2"></Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:ImageAwesome.Style>
+                                </fa:ImageAwesome>
+                            </Grid>
+                        </Border>
+                        <StackPanel Margin="5,10,0,0"  Grid.Column="2" Orientation="Horizontal">
+                            <fa:ImageAwesome Margin="0,0,0,0" Icon="Refresh" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Refresh.ToolTip}" MouseDown="QueryRefresh_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <fa:ImageAwesome Margin="10,0,0,0" Icon="Filter"
+                                             Width="12" ToolTip="{lex:Loc QueryBar.Filter.ToolTip}"
+                                             MouseDown="QueryFilter_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasFilter}" Value="True">
+                                                <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </DataTrigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+
+            </Grid>
+            <Grid Background="{x:Null}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="150"/>
+                </Grid.ColumnDefinitions>
+                <Grid Background="{x:Null}" Grid.Column="1" Margin="0,10,0,0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Width, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}, Converter={StaticResource IfLessThanConverter}, ConverterParameter=1090}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Hidden"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleNotificationsCommand}">
+                            <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.ShowNotifications}" Icon="Bell" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Resources>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.5"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding ShowNotifications}" Value="{StaticResource TrueValue}">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Resources>
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleTagsCommand}">
+                            <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.ShowTags}" Icon="Star" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Resources>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.5"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding ShowTags}" Value="{StaticResource TrueValue}">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Resources>
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Style="{StaticResource StaticButton}" Margin="0,0,15,0" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleAutoAdvance}">
+                            <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.AutoAdvance}" Icon="ArrowRight" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Resources>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.5"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding AutoAdvance}" Value="{StaticResource TrueValue}">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Resources>
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="0,0,15,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
+                            <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="0,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
+                            <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Grid>
-
     </local:BorderlessWindow.TitleContent>
 
     <Grid x:Name="Host">
@@ -243,74 +439,7 @@
             </MenuItem>
         </Menu>
 
-        <Grid Background="{x:Null}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="150"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal" Grid.Column="1">
-                <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleNotificationsCommand}">
-                    <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.ShowNotifications}" Icon="Bell" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <fa:ImageAwesome.Resources>
-                            <Style TargetType="fa:ImageAwesome">
-                                <Setter Property="Opacity" Value="0.5"></Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </Trigger>
-                                    <DataTrigger Binding="{Binding ShowNotifications}" Value="{StaticResource TrueValue}">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </fa:ImageAwesome.Resources>
-                    </fa:ImageAwesome>
-                </Button>
-                <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleTagsCommand}">
-                    <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.ShowTags}" Icon="Star" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <fa:ImageAwesome.Resources>
-                            <Style TargetType="fa:ImageAwesome">
-                                <Setter Property="Opacity" Value="0.5"></Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </Trigger>
-                                    <DataTrigger Binding="{Binding ShowTags}" Value="{StaticResource TrueValue}">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </fa:ImageAwesome.Resources>
-                    </fa:ImageAwesome>
-                </Button>
-                <Button Style="{StaticResource StaticButton}" Margin="0,0,15,0" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleAutoAdvance}">
-                    <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.AutoAdvance}" Icon="ArrowRight" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <fa:ImageAwesome.Resources>
-                            <Style TargetType="fa:ImageAwesome">
-                                <Setter Property="Opacity" Value="0.5"></Setter>
-                                <Style.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </Trigger>
-                                    <DataTrigger Binding="{Binding AutoAdvance}" Value="{StaticResource TrueValue}">
-                                        <Setter Property="Opacity" Value="1.0"></Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </fa:ImageAwesome.Resources>
-                    </fa:ImageAwesome>
-                </Button>
-                <Button Margin="0,0,15,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
-                    <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    </fa:ImageAwesome>
-                </Button>
-                <Button Margin="0,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
-                    <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    </fa:ImageAwesome>
-                </Button>
-            </StackPanel>
-        </Grid>
+
 
         <Grid Grid.Row="1">
             <DockPanel>
