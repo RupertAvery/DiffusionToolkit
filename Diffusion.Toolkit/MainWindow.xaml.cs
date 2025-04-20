@@ -517,6 +517,20 @@ namespace Diffusion.Toolkit
             // Set defaults for new version features
             if (semVer < SemanticVersion.Parse("v1.9.0"))
             {
+                var recurseFolders = _settings.RecurseFolders.GetValueOrDefault();
+
+                foreach (var imagePath in _settings.ImagePaths)
+                {
+                    ServiceLocator.DataStore.AddRootFolder(imagePath, recurseFolders);
+                }
+
+                foreach (var imagePath in _settings.ExcludePaths)
+                {
+                    ServiceLocator.DataStore.AddExcludedFolder(imagePath);
+                }
+
+                ServiceLocator.FolderService.ClearCache();
+
                 _settings.ShowTags = true;
                 _settings.NavigationSection.ShowQueries = true;
                 _settings.ConfirmDeletion = true;

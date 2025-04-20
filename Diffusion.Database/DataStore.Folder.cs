@@ -114,6 +114,23 @@ namespace Diffusion.Database
             return id;
         }
 
+        public int AddExcludedFolder(string path)
+        {
+            using var db = OpenConnection();
+
+            // ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot
+            int id;
+
+            lock (_lock)
+            {
+                id = db.ExecuteScalar<int>($"INSERT OR IGNORE INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 1, 0) RETURNING Id", path);
+            }
+
+            db.Close();
+
+            return id;
+        }
+
         public void RemoveRootFolder(int id, bool removeImages)
         {
             using var db = OpenConnection();
@@ -632,6 +649,8 @@ LEFT JOIN (SELECT RootId, COUNT(*) AS Children FROM directoryTree WHERE Depth = 
 
             return count > 0;
         }
+
+
     }
 
     public class FolderArchived

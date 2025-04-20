@@ -61,6 +61,8 @@ The spacing between icons in Compact View can be controlled via a slider at the 
 
 Switching between view modes can be done through **View > Compact** and **View > Classic**.
 
+In Compact View, the positioning of thumbnails is dynamic and will depend on thumbnails being loaded in "above" the window. This will lead to keyboard navigation and selection being a bit awkward as the position changes during loading. 
+
 ## FileName Visibility and Renaming
 
 You can now show or hide filenames in the thumbnail pane. Toggle the setting via **View > Show Filenames** or in the **Settings** page under the **Images** tab.
