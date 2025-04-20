@@ -718,7 +718,7 @@ namespace Diffusion.Toolkit.Pages
 
         public void SearchImages(QueryOptions? queryOptions, bool focus = false)
         {
-            if (!ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Any())
+            if (!ServiceLocator.FolderService.RootFolders.Any())
             {
                 MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -1051,14 +1051,22 @@ namespace Diffusion.Toolkit.Pages
                 Task.Run(() =>
                 {
                     imageViewModel.IsLoading = true;
-
-                    var sourceImage = GetBitmapImage(path);
-
-                    Dispatcher.Invoke(() =>
+                    try
                     {
-                        _model.CurrentImage.Image = sourceImage;
-                        imageViewModel.IsLoading = false;
-                    });
+                        var sourceImage = GetBitmapImage(path);
+                        Dispatcher.Invoke(() =>
+                        {
+                            _model.CurrentImage.Image = sourceImage;
+                        });
+
+                    }
+                    finally
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            imageViewModel.IsLoading = false;
+                        });
+                    }
 
                 }, _loadPreviewBitmapCts.Token);
 
@@ -1670,14 +1678,18 @@ namespace Diffusion.Toolkit.Pages
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                string?[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 try
                 {
-                    if ((File.GetAttributes(files[0]) & FileAttributes.Directory) != 0)
+                    var file = files[0];
+                    if (file != null)
                     {
-                        return;
+                        if ((File.GetAttributes(file) & FileAttributes.Directory) != 0)
+                        {
+                            return;
+                        }
+                        LoadPreviewImage(file);
                     }
-                    LoadPreviewImage(files[0]);
                 }
                 catch (Exception exception)
                 {

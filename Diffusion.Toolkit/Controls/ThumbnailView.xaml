@@ -443,7 +443,7 @@
                          VerticalContentAlignment="Center"
                          Content="{Binding Results}"
                 ></Label>
-            <Slider Grid.Column="1" Width="90" VerticalAlignment="Center" Minimum="0" Maximum="20" ToolTip="{lex:Loc Thumbnail.Controls.Spacing}" Value="{Binding ThumbnailSpacing}">
+            <Slider Margin="0,0,30,0" Grid.Column="1" Width="90" VerticalAlignment="Center" Minimum="0" Maximum="20" ToolTip="{lex:Loc Thumbnail.Controls.Spacing}" Value="{Binding ThumbnailSpacing}">
                 <Slider.Style>
                     <Style TargetType="Slider" BasedOn="{StaticResource {x:Type Slider}}">
                         <Setter Property="Visibility" Value="Hidden"></Setter>

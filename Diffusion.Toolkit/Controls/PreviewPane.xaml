@@ -141,7 +141,7 @@
 
         <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=Image.ForDeletion, Converter={StaticResource boolToVisCol}}">
             <Image.Effect>
-                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                <DropShadowEffect BlurRadius="2" Opacity="0.8" ShadowDepth="4" Direction="-45" RenderingBias="Quality" />
             </Image.Effect>
         </Image>
 
