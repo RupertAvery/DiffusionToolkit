@@ -1045,24 +1045,33 @@ namespace Diffusion.Toolkit
                     Converters = { new JsonStringEnumConverter() }
                 };
 
-                var civitAiModels = JsonSerializer.Deserialize<LiteModelCollection>(json, options);
-
-                foreach (var model in civitAiModels.Models)
+                try
                 {
-                    foreach (var modelVersion in model.ModelVersions)
+                    var civitAiModels = JsonSerializer.Deserialize<LiteModelCollection>(json, options);
+
+                    foreach (var model in civitAiModels.Models)
                     {
-                        foreach (var versionFile in modelVersion.Files)
+                        foreach (var modelVersion in model.ModelVersions)
                         {
-                            otherModels.Add(new Model()
+                            foreach (var versionFile in modelVersion.Files)
                             {
-                                Filename = Path.GetFileNameWithoutExtension(versionFile.Name),
-                                Hash = versionFile.Hashes.AutoV1,
-                                SHA256 = versionFile.Hashes.SHA256,
-                            });
+                                otherModels.Add(new Model()
+                                {
+                                    Filename = Path.GetFileNameWithoutExtension(versionFile.Name),
+                                    Hash = versionFile.Hashes.AutoV1,
+                                    SHA256 = versionFile.Hashes.SHA256,
+                                });
+                            }
                         }
+
                     }
 
                 }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex.Message);
+                }
+ 
 
             }
 
