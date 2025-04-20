@@ -106,7 +106,7 @@ namespace Diffusion.Database
 
             lock (_lock)
             {
-                id = db.ExecuteScalar<int>($"INSERT OR IGNORE INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 0, 1) RETURNING Id", path);
+                id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 0, 1) ON CONFLICT (Path) DO UPDATE SET ParentId = 0, Excluded = 0, IsRoot = 1 RETURNING Id", path);
             }
 
             db.Close();
@@ -123,7 +123,7 @@ namespace Diffusion.Database
 
             lock (_lock)
             {
-                id = db.ExecuteScalar<int>($"INSERT OR IGNORE INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 1, 0) RETURNING Id", path);
+                id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 1, 0) ON CONFLICT (Path) DO UPDATE SET ParentId = 0, Excluded = 1, IsRoot = 0 RETURNING Id", path);
             }
 
             db.Close();

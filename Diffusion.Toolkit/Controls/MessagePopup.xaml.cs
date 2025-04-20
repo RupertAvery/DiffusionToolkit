@@ -28,9 +28,15 @@ namespace Diffusion.Toolkit.Controls
 
         public async Task CloseAsync()
         {
-            await _popup.WaitUntilReady();
-            _popup.Close();
-            _closing?.Invoke();
+            try
+            {
+                await _popup.WaitUntilReady();
+            }
+            finally
+            {
+                _popup.Close();
+                _closing?.Invoke();
+            }
         }
 
         public void Close()
@@ -154,14 +160,20 @@ namespace Diffusion.Toolkit.Controls
             Unloaded += OnUnloaded;
         }
 
+        private bool _unloaded = false;
+
         public async Task WaitUntilReady()
         {
-            await _semaphore.WaitAsync();
+            if (!_unloaded)
+            {
+                await _semaphore.WaitAsync();
+            }
         }
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
             _semaphore.Dispose();
+            _unloaded = true;
         }
 
         private SemaphoreSlim _semaphore;

@@ -5,6 +5,15 @@ using SQLite;
 
 public static class SQLiteConnectionExtensions
 {
+    public static bool HasColumn(this SQLiteConnection db, string tableName, string columnName)
+    {
+        var result =
+            db.ExecuteScalar<int>(
+                @"SELECT COUNT(1) FROM sqlite_master AS m JOIN pragma_table_info(m.name) AS p WHERE m.type = 'table' and m.name = ? and p.name = ?", tableName, columnName);
+
+        return result > 0;
+    }
+
     public static void DropIndex<T>(this SQLiteConnection db, Expression<Func<T, object>> property) where T : class
     {
         var tableName = typeof(T).Name;

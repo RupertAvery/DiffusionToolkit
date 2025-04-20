@@ -44,4 +44,8 @@ public class MessageService
         return _messagePopupManager.ShowCustom(message, title, buttons, width, height, timeout);
     }
 
+    public void CloseHandle(MessagePopupHandle handle)
+    {
+        handle.Close();
+    }
 }

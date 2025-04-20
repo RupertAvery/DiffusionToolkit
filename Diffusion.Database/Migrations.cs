@@ -5,6 +5,7 @@ using Diffusion.Common;
 using Diffusion.Database.Models;
 using SQLite;
 using static Dapper.SqlMapper;
+using static Diffusion.Database.DataStore;
 
 namespace Diffusion.Database;
 
@@ -206,8 +207,12 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
         return "PRAGMA journal_mode=WAL";
     }
 
-    private class FolderTemp : Folder
+    private class FolderTemp 
     {
+        public int Id { get; set; }
+        public int ParentId { get; set; }
+        public string Path { get; set; }
+        public bool IsRoot { get; set; }
         public string ParentPath { get; set; }
     }
 
@@ -220,72 +225,128 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
 
         var rootProperty = type.GetProperty("ImagePaths");
 
-        var rootPaths = (List<string>)rootProperty.GetValue(_settings);
+        Logger.Log($"Migrating root paths");
+
+        if (rootProperty != null)
+        {
+            var rootPaths = (List<string>?)rootProperty.GetValue(_settings);
+
+
+            if (rootPaths != null && rootPaths.Any())
+            {
+                var query =
+                    "INSERT INTO Folder (ParentId, Path, Unavailable, Archived, IsRoot) VALUES (0, ?, 0, 0, 1) ON CONFLICT (Path) DO UPDATE SET IsRoot = 1 RETURNING Id";
+
+                foreach (var path in rootPaths)
+                {
+                    _db.ExecuteScalar<int>(query, path);
+                }
+
+
+                Logger.Log($"{rootPaths.Count} root paths added from config.json");
+            }
+
+        }
+
+        Logger.Log("Updating Folder ParentIds");
+
+        var folders = _db.Query<FolderTemp>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder");
+
+        foreach (var folder in folders)
+        {
+            folder.ParentPath = Path.GetDirectoryName(folder.Path);
+        }
+
+        foreach (var folder in folders)
+        {
+            var children = folders.Where(d => d.ParentPath == folder.Path);
+            foreach (var child in children)
+            {
+                child.ParentId = folder.Id;
+            }
+        }
+
+        foreach (var folder in folders)
+        {
+            _db.Execute("UPDATE Folder SET ParentId = ?, IsRoot = ?, Unavailable = 0, Archived = 0 WHERE Id = ?", folder.ParentId, folder.IsRoot, folder.Id);
+        }
+
+        var orphanedFolders = _db.Query<FolderTemp>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder f WHERE ParentId = 0 AND IsRoot = 0");
+
+        Logger.Log($"Found {orphanedFolders.Count} orphaned folders");
+
+        foreach (var folder in orphanedFolders)
+        {
+            folder.ParentPath = Path.GetDirectoryName(folder.Path);
+        }
+
+        var parents = orphanedFolders.Select(d => d.ParentPath).Distinct();
+
+        var folderCache = _db.Query<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder").ToDictionary(d => d.Path);
+
+        Logger.Log($"Creating parent folders");
+
+        foreach (var folder in parents)
+        {
+            Logger.Log($"Creating {folder}");
+
+            try
+            {
+                if (DataStore.EnsureFolderExistsExt(_db, folder, folderCache, out var folderId))
+                {
+                    var children = orphanedFolders.Where(d => d.ParentPath == folder);
+
+                    foreach (var child in children)
+                    {
+                        _db.Execute("UPDATE Folder SET ParentId = ? WHERE Id = ?", folderId, child.Id);
+                    }
+                }
+                else
+                {
+                    Logger.Log($"Root folder not found for {folder}");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Log(e.Message);
+            }
+
+        }
+
+        var cleanup = @"DELETE FROM Folder WHERE Id IN 
+(
+     SELECT f.Id FROM Folder f 
+     LEFT JOIN Image i ON f.Id = i.FolderId
+     WHERE ParentId = 0 AND IsRoot = 0
+     GROUP BY f.Id
+     HAVING COUNT(i.Id) = 0
+)";
+
+        var count = _db.Execute(cleanup);
+
+        Logger.Log($"Removed {count} empty orphaned folders");
+
+        Logger.Log($"Migrating excluded paths");
+
+        _db.Execute("UPDATE Folder SET Excluded = 0");
 
         var excludeProperty = type.GetProperty("ExcludePaths");
 
         var excludePaths = (List<string>)excludeProperty.GetValue(_settings);
 
-        if (rootPaths != null && rootPaths.Any())
+        if (excludePaths != null && excludePaths.Any())
         {
 
-            foreach (var path in rootPaths)
+            foreach (var folder in excludePaths)
             {
-                _db.ExecuteScalar<int>("INSERT OR IGNORE INTO Folder (ParentId, Path, Unavailable, Archived, IsRoot) VALUES (0, ?, 0, 0, 0) RETURNING Id", path);
-            }
-
-            var folders = _db.Query<FolderTemp>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder");
-
-            foreach (var folder in folders)
-            {
-                folder.ParentPath = folder.Path.Substring(0, folder.Path.LastIndexOf('\\'));
-            }
-
-            foreach (var folder in folders)
-            {
-                var children = folders.Where(d => d.ParentPath == folder.Path);
-                foreach (var child in children)
-                {
-                    child.ParentId = folder.Id;
-                }
-            }
-
-            Logger.Log("Updating Folder ParentIds");
-
-            foreach (var folder in folders)
-            {
-                _db.Execute("UPDATE Folder SET ParentId = ?, IsRoot = ?, Unavailable = 0, Archived = 0 WHERE Id = ?", folder.ParentId, folder.IsRoot, folder.Id);
-            }
-
-            var orphanedFolders = _db.Query<FolderTemp>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder f WHERE ParentId = 0 AND IsRoot = 0");
-
-            Logger.Log($"Found {orphanedFolders.Count} orphaned folders");
-
-            foreach (var folder in orphanedFolders)
-            {
-                folder.ParentPath = folder.Path.Substring(0, folder.Path.LastIndexOf('\\'));
-            }
-
-            var parents = orphanedFolders.Select(d => d.ParentPath).Distinct();
-
-            var folderCache = _db.Query<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder").ToDictionary(d => d.Path);
-
-            Logger.Log($"Creating parent folders");
-
-            foreach (var folder in parents)
-            {
-                Logger.Log($"Creating {folder}");
+                Logger.Log($"Excluding {folder}");
 
                 try
                 {
                     if (DataStore.EnsureFolderExistsExt(_db, folder, folderCache, out var folderId))
                     {
-                        var children = orphanedFolders.Where(d => d.ParentPath == folder);
-
-                        foreach (var child in children)
-                        {
-                            _db.Execute("UPDATE Folder SET ParentId = ? WHERE Id = ?", folderId, child.Id);
-                        }
+                        Logger.Log($"Setting {folder} as Excluded");
+                        _db.Execute("UPDATE Folder SET Excluded = 1 WHERE Id = ?", folderId);
                     }
                     else
                     {
@@ -299,52 +360,9 @@ ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
 
             }
 
-            var cleanup = @"DELETE FROM Folder WHERE Id IN 
-(
-     SELECT f.Id FROM Folder f 
-     LEFT JOIN Image i ON f.Id = i.FolderId
-     WHERE ParentId = 0
-     GROUP BY f.Id
-     HAVING COUNT(i.Id) = 0
-)";
+            Logger.Log($"{excludePaths.Count} paths excluded from config.json");
 
-            var count = _db.Execute(cleanup);
-
-            Logger.Log($"Removed {count} empty orphaned folders");
-
-
-            if (excludePaths != null && excludePaths.Any())
-            {
-
-                Logger.Log($"Migrating excluded paths");
-
-                _db.Execute("UPDATE Folder SET Excluded = 0");
-
-                foreach (var folder in excludePaths)
-                {
-                    Logger.Log($"Excluding {folder}");
-
-                    try
-                    {
-                        if (DataStore.EnsureFolderExistsExt(_db, folder, folderCache, out var folderId))
-                        {
-                            Logger.Log($"Setting {folder} as Excluded");
-                            _db.Execute("UPDATE Folder SET Excluded = 1 WHERE Id = ?", folderId);
-                        }
-                        else
-                        {
-                            Logger.Log($"Root folder not found for {folder}");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Log(e.Message);
-                    }
-
-                }
-            }
         }
-
 
         // Return empty statement so that nothing happens
         return ";";

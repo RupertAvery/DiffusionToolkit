@@ -285,15 +285,7 @@ namespace Diffusion.Toolkit.Controls
 
         public void FocusCurrentItem()
         {
-            var index = ThumbnailListView.SelectedIndex;
-            if (index >= 0)
-            {
-                var wrapPanel = GetChildOfType<WrapPanel>(this)!;
-                var item = wrapPanel.Children[index] as ListViewItem;
-                ThumbnailListView.ScrollIntoView(item);
-                item.BringIntoView();
-                item.Focus();
-            }
+            FocusItem(ThumbnailListView.SelectedIndex);
         }
 
         public void FocusItem(int index)
@@ -301,10 +293,15 @@ namespace Diffusion.Toolkit.Controls
             if (index >= 0)
             {
                 var wrapPanel = GetChildOfType<WrapPanel>(this)!;
-                var item = wrapPanel.Children[index] as ListViewItem;
-                ThumbnailListView.ScrollIntoView(item);
-                item.BringIntoView();
-                item.Focus();
+                if (wrapPanel != null)
+                {
+                    if (wrapPanel.Children[index] is ListViewItem item)
+                    {
+                        ThumbnailListView.ScrollIntoView(item);
+                        item.BringIntoView();
+                        item.Focus();
+                    }
+                }
             }
         }
 

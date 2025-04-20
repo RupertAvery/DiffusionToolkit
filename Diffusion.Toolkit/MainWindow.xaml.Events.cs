@@ -257,39 +257,49 @@ namespace Diffusion.Toolkit
 
         private async void OnClosing(object? sender, CancelEventArgs e)
         {
-            if (ServiceLocator.MainModel.IsBusy)
+            try
             {
-                var d = MessageBox.Show(this, "An operation is currently in progress. Are you sure you want to exit?", "Confirm close", MessageBoxButton.YesNo);
-                if (d == MessageBoxResult.No)
-                {
-                    e.Cancel = true;
-                    return;
-                }
-
-
-                e.Cancel = true;
-
-                await Dispatcher.InvokeAsync(async () =>
-                {
-                    ServiceLocator.ProgressService.Cancel();
-                    await ServiceLocator.ProgressService.WaitForCompletion();
-                    Close();
-                });
-            }
-            else
-            {
-                _isClosing = true;
-
-                ServiceLocator.ThumbnailService.Stop();
-
-                //var changes = _settingsPage.ApplySettings();
-
-                //CleanupFolderChanges(changes);
+                Logger.Log("Attempting to shut down...");
 
                 if (_settings.IsDirty())
                 {
                     _configuration.Save(_settings);
                 }
+
+                if (ServiceLocator.MainModel.IsBusy)
+                {
+                    Logger.Log("Operation in progress, waiting to shut down...");
+
+                    var d = MessageBox.Show(this, "An operation is currently in progress. Are you sure you want to exit?", "Confirm close", MessageBoxButton.YesNo);
+                    if (d == MessageBoxResult.No)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+
+
+                    e.Cancel = true;
+
+                    await Dispatcher.InvokeAsync(async () =>
+                    {
+                        ServiceLocator.ProgressService.Cancel();
+                        await ServiceLocator.ProgressService.WaitForCompletion();
+                        Close();
+                    });
+                }
+                else
+                {
+                    Logger.Log("Shutting down...");
+                    Logger.Log("Terminating Services...");
+                    _isClosing = true;
+
+                    ServiceLocator.DataStore.Close();
+                    ServiceLocator.ThumbnailService.Stop();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex);
             }
         }
 

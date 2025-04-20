@@ -56,6 +56,7 @@ namespace Diffusion.Toolkit.Pages
 
             ServiceLocator.NavigatorService.OnNavigate += (sender, args) =>
             {
+                InitializeSettings();
                 if (args.TargetUri.Path.ToLower() == "settings" && args.TargetUri.Fragment != null && args.TargetUri.Fragment.ToLowerInvariant() == "externalapplications")
                 {
                     ExternalApplicationsTab.IsSelected = true;

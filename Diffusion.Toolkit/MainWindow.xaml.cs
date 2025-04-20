@@ -517,26 +517,15 @@ namespace Diffusion.Toolkit
             // Set defaults for new version features
             if (semVer < SemanticVersion.Parse("v1.9.0"))
             {
-                var recurseFolders = _settings.RecurseFolders.GetValueOrDefault();
-
-                foreach (var imagePath in _settings.ImagePaths)
-                {
-                    ServiceLocator.DataStore.AddRootFolder(imagePath, recurseFolders);
-                }
-
-                foreach (var imagePath in _settings.ExcludePaths)
-                {
-                    ServiceLocator.DataStore.AddExcludedFolder(imagePath);
-                }
-
-                ServiceLocator.FolderService.ClearCache();
-
                 _settings.ShowTags = true;
+                _settings.NavigationSection.ShowFolders = true;
+                _settings.NavigationSection.ShowAlbums = true;
                 _settings.NavigationSection.ShowQueries = true;
                 _settings.ConfirmDeletion = true;
                 _settings.PermanentlyDelete = false;
                 _showReleaseNotes = true;
             }
+
 
             _settings.Version = AppInfo.Version.ToString();
 
@@ -621,8 +610,17 @@ namespace Diffusion.Toolkit
             await dataStore.Create(
                 _settings,
                 () => Dispatcher.Invoke(() => _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database")),
-                (handle) => { Dispatcher.Invoke(() => { ((MessagePopupHandle)handle).CloseAsync(); }); }
-                );
+                (handle) =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        ((MessagePopupHandle)handle).CloseAsync();
+                        //ServiceLocator.MessageService.CloseHandle((MessagePopupHandle)handle);
+                    });
+                }
+            );
+
+
 
             //var total = _dataStore.GetTotal();
 

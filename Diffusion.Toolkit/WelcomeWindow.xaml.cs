@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,6 +12,7 @@ using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
 using Microsoft.WindowsAPICodePack.Dialogs;
+using SQLite;
 
 namespace Diffusion.Toolkit
 {
@@ -104,23 +106,65 @@ namespace Diffusion.Toolkit
 
         public IReadOnlyList<string> SelectedPaths { get; private set; }
 
+
+        private class MinimalFolder
+        {
+            public string Path { get; set; }
+        }
+
+
+        List<MinimalFolder> FindRootFolders(SQLiteConnection db)
+        {
+            var allFolders = db.Query<MinimalFolder>("SELECT Path FROM Folder").ToList();
+
+            var rootFolders = allFolders.Where(d => !allFolders.Any(p => d.Path.StartsWith(p.Path) && p.Path != d.Path)).ToList();
+
+            return rootFolders;
+        }
+
         public WelcomeWindow(Settings settings)
         {
             _settings = settings;
 
             InitializeComponent();
 
-            var folders = ServiceLocator.DataStore.GetFolders().Where(d => d.IsRoot).ToList();
+            _model.ImagePaths = new ObservableCollection<string>();
 
-            if (folders.Any())
+            try
             {
-                _model.ImagePaths = new ObservableCollection<string>(folders.Select(d => d.Path));
-            }
-            else
-            {
-                _model.ImagePaths = new ObservableCollection<string>();
-            }
+                // For 1.9+ users starting with no config, but with an existing database
+                // Try to load the current root folders
+                var db = ServiceLocator.DataStore.OpenConnection();
 
+                List<MinimalFolder> folders;
+
+
+                try
+                {
+                    var hasIsRoot = db.HasColumn("Folder", "IsRoot");
+                    if (hasIsRoot)
+                    {
+                        folders = db.Query<MinimalFolder>("SELECT Path FROM Folder WHERE IsRoot = 1").ToList();
+                    }
+                    else
+                    {
+                        folders = FindRootFolders(db);
+                    }
+                }
+                catch (Exception e)
+                {
+                    folders = FindRootFolders(db);
+                }
+
+                if (folders.Any())
+                {
+                    _model.ImagePaths = new ObservableCollection<string>(folders.Select(d => d.Path));
+                }
+            }
+            catch (Exception e)
+            {
+                // Swallow exceptions in case the schema hasn't been updated yet
+            }
 
             Closing += (sender, args) =>
             {
