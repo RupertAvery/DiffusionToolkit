@@ -28,8 +28,9 @@ using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
 using Diffusion.Database.Models;
 using Diffusion.Toolkit.Configuration;
-using Diffusion.Toolkit.MdStyles;
 using SearchView = Diffusion.Common.SearchView;
+using Diffusion.Civitai.Models;
+using Metadata = Diffusion.IO.Metadata;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -716,6 +717,23 @@ namespace Diffusion.Toolkit.Pages
             return (fsize, ssize);
         }
 
+        public void UpdateResults()
+        {
+            var text = GetLocalizedText("Search.Results");
+            var selectedText = GetLocalizedText("Search.Selection");
+
+            var (fsize, formattedSize) = ToIECPrefix(_model.Size);
+            text = text.Replace("{count}", $"{_model.Count:n0}")
+                .Replace("{size}", $"{formattedSize}");
+
+            if (ServiceLocator.MainModel.SelectedImages != null && ServiceLocator.MainModel.SelectedImages.Count > 1)
+            {
+                text = text + " | " + selectedText.Replace("{count}", $"{ServiceLocator.MainModel.SelectedImages.Count:n0}");
+            }
+
+            _model.Results = text;
+        }
+
         public void SearchImages(QueryOptions? queryOptions, bool focus = false)
         {
             if (!ServiceLocator.FolderService.RootFolders.Any())
@@ -859,7 +877,7 @@ namespace Diffusion.Toolkit.Pages
 
                     (count, size) = ServiceLocator.DataStore.CountAndFileSizeEx(QueryOptions);
 
-                    var (fsize, formattedSize) = ToIECPrefix(size);
+              
 
                     Dispatcher.Invoke(() =>
                     {
@@ -872,12 +890,12 @@ namespace Diffusion.Toolkit.Pages
 
                         _model.Pages = count / ServiceLocator.Settings.PageSize + (count % ServiceLocator.Settings.PageSize > 1 ? 1 : 0);
 
-                        var text = GetLocalizedText("Search.Results");
+                 
+                        _model.Count = count;
+                        _model.Size = size;
 
-                        text = text.Replace("{count}", $"{count:n0}")
-                                .Replace("{size}", $"{formattedSize}");
+                        UpdateResults();
 
-                        _model.Results = text;
 
                         if (_currentModeSettings.ViewMode == ViewMode.Folder)
                         {

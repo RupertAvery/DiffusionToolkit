@@ -233,6 +233,15 @@ namespace Diffusion.Toolkit.Services
             //UpdateFolderChildren(folder, comparer);
         }
 
+        string GetFolderName(Folder folder)
+        {
+            if (folder.IsRoot)
+            {
+                return folder.Path;
+            }
+            return Path.GetFileName(folder.Path);
+        }
+
         public async Task LoadFolders()
         {
             ClearCache();
@@ -243,6 +252,8 @@ namespace Diffusion.Toolkit.Services
                 {
                     if (ServiceLocator.MainModel.Folders == null || ServiceLocator.MainModel.Folders.Count == 0)
                     {
+                       
+
 
                         ServiceLocator.MainModel.Folders = new ObservableCollection<FolderViewModel>(folders.Where(d => d.IsRoot).Select(folder => new FolderViewModel()
                         {
@@ -250,7 +261,7 @@ namespace Diffusion.Toolkit.Services
                             HasChildren = folder.HasChildren,
                             Visible = true,
                             Depth = 0,
-                            Name = Path.GetFileName(folder.Path),
+                            Name = GetFolderName(folder),
                             Path = folder.Path,
                             IsArchived = folder.Archived,
                             IsExcluded = folder.Excluded,

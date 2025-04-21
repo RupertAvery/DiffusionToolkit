@@ -187,6 +187,7 @@
   "Search.Navigation.Queries.ContextMenu.Remove": "Remove",
   "Search.Results": "{count} results found ({size})",
   "Search.NoResults": "No results found",
+  "Search.Selection": "{count} items selected",
   "Search.LoadPreview.ImageNotFound": "The source image could not be located. This can happen when you move or rename the file outside of Diffusion Toolkit.",
   "Search.LoadPreview.ImageNotFound.Caption": "Load image failed",
   "Search.LoadPreview.MediaUnavailable": "Media unavailable",

@@ -428,14 +428,15 @@ namespace Diffusion.Toolkit
             }
             else if (e.PropertyName == nameof(MainModel.SelectedImages))
             {
-                if (_model.SelectedImages.Count > 1)
-                {
-                    _model.Status = $"{_model.SelectedImages.Count} items selected";
-                }
-                else
-                {
-                    _model.Status = "";
-                }
+                //if (_model.SelectedImages.Count > 1)
+                //{
+                //    _model.Status = $"{_model.SelectedImages.Count} items selected";
+                //}
+                //else
+                //{
+                //    _model.Status = "";
+                //}
+                _search.UpdateResults();
             }
             else if (e.PropertyName == nameof(MainModel.CurrentAlbum))
             {

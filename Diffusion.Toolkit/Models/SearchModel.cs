@@ -460,4 +460,6 @@ public class SearchModel : BaseNotify
         set => SetField(ref _searchHelpStyle, value);
     }
 
+    public int Count { get; set; }
+    public long Size { get; set; }
 }
