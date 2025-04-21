@@ -451,10 +451,19 @@ namespace Diffusion.Toolkit.Services
         /// <param name="childFolder"></param>
         public void InsertChild(int currentIndex, int parentDepth, FolderViewModel childFolder)
         {
+            var lastIndex = ServiceLocator.MainModel.Folders.Count - 1;
+
             FolderViewModel currentFolder;
             do
             {
                 currentIndex++;
+
+                if (currentIndex >= lastIndex)
+                {
+                    currentIndex = lastIndex + 1;
+                    break;
+                }
+
                 currentFolder = ServiceLocator.MainModel.Folders[currentIndex];
 
                 if (String.Compare(childFolder.Name, currentFolder.Name, StringComparison.OrdinalIgnoreCase) < 0)
