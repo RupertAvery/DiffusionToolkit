@@ -877,7 +877,7 @@ namespace Diffusion.Toolkit.Pages
 
                     (count, size) = ServiceLocator.DataStore.CountAndFileSizeEx(QueryOptions);
 
-              
+
 
                     Dispatcher.Invoke(() =>
                     {
@@ -890,7 +890,7 @@ namespace Diffusion.Toolkit.Pages
 
                         _model.Pages = count / ServiceLocator.Settings.PageSize + (count % ServiceLocator.Settings.PageSize > 1 ? 1 : 0);
 
-                 
+
                         _model.Count = count;
                         _model.Size = size;
 
@@ -1239,7 +1239,7 @@ namespace Diffusion.Toolkit.Pages
                                 CursorPosition.End => _model.Images[lastIndex],
                                 _ => _model.Images[0]
                             };
-              
+
 
                             ThumbnailListView.FocusCurrentItem();
 
@@ -1299,7 +1299,7 @@ namespace Diffusion.Toolkit.Pages
                     folders = folders.Concat(Directory.GetDirectories(QueryOptions.Folder));
                 }
 
-                foreach (var folder in folders)
+                foreach (var folder in folders.OrderBy(d => d))
                 {
                     var imageEntry = new ImageEntry(rId)
                     {
@@ -1765,7 +1765,7 @@ namespace Diffusion.Toolkit.Pages
             var album = (AlbumModel)((FrameworkElement)sender).DataContext;
             _model.MainModel.AddSelectedImagesToAlbum(album);
         }
-        
+
         private void OpenAlbum(AlbumModel albumModel)
         {
             ServiceLocator.MainModel.CurrentAlbum = albumModel;
