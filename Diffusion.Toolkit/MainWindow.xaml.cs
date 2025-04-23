@@ -800,7 +800,7 @@ namespace Diffusion.Toolkit
                 await ServiceLocator.FolderService.ApplyFolderChanges(newFolders.Select(d => new FolderChange()
                 {
                     ChangeType = ChangeType.Add,
-                    FolderType = FolderType.Watched,
+                    FolderType = FolderType.Root,
                     Path = d,
                 }), confirmScan: false).ContinueWith(d =>
                 {

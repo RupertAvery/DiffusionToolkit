@@ -6,10 +6,16 @@ public class FoldersSection : BaseNotify
     private bool _canCreateFolder;
     private bool _canDelete;
     private bool _canRename;
+    private bool _canRemove;
     private bool _canArchive;
     private bool _canUnarchive;
+    private bool _canArchiveTree;
+    private bool _canUnarchiveTree;
+    private bool _canExclude;
+    private bool _canUnexclude;
     private bool _canShowInExplorer;
-    private bool _canRemove;
+    private bool _canUnexcludeTree;
+    private bool _canExcludeTree;
 
     public bool CanRescan
     {
@@ -47,6 +53,32 @@ public class FoldersSection : BaseNotify
         set => SetField(ref _canUnarchive, value);
     }
 
+    public bool CanArchiveTree
+    {
+        get => _canArchiveTree;
+        set => SetField(ref _canArchiveTree, value);
+    }
+
+    public bool CanUnarchiveTree
+    {
+        get => _canUnarchiveTree;
+        set => SetField(ref _canUnarchiveTree, value);
+    }
+
+
+    public bool CanExclude
+    {
+        get => _canExclude;
+        set => SetField(ref _canExclude, value);
+    }
+
+    public bool CanUnexclude
+    {
+        get => _canUnexclude;
+        set => SetField(ref _canUnexclude, value);
+    }
+
+
     public bool CanShowInExplorer
     {
         get => _canShowInExplorer;
@@ -57,5 +89,17 @@ public class FoldersSection : BaseNotify
     {
         get => _canRemove;
         set => SetField(ref _canRemove, value);
+    }
+
+    public bool CanExcludeTree
+    {
+        get => _canExcludeTree;
+        set => SetField(ref _canExcludeTree, value);
+    }
+
+    public bool CanUnexcludeTree
+    {
+        get => _canUnexcludeTree;
+        set => SetField(ref _canUnexcludeTree, value);
     }
 }

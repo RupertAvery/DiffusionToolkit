@@ -118,7 +118,7 @@ namespace Diffusion.Toolkit.Pages
         private void InitializeFolders()
         {
             _model.ImagePaths = new ObservableCollection<string>(ServiceLocator.FolderService.RootFolders.Select(d => d.Path));
-            _model.ExcludePaths = new ObservableCollection<string>(ServiceLocator.FolderService.ExcludedFolders.Select(d => d.Path));
+            _model.ExcludePaths = new ObservableCollection<string>(ServiceLocator.FolderService.RootExcludedFolders.Select(d => d.Path));
             _model.RecurseFolders = _settings.RecurseFolders;
             _model.SetFoldersPristine();
             _folderChanges.Clear();
@@ -222,7 +222,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     _folderChanges.Add(new FolderChange()
                     {
-                        FolderType = FolderType.Watched,
+                        FolderType = FolderType.Root,
                         ChangeType = ChangeType.Add,
                         Path = path,
                     });
@@ -230,7 +230,7 @@ namespace Diffusion.Toolkit.Pages
                 else
                 {
                     var removeChange = _folderChanges.Find(d =>
-                        d is { FolderType: FolderType.Watched, ChangeType: ChangeType.Remove } && d.Path == path);
+                        d is { FolderType: FolderType.Root, ChangeType: ChangeType.Remove } && d.Path == path);
                     if (removeChange != null)
                     {
                         _folderChanges.Remove(removeChange);
@@ -259,7 +259,7 @@ namespace Diffusion.Toolkit.Pages
                 {
                     _folderChanges.Add(new FolderChange()
                     {
-                        FolderType = FolderType.Watched,
+                        FolderType = FolderType.Root,
                         ChangeType = ChangeType.Remove,
                         Path = path,
                     });
@@ -267,7 +267,7 @@ namespace Diffusion.Toolkit.Pages
                 else
                 {
                     var addChange = _folderChanges.Find(d =>
-                        d is { FolderType: FolderType.Watched, ChangeType: ChangeType.Add } && d.Path == path);
+                        d is { FolderType: FolderType.Root, ChangeType: ChangeType.Add } && d.Path == path);
                     if (addChange != null)
                     {
                         _folderChanges.Remove(addChange);
@@ -567,7 +567,7 @@ namespace Diffusion.Toolkit.Pages
 
                     Task.Run(async () =>
                     {
-                        await ServiceLocator.FolderService.ApplyFolderChanges(changes);
+                        await ServiceLocator.FolderService.ApplyFolderChanges(changes, true);
                     });
                 }
             }

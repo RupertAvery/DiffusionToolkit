@@ -24,6 +24,14 @@ namespace Diffusion.Database
 		SELECT f.Id, f.ParentId, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
 	)";
 
+        private string DirectoryTreeCTEExcluded => @"WITH RECURSIVE
+	directoryTree(Id, ParentId, RootId, Depth) AS
+	(
+		SELECT Id, ParentId, Id AS RootId, 0 AS Depth FROM Folder WHERE Excluded = 1
+		UNION ALL
+		SELECT f.Id, f.ParentId, t.RootId, t.Depth + 1 FROM Folder f JOIN directoryTree t ON f.ParentId = t.Id
+	)";
+
 
         public void SetFolderExcluded(string path, bool excluded, bool recursive)
         {
@@ -41,6 +49,7 @@ namespace Diffusion.Database
             db.Close();
 
         }
+
 
         public void SetFolderExcluded(int id, bool excluded, bool recursive)
         {
@@ -280,6 +289,20 @@ WHERE t.RootId = ? AND t.Depth = 1
             using var db = OpenConnection();
 
             var folders = db.Query<Folder>($"{DirectoryTreeCTE} SELECT f.Id, f.ParentId, f.Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot FROM Folder f JOIN directoryTree t ON f.Id = t.Id WHERE t.RootId = ?", id);
+
+            foreach (var folder in folders)
+            {
+                yield return folder;
+            }
+
+            db.Close();
+        }
+
+        public IEnumerable<Folder> GetRootExcludedFolders()
+        {
+            using var db = OpenConnection();
+
+            var folders = db.Query<Folder>($"{DirectoryTreeCTEExcluded} SELECT {FolderColumns} FROM Folder WHERE Id IN (SELECT Id FROM directoryTree WHERE Depth = 0 EXCEPT SELECT Id FROM directoryTree WHERE Depth > 0)");
 
             foreach (var folder in folders)
             {

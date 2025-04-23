@@ -29,6 +29,7 @@ public class ImageEntry : BaseNotify
     private int _height;
     private double _thumbnailHeight;
     private double _thumbnailWidth;
+    private bool _isRootFolder;
 
     public ImageEntry(long batchId)
     {
@@ -170,5 +171,11 @@ public class ImageEntry : BaseNotify
     {
         get => _isEmpty;
         set => SetField(ref _isEmpty, value);
+    }
+
+    public bool IsRootFolder
+    {
+        get => _isRootFolder;
+        set => SetField(ref _isRootFolder, value);
     }
 }

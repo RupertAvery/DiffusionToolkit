@@ -165,11 +165,17 @@ namespace Diffusion.Database
 
         public void RemoveImages(IEnumerable<int> ids)
         {
+            if (!ids.Any())
+            {
+                return;
+            }
+
             using var db = OpenConnection();
 
             lock (_lock)
             {
                 db.BeginTransaction();
+
 
                 var deletedIds = InsertIds(db, "DeletedIds", ids);
 
@@ -626,6 +632,11 @@ namespace Diffusion.Database
                 using var db = OpenConnection();
                 return db.Execute("UPDATE Image SET Path = ?, FileName = ? WHERE Id = ?", path, filename, id);
             }
+        }
+
+        public void RemoveImagesFromFolder(string path, bool recursive)
+        {
+            
         }
     }
 

@@ -2,6 +2,6 @@
 
 public enum FolderType
 {
-    Watched,
+    Root,
     Excluded
 }

@@ -16,6 +16,7 @@ using Diffusion.Toolkit.Behaviors;
 using Diffusion.Toolkit.Services;
 using Diffusion.Database.Models;
 using Diffusion.Civitai.Models;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -64,7 +65,8 @@ namespace Diffusion.Toolkit.Pages
 
         private async Task ExpandToPath(string path)
         {
-            var root = ServiceLocator.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
+            var root = ServiceLocator.MainModel.Folders.FirstOrDefault(f =>
+                f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
 
             var currentNode = root;
 
@@ -148,15 +150,27 @@ namespace Diffusion.Toolkit.Pages
             var isSingleSelection = selectedFolders.Count == 1;
             var isRoot = folder.Depth == 0;
             var isAvailable = !folder.IsUnavailable;
-            var isScanned = !folder.IsScanned;
+            var isScanned = folder.IsScanned;
+            var isExcluded = folder.IsExcluded;
+            var isArchived = folder.IsArchived;
 
             _model.NavigationSection.FoldersSection.CanCreateFolder = isSingleSelection && isAvailable;
             _model.NavigationSection.FoldersSection.CanDelete = !isRoot && isAvailable;
             _model.NavigationSection.FoldersSection.CanRename = !isRoot && isSingleSelection && isAvailable;
             _model.NavigationSection.FoldersSection.CanRemove = !isRoot && isSingleSelection;
             _model.NavigationSection.FoldersSection.CanShowInExplorer = isSingleSelection && isAvailable;
-            _model.NavigationSection.FoldersSection.CanArchive = isScanned && isAvailable;
-            _model.NavigationSection.FoldersSection.CanUnarchive = isScanned && isAvailable;
+            _model.NavigationSection.FoldersSection.CanArchive = isScanned && isAvailable && !isExcluded && !isArchived;
+            _model.NavigationSection.FoldersSection.CanUnarchive =
+                isScanned && isAvailable && !isExcluded && isArchived;
+
+            _model.NavigationSection.FoldersSection.CanArchiveTree = isSingleSelection && isScanned && isAvailable && !isExcluded;
+            _model.NavigationSection.FoldersSection.CanUnarchiveTree = isSingleSelection && isScanned && isAvailable && !isExcluded;
+
+            _model.NavigationSection.FoldersSection.CanExclude = !isRoot && isAvailable && !isExcluded;
+            _model.NavigationSection.FoldersSection.CanUnexclude = !isRoot && isAvailable && isExcluded;
+
+            _model.NavigationSection.FoldersSection.CanExcludeTree = isSingleSelection && !isRoot && isAvailable;
+            _model.NavigationSection.FoldersSection.CanUnexcludeTree = isSingleSelection && !isRoot && isAvailable;
 
 
             if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Grid or TextBlock))
@@ -395,8 +409,6 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-
-
         private void NotScanned_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             if (_model.MainModel.CurrentFolder != null)
@@ -456,7 +468,8 @@ namespace Diffusion.Toolkit.Pages
             {
                 ImageEntry[] files = (ImageEntry[])e.Data.GetData(DragAndDrop.DragFiles);
 
-                var imagePaths = files.Where(d => d.EntryType == EntryType.File).Select(d => new ImagePath() { Id = d.Id, Path = d.Path }).ToList();
+                var imagePaths = files.Where(d => d.EntryType == EntryType.File)
+                    .Select(d => new ImagePath() { Id = d.Id, Path = d.Path }).ToList();
 
                 ServiceLocator.FileService.MoveFiles(imagePaths, folder.Path, false).ContinueWith(d =>
                 {
@@ -526,6 +539,56 @@ namespace Diffusion.Toolkit.Pages
                 }
             }
 
+        }
+
+        private void AddRootFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            var window = ServiceLocator.WindowService.CurrentWindow;
+
+            using var dialog = new CommonOpenFileDialog();
+            dialog.IsFolderPicker = true;
+
+            if (dialog.ShowDialog(window) == CommonFileDialogResult.Ok)
+            {
+                var path = dialog.FileName;
+
+                if (ServiceLocator.FolderService.RootFolders.Any(d => path.StartsWith(d.Path + "\\", StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show(window,
+                        "The selected folder is already included in the path of one of the existing folders",
+                        "Add folder", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+                else if (ServiceLocator.FolderService.RootFolders.Any(d => d.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+                else if (ServiceLocator.FolderService.RootFolders.Any(d => d.Path.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show(window,
+                        "One or more of the existing folders is included the path of the selected folder",
+                        "Add folder", MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                var recursiveScan = MessageBox.Show(window,
+                    "Do you want this folder to be scanned recursively?",
+                    "Add folder", MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                _ = ServiceLocator.FolderService.ApplyFolderChanges(new[]
+                {
+                    new FolderChange()
+                    {
+                        Path = path,
+                        FolderType = FolderType.Root,
+                        ChangeType = ChangeType.Add,
+                        Recursive = recursiveScan == MessageBoxResult.Yes,
+                    }
+                }, true);
+            }
         }
     }
 }

@@ -729,8 +729,9 @@ public class MainModel : BaseNotify
     public ICommand ArchiveFolderCommand { get; set; }
     public ICommand ArchiveFolderRecursiveCommand { get; set; }
     public ICommand ExcludeFolderCommand { get; set; }
+    public ICommand ExcludeFolderRecursiveCommand { get; set; }
 
-    
+
 
     public ICommand ToggleNavigationPane { get; set; }
     public ICommand ShowInExplorerCommand { get; set; }

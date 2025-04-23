@@ -31,6 +31,7 @@ using Diffusion.Toolkit.Configuration;
 using SearchView = Diffusion.Common.SearchView;
 using Diffusion.Civitai.Models;
 using Metadata = Diffusion.IO.Metadata;
+using System.Security.Cryptography;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -993,7 +994,7 @@ namespace Diffusion.Toolkit.Pages
 
         private CancellationTokenSource? _loadPreviewBitmapCts;
 
-        public void LoadPreviewImage(string path, ImageEntry? image = null)
+        public void LoadPreviewImage(string path, ImageEntry? image = null, bool updateViewed = true)
         {
             try
             {
@@ -1151,7 +1152,10 @@ namespace Diffusion.Toolkit.Pages
 
                 _model.CurrentImage = imageViewModel;
 
-                ServiceLocator.FileService.UpdateViewed(imageViewModel.Id);
+                if (updateViewed)
+                {
+                    ServiceLocator.FileService.UpdateViewed(imageViewModel.Id);
+                }
 
                 //PreviewPane.ResetZoom();
 
@@ -1197,7 +1201,10 @@ namespace Diffusion.Toolkit.Pages
             _model.HideIcons = value;
         }
 
-
+        /// <summary>
+        /// Loads current search results without updating the count
+        /// </summary>
+        /// <param name="options"></param>
         public void ReloadMatches(ReloadOptions? options)
         {
             Task.Run(() =>
@@ -1209,7 +1216,7 @@ namespace Diffusion.Toolkit.Pages
 
                 try
                 {
-                    LoadMatches();
+                    LoadImageEntries();
                     ThumbnailListView.ResetView(options);
                     Dispatcher.Invoke(() =>
                     {
@@ -1270,34 +1277,35 @@ namespace Diffusion.Toolkit.Pages
             });
         }
 
-        private void LoadMatches()
+        private List<ImageEntry> GetFolders(long rId)
         {
 
             var foldersEntries = new List<ImageEntry>();
 
-            ServiceLocator.ThumbnailService.StopCurrentBatch();
+            // TODO: Better way to determine if root folders view
 
-            var rId = ServiceLocator.ThumbnailService.StartBatch();
-
-            if (QueryOptions.SearchView == SearchView.Folder && _model.Page == 1)
+            if (QueryOptions.Folder == null)
             {
-                IEnumerable<string> folders = Enumerable.Empty<string>();
+                var folders = ServiceLocator.FolderService.RootFolders.Select(d => d.Path);
 
-                if (QueryOptions.Folder == null)
+                foreach (var folder in folders.OrderBy(d => d))
                 {
-                    folders = ServiceLocator.FolderService.RootFolders.Select(d => d.Path);
-                }
-                else
-                {
-                    if (!Directory.Exists(QueryOptions.Folder))
+                    var imageEntry = new ImageEntry(rId)
                     {
-                        _ = ServiceLocator.MessageService.ShowMedium(GetLocalizedText("Search.Folders.Unavailable"), GetLocalizedText("Search.Folders.Unavailable.Title"), PopupButtons.OK);
-                        ServiceLocator.MainModel.CurrentFolder.IsUnavailable = true;
-                        return;
-                    }
+                        Id = 0,
+                        Path = folder,
+                        FileName = Path.GetFileName(folder),
+                        Name = folder,
+                        IsRootFolder = true,
+                        EntryType = EntryType.Folder
+                    };
 
-                    folders = folders.Concat(Directory.GetDirectories(QueryOptions.Folder));
+                    foldersEntries.Add(imageEntry);
                 }
+            }
+            else
+            {
+                var folders = Directory.GetDirectories(QueryOptions.Folder);
 
                 foreach (var folder in folders.OrderBy(d => d))
                 {
@@ -1313,6 +1321,12 @@ namespace Diffusion.Toolkit.Pages
                     foldersEntries.Add(imageEntry);
                 }
             }
+
+            return foldersEntries;
+        }
+
+        private List<ImageEntry> GetSearchResults(long rId)
+        {
 
             var paging = new Paging()
             {
@@ -1330,9 +1344,6 @@ namespace Diffusion.Toolkit.Pages
                     paging
                 ));
 
-            var sw = new Stopwatch();
-
-            sw.Start();
 
             var count = 0;
             var images = new List<ImageEntry>();
@@ -1362,16 +1373,57 @@ namespace Diffusion.Toolkit.Pages
                 count++;
             }
 
-            var totalEntries = foldersEntries.Count + images.Count;
+            return images;
+
+        }
+
+        private void LoadImageEntries()
+        {
+            ServiceLocator.ThumbnailService.StopCurrentBatch();
+
+            var rId = ServiceLocator.ThumbnailService.StartBatch();
+
+            List<ImageEntry> folderEntries = new List<ImageEntry>();
+            List<ImageEntry> imageEntries = new List<ImageEntry>();
+
+
+            if (QueryOptions.SearchView == SearchView.Folder && _model.Page == 1)
+            {
+                if (QueryOptions.Folder != null && !Directory.Exists(QueryOptions.Folder))
+                {
+                    _ = ServiceLocator.MessageService.ShowMedium(GetLocalizedText("Search.Folders.Unavailable"),
+                        GetLocalizedText("Search.Folders.Unavailable.Title"), PopupButtons.OK);
+                    ServiceLocator.MainModel.CurrentFolder.IsUnavailable = true;
+                    return;
+                }
+
+                folderEntries = GetFolders(rId);
+            }
+
+            imageEntries = GetSearchResults(rId);
+
+            var totalEntries = folderEntries.Count + imageEntries.Count;
+
+            var sw = new Stopwatch();
+            sw.Start();
+
+            // Instead of creating a new set of ImageEntries every time the search results are updated,
+            // create a base set (Max # of results per page) and update the values  with the new results.
+            // This prevents WPF from destroying and recreating the controls which is slow.
+
+            // However, we still need to prevent WPF from showing the now empty thumbnails and prevent the user
+            // from navigating to them, so we need to implement additional logic around to account for the empty
+            // thumbnails. The IsEmpty property is used to mark a thumbnail as unused and hidden.
 
             Dispatcher.Invoke(() =>
             {
                 if (_model.Images == null)
                 {
-                    _model.Images = new ObservableCollection<ImageEntry>(foldersEntries.Concat(images));
+                    _model.Images = new ObservableCollection<ImageEntry>(folderEntries.Concat(imageEntries));
                 }
                 else if (_model.Images.Count != totalEntries)
                 {
+                    // In case there are more entries than currently available, extend the collection
                     if (totalEntries > _model.Images.Count)
                     {
                         var difference = totalEntries - _model.Images.Count;
@@ -1383,17 +1435,18 @@ namespace Diffusion.Toolkit.Pages
                     }
                     else if (totalEntries < _model.Images.Count)
                     {
-                        //_model.Images.Add(new ImageEntry(0));
+                        // presumably some logic here to return the size back to # of results per page,
+                        // But keeping the items at max doesn't seem to affect performance
                     }
-
-
                 }
 
+                // Overwrite existing ImageEntries with the latest search results
 
-                for (var i = 0; i < foldersEntries.Count; i++)
+                // Render the folders first, if there are any
+                for (var i = 0; i < folderEntries.Count; i++)
                 {
                     var dest = _model.Images[i];
-                    var src = foldersEntries[i];
+                    var src = folderEntries[i];
 
                     dest.BatchId = src.BatchId;
                     dest.Id = src.Id;
@@ -1415,14 +1468,16 @@ namespace Diffusion.Toolkit.Pages
                     dest.Dispatcher = Dispatcher;
                     dest.Thumbnail = null;
                     dest.IsEmpty = false;
+                    dest.IsRootFolder = src.IsRootFolder;
                 }
 
-                var offset = foldersEntries.Count;
+                var offset = folderEntries.Count;
 
-                for (var i = 0; i < images.Count; i++)
+                // Render images
+                for (var i = 0; i < imageEntries.Count; i++)
                 {
                     var dest = _model.Images[offset + i];
-                    var src = images[i];
+                    var src = imageEntries[i];
 
                     dest.BatchId = src.BatchId;
                     dest.Id = src.Id;
@@ -1444,9 +1499,12 @@ namespace Diffusion.Toolkit.Pages
                     dest.Dispatcher = Dispatcher;
                     dest.Thumbnail = null;
                     dest.IsEmpty = false;
+                    dest.IsRootFolder = false;
                 }
 
-                offset = foldersEntries.Count + images.Count;
+                offset = folderEntries.Count + imageEntries.Count;
+
+                // Clear our any remaining entries (IsEmpty = true)
 
                 for (var i = offset; i < _model.Images.Count; i++)
                 {
@@ -1472,6 +1530,7 @@ namespace Diffusion.Toolkit.Pages
                     dest.Dispatcher = Dispatcher;
                     dest.Thumbnail = null;
                     dest.IsEmpty = true;
+                    dest.IsRootFolder = false;
                 }
 
                 ThumbnailListView.ReloadThumbnailsView();
@@ -1480,12 +1539,12 @@ namespace Diffusion.Toolkit.Pages
 
                 if (_model.SelectedImageEntry != null)
                 {
-                    LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry);
+                    // load image, but don't count as viewed
+                    LoadPreviewImage(_model.SelectedImageEntry.Path, _model.SelectedImageEntry, false);
                 }
             });
 
             sw.Stop();
-
 
             Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
         }
@@ -1500,16 +1559,7 @@ namespace Diffusion.Toolkit.Pages
                 }
             }
         }
-
-        private void Page_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                ReloadMatches(null);
-                e.Handled = true;
-            }
-        }
-
+        
         private ModeSettings GetModeSettings(string mode)
         {
             if (!_modeSettings.TryGetValue(mode, out var settings))

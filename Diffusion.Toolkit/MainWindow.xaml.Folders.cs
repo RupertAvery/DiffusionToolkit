@@ -91,9 +91,40 @@ namespace Diffusion.Toolkit
                 });
             });
 
-            _model.ExcludeFolderCommand = new RelayCommand<FolderViewModel>((o) =>
+            _model.ExcludeFolderCommand = new RelayCommand<bool>((o) =>
             {
-                ServiceLocator.DataStore.SetFolderExcluded(o.Id, !o.IsExcluded, false);
+                var folders = ServiceLocator.FolderService.SelectedFolders;
+
+                var folderChanges = folders.Select(d => new FolderChange()
+                {
+                    Path = d.Path,
+                    FolderType = FolderType.Excluded,
+                    ChangeType = o ? ChangeType.Add : ChangeType.Remove,
+                    Recursive = false
+                });
+
+                ServiceLocator.FolderService.ApplyDBFolderChanges(folderChanges);
+
+                _ = ServiceLocator.FolderService.LoadFolders();
+                ServiceLocator.SearchService.RefreshResults();
+            });
+
+            _model.ExcludeFolderRecursiveCommand = new RelayCommand<bool>((o) =>
+            {
+                var folders = ServiceLocator.FolderService.SelectedFolders;
+
+                var folderChanges = folders.Select(d => new FolderChange()
+                {
+                    Path = d.Path,
+                    FolderType = FolderType.Excluded,
+                    ChangeType = o ? ChangeType.Add : ChangeType.Remove,
+                    Recursive = true
+                });
+
+                ServiceLocator.FolderService.ApplyDBFolderChanges(folderChanges);
+
+                _ = ServiceLocator.FolderService.LoadFolders();
+                ServiceLocator.SearchService.RefreshResults();
             });
 
             _model.ReloadFoldersCommand = new RelayCommand<object>((o) =>
@@ -106,6 +137,6 @@ namespace Diffusion.Toolkit
         }
 
 
-      
+
     }
 }

@@ -79,7 +79,7 @@
                     <Button Content="{lex:Loc Search.ForDeletion.Empty}" Margin="10,0,0,0" Height="25" MinWidth="120" Click="EmptyTrash_OnClick">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource BorderlessButton}">
-                                <Setter Property="Visibility" Value="Hidden"></Setter>
+                                <Setter Property="Visibility" Value="Collapsed"></Setter>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding CurrentMode}" Value="deleted">
                                         <Setter Property="Visibility" Value="Visible"></Setter>
@@ -88,6 +88,22 @@
                             </Style>
                         </Button.Style>
                     </Button>
+
+
+                    <Button Content="{lex:Loc Search.Folders.AddRoot}" Margin="10,0,0,0" Height="25" MinWidth="120" Click="AddRootFolder_OnClick">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource BorderlessButton}">
+                                <Setter Property="Visibility" Value="Collapsed"></Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding CurrentMode}" Value="folders">
+                                        <Setter Property="Visibility" Value="Visible"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,10,0" Orientation="Horizontal">
@@ -338,23 +354,46 @@
 
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ArchiveFolderCommand}" 
                                                                           CommandParameter="{StaticResource TrueValue}"
+                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanArchive}" 
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Archive}"></MenuItem>
 
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ArchiveFolderRecursiveCommand}" 
                                                                           CommandParameter="{StaticResource TrueValue}"
+                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanArchiveTree}" 
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.ArchiveRecursive}"></MenuItem>
 
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ArchiveFolderCommand}" 
                                                                           CommandParameter="{StaticResource FalseValue}"
+                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanUnarchive}" 
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Unarchive}"></MenuItem>
 
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ArchiveFolderRecursiveCommand}" 
                                                                           CommandParameter="{StaticResource FalseValue}"
+                                                                          IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanUnarchiveTree}" 
                                                                           Header="{lex:Loc Search.Navigation.Folders.ContextMenu.UnarchiveRecursive}"></MenuItem>
 
-                                                                    <!--<MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ExcludeCommand}" 
-                                                                          CommandParameter="{Binding .}"
-                                                                          Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Exclude}"></MenuItem>-->
+                                                                    <Separator></Separator>
+
+                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ExcludeFolderCommand}" 
+                                                                              CommandParameter="{StaticResource TrueValue}"
+                                                                              IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanExclude}" 
+                                                                              Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Exclude}"></MenuItem>
+
+                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ExcludeFolderRecursiveCommand}" 
+                                                                              CommandParameter="{StaticResource TrueValue}"
+                                                                              IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanExcludeTree}" 
+                                                                              Header="{lex:Loc Search.Navigation.Folders.ContextMenu.ExcludeRecursive}"></MenuItem>
+
+
+                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ExcludeFolderCommand}" 
+                                                                              CommandParameter="{StaticResource FalseValue}"
+                                                                              IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanUnexclude}" 
+                                                                              Header="{lex:Loc Search.Navigation.Folders.ContextMenu.Unexclude}"></MenuItem>
+
+                                                                    <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ExcludeFolderRecursiveCommand}" 
+                                                                              CommandParameter="{StaticResource FalseValue}"
+                                                                              IsEnabled="{Binding Source={StaticResource SearchProxy}, Path=Data.NavigationSection.FoldersSection.CanUnexcludeTree}" 
+                                                                              Header="{lex:Loc Search.Navigation.Folders.ContextMenu.UnexcludeRecursive}"></MenuItem>
 
                                                                     <Separator></Separator>
                                                                     <MenuItem Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowInExplorerCommand}" 
@@ -391,16 +430,26 @@
                                                             <Grid Grid.Column="1" Background="Transparent"  PreviewMouseLeftButtonDown="Expander_OnMouseDown">
                                                                 <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"  />
                                                             </Grid>
-                                                            <TextBlock Foreground="{DynamicResource ForegroundBrush}" Grid.Column="2" HorizontalAlignment="Left" FontFamily="Calibri"
+                                                            <TextBlock Grid.Column="2" HorizontalAlignment="Left" 
+                                                                       FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" 
                                                                        TextTrimming="CharacterEllipsis"
                                                                        ToolTip="{Binding Name}"
-                                                                   TextDecorations="{Binding IsUnavailable, Converter={StaticResource FolderUnavailableConverter}}" FontWeight="Light" FontSize="16" Padding="4" Text="{Binding Name}" TextWrapping="NoWrap" TextAlignment="Left" PreviewMouseDown="Folder_OnClick">
+                                                                       Text="{Binding Name}" 
+                                                                       TextWrapping="NoWrap" 
+                                                                       TextAlignment="Left" PreviewMouseDown="Folder_OnClick">
                                                                 <TextBlock.Resources>
                                                                     <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                                                         <Setter Property="Opacity" Value="0.25"></Setter>
+                                                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
                                                                         <Style.Triggers>
                                                                             <DataTrigger Binding="{Binding Path=IsScanned, Mode=OneWay}" Value="True">
                                                                                 <Setter  Property="Opacity" Value="1"></Setter>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Path=IsUnavailable, Mode=OneWay}" Value="True">
+                                                                                <Setter  Property="TextDecorations" Value="{x:Static TextDecorations.Strikethrough}"></Setter>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding Path=IsExcluded, Mode=OneWay}" Value="True">
+                                                                                <Setter  Property="Foreground" Value="Red"></Setter>
                                                                             </DataTrigger>
                                                                             <DataTrigger Value="True">
                                                                                 <DataTrigger.Binding>
@@ -700,6 +749,11 @@
                                         <Button ToolTip="{lex:Loc Search.AddressBar.Buttons.UpOneLevel.ToolTip}" DockPanel.Dock="Left" Width="28" Command="{Binding GoUp}">
                                             <fa:ImageAwesome Icon="ArrowUp" Width="16" Margin="2"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                                             </fa:ImageAwesome>
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                                    <Setter Property="IsEnabled" Value="True"></Setter>
+                                                </Style>
+                                            </Button.Style>
                                         </Button>
                                         <TextBox  Height="24"
                                                   Padding="5,0,0,0"
