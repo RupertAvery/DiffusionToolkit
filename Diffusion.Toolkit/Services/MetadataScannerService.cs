@@ -60,6 +60,16 @@ public class MetadataScannerService
                 ServiceLocator.ProgressService.CompleteTask();
                 ServiceLocator.ProgressService.ClearProgress();
                 ServiceLocator.ProgressService.SetStatus("");
+
+                _ = ServiceLocator.FolderService.LoadFolders().ContinueWith(d =>
+                {
+                    if (ServiceLocator.Settings.AutoRefresh)
+                    {
+                        ServiceLocator.SearchService.RefreshResults();
+                    }
+                });
+
+
             });
         }
 
@@ -184,7 +194,7 @@ public class MetadataScannerService
                 if (File.Exists(job.Path))
                 {
                     var fileParameters = Metadata.ReadFromFile(job.Path);
-                    
+
                     count++;
 
                     var hashMatches = ServiceLocator.DataStore.GetImageIdByHash(fileParameters.Hash);
@@ -210,7 +220,8 @@ public class MetadataScannerService
                     {
                         await ServiceLocator.DatabaseWriterService.QueueAddAsync(fileParameters, _settings.StoreMetadata, _settings.StoreWorkflow);
                     }
-                } else
+                }
+                else
                 {
                     await ServiceLocator.DatabaseWriterService.QueueSkipAsync(new FileParameters()
                     {
