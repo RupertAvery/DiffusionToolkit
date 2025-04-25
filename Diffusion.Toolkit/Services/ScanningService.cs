@@ -142,7 +142,7 @@ public class ScanningService
                     ? new HashSet<string>()
                     : ServiceLocator.FolderService.GetFiles(selectedFolder.Id, true).Select(d => d.Path).ToHashSet();
 
-                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(selectedFolder.Path, existingFiles, cancellationToken));
+                filesToScan.AddRange(await ServiceLocator.ScanningService.GetFilesToScan(selectedFolder.Path, selectedFolder.IsRecursive, existingFiles, cancellationToken));
             }
 
             await ServiceLocator.MetadataScannerService.QueueBatchAsync(filesToScan,
@@ -168,11 +168,11 @@ public class ScanningService
         }
     }
 
-    public async Task<IEnumerable<string>> GetFilesToScan(string path, HashSet<string> ignoreFiles, CancellationToken cancellationToken)
+    public async Task<IEnumerable<string>> GetFilesToScan(string path, bool recursive, HashSet<string> ignoreFiles, CancellationToken cancellationToken)
     {
         var excludePaths = ServiceLocator.FolderService.ExcludedOrArchivedFolderPaths;
 
-        return await Task.Run(() => MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludePaths, cancellationToken).ToList());
+        return await Task.Run(() => MetadataScanner.GetFiles(path, _settings.FileExtensions, ignoreFiles, recursive, excludePaths, cancellationToken).ToList());
     }
 
     public async Task ScanWatchedFolders(bool updateImages, bool reportIfNone, CancellationToken cancellationToken)
@@ -215,7 +215,7 @@ public class ScanningService
 
                     var ignoreFiles = updateImages ? null : folderImagesHashSet;
 
-                    filesToScan.AddRange(MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludedPaths, cancellationToken).ToList());
+                    filesToScan.AddRange(MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, folder.Recursive, excludedPaths, cancellationToken).ToList());
                 }
                 else
                 {
@@ -579,7 +579,7 @@ public class ScanningService
                     if (Directory.Exists(folder.Path))
                     {
                         //var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, null, _settings.RecurseFolders.GetValueOrDefault(true), null);
-                        var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, _settings.RecurseFolders.GetValueOrDefault(true), excludePaths, token);
+                        var filesOnDisk = MetadataScanner.GetFiles(folder.Path, _settings.FileExtensions, ignoreFiles, folder.Recursive, excludePaths, token);
 
                         foreach (var file in filesOnDisk)
                         {

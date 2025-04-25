@@ -20,7 +20,7 @@ namespace Diffusion.IO
                     }
                     try
                     {
-                        var dirFiles = EnumerateFilesRecursively(path, $"*{extension}", excludePaths, cancellationToken);
+                        var dirFiles = EnumerateFiles(path, $"*{extension}", excludePaths, recursive, cancellationToken);
 
                         //var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
                         //{
@@ -42,7 +42,7 @@ namespace Diffusion.IO
         }
 
 
-        public static IEnumerable<string> EnumerateFilesRecursively(string path, string extension, HashSet<string> excludePaths, CancellationToken cancellationToken)
+        public static IEnumerable<string> EnumerateFiles(string path, string extension, HashSet<string> excludePaths, bool recursive, CancellationToken cancellationToken)
         {
             if (!excludePaths.Contains(path))
             {
@@ -66,39 +66,43 @@ namespace Diffusion.IO
                 }
             }
 
-            IEnumerable<string> dirs = Enumerable.Empty<string>();
+            if (recursive)
+            {
+                IEnumerable<string> dirs = Enumerable.Empty<string>();
 
-            try
-            {
-                dirs = Directory.GetDirectories(path);
-            }
-            catch (System.UnauthorizedAccessException e)
-            {
-                yield break;
-            }
-            catch (System.Security.SecurityException e)
-            {
-                yield break;
-            }
-
-            foreach (var dir in dirs)
-            {
-                if (cancellationToken.IsCancellationRequested)
+                try
                 {
-                    break;
+                    dirs = Directory.GetDirectories(path);
+                }
+                catch (System.UnauthorizedAccessException e)
+                {
+                    yield break;
+                }
+                catch (System.Security.SecurityException e)
+                {
+                    yield break;
                 }
 
-                var childDirFiles = EnumerateFilesRecursively(dir, extension, excludePaths, cancellationToken);
-
-                foreach (var file in childDirFiles)
+                foreach (var dir in dirs)
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
                         break;
                     }
-                    yield return file;
+
+                    var childDirFiles = EnumerateFiles(dir, extension, excludePaths, recursive, cancellationToken);
+
+                    foreach (var file in childDirFiles)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            break;
+                        }
+                        yield return file;
+                    }
                 }
             }
+     
         }
 
         public static IEnumerable<string> GetFiles(string path, string extensions, HashSet<string>? ignoreFiles, bool recursive, HashSet<string> excludePaths, CancellationToken cancellationToken)
@@ -116,7 +120,7 @@ namespace Diffusion.IO
                     }
                     try
                     {
-                        var dirFiles = EnumerateFilesRecursively(path, $"*{extension}", excludePaths, cancellationToken);
+                        var dirFiles = EnumerateFiles(path, $"*{extension}", excludePaths, recursive, cancellationToken);
 
                         //var dirFiles = Directory.EnumerateFiles(path, $"*{extension}", new EnumerationOptions()
                         //{

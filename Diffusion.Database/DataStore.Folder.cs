@@ -105,17 +105,45 @@ namespace Diffusion.Database
             db.Close();
         }
 
+        public void SetFolderWatched(int id, bool watched)
+        {
+            using var db = OpenConnection();
+
+            var query = "UPDATE Folder SET Watched = ? WHERE Id = ?";
+
+            lock (_lock)
+            {
+                db.Execute(query, watched, id);
+            }
+
+            db.Close();
+        }
+
+
+        public void SetFolderRecursive(int id, bool recursive)
+        {
+            using var db = OpenConnection();
+
+            var query = "UPDATE Folder SET Recursive = ? WHERE Id = ?";
+
+            lock (_lock)
+            {
+                db.Execute(query, recursive, id);
+            }
+
+            db.Close();
+        }
+
         // TODO: Per-folder Recursive?
         public int AddRootFolder(string path, bool recursive)
         {
             using var db = OpenConnection();
 
-            // ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot
             int id;
 
             lock (_lock)
             {
-                id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 0, 1) ON CONFLICT (Path) DO UPDATE SET ParentId = 0, Excluded = 0, IsRoot = 1 RETURNING Id", path);
+                id = db.ExecuteScalar<int>($"INSERT INTO Folder (ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot, Recursive) VALUES (0, ?, 0, NULL, 0, 0, 0, 1, ?) ON CONFLICT (Path) DO UPDATE SET ParentId = 0, Excluded = 0, IsRoot = 1, Recursive = ? RETURNING Id", path, recursive, recursive);
             }
 
             db.Close();
@@ -132,7 +160,7 @@ namespace Diffusion.Database
 
             lock (_lock)
             {
-                id = db.ExecuteScalar<int>($"INSERT INTO Folder ({FolderColumnsSansId}) VALUES (0, ?, 0, NULL, 0, 0, 1, 0) ON CONFLICT (Path) DO UPDATE SET ParentId = 0, Excluded = 1, IsRoot = 0 RETURNING Id", path);
+                id = db.ExecuteScalar<int>($"INSERT INTO Folder (ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot) VALUES (0, ?, 0, NULL, 0, 0, 1, 0) ON CONFLICT (Path) DO UPDATE SET ParentId = 0, Excluded = 1, IsRoot = 0 RETURNING Id", path);
             }
 
             db.Close();
@@ -354,8 +382,8 @@ WHERE t.RootId = ? AND t.Depth = 1
             db.Close();
         }
 
-        private static string FolderColumns = "Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot";
-        private static string FolderColumnsSansId = "ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot";
+        private static string FolderColumns = "Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot, Recursive, Watched";
+        //private static string FolderColumnsSansId = "ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot, Recursive";
 
         public IEnumerable<FolderView> GetFoldersView()
         {
@@ -673,6 +701,19 @@ LEFT JOIN (SELECT RootId, COUNT(*) AS Children FROM directoryTree WHERE Depth = 
             return count > 0;
         }
 
+        public CountSize FolderCountAndSize(int folderId)
+        {
+            var db = OpenReadonlyConnection();
+
+            var query =
+                $"{DirectoryTreeCTE} SELECT Id FROM Image WHERE FolderId IN (SELECT Id FROM directoryTree WHERE RootId = ?)";
+
+            var join = $"INNER JOIN ({query}) sub ON main.Id = sub.Id";
+
+            var countSize = db.Query<CountSize>($"SELECT COUNT(*) AS Total, COALESCE(SUM(FileSize),0) AS Size FROM Image main {join}", folderId);
+
+            return countSize[0];
+        }
 
     }
 

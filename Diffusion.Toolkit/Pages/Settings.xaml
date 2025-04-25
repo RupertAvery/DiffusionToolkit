@@ -143,7 +143,8 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Width="600" HorizontalAlignment="Left">
-                        <StackPanel Orientation="Horizontal">
+                        <Label VerticalContentAlignment="Center" Content="{lex:Loc Settings.General.FoldersInstruction}"></Label>
+                        <!--<StackPanel Orientation="Horizontal">
                             <Label VerticalContentAlignment="Center" Content="{lex:Loc Settings.General.DiffusionFolders}"></Label>
                         </StackPanel>
                         <Grid Height="120" VerticalAlignment="Top">
@@ -157,14 +158,14 @@
                                 <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}" IsEnabled="{Binding SelectedIndex, Converter={StaticResource IsIndexSelectedConverter}}"></Button>
                                 <Button Click="ChangeFolderPath_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.ChangeFolderPath}" IsEnabled="{Binding SelectedIndex, Converter={StaticResource IsIndexSelectedConverter}}"></Button>
                             </StackPanel>
-                        </Grid>
+                        </Grid>-->
                         <StackPanel Orientation="Vertical" Margin="0,10,0,0">
-                            <CheckBox IsChecked="{Binding RecurseFolders}" Margin="0,0,0,10"  VerticalContentAlignment="Center" ToolTip="{lex:Loc Settings.General.Recursive.ToolTip}" Content="{lex:Loc Settings.General.Recursive}"></CheckBox>
-                            <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" Margin="0,0,0,10"  ToolTip="{lex:Loc Settings.General.WatchFolders.ToolTip}" Content="{lex:Loc Settings.General.WatchFolders}"></CheckBox>
+                            <!--<CheckBox IsChecked="{Binding RecurseFolders}" Margin="0,0,0,10"  VerticalContentAlignment="Center" ToolTip="{lex:Loc Settings.General.Recursive.ToolTip}" Content="{lex:Loc Settings.General.Recursive}"></CheckBox>
+                            <CheckBox x:Name="WatchFolders" IsChecked="{Binding WatchFolders}" Margin="0,0,0,10"  ToolTip="{lex:Loc Settings.General.WatchFolders.ToolTip}" Content="{lex:Loc Settings.General.WatchFolders}"></CheckBox>-->
                             <CheckBox IsChecked="{Binding AutoRefresh}" Margin="0,0,0,10" ToolTip="{lex:Loc Settings.General.General.ToolTip}"  Content="{lex:Loc Settings.General.AutoRefresh}"></CheckBox>
                             <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="0,0,0,10" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>
                         </StackPanel>
-                        <Label Content="{lex:Loc Settings.General.ExcludedFolders}"></Label>
+                        <!--<Label Content="{lex:Loc Settings.General.ExcludedFolders}"></Label>
                         <Grid Height="100">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -176,7 +177,7 @@
                                 <Button Click="ExcludedRemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}" IsEnabled="{Binding ExcludedSelectedIndex, Converter={StaticResource IsIndexSelectedConverter}}"></Button>
                             </StackPanel>
 
-                        </Grid>
+                        </Grid>-->
                         <Label Content="{lex:Loc Settings.General.FileExtensions}"></Label>
                         <Grid >
                             <Grid.ColumnDefinitions>

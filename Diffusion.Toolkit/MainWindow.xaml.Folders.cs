@@ -42,7 +42,7 @@ namespace Diffusion.Toolkit
 
             _model.RenameFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>
             {
-                await ServiceLocator.FolderService.ShowRenameFolderDialog(o);
+                await ServiceLocator.FolderService.ShowRenameFolderDialog(o.Name, o.Path);
             });
 
             _model.RemoveFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>

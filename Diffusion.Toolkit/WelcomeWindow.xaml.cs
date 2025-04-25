@@ -170,7 +170,6 @@ namespace Diffusion.Toolkit
             {
                 settings.SetPristine();
                 settings.WatchFolders = true;
-                settings.RecurseFolders = true;
                 //settings.ImagePaths = _model.ImagePaths.ToList();
                 SelectedPaths = _model.ImagePaths.ToList();
                 settings.StoreWorkflow = _model.StoreWorkflow;

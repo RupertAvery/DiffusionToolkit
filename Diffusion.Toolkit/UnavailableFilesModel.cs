@@ -15,6 +15,7 @@ public class ImageFileItem : BaseNotify
     }
 
     public string Path { get; set; }
+    public bool Recursive { get; set; }
     public string DisplayPath { get; set; }
     public bool IsUnavailable { get; set; }
 }

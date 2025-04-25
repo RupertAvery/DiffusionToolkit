@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
@@ -29,7 +30,11 @@ public class ImageEntry : BaseNotify
     private int _height;
     private double _thumbnailHeight;
     private double _thumbnailWidth;
-    private bool _isRootFolder;
+    private bool _isWatched;
+    private bool _isRecursive;
+    private int _count;
+    private long _size;
+    private string _sizeFormatted;
 
     public ImageEntry(long batchId)
     {
@@ -173,9 +178,55 @@ public class ImageEntry : BaseNotify
         set => SetField(ref _isEmpty, value);
     }
 
-    public bool IsRootFolder
+    public bool IsWatched
     {
-        get => _isRootFolder;
-        set => SetField(ref _isRootFolder, value);
+        get => _isWatched;
+        set => SetField(ref _isWatched, value);
+    }
+
+    public bool IsRecursive
+    {
+        get => _isRecursive;
+        set => SetField(ref _isRecursive, value);
+    }
+
+    public int Count
+    {
+        get => _count;
+        set => SetField(ref _count, value);
+    }
+
+    public long Size
+    {
+        get => _size;
+        set => SetField(ref _size, value);
+    }
+
+    public void Clear()
+    {
+        BatchId = 0;
+        Id = 0;
+        EntryType = EntryType.File;
+        Name = "";
+        Favorite = false;
+        ForDeletion = false;
+        Rating = null;
+        Score = "";
+        NSFW = false;
+        FileName = "";
+        Path = "";
+        CreatedDate = DateTime.MinValue;
+        AlbumCount = 0;
+        Albums = Enumerable.Empty<string>();
+        HasError = false;
+        Unavailable = false;
+        LoadState = LoadState.Loaded;
+        Dispatcher = Dispatcher;
+        Thumbnail = null;
+        IsEmpty = true;
+        IsRecursive = false;
+        IsWatched = false;
+        Count = 0;
+        Size = 0;
     }
 }

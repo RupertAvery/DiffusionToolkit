@@ -22,6 +22,15 @@ namespace Diffusion.Toolkit.Pages
 {
     public partial class Search
     {
+        private void FolderPath_GotFocus(object sender, RoutedEventArgs e)
+        {
+            ((TextBox)sender).SelectionStart = 0;
+            if (_model.FolderPath != null)
+            {
+                ((TextBox)sender).SelectionLength = _model.FolderPath.Length;
+            }
+        }
+
         private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -31,7 +40,7 @@ namespace Diffusion.Toolkit.Pages
                     if (ServiceLocator.FolderService.RootFolders.Select(d => d.Path)
                         .Any(d => _model.FolderPath.StartsWith(d)))
                     {
-                        SearchImages(null);
+                        OpenPath(_model.FolderPath);
                         return;
                     }
                 }
@@ -230,8 +239,8 @@ namespace Diffusion.Toolkit.Pages
         {
             foreach (var image in _model.Images)
             {
-                image.Thumbnail = null;
-                image.IsEmpty = true;
+                image.PropertyChanged -= ImageEntry_OnPropertyChanged;
+                image.Clear();
             }
 
             _model.Page = 0;
@@ -242,38 +251,46 @@ namespace Diffusion.Toolkit.Pages
             ThumbnailListView.ClearSelection();
         }
 
+        public void OpenPath(string path, bool updateFolderPath = false)
+        {
+            var folder = ServiceLocator.DataStore.GetFolder(path);
+
+            if (folder != null)
+            {
+                OpenFolder(new FolderViewModel()
+                {
+                    Path = path,
+                    Name = Path.GetFileName(path),
+                    Id = folder.Id,
+                    IsArchived = folder.Archived,
+                    IsScanned = true,
+                    IsExcluded = folder.Excluded,
+                    IsUnavailable = !Directory.Exists(path)
+                });
+            }
+
+
+            OpenFolder(new FolderViewModel()
+            {
+                Path = path,
+                Name = Path.GetFileName(path),
+                IsUnavailable = !Directory.Exists(path)
+            });
+        }
+
+
         public void OpenFolder(FolderViewModel? folder)
         {
             try
             {
-                // Go Home
-                if (folder == null)
-                {
-                    //_model.GoHome.Execute(null);
-                    _model.FolderPath = RootFolders;
-                    SearchImages(null);
-                    return;
-                }
-
                 if (folder.IsUnavailable)
                 {
                     ClearResults();
                     return;
                 }
 
-                if (_model.FolderPath == folder.Path)
-                    return;
-
-                //var subFolders = folder.Children;
-
-                //if (subFolders == null)
-                //{
-                //    if (folder.IsUnavailable) return;
-                //    subFolders = ServiceLocator.FolderService.GetSubFolders(folder);
-                //    folder.HasChildren = subFolders.Any();
-                //    folder.Children = subFolders;
-                //}
-
+                //if (_model.FolderPath == folder.Path)
+                //    return;
 
                 _model.MainModel.CurrentFolder = folder;
                 _model.MainModel.ActiveView = "Folders";
@@ -282,7 +299,8 @@ namespace Diffusion.Toolkit.Pages
 
                 _model.FolderPath = folder.Path;
 
-                if (!folder.IsUnavailable && !Directory.Exists(folder.Path))
+
+                if (folder is { IsHome: false, IsUnavailable: false } && !Directory.Exists(folder.Path))
                 {
                     folder.IsUnavailable = true;
                     ServiceLocator.DataStore.SetUnavailable(new[] { folder.Id }, true);
@@ -590,5 +608,7 @@ namespace Diffusion.Toolkit.Pages
                 }, true);
             }
         }
+
+
     }
 }

@@ -119,7 +119,7 @@ namespace Diffusion.Toolkit.Pages
         {
             _model.ImagePaths = new ObservableCollection<string>(ServiceLocator.FolderService.RootFolders.Select(d => d.Path));
             _model.ExcludePaths = new ObservableCollection<string>(ServiceLocator.FolderService.RootExcludedFolders.Select(d => d.Path));
-            _model.RecurseFolders = _settings.RecurseFolders;
+            //_model.RecurseFolders = _settings.RecurseFolders;
             _model.SetFoldersPristine();
             _folderChanges.Clear();
         }
@@ -604,7 +604,7 @@ namespace Diffusion.Toolkit.Pages
                 _settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
                 _settings.HashCache = _model.HashCache;
                 _settings.PortableMode = _model.PortableMode;
-                _settings.RecurseFolders = _model.RecurseFolders;
+                //_settings.RecurseFolders = _model.RecurseFolders;
 
                 _settings.UseBuiltInViewer = _model.UseBuiltInViewer;
                 _settings.OpenInFullScreen = _model.OpenInFullScreen;

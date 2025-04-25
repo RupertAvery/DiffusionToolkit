@@ -245,6 +245,12 @@ namespace Diffusion.Toolkit.Pages
                 OpenFolder(args);
             };
 
+
+            ServiceLocator.SearchService.OpenPath += (obj, args) =>
+            {
+                OpenPath(args);
+            };
+
             _model.Page = 0;
             _model.Pages = 0;
             _model.TotalFiles = 100;
@@ -320,7 +326,8 @@ namespace Diffusion.Toolkit.Pages
 
             _model.OpenCommand = new RelayCommand<object>(async (o) =>
             {
-                if (_currentModeSettings.ViewMode == ViewMode.Folder && _model.SelectedImageEntry.EntryType == EntryType.Folder)
+                if (_currentModeSettings.ViewMode == ViewMode.Folder && 
+                    (_model.SelectedImageEntry.EntryType is EntryType.Folder or EntryType.RootFolder))
                 {
                     _model.FolderPath = _model.SelectedImageEntry.Path;
 
@@ -338,7 +345,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (_currentModeSettings.ViewMode == ViewMode.Folder)
                 {
-                    OpenFolder(null);
+                    OpenFolder(FolderViewModel.Home);
                 }
             });
 
@@ -379,6 +386,7 @@ namespace Diffusion.Toolkit.Pages
                     new(GetLocalizedText("Search.SortBy.Name"), "Name"),
                     new(GetLocalizedText("Search.SortBy.Prompt"), "Prompt"),
                     new(GetLocalizedText("Search.SortBy.Random"), "Random"),
+                    new(GetLocalizedText("Search.SortBy.FileSize"), "File Size"),
                 };
 
                 _model.SortOrderOptions = new List<OptionValue>()
@@ -739,10 +747,14 @@ namespace Diffusion.Toolkit.Pages
         {
             if (!ServiceLocator.FolderService.RootFolders.Any())
             {
-                MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                _model.HasNoImagePaths = true;
+                //MessageBox.Show(GetLocalizedText("Messages.Errors.NoImagePaths"), GetLocalizedText("Messages.Captions.Error"),
+                //    MessageBoxButton.OK, MessageBoxImage.Warning);
+                ClearResults();
                 return;
             }
+
+            _model.HasNoImagePaths = false;
 
             try
             {
@@ -1286,18 +1298,21 @@ namespace Diffusion.Toolkit.Pages
 
             if (QueryOptions.Folder == null)
             {
-                var folders = ServiceLocator.FolderService.RootFolders.Select(d => d.Path);
+                var folders = ServiceLocator.FolderService.RootFolders;
 
-                foreach (var folder in folders.OrderBy(d => d))
+                foreach (var folder in folders)
                 {
                     var imageEntry = new ImageEntry(rId)
                     {
-                        Id = 0,
-                        Path = folder,
-                        FileName = Path.GetFileName(folder),
-                        Name = folder,
-                        IsRootFolder = true,
-                        EntryType = EntryType.Folder
+                        Id = folder.Id,
+                        Path = folder.Path,
+                        FileName = Path.GetFileName(folder.Path),
+                        Name = folder.Path,
+                        EntryType = EntryType.RootFolder,
+                        IsRecursive = folder.Recursive,
+                        IsWatched = folder.Watched,
+                        Unavailable = folder.Unavailable,
+                        IsEmpty = false,
                     };
 
                     foldersEntries.Add(imageEntry);
@@ -1384,6 +1399,7 @@ namespace Diffusion.Toolkit.Pages
             var rId = ServiceLocator.ThumbnailService.StartBatch();
 
             List<ImageEntry> folderEntries = new List<ImageEntry>();
+            List<ImageEntry> separatorEntries = new List<ImageEntry>() { new ImageEntry(0) { EntryType = EntryType.Separator } };
             List<ImageEntry> imageEntries = new List<ImageEntry>();
 
 
@@ -1402,7 +1418,7 @@ namespace Diffusion.Toolkit.Pages
 
             imageEntries = GetSearchResults(rId);
 
-            var totalEntries = folderEntries.Count + imageEntries.Count;
+            var totalEntries = folderEntries.Count + 1 + imageEntries.Count;
 
             var sw = new Stopwatch();
             sw.Start();
@@ -1419,7 +1435,7 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (_model.Images == null)
                 {
-                    _model.Images = new ObservableCollection<ImageEntry>(folderEntries.Concat(imageEntries));
+                    _model.Images = new ObservableCollection<ImageEntry>(folderEntries.Concat(separatorEntries).Concat(imageEntries));
                 }
                 else if (_model.Images.Count != totalEntries)
                 {
@@ -1448,6 +1464,7 @@ namespace Diffusion.Toolkit.Pages
                     var dest = _model.Images[i];
                     var src = folderEntries[i];
 
+                    dest.PropertyChanged -= ImageEntry_OnPropertyChanged;
                     dest.BatchId = src.BatchId;
                     dest.Id = src.Id;
                     dest.EntryType = src.EntryType;
@@ -1468,16 +1485,81 @@ namespace Diffusion.Toolkit.Pages
                     dest.Dispatcher = Dispatcher;
                     dest.Thumbnail = null;
                     dest.IsEmpty = false;
-                    dest.IsRootFolder = src.IsRootFolder;
+                    //dest.Count = src.Count;
+                    //dest.Size = src.Size;
+
+                    if (dest.EntryType == EntryType.RootFolder)
+                    {
+                        dest.IsRecursive = src.IsRecursive;
+                        dest.IsWatched = src.IsWatched;
+                        dest.PropertyChanged += ImageEntry_OnPropertyChanged;
+
+                        Task.Run(() =>
+                        {
+                            var (count, size) = ServiceLocator.DataStore.FolderCountAndSize(dest.Id);
+                            Dispatcher.Invoke(() =>
+                            {
+                                dest.Count = count;
+                                dest.Size = size;
+                            });
+                        });
+                    }
+                    else
+                    {
+                        dest.IsRecursive = false;
+                        dest.IsWatched = false;
+                    }
+
                 }
 
+
                 var offset = folderEntries.Count;
+
+                // Add a Separator if folder view
+
+                if (folderEntries.Count > 0 && imageEntries.Count > 0)
+                {
+                    var dest = _model.Images[offset];
+
+                    dest.BatchId = 0;
+                    dest.Id = 0;
+                    dest.EntryType = EntryType.Separator;
+                    dest.Name = "";
+                    dest.Favorite = false;
+                    dest.ForDeletion = false;
+                    dest.Rating = null;
+                    dest.Score = "";
+                    dest.NSFW = false;
+                    dest.FileName = "";
+                    dest.Path = "";
+                    dest.CreatedDate = DateTime.MinValue;
+                    dest.AlbumCount = 0;
+                    dest.Albums = Enumerable.Empty<string>();
+                    dest.HasError = false;
+                    dest.Unavailable = false;
+                    dest.LoadState = LoadState.Loaded;
+                    dest.Dispatcher = Dispatcher;
+                    dest.Thumbnail = null;
+                    dest.IsEmpty = false;
+                    dest.IsRecursive = false;
+                    dest.IsWatched = false;
+                    dest.Count = 0;
+                    dest.Size = 0;
+                    dest.PropertyChanged -= ImageEntry_OnPropertyChanged;
+
+                    offset += 1;
+                }
 
                 // Render images
                 for (var i = 0; i < imageEntries.Count; i++)
                 {
                     var dest = _model.Images[offset + i];
                     var src = imageEntries[i];
+
+                    // TODO: What happens when we switch from a folder to an image?
+                    // 
+
+                    dest.PropertyChanged -= ImageEntry_OnPropertyChanged;
 
                     dest.BatchId = src.BatchId;
                     dest.Id = src.Id;
@@ -1499,38 +1581,22 @@ namespace Diffusion.Toolkit.Pages
                     dest.Dispatcher = Dispatcher;
                     dest.Thumbnail = null;
                     dest.IsEmpty = false;
-                    dest.IsRootFolder = false;
+                    
+
+                    dest.IsRecursive = false;
+                    dest.IsWatched = false;
+                    dest.Count = 0;
+                    dest.Size = src.Size;
                 }
 
-                offset = folderEntries.Count + imageEntries.Count;
+                offset += imageEntries.Count;
 
                 // Clear our any remaining entries (IsEmpty = true)
 
                 for (var i = offset; i < _model.Images.Count; i++)
                 {
-                    var dest = _model.Images[i];
-
-                    dest.BatchId = 0;
-                    dest.Id = 0;
-                    dest.EntryType = EntryType.File;
-                    dest.Name = "";
-                    dest.Favorite = false;
-                    dest.ForDeletion = false;
-                    dest.Rating = null;
-                    dest.Score = "";
-                    dest.NSFW = false;
-                    dest.FileName = "";
-                    dest.Path = "";
-                    dest.CreatedDate = DateTime.MinValue;
-                    dest.AlbumCount = 0;
-                    dest.Albums = Enumerable.Empty<string>();
-                    dest.HasError = false;
-                    dest.Unavailable = false;
-                    dest.LoadState = LoadState.Loaded;
-                    dest.Dispatcher = Dispatcher;
-                    dest.Thumbnail = null;
-                    dest.IsEmpty = true;
-                    dest.IsRootFolder = false;
+                    _model.Images[i].PropertyChanged -= ImageEntry_OnPropertyChanged;
+                    _model.Images[i].Clear();
                 }
 
                 ThumbnailListView.ReloadThumbnailsView();
@@ -1549,6 +1615,19 @@ namespace Diffusion.Toolkit.Pages
             Debug.WriteLine($"Loaded in {sw.ElapsedMilliseconds:#,###,##0}ms");
         }
 
+        private void ImageEntry_OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            var imageEntry = ((ImageEntry)sender);
+
+            switch (e.PropertyName)
+            {
+                case nameof(ImageEntry.IsRecursive):
+                case nameof(ImageEntry.IsWatched):
+                    ServiceLocator.FolderService.UpdateRootFolder(imageEntry.Id, imageEntry.Path, imageEntry.IsWatched, imageEntry.IsRecursive, e.PropertyName);
+                    break;
+            }
+        }
+
         public void RefreshThumbnails()
         {
             if (_model.Images != null)
@@ -1559,7 +1638,7 @@ namespace Diffusion.Toolkit.Pages
                 }
             }
         }
-        
+
         private ModeSettings GetModeSettings(string mode)
         {
             if (!_modeSettings.TryGetValue(mode, out var settings))
@@ -1584,6 +1663,10 @@ namespace Diffusion.Toolkit.Pages
                 if (ServiceLocator.MainModel.CurrentFolder != null)
                 {
                     ServiceLocator.MainModel.CurrentFolder.IsSelected = true;
+                }
+                else
+                {
+                    ServiceLocator.MainModel.CurrentFolder = FolderViewModel.Home;
                 }
             }
 

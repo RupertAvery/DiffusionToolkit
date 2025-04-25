@@ -16,10 +16,12 @@ public class FolderViewModel : BaseNotify
     private string _name;
     private bool _isArchived;
     private bool _isExcluded;
+    private bool _isRecursive;
     private bool _isUnavailable;
     private bool _isScanned;
     private bool _isBusy;
     private ObservableCollection<FolderViewModel>? _children;
+    private bool _isHome;
 
     public MainModel MainModel => ServiceLocator.MainModel;
 
@@ -78,11 +80,17 @@ public class FolderViewModel : BaseNotify
         get => _isArchived;
         set => SetField(ref _isArchived, value);
     }
-    
+
     public bool IsExcluded
     {
         get => _isExcluded;
         set => SetField(ref _isExcluded, value);
+    }
+
+    public bool IsRecursive
+    {
+        get => _isRecursive;
+        set => SetField(ref _isRecursive, value);
     }
 
     public bool IsScanned
@@ -106,6 +114,12 @@ public class FolderViewModel : BaseNotify
         set => SetField(ref _isBusy, value);
     }
 
+    public bool IsHome
+    {
+        get => _isHome;
+        set => SetField(ref _isHome, value);
+    }
+
     public override bool Equals(object? obj)
     {
         if (obj is FolderViewModel folder)
@@ -120,4 +134,12 @@ public class FolderViewModel : BaseNotify
     {
         return this.Path.GetHashCode();
     }
+
+    public static FolderViewModel Home = new FolderViewModel()
+    {
+        Path = "Root Folders",
+        Depth = -1,
+        IsHome = true,
+        IsScanned = true,
+    };
 }

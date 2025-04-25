@@ -43,10 +43,11 @@ namespace Diffusion.Toolkit
 
         private void LoadImagePaths(bool showUnavailable)
         {
-            var paths = ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Select(p => new ImageFileItem()
+            var paths = ServiceLocator.FolderService.RootFolders.Select(p => new ImageFileItem()
             {
-                Path = p,
-                IsUnavailable = !Directory.Exists(p)
+                Path = p.Path,
+                Recursive = p.Recursive,
+                IsUnavailable = !Directory.Exists(p.Path)
             })
             .Where(p => showUnavailable || !p.IsUnavailable);
 

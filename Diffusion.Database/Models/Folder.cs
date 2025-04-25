@@ -15,6 +15,8 @@ namespace Diffusion.Database.Models
         public bool Archived { get; set; }
         public bool Excluded { get; set; }
         public bool IsRoot { get; set; }
+        public bool Recursive { get; set; }
+        public bool Watched { get; set; }
     }
 
     public class FolderView : Folder

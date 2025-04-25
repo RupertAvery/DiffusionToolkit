@@ -413,4 +413,7 @@ public class ThumbnailViewModel : BaseNotify
         get => _thumbnailSpacing;
         set => SetField(ref _thumbnailSpacing, value);
     }
+
+    public ICommand RescanFolderCommand { get; set; }
+    public ICommand ScanFolderCommand { get; set; }
 }

@@ -9,8 +9,6 @@ public interface IScanOptions
 
     List<string> ExcludePaths { get; set; }
 
-    bool? RecurseFolders { get; set; }
-
     string FileExtensions { get; set; }
 
     bool StoreMetadata { get; set; }

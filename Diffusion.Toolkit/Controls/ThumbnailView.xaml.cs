@@ -76,6 +76,8 @@ namespace Diffusion.Toolkit.Controls
             Model.CopyCommand = new RelayCommand<object>(o => CopySelected());
             Model.MoveCommand = new RelayCommand<object>(o => MoveSelected());
             Model.RescanCommand = new AsyncCommand<object>(o => RescanSelected());
+            Model.RescanFolderCommand = new AsyncCommand<object>(o => RescanFolder(true));
+            Model.ScanFolderCommand = new AsyncCommand<object>(o => RescanFolder(false));
 
             Model.NextPage = new RelayCommand<object>((o) => GoNextPage(null));
             Model.PrevPage = new RelayCommand<object>((o) => GoPrevPage(null));
@@ -96,6 +98,20 @@ namespace Diffusion.Toolkit.Controls
             //GotFocus += ThumbnailView_GotFocus;
             Init();
         }
+
+        private async Task RescanFolder(bool fullScan)
+        {
+            if (await ServiceLocator.ProgressService.TryStartTask())
+            {
+                var folder = ThumbnailListView.SelectedItems.Cast<ImageEntry>().First();
+
+                var folderView = ServiceLocator.MainModel.Folders.FirstOrDefault(d => d.Path == folder.Path);
+
+                await ServiceLocator.ScanningService.ScanFolder(folderView, fullScan);
+            }
+        }
+
+
 
         //private void ThumbnailView_GotFocus(object sender, RoutedEventArgs e)
         //{

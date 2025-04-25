@@ -26,7 +26,7 @@ public class SettingsModel : BaseNotify
     private bool _portableMode;
     private bool _watchFolders;
     private ObservableCollection<string> _excludePaths;
-    private bool? _recurseFolders;
+    //private bool? _recurseFolders;
     private ICommand _escape;
     private bool _useBuiltInViewer;
     private bool _openInFullScreen;
@@ -104,15 +104,15 @@ public class SettingsModel : BaseNotify
         }
     }
 
-    public bool? RecurseFolders
-    {
-        get => _recurseFolders;
-        set
-        {
-            SetField(ref _recurseFolders, value, false);
-            SetFoldersDirty();
-        }
-    }
+    //public bool? RecurseFolders
+    //{
+    //    get => _recurseFolders;
+    //    set
+    //    {
+    //        SetField(ref _recurseFolders, value, false);
+    //        SetFoldersDirty();
+    //    }
+    //}
 
     public int SelectedIndex
     {

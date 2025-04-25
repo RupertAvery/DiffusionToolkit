@@ -12,6 +12,7 @@ public class SearchService
     public event EventHandler<string> SortOrder;
     public event EventHandler<SearchFilter> SearchFilter;
     public event EventHandler<FolderViewModel> OpenFolder;
+    public event EventHandler<string> OpenPath;
     public event EventHandler Search;
     public event EventHandler Refresh;
     public event EventHandler<SearchView> View;
@@ -71,5 +72,10 @@ public class SearchService
     public void ExecuteOpenFolder(FolderViewModel folder)
     {
         OpenFolder?.Invoke(this, folder);
+    }
+
+    public void ExecuteOpenPath(string path)
+    {
+        OpenPath?.Invoke(this, path);
     }
 }

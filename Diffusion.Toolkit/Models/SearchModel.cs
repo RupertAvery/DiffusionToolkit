@@ -70,6 +70,7 @@ public class SearchModel : BaseNotify
     private ICommand _showSearchHelp;
     private Style _searchHelpStyle;
     private string _searchHelpMarkdown;
+    private bool _hasNoImagePaths;
 
     public SearchModel()
     {
@@ -462,4 +463,10 @@ public class SearchModel : BaseNotify
 
     public int Count { get; set; }
     public long Size { get; set; }
+
+    public bool HasNoImagePaths
+    {
+        get => _hasNoImagePaths;
+        set => SetField(ref _hasNoImagePaths, value);
+    }
 }

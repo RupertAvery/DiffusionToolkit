@@ -36,7 +36,7 @@ public class Settings : SettingsContainer, IScanOptions
     private List<string> _nsfwTags;
     private string _hashCache;
     private bool _portableMode;
-    private bool? _recurseFolders;
+    //private bool? _recurseFolders;
     private bool? _useBuiltInViewer;
     private bool? _openInFullScreen;
     private bool? _useSystemDefault;
@@ -74,12 +74,7 @@ public class Settings : SettingsContainer, IScanOptions
     private int _thumbnailSpacing;
     private ThumbnailViewMode _thumbnailViewMode;
 
-    public Settings() : this(false)
-    {
-        Instance = this;
-    }
-
-    public Settings(bool initialize)
+    public Settings()
     {
         ImagePaths = new List<string>();
         ExcludePaths = new List<string>();
@@ -127,13 +122,15 @@ public class Settings : SettingsContainer, IScanOptions
 
         ConfirmDeletion = true;
 
-        NavigationSection = new NavigationSectionSettings(initialize);
+        NavigationSection = new NavigationSectionSettings();
         NavigationSection.Attach(this);
 
-        if (initialize)
-        {
-            RecurseFolders = true;
-        }
+        //if (initialize)
+        //{
+        //    RecurseFolders = true;
+        //}
+
+        Instance = this;
     }
 
     public List<string> IncludeNodeProperties
@@ -149,11 +146,11 @@ public class Settings : SettingsContainer, IScanOptions
         set => UpdateValue(ref _fileExtensions, value);
     }
 
-    public bool? RecurseFolders
-    {
-        get => _recurseFolders;
-        set => UpdateValue(ref _recurseFolders, value);
-    }
+    //public bool? RecurseFolders
+    //{
+    //    get => _recurseFolders;
+    //    set => UpdateValue(ref _recurseFolders, value);
+    //}
 
     public List<string> NSFWTags
     {

@@ -394,24 +394,28 @@ namespace Diffusion.Toolkit
             var oldPath = selectedImageEntry.Path;
             var entryType = selectedImageEntry.EntryType;
 
+            (bool, NamePath?) result = (false, null);
+
             if (entryType == EntryType.File)
             {
-                ServiceLocator.FileService.RenameFile(id, oldPath);
+                result = await ServiceLocator.FileService.RenameFile(id, oldPath);
             }
             else if (entryType == EntryType.Folder)
             {
                 var name = selectedImageEntry.FileName;
 
-                var folder = new FolderViewModel()
-                {
-                    Id = id,
-                    Name = name, 
-                    Path = oldPath,
-                };
-
-                await ServiceLocator.FolderService.ShowRenameFolderDialog(folder);
+                result = await ServiceLocator.FolderService.ShowRenameFolderDialog(name, oldPath);
             }
-            
+
+            if (result.Item1)
+            {
+                selectedImageEntry.Name = result.Item2.Name;
+                selectedImageEntry.FileName = result.Item2.FileName;
+                selectedImageEntry.Path = result.Item2.Path;
+            }
+
+            //_search.Refresh();
+
             //_search.ThumbnailListView.Focus();
             _search.ThumbnailListView.FocusCurrentItem();
 

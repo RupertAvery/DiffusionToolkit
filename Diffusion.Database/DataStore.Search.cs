@@ -28,6 +28,7 @@ namespace Diffusion.Database
                 "Prompt" => nameof(Image.Prompt),
                 "Random" => "RANDOM()",
                 "Name" => nameof(Image.FileName),
+                "File Size" => nameof(Image.FileSize),
                 _ => nameof(Image.CreatedDate),
             };
 

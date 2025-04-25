@@ -59,25 +59,6 @@ namespace Diffusion.Toolkit
                 if (await ServiceLocator.ProgressService.TryStartTask())
                 {
                     await ServiceLocator.ScanningService.ScanWatchedFolders(false, true, ServiceLocator.ProgressService.CancellationToken);
-
-                    //try
-                    //{
-                    //    if (isFirstTime)
-                    //    {
-                    //        _ = Task.Delay(10000).ContinueWith(t =>
-                    //        {
-                    //            ServiceLocator.SearchService.ExecuteSearch();
-                    //            ServiceLocator.MessageService.Show(GetLocalizedText("FirstScan.Message"), GetLocalizedText("FirstScan.Title"), PopupButtons.OK);
-                    //        });
-                    //    }
-
-                    //    await ServiceLocator.ScanningService.ScanWatchedFolders(false, true, ServiceLocator.ProgressService.CancellationToken);
-                    //}
-                    //finally
-                    //{
-                    //    ServiceLocator.ProgressService.CompleteTask();
-                    //    ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                    //}
                 }
 
             });
@@ -90,15 +71,6 @@ namespace Diffusion.Toolkit
                 if (await ServiceLocator.ProgressService.TryStartTask())
                 {
                     await ServiceLocator.ScanningService.ScanWatchedFolders(true, true, ServiceLocator.ProgressService.CancellationToken);
-                    //try
-                    //{
-                    //    await ServiceLocator.ScanningService.ScanWatchedFolders(true, true, ServiceLocator.ProgressService.CancellationToken);
-                    //}
-                    //finally
-                    //{
-                    //    ServiceLocator.ProgressService.CompleteTask();
-                    //    ServiceLocator.ProgressService.SetStatus(GetLocalizedText("Actions.Scanning.Completed"));
-                    //}
                 }
 
             });

@@ -877,18 +877,23 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Name="Border" BorderThickness="1"  BorderBrush="{DynamicResource SecondaryBrush}" Background="{TemplateBinding Panel.Background}">
-                        <ContentPresenter Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Border Name="Border" BorderThickness="1"  BorderBrush="{DynamicResource SecondaryBrush}" Background="{TemplateBinding Panel.Background}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="contentPresenter" 
+                                          Content="{TemplateBinding ContentControl.Content}" 
+                                          ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}" 
+                                          ContentStringFormat="{TemplateBinding ContentControl.ContentStringFormat}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="{DynamicResource SecondaryBrush}"/>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Foreground" Value="{DynamicResource SecondaryBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"/>
             </Trigger>
         </Style.Triggers>
 
@@ -988,30 +993,12 @@
                                 True
                             </Trigger.Value>
                         </Trigger>
-                        <Trigger Property="UIElement.IsEnabled">
-                            <Setter Property="Panel.Background" TargetName="checkBoxBorder">
-                                <Setter.Value>
-                                    <SolidColorBrush>#FFE6E6E6</SolidColorBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Border.BorderBrush" TargetName="checkBoxBorder">
-                                <Setter.Value>
-                                    <SolidColorBrush>#FFBCBCBC</SolidColorBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Shape.Fill" TargetName="optionMark">
-                                <Setter.Value>
-                                    <SolidColorBrush>#FF707070</SolidColorBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Shape.Fill" TargetName="indeterminateMark">
-                                <Setter.Value>
-                                    <SolidColorBrush>#FF707070</SolidColorBrush>
-                                </Setter.Value>
-                            </Setter>
-                            <Trigger.Value>
-                                False
-                            </Trigger.Value>
+                        <Trigger Property="UIElement.IsEnabled" Value="False">
+                            <Setter Property="Panel.Background" Value="{DynamicResource DisabledBackgroundBrush}"  TargetName="checkBoxBorder"/>
+                            <Setter Property="Border.BorderBrush" Value="{DynamicResource DisabledForegroundBrush}" TargetName="checkBoxBorder"/>
+                            <Setter Property="Shape.Fill" Value="{DynamicResource DisabledForegroundBrush}"  TargetName="optionMark"/>
+                            <Setter Property="Shape.Fill" Value="{DynamicResource DisabledForegroundBrush}"  TargetName="indeterminateMark"/>
+                            <Setter Property="Label.Foreground" Value="{DynamicResource DisabledForegroundBrush}"  TargetName="contentPresenter"/>
                         </Trigger>
                         <Trigger Property="ButtonBase.IsPressed">
                             <Setter Property="Panel.Background" TargetName="checkBoxBorder">

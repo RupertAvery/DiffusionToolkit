@@ -29,10 +29,143 @@
             <converters:BoolToVisibilityMultiConverter x:Key="boolToVisMulti"></converters:BoolToVisibilityMultiConverter>
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
-            <converters:FileEntryTypeVisibilityConverter x:Key="fileEntryTypeVis"></converters:FileEntryTypeVisibilityConverter>
+            <converters:IECFormatConverter x:Key="IECFormatConverter"></converters:IECFormatConverter>
             <converters:AddConverter x:Key="add"></converters:AddConverter>
             <converters:FilenameVisibilityConverter x:Key="filenameVis"></converters:FilenameVisibilityConverter>
             <local:ThumbnailTemplateSelector x:Key="ThumbnailTemplateSelector"></local:ThumbnailTemplateSelector>
+
+
+
+            <DataTemplate x:Key="SeparatorDataTemplate">
+                <Grid Background="{StaticResource SecondaryBrush}" Margin="0,20,0,20" IsHitTestVisible="False" Focusable="False">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Width" Value="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}" />
+                            <Setter Property="Height" Value="2" />
+                        </Style>
+                    </Grid.Style>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="RootFolderDataTemplate" DataType="{x:Type models:ImageEntry}">
+                <Grid>
+                    <Grid.Style>
+                        <Style TargetType="Grid" BasedOn="{StaticResource {x:Type Grid}}">
+                            <Setter Property="Width" Value="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListView}}}" />
+                        </Style>
+                    </Grid.Style>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="128" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="168"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="30"/>
+                    </Grid.ColumnDefinitions>
+
+                    <fa:ImageAwesome 
+                        Height="64"
+                        Icon="FolderOutlinepenOutline"
+                      
+                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <fa:ImageAwesome.Style>
+                            <Style TargetType="fa:ImageAwesome" BasedOn="{StaticResource {x:Type fa:ImageAwesome}}">
+                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Unavailable}" Value="{StaticResource TrueValue}">
+                                        <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </fa:ImageAwesome.Style>
+                    </fa:ImageAwesome>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="1" Margin="0,20,0,15" FontSize="20" TextTrimming="CharacterEllipsis" Text="{Binding Name}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Unavailable}" Value="{StaticResource TrueValue}">
+                                            <Setter Property="TextDecorations" Value="{x:Static TextDecorations.Strikethrough}"></Setter>
+                                            <Setter Property="Foreground" Value="{DynamicResource DisabledForegroundBrush}"></Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal">
+                            <CheckBox IsChecked="{Binding IsWatched}" Content="{lex:Loc RootFolders.WatchForUpdates}">
+                                <CheckBox.Style>
+                                    <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Unavailable}" Value="{StaticResource TrueValue}">
+                                                <Setter Property="IsEnabled" Value="False"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </CheckBox.Style>
+                            </CheckBox>
+                            <CheckBox IsChecked="{Binding IsRecursive}" Margin="10,0,0,0" Content="{lex:Loc RootFolders.ScanRecursively}">
+                                <CheckBox.Style>
+                                    <Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Unavailable}" Value="{StaticResource TrueValue}">
+                                                <Setter Property="IsEnabled" Value="False"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </CheckBox.Style>
+                            </CheckBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="1" Margin="0,0,0,5" FontSize="14" Foreground="{DynamicResource ForegroundBrush}" Text="{Binding Count, StringFormat={lex:Loc RootFolders.Count}}"></TextBlock>
+                        <TextBlock Grid.Row="2" Margin="0,0,0,5" FontSize="14" Foreground="{DynamicResource ForegroundBrush}" Text="{Binding Size, Converter={StaticResource IECFormatConverter}}"></TextBlock>
+                    </Grid>
+
+                    <Grid Grid.Column="3">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsFocused, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ListViewItem}}}" Value="{StaticResource TrueValue}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <fa:ImageAwesome Height="48" Icon="TrashOutline" Foreground="{DynamicResource ForegroundBrush}" ToolTip="{lex:Loc RootFolders.Remove}" MouseDown="RemoveRootFolder_OnClick">
+                            <fa:ImageAwesome.Style>
+                                <Style TargetType="fa:ImageAwesome">
+                                    <Setter Property="Opacity" Value="0.2"></Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Opacity" Value="1"></Setter>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </fa:ImageAwesome.Style>
+                        </fa:ImageAwesome>
+                    </Grid>
+                </Grid>
+
+            </DataTemplate>
 
 
             <DataTemplate x:Key="FolderDataTemplate" DataType="{x:Type models:ImageEntry}">
@@ -188,11 +321,17 @@
                             <Style TargetType="ContentControl">
                                 <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.RootFolder}">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource RootFolderDataTemplate}" />
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Folder}">
                                         <Setter Property="ContentTemplate" Value="{StaticResource FolderDataTemplate}" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.File}">
                                         <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Separator}">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource SeparatorDataTemplate}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -208,11 +347,17 @@
                             <Style TargetType="ContentControl">
                                 <Setter Property="ContentTemplate" Value="{StaticResource FileDataTemplate}" />
                                 <Style.Triggers>
+                                    <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.RootFolder}">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource RootFolderDataTemplate}" />
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Folder}">
                                         <Setter Property="ContentTemplate" Value="{StaticResource FolderDataTemplate}" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.File}">
                                         <Setter Property="ContentTemplate" Value="{StaticResource CompactFileView}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding EntryType}" Value="{x:Static models:EntryType.Separator}">
+                                        <Setter Property="ContentTemplate" Value="{StaticResource SeparatorDataTemplate}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -351,14 +496,57 @@
             </ListView.InputBindings>
             <ListView.ContextMenu>
                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}" d:DataContext="{StaticResource ThumbnailViewModel}">
-                    <MenuItem x:Name="AlbumMenu" IsEnabled="{Binding IsImage}" ItemsSource="{Binding MainModel.AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
+                    <ContextMenu.Resources>
+                        <Style TargetType="MenuItem" x:Key="FileMenuItem">
+                            <Setter Property="Visibility" Value="Collapsed"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedImageEntry.EntryType}" Value="{x:Static models:EntryType.File}">
+                                    <Setter Property="Visibility" Value="Visible"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style TargetType="MenuItem" x:Key="FolderMenuItem">
+                            <Setter Property="Visibility" Value="Collapsed"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedImageEntry.EntryType}" Value="{x:Static models:EntryType.Folder}">
+                                    <Setter Property="Visibility" Value="Visible"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style TargetType="MenuItem" x:Key="RootFolderMenuItem">
+                            <Setter Property="Visibility" Value="Collapsed"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedImageEntry.IsRootFolder}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Visible"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style TargetType="Separator" x:Key="FileSeparator">
+                            <Setter Property="Visibility" Value="Collapsed"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedImageEntry.EntryType}" Value="{x:Static models:EntryType.File}">
+                                    <Setter Property="Visibility" Value="Visible"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                        <Style TargetType="Separator" x:Key="FolderSeparator">
+                            <Setter Property="Visibility" Value="Collapsed"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedImageEntry.EntryType}" Value="{x:Static models:EntryType.Folder}">
+                                    <Setter Property="Visibility" Value="Visible"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+
+                    </ContextMenu.Resources>
+                    <MenuItem Style="{StaticResource FileMenuItem}" x:Name="AlbumMenu" ItemsSource="{Binding MainModel.AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
                     </MenuItem>
-                    <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding MainModel.SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
-                    <Separator />
-                    <MenuItem ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
-                    <Separator />
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Favorite}" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Rate}">
+                    <MenuItem Style="{StaticResource FileMenuItem}" x:Name="SelectionAlbumMenu" ItemsSource="{Binding MainModel.SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
+                    <Separator Style="{StaticResource FileSeparator}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
+                    <Separator Style="{StaticResource FileSeparator}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.Favorite}" ToolTip="F" InputGestureText="F" Command="{Binding FavoriteCommand}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.Rate}">
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate.1}" Command="{Binding RatingCommand}" CommandParameter="1"></MenuItem>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate.2}" Command="{Binding RatingCommand}" CommandParameter="2"></MenuItem>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate.3}" Command="{Binding RatingCommand}" CommandParameter="3"></MenuItem>
@@ -372,30 +560,29 @@
                         <Separator></Separator>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.Rate.Remove}" Click="Unrate_OnClick"></MenuItem>
                     </MenuItem>
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.NSFW}" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
-                    <Separator />
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter}">
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.NSFW}" ToolTip="N" InputGestureText="N" Command="{Binding NSFWCommand}"/>
+                    <Separator Style="{StaticResource FileSeparator}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter}">
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.Prompt}" Command="{Binding CopyPromptCommand}"/>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.NegativePrompt}" Command="{Binding CopyNegativePromptCommand}"/>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.Seed}" Command="{Binding CopySeedCommand}"/>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.Hash}" Command="{Binding CopyHashCommand}"/>
                         <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.CopyParameter.All}" Command="{Binding CopyParametersCommand}"/>
                     </MenuItem>
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.CopyPath}" Command="{Binding CopyPathCommand}" />
-                    <Separator />
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Copy}" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.CopyPath}" Command="{Binding CopyPathCommand}" />
+                    <Separator Style="{StaticResource FileSeparator}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.Copy}" InputGestureText="Ctrl+C" Command="{Binding CopyCommand}" />
                     <!--<MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Move}" Command="{Binding MoveCommand}"/>-->
-                    <Separator />
-                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.ShowInExplorer}" Command="{Binding ShowInExplorerCommand}"/>
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.ExpandToFolder}" Command="{Binding ExpandToFolderCommand}"/>
-                    <Separator />
-                    <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.ForDeletion}" InputGestureText="X/Del" Command="{Binding DeleteCommand}"/>
-                    <MenuItem IsEnabled="{Binding IsImage}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.Restore}" InputGestureText="X/Del" Command="{Binding DeleteCommand}"/>
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Remove}" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
+                    <Separator Style="{StaticResource FileSeparator}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.ExpandToFolder}" Command="{Binding ExpandToFolderCommand}"/>
+                    <Separator Style="{StaticResource FileSeparator}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource invBoolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.ForDeletion}" InputGestureText="X/Del" Command="{Binding DeleteCommand}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Visibility="{Binding CurrentImage.ForDeletion, Converter={StaticResource boolToVisCol}}" Header="{lex:Loc Thumbnail.ContextMenu.Restore}" InputGestureText="X/Del" Command="{Binding DeleteCommand}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.Remove}" InputGestureText="Ctrl+X/Del" Command="{Binding RemoveEntryCommand}"/>
 
-                    <MenuItem IsEnabled="{Binding IsImage}" InputGestureText="Shift+X/Del" Command="{Binding PermanentlyDeleteCommand}" >
+                    <MenuItem InputGestureText="Shift+X/Del" Command="{Binding PermanentlyDeleteCommand}" >
                         <MenuItem.Style>
-                            <Style TargetType="MenuItem">
+                            <Style TargetType="MenuItem" BasedOn="{StaticResource FileMenuItem}">
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding MainModel.PermanentlyDelete}" Value="True">
                                         <Setter Property="Header" Value="{lex:Loc Thumbnail.ContextMenu.PermanentlyDelete}"></Setter>
@@ -407,8 +594,13 @@
                             </Style>
                         </MenuItem.Style>
                     </MenuItem>
-                    <Separator />
-                    <MenuItem IsEnabled="{Binding IsImage}" Header="{lex:Loc Thumbnail.ContextMenu.Rescan}" Command="{Binding RescanCommand}" />
+                    <Separator Style="{StaticResource FileSeparator}"/>
+                    <MenuItem Header="{lex:Loc Thumbnail.ContextMenu.ShowInExplorer}" Command="{Binding ShowInExplorerCommand}"/>
+                    <Separator/>
+                    <MenuItem Style="{StaticResource FolderMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.Rescan}" Command="{Binding RescanFolderCommand}" />
+                    <MenuItem Style="{StaticResource FolderMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.ScanNew}" Command="{Binding ScanFolderCommand}" />
+                    <Separator Style="{StaticResource FolderSeparator}"/>
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.Rescan}" Command="{Binding RescanCommand}" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.Template>

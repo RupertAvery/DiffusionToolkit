@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Pages;
 using Diffusion.Toolkit.Services;
@@ -150,6 +151,18 @@ namespace Diffusion.Toolkit.Controls
             _debounceRedrawThumbnails();
         }
 
+        private void RemoveRootFolder_OnClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement { DataContext: ImageEntry { EntryType: EntryType.RootFolder } rootFolder })
+            {
+                ServiceLocator.FolderService.ShowRemoveRootFolderDialog(new FolderViewModel()
+                {
+                    Id = rootFolder.Id,
+                    Path = rootFolder.Path,
+                    Name = rootFolder.Name
+                });
+            }
+        }
     }
 
 }

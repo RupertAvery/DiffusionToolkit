@@ -15,6 +15,13 @@ using Path = System.IO.Path;
 
 namespace Diffusion.Toolkit.Services;
 
+public class NamePath
+{
+    public string Name { get; set; }
+    public string Path{ get; set; }
+    public string FileName { get; set; }
+}
+
 public class FileService
 {
     //private BufferedChannel<UpdateViewed> _viewedChannel;
@@ -131,7 +138,7 @@ public class FileService
 
     }
 
-    public async Task RenameFile(int imageId, string path)
+    public async Task<(bool, NamePath?)> RenameFile(int imageId, string path)
     {
         var title = GetLocalizedText("Actions.Files.Rename.Title");
 
@@ -177,6 +184,7 @@ public class FileService
                     ServiceLocator.FolderService.EnableWatchers();
                 }
 
+                return (true, new NamePath() { Name = newName, FileName = newFilename, Path = newPath });
             }
             else
             {
@@ -185,6 +193,8 @@ public class FileService
             }
 
         }
+
+        return (false, null);
     }
 
     public async Task RemoveImagesTaggedForDeletion()

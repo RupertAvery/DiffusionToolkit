@@ -452,7 +452,7 @@ namespace Diffusion.Toolkit
             {
                 Logger.Log($"Opening Settings for first time");
 
-                _settings = new Settings(true);
+                _settings = new Settings();
 
                 UpdateTheme(_settings.Theme);
 
@@ -480,7 +480,6 @@ namespace Diffusion.Toolkit
 
                     _settings.MetadataSection.Attach(_settings);
                     _settings.NavigationSection.Attach(_settings);
-                    _settings.RecurseFolders ??= true;
                     _settings.UseBuiltInViewer ??= true;
                     _settings.SortAlbumsBy ??= "Name";
                     _settings.Theme ??= "System";
@@ -647,43 +646,46 @@ namespace Diffusion.Toolkit
 
                     var isInPath = false;
 
+                    // TODO: Fix
+                    throw new NotImplementedException("Too Lazy to fix");
+
                     // Check if the target path is in the list of selected diffusion folders
 
-                    if (_settings.RecurseFolders.GetValueOrDefault(true))
-                    {
-                        foreach (var folder in ServiceLocator.FolderService.RootFolders)
-                        {
-                            if (path.StartsWith(folder.Path, true, CultureInfo.InvariantCulture))
-                            {
-                                isInPath = true;
-                                break;
-                            }
-                        }
+                    //if (_settings.RecurseFolders.GetValueOrDefault(true))
+                    //{
+                    //    foreach (var folder in ServiceLocator.FolderService.RootFolders)
+                    //    {
+                    //        if (path.StartsWith(folder.Path, true, CultureInfo.InvariantCulture))
+                    //        {
+                    //            isInPath = true;
+                    //            break;
+                    //        }
+                    //    }
 
-                        // Now check if the path falls under one of the excluded paths.
+                    //    // Now check if the path falls under one of the excluded paths.
 
-                        foreach (var folder in ServiceLocator.FolderService.ExcludedFolders)
-                        {
-                            if (path.StartsWith(folder.Path, true, CultureInfo.InvariantCulture))
-                            {
-                                isInPath = false;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // If recursion is turned off, the path must specifically equal one of the diffusion folders
+                    //    foreach (var folder in ServiceLocator.FolderService.ExcludedFolders)
+                    //    {
+                    //        if (path.StartsWith(folder.Path, true, CultureInfo.InvariantCulture))
+                    //        {
+                    //            isInPath = false;
+                    //            break;
+                    //        }
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    // If recursion is turned off, the path must specifically equal one of the diffusion folders
 
-                        foreach (var imagePath in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
-                        {
-                            if (path.Equals(imagePath, StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                isInPath = true;
-                                break;
-                            }
-                        }
-                    }
+                    //    foreach (var imagePath in ServiceLocator.FolderService.RootFolders.Select(d => d.Path))
+                    //    {
+                    //        if (path.Equals(imagePath, StringComparison.InvariantCultureIgnoreCase))
+                    //        {
+                    //            isInPath = true;
+                    //            break;
+                    //        }
+                    //    }
+                    //}
 
                     Task.Run(async () =>
                     {
@@ -696,6 +698,7 @@ namespace Diffusion.Toolkit
                     });
 
                 }
+
             };
 
             _prompts = new Prompts();
