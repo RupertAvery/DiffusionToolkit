@@ -191,8 +191,16 @@ public class Metadata
                                                 }
                                                 else
                                                 {
-                                                    fileParameters = ReadRuinedFooocusParameters(tag.Description);
-                                                    format = MetaFormat.RuinedFooocus;
+                                                    try
+                                                    {
+                                                        fileParameters = ReadRuinedFooocusParameters(tag.Description);
+                                                        format = MetaFormat.RuinedFooocus;
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        fileParameters = ReadA111Parameters(tag.Description);
+                                                        format = MetaFormat.A1111;
+                                                    }
                                                 }
                                             }
                                             else
