@@ -127,7 +127,7 @@
                                     <ColumnDefinition Width="{TemplateBinding TitleWidth}"/>
                                     <ColumnDefinition Width="132"/>
                                 </Grid.ColumnDefinitions>
-                                <Grid Background="Transparent" x:Name="PART_TitleBar" Grid.Column="1">
+                                <Grid Background="Transparent" x:Name="PART_TitleBar" Grid.Column="1" Margin="10,0,0,0">
                                 </Grid>
                                 <ContentPresenter Grid.Column="1" Content="{TemplateBinding TitleContent}"></ContentPresenter>
                             </Grid>

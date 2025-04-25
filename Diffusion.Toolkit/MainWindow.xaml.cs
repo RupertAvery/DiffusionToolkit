@@ -180,12 +180,18 @@ namespace Diffusion.Toolkit
                     }
                 };
 
+                string menuLanguage= null;
+
                 // TODO: Find a better eay that doesn't get called even when mouseover?
                 // Maybe only when the language has changed?
                 Menu.LayoutUpdated += (sender, args) =>
                 {
-                    Menu.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                    MenuWidth = new GridLength(Menu.DesiredSize.Width);
+                    if (Thread.CurrentThread.CurrentCulture.Name != menuLanguage)
+                    {
+                        Menu.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                        MenuWidth = new GridLength(Menu.DesiredSize.Width);
+                        menuLanguage = Thread.CurrentThread.CurrentCulture.Name;
+                    }
                 };
 
                 //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
