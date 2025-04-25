@@ -164,9 +164,9 @@ namespace Diffusion.Toolkit
 
                 Deactivated += (sender, args) =>
                 {
-                    QueryPopup.IsOpen = false;
-                    ToastPopup.IsOpen = false;
-                    _messagePopupManager.Cancel();
+                    //QueryPopup.IsOpen = false;
+                    //ToastPopup.IsOpen = false;
+                    //_messagePopupManager.Cancel();
                 };
 
 

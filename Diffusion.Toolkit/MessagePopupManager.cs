@@ -40,7 +40,7 @@ public class MessagePopupManager
             {
                 try
                 {
-                    popup.Hide();
+                    //popup.Hide();
                 }
                 catch (Exception exception)
                 {

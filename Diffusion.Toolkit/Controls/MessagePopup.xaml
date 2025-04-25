@@ -34,7 +34,7 @@
                 <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
             </Border.Effect>
             <Grid>
-                <Grid VerticalAlignment="Stretch" Margin="10,10,10,15">
+                <Grid VerticalAlignment="Stretch" Margin="10,10,10,10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="36"/>
                         <RowDefinition Height="*"/>
@@ -42,8 +42,8 @@
                     </Grid.RowDefinitions>
                     <Label FontWeight="Bold" Grid.Row="0" Content="{Binding Title}" HorizontalAlignment="Center" FontSize="16"></Label>
                     <StackPanel Grid.Row="1" FocusManager.FocusedElement="{Binding ElementName=InputTextBox}">
-                        <TextBlock Foreground="{DynamicResource ForegroundBrush}" TextWrapping="WrapWithOverflow" Text="{Binding Message}" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"></TextBlock>
-                        <TextBox x:Name="InputTextBox" Margin="20,15,20,40" Height="24" VerticalContentAlignment="Center" Visibility="{Binding ShowInput, Converter={StaticResource boolToVisCol}}" Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}" PreviewKeyDown="UIElement_OnKeyDown"></TextBox>
+                        <TextBlock x:Name="textBlock" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="Wrap" Text="{Binding Message}" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,15"></TextBlock>
+                        <TextBox x:Name="InputTextBox" Margin="20,0,20,15" Height="24" VerticalContentAlignment="Center" Visibility="{Binding ShowInput, Converter={StaticResource boolToVisCol}}" Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}" PreviewKeyDown="UIElement_OnKeyDown"></TextBox>
                     </StackPanel>
                     <Grid Grid.Row="2">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >

@@ -7,6 +7,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Toolkit.Classes;
 using System.Windows.Controls.Primitives;
+using System.Globalization;
+using System.Windows.Media;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -156,6 +158,7 @@ namespace Diffusion.Toolkit.Controls
 
             DataContext = _model;
 
+
             Loaded += OnLoaded;
             Unloaded += OnUnloaded;
         }
@@ -195,7 +198,7 @@ namespace Diffusion.Toolkit.Controls
         public Task<PopupResult> Show(string message, string title)
         {
             _model.Width = 400;
-            _model.Height = 200;
+            _model.Height = CalculateHeight(message);
 
             _model.IsVisible = true;
             _model.Title = title;
@@ -216,7 +219,7 @@ namespace Diffusion.Toolkit.Controls
         public MessagePopupHandle ShowMessage(string message, string title, int width = 400, int height = 200)
         {
             _model.Width = width;
-            _model.Height = height;
+            _model.Height = CalculateHeight(message);
 
             _model.IsVisible = true;
             _model.Title = title;
@@ -237,11 +240,38 @@ namespace Diffusion.Toolkit.Controls
         private PopupResult _defaultResult;
         private bool _selectAll;
 
+        private double CalculateHeight(string message)
+        {
+            var titleSpace = 36;
+            var buttonSpace = 36;
+
+            var borders = 15 + 15;
+
+            var textBlockBottomMargin = 15;
+
+            var sideMargins = 10 + 10 + borders;
+            var margins = 10 + 10 + borders;
+
+            double inputHeight = 0;
+
+            if (_model.ShowInput)
+            {
+                InputTextBox.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+
+                inputHeight = InputTextBox.DesiredSize.Height;
+            }
+
+            var textHeight = MeasureTextHeightWithTextBlock(message, _model.Width - sideMargins, this.textBlock.FontSize);
+            var altTextHeight = MeasureString(message, _model.Width - sideMargins, this.textBlock.FontSize);
+
+            return altTextHeight + titleSpace + buttonSpace + margins + textBlockBottomMargin + inputHeight;
+        }
+
         public Task<PopupResult> Show(string message, string title, PopupButtons buttons, PopupResult defaultResult,
             bool selectAll = true)
         {
             _model.Width = 400;
-            _model.Height = 200;
+            _model.Height = CalculateHeight(message);
 
             _model.IsVisible = true;
             _model.Title = title;
@@ -260,10 +290,44 @@ namespace Diffusion.Toolkit.Controls
             return _tcs.Task;
         }
 
+        private double MeasureString(string candidate, double maxWidth, double fontSize)
+        {
+            var formattedText = new FormattedText(
+                candidate,
+                CultureInfo.CurrentCulture,
+                FlowDirection.LeftToRight,
+                new Typeface(this.textBlock.FontFamily, this.textBlock.FontStyle, this.textBlock.FontWeight, this.textBlock.FontStretch),
+                fontSize,
+                Brushes.Black,
+                new NumberSubstitution(),
+                TextFormattingMode.Display,
+                VisualTreeHelper.GetDpi(this.textBlock).PixelsPerDip);
+
+            formattedText.MaxTextWidth = maxWidth;
+            formattedText.Trimming = TextTrimming.None;
+
+            return formattedText.Height;
+        }
+
+        public double MeasureTextHeightWithTextBlock(string text, double constrainedWidth, double fontSize)
+        {
+            var textBlock = new TextBlock
+            {
+                Text = text,
+                FontSize = fontSize,
+                TextWrapping = TextWrapping.Wrap,
+                Width = constrainedWidth
+            };
+
+            textBlock.Measure(new Size(constrainedWidth, double.PositiveInfinity));
+
+            return textBlock.DesiredSize.Height;
+        }
+
         public Task<PopupResult> ShowMedium(string message, string title, PopupButtons buttons, PopupResult defaultResult)
         {
             _model.Width = 500;
-            _model.Height = 300;
+            _model.Height = CalculateHeight(message);
 
             _model.IsVisible = true;
             _model.Title = title;
@@ -282,7 +346,7 @@ namespace Diffusion.Toolkit.Controls
         public Task<PopupResult> ShowCustom(string message, string title, PopupButtons buttons, PopupResult defaultResult, int width, int height)
         {
             _model.Width = width;
-            _model.Height = height;
+            _model.Height = CalculateHeight(message);
 
             _model.IsVisible = true;
             _model.Title = title;
