@@ -134,8 +134,7 @@ namespace Diffusion.Database
             db.Close();
         }
 
-        // TODO: Per-folder Recursive?
-        public int AddRootFolder(string path, bool recursive)
+        public int AddRootFolder(string path, bool watched, bool recursive)
         {
             using var db = OpenConnection();
 
@@ -143,7 +142,7 @@ namespace Diffusion.Database
 
             lock (_lock)
             {
-                id = db.ExecuteScalar<int>($"INSERT INTO Folder (ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot, Recursive) VALUES (0, ?, 0, NULL, 0, 0, 0, 1, ?) ON CONFLICT (Path) DO UPDATE SET ParentId = 0, Excluded = 0, IsRoot = 1, Recursive = ? RETURNING Id", path, recursive, recursive);
+                id = db.ExecuteScalar<int>($"INSERT INTO Folder (ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, Excluded, IsRoot, Recursive, Watched) VALUES (0, ?, 0, NULL, 0, 0, 0, 1, ?, ?) ON CONFLICT (Path) DO UPDATE SET ParentId = 0, Excluded = 0, IsRoot = 1, Recursive = ?, Watched = ? RETURNING Id", path, recursive, watched, recursive, watched);
             }
 
             db.Close();

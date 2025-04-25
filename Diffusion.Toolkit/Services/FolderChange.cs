@@ -7,4 +7,5 @@ public class FolderChange
     public string NewPath { get; set; }
     public ChangeType ChangeType { get; set; }
     public bool Recursive { get; set; }
+    public bool Watched { get; set; }
 }

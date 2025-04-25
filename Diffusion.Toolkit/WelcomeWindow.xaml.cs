@@ -136,24 +136,27 @@ namespace Diffusion.Toolkit
                 // Try to load the current root folders
                 var db = ServiceLocator.DataStore.OpenConnection();
 
-                List<MinimalFolder> folders;
+                List<MinimalFolder> folders = new List<MinimalFolder>();
 
 
-                try
+                if (db.TableExist("Folder"))
                 {
-                    var hasIsRoot = db.HasColumn("Folder", "IsRoot");
-                    if (hasIsRoot)
+                    try
                     {
-                        folders = db.Query<MinimalFolder>("SELECT Path FROM Folder WHERE IsRoot = 1").ToList();
+                        var hasIsRoot = db.HasColumn("Folder", "IsRoot");
+                        if (hasIsRoot)
+                        {
+                            folders = db.Query<MinimalFolder>("SELECT Path FROM Folder WHERE IsRoot = 1").ToList();
+                        }
+                        else
+                        {
+                            folders = FindRootFolders(db);
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
                         folders = FindRootFolders(db);
                     }
-                }
-                catch (Exception e)
-                {
-                    folders = FindRootFolders(db);
                 }
 
                 if (folders.Any())

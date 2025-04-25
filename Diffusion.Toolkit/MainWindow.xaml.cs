@@ -491,6 +491,9 @@ namespace Diffusion.Toolkit
                 semVer = SemanticVersion.Parse("v0.0.0");
             }
 
+            
+
+
 
             // TODO: Find a better place to put this:
             // Set defaults for new version features
@@ -502,11 +505,14 @@ namespace Diffusion.Toolkit
                 _settings.NavigationSection.ShowQueries = true;
                 _settings.ConfirmDeletion = true;
                 _settings.PermanentlyDelete = false;
-                _showReleaseNotes = true;
             }
 
 
-            _settings.Version = AppInfo.Version.ToString();
+            if (semVer < AppInfo.Version)
+            {
+                _showReleaseNotes = true;
+                _settings.Version = AppInfo.Version.ToString();
+            }
 
 
             _settings.PropertyChanged += (s, args) =>
@@ -787,6 +793,8 @@ namespace Diffusion.Toolkit
                 {
                     ChangeType = ChangeType.Add,
                     FolderType = FolderType.Root,
+                    Watched = true,
+                    Recursive = true,
                     Path = d,
                 }), confirmScan: false).ContinueWith(d =>
                 {

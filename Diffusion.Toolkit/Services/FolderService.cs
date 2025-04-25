@@ -70,7 +70,7 @@ namespace Diffusion.Toolkit.Services
             {
                 if (folderChange.ChangeType == ChangeType.Add)
                 {
-                    _dataStore.AddRootFolder(folderChange.Path, folderChange.Recursive);
+                    _dataStore.AddRootFolder(folderChange.Path, folderChange.Watched, folderChange.Recursive);
                 }
                 else if (folderChange.ChangeType == ChangeType.Remove)
                 {

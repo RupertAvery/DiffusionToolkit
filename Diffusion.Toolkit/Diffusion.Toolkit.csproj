@@ -75,7 +75,6 @@
     <None Remove="Release Notes\What%27s New v1.6.md" />
     <None Remove="Release Notes\What%27s New v1.7.0.md" />
     <None Remove="Release Notes\What%27s New v1.8.0.md" />
-    <None Remove="Release Notes\What%27s New v1.9.0.md" />
     <None Remove="SearchHelp.md" />
     <None Remove="Tips.md" />
   </ItemGroup>
@@ -132,7 +131,10 @@
     <EmbeddedResource Include="Release Notes\What's New v1.8.0.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.9.0.md">
+    <EmbeddedResource Include="Release Notes\What%27s New v1.9.1.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What%27s New v1.9.0.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>

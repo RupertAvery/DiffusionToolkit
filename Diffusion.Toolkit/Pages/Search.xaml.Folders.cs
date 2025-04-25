@@ -603,6 +603,7 @@ namespace Diffusion.Toolkit.Pages
                         Path = path,
                         FolderType = FolderType.Root,
                         ChangeType = ChangeType.Add,
+                        Watched = false,
                         Recursive = recursiveScan == MessageBoxResult.Yes,
                     }
                 }, true);
