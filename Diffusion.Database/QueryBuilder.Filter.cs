@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-using Diffusion.Common;
+using Diffusion.Common.Query;
 
 namespace Diffusion.Database
 {

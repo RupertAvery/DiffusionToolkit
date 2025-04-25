@@ -1,5 +1,5 @@
 ﻿using System.Windows.Input;
-using Diffusion.Common;
+using Diffusion.Common.Query;
 using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls;

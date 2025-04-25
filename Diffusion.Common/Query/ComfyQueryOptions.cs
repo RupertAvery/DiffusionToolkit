@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Diffusion.Common;
+namespace Diffusion.Common.Query;
 
 public class ComfyQueryOptions
 {

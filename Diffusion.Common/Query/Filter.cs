@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Diffusion.Common;
+namespace Diffusion.Common.Query;
 
 public class Filter
 {
@@ -101,8 +101,8 @@ public class Filter
                             UseFolder ||
                             UseInAlbum ||
                             UseUnavailable ||
-                            (NodeFilters != null && NodeFilters.Any(d => d.IsActive)) ||
-                            (AlbumIds != null && AlbumIds.Count >= 0)
+                            NodeFilters != null && NodeFilters.Any(d => d.IsActive) ||
+                            AlbumIds != null && AlbumIds.Count >= 0
                             );
 
     public bool UseFolder => !string.IsNullOrEmpty(Folder);

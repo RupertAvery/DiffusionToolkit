@@ -1,4 +1,4 @@
-﻿namespace Diffusion.Common;
+﻿namespace Diffusion.Common.Query;
 
 public enum NodeOperation
 {

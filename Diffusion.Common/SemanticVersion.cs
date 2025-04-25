@@ -4,6 +4,10 @@ using System.Text.RegularExpressions;
 
 namespace Diffusion.Common;
 
+/// <summary>
+/// A class for parsing and comparing semantic versions
+/// </summary>
+
 public class SemanticVersion : IComparable<SemanticVersion>
 {
     private static Regex versionRegex = new Regex("v(?<major>\\d+)\\.(?<minor>\\d+)(?:\\.(?<build>\\d+))?");

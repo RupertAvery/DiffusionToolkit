@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
-using Diffusion.Common;
+using Diffusion.Common.Query;
 using Diffusion.Database;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;

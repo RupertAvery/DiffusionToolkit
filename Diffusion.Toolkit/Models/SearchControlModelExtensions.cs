@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using Diffusion.Common;
+using Diffusion.Common.Query;
 using Diffusion.Toolkit.Controls;
-using NodeFilter = Diffusion.Common.NodeFilter;
+using NodeFilter = Diffusion.Common.Query.NodeFilter;
 
 namespace Diffusion.Toolkit.Models;
 

@@ -32,6 +32,7 @@ using SearchView = Diffusion.Common.SearchView;
 using Diffusion.Civitai.Models;
 using Metadata = Diffusion.IO.Metadata;
 using System.Security.Cryptography;
+using Diffusion.Common.Query;
 
 namespace Diffusion.Toolkit.Pages
 {

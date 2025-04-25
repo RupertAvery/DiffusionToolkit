@@ -4,10 +4,10 @@ using Diffusion.Database;
 using System.Collections.ObjectModel;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Diffusion.Common;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Controls;
+using Diffusion.Common.Query;
 
 namespace Diffusion.Toolkit.Models;
 

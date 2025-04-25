@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Diffusion.Common;
+namespace Diffusion.Common.Query;
 
 public class QueryOptions 
 {

@@ -3,10 +3,10 @@ using SQLite;
 using System.Linq;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Diffusion.Common;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
+using Diffusion.Common.Query;
 
 namespace Diffusion.Toolkit
 {
