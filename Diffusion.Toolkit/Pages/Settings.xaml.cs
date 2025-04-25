@@ -73,7 +73,6 @@ namespace Diffusion.Toolkit.Pages
             _model.CheckForUpdatesOnStartup = _settings.CheckForUpdatesOnStartup;
             _model.ScanForNewImagesOnStartup = _settings.ScanForNewImagesOnStartup;
 
-            _model.WatchFolders = _settings.WatchFolders;
             _model.AutoRefresh = _settings.AutoRefresh;
 
             _model.ModelRootPath = _settings.ModelRootPath;
@@ -595,7 +594,6 @@ namespace Diffusion.Toolkit.Pages
                 _settings.FileExtensions = _model.FileExtensions;
                 _settings.Theme = _model.Theme;
                 _settings.PageSize = _model.PageSize;
-                _settings.WatchFolders = _model.WatchFolders;
                 _settings.AutoRefresh = _model.AutoRefresh;
 
                 _settings.CheckForUpdatesOnStartup = _model.CheckForUpdatesOnStartup;

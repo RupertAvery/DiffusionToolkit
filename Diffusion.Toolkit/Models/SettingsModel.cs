@@ -24,7 +24,6 @@ public class SettingsModel : BaseNotify
     private string _nsfwTags;
     private string _hashCache;
     private bool _portableMode;
-    private bool _watchFolders;
     private ObservableCollection<string> _excludePaths;
     //private bool? _recurseFolders;
     private ICommand _escape;
@@ -160,12 +159,6 @@ public class SettingsModel : BaseNotify
     {
         get => _cultures;
         set => SetField(ref _cultures, value);
-    }
-
-    public bool WatchFolders
-    {
-        get => _watchFolders;
-        set => SetField(ref _watchFolders, value);
     }
 
     public bool AutoRefresh

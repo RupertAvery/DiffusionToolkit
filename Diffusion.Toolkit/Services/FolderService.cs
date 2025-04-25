@@ -711,11 +711,7 @@ namespace Diffusion.Toolkit.Services
 
             RemoveWatchers();
 
-            // If any folders changed
-            if (_settings.WatchFolders)
-            {
-                CreateWatchers();
-            }
+            CreateWatchers();
 
             await LoadFolders();
 
@@ -758,7 +754,10 @@ namespace Diffusion.Toolkit.Services
         {
             foreach (var folder in ServiceLocator.FolderService.RootFolders)
             {
-                CreateWatcher(folder.Path, folder.Recursive);
+                if (folder.Watched)
+                {
+                    CreateWatcher(folder.Path, folder.Recursive);
+                }
             }
         }
 

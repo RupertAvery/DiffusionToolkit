@@ -64,7 +64,6 @@ namespace Diffusion.Toolkit
         private Pages.Models _models;
         private bool _tipsOpen;
         private MessagePopupManager _messagePopupManager;
-        private string _dbPath;
 
         public MainWindow()
         {
@@ -74,19 +73,7 @@ namespace Diffusion.Toolkit
                 Logger.Log($"Started Diffusion Toolkit {AppInfo.Version}");
 
 
-                var settingsPath = Path.Combine(AppInfo.AppDir, "config.json");
-                _dbPath = Path.Combine(AppInfo.AppDir, "diffusion-toolkit.db");
-
-                var isPortable = true;
-
-                if (!File.Exists(settingsPath))
-                {
-                    isPortable = false;
-                    settingsPath = Path.Combine(AppInfo.AppDataPath, "config.json");
-                    _dbPath = Path.Combine(AppInfo.AppDataPath, "diffusion-toolkit.db");
-                }
-
-                _configuration = new Configuration<Settings>(settingsPath, isPortable);
+                _configuration = new Configuration<Settings>(AppInfo.SettingsPath, AppInfo.IsPortable);
 
 
                 //Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
@@ -440,7 +427,7 @@ namespace Diffusion.Toolkit
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
-            var dataStore = new DataStore(_dbPath);
+            var dataStore = new DataStore(AppInfo.DatabasePath);
             var _showReleaseNotes = false;
 
             ServiceLocator.SetDataStore(dataStore);
@@ -583,11 +570,11 @@ namespace Diffusion.Toolkit
 
             _model.Settings = _settings;
 
-            KeyDown += (o, args) =>
-            {
-                IInputElement focusedControl = Keyboard.FocusedElement;
-                IInputElement focusedControl2 = FocusManager.GetFocusedElement(this);
-            };
+            //KeyDown += (o, args) =>
+            //{
+            //    IInputElement focusedControl = Keyboard.FocusedElement;
+            //    IInputElement focusedControl2 = FocusManager.GetFocusedElement(this);
+            //};
 
             Activated += OnActivated;
             StateChanged += OnStateChanged;
@@ -600,7 +587,6 @@ namespace Diffusion.Toolkit
 
 
             await dataStore.Create(
-                _settings,
                 () => Dispatcher.Invoke(() => _messagePopupManager.ShowMessage("Please wait while we update your database", "Updating Database")),
                 (handle) =>
                 {
@@ -744,10 +730,7 @@ namespace Diffusion.Toolkit
             };
 
 
-            if (_settings.WatchFolders)
-            {
-                ServiceLocator.FolderService.CreateWatchers();
-            }
+            ServiceLocator.FolderService.CreateWatchers();
 
             //_navigatorService.Goto("search");
 

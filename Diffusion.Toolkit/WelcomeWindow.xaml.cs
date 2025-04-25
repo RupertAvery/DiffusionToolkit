@@ -169,8 +169,6 @@ namespace Diffusion.Toolkit
             Closing += (sender, args) =>
             {
                 settings.SetPristine();
-                settings.WatchFolders = true;
-                //settings.ImagePaths = _model.ImagePaths.ToList();
                 SelectedPaths = _model.ImagePaths.ToList();
                 settings.StoreWorkflow = _model.StoreWorkflow;
                 settings.StoreMetadata = _model.StoreMetadata;

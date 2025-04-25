@@ -1,23 +1,17 @@
-﻿using System.IO;
-using System.Reflection;
-using System.Runtime;
+﻿using System.Reflection;
 using Diffusion.Common;
 using Diffusion.Database.Models;
 using SQLite;
-using static Dapper.SqlMapper;
-using static Diffusion.Database.DataStore;
 
 namespace Diffusion.Database;
 
-public class Migrations
+public partial class Migrations
 {
     private readonly SQLiteConnection _db;
-    private readonly object _settings;
 
-    public Migrations(SQLiteConnection db, object settings)
+    public Migrations(SQLiteConnection db)
     {
         _db = db;
-        _settings = settings;
         db.CreateTable<Migration>();
     }
 
@@ -97,9 +91,6 @@ public class Migrations
                         }
                     }
 
-
-
-
                     Logger.Log($"Executed Migration {name}");
                 }
             }
@@ -109,262 +100,5 @@ public class Migrations
             Logger.Log($"Error executing migration: {e.Message}");
             Logger.Log($"{e.StackTrace}");
         }
-    }
-
-
-    [Migrate(MigrationType.Pre)]
-    private string RupertAvery20240203_0001_UniquePaths()
-    {
-        var tableExists = _db.ExecuteScalar<int>("SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name='Image'") == 1;
-
-        if (!tableExists)
-        {
-            return null;
-        }
-
-        var dupePaths = _db.QueryScalars<string>("SELECT Path FROM Image GROUP BY Path HAVING COUNT(*) > 1");
-
-        void RemoveImages(IEnumerable<int> ids)
-        {
-            _db.BeginTransaction();
-
-            var albumQuery = "DELETE FROM AlbumImage WHERE ImageId = @Id";
-            var albumCommand = _db.CreateCommand(albumQuery);
-
-            var query = "DELETE FROM Image WHERE Id = @Id";
-            var command = _db.CreateCommand(query);
-
-            foreach (var id in ids)
-            {
-                albumCommand.Bind("@Id", id);
-                albumCommand.ExecuteNonQuery();
-
-                command.Bind("@Id", id);
-                command.ExecuteNonQuery();
-            }
-
-            _db.Commit();
-        }
-
-        if (dupePaths.Any())
-        {
-            var dupeImages = _db.Query<Image>($"SELECT * FROM Image WHERE Path IN ({string.Join(",", dupePaths.Select(p => $"'{p.Replace("'", "''")}'"))})");
-            var groups = dupeImages.GroupBy(image => image.Path);
-            var ids = new List<int>();
-            foreach (var group in groups)
-            {
-                var lowest = group.MinBy(image => image.Id);
-                var dupes = group.Where(i => i.Id != lowest.Id);
-                ids.AddRange(dupes.Select(i => i.Id));
-            }
-            RemoveImages(ids);
-        }
-
-        return "DROP INDEX IF EXISTS 'Image_Path';";
-    }
-
-
-
-
-
-    [Migrate]
-    private string RupertAvery20240102_0001_LoadFileNamesFromPaths()
-    {
-        return "UPDATE Image SET FileName = path_basename(replace(Path, '\\','/'))";
-    }
-
-    [Migrate]
-    private string RupertAvery20231224_0001_CleanupOrphanedAlbumImageEntries()
-    {
-        return "DELETE FROM AlbumImage WHERE AlbumId IN (SELECT AlbumId FROM AlbumImage WHERE AlbumId NOT IN (SELECT Id FROM Album));" +
-               "DELETE FROM AlbumImage WHERE ImageId NOT IN(SELECT Id FROM Image);";
-    }
-
-    [Migrate]
-    private string RupertAvery20231224_0002_AlbumImageForeignKeys()
-    {
-        return @"DROP TABLE IF EXISTS ""AlbumImageTemp"";
-CREATE TABLE IF NOT EXISTS ""AlbumImageTemp""(
-    ""AlbumId""   integer,
-    ""ImageId""   integer,
-    CONSTRAINT ""FK_AlbumImage_AlbumId"" FOREIGN KEY(""AlbumId"") REFERENCES Album(""Id""),
-    CONSTRAINT ""FK_AlbumImage_ImageId"" FOREIGN KEY(""ImageId"") REFERENCES Image(""Id"")
-);
-INSERT INTO AlbumImageTemp SELECT AlbumId, ImageId FROM AlbumImage;
-DROP TABLE ""AlbumImage"";
-ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
-    }
-
-    [Migrate(MigrationType.Post)]
-    private string RupertAvery20240818_0001_SetUnavailable()
-    {
-        return "UPDATE Image SET Unavailable = 0";
-    }
-
-    [Migrate(MigrationType.Pre, true)]
-    private string RupertAvery20250321_0001_EnableWAL()
-    {
-        return "PRAGMA journal_mode=WAL";
-    }
-
-    private class FolderTemp 
-    {
-        public int Id { get; set; }
-        public int ParentId { get; set; }
-        public string Path { get; set; }
-        public bool IsRoot { get; set; }
-        public string ParentPath { get; set; }
-    }
-
-    [Migrate(MigrationType.Post)]
-    private string RupertAvery20250405_0001_FixFolders()
-    {
-        var assembly = Assembly.GetEntryAssembly();
-
-        var type = assembly.GetType("Diffusion.Toolkit.Configuration.Settings");
-
-        var rootProperty = type.GetProperty("ImagePaths");
-
-        Logger.Log($"Migrating root paths");
-
-        if (rootProperty != null)
-        {
-            var rootPaths = (List<string>?)rootProperty.GetValue(_settings);
-
-
-            if (rootPaths != null && rootPaths.Any())
-            {
-                var query =
-                    "INSERT INTO Folder (ParentId, Path, Unavailable, Archived, IsRoot) VALUES (0, ?, 0, 0, 1) ON CONFLICT (Path) DO UPDATE SET IsRoot = 1 RETURNING Id";
-
-                foreach (var path in rootPaths)
-                {
-                    _db.ExecuteScalar<int>(query, path);
-                }
-
-
-                Logger.Log($"{rootPaths.Count} root paths added from config.json");
-            }
-
-        }
-
-        Logger.Log("Updating Folder ParentIds");
-
-        var folders = _db.Query<FolderTemp>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder");
-
-        foreach (var folder in folders)
-        {
-            folder.ParentPath = Path.GetDirectoryName(folder.Path);
-        }
-
-        foreach (var folder in folders)
-        {
-            var children = folders.Where(d => d.ParentPath == folder.Path);
-            foreach (var child in children)
-            {
-                child.ParentId = folder.Id;
-            }
-        }
-
-        foreach (var folder in folders)
-        {
-            _db.Execute("UPDATE Folder SET ParentId = ?, IsRoot = ?, Unavailable = 0, Archived = 0 WHERE Id = ?", folder.ParentId, folder.IsRoot, folder.Id);
-        }
-
-        var orphanedFolders = _db.Query<FolderTemp>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder f WHERE ParentId = 0 AND IsRoot = 0");
-
-        Logger.Log($"Found {orphanedFolders.Count} orphaned folders");
-
-        foreach (var folder in orphanedFolders)
-        {
-            folder.ParentPath = Path.GetDirectoryName(folder.Path);
-        }
-
-        var parents = orphanedFolders.Select(d => d.ParentPath).Distinct();
-
-        var folderCache = _db.Query<Folder>("SELECT Id, ParentId, Path, ImageCount, ScannedDate, Unavailable, Archived, IsRoot FROM Folder").ToDictionary(d => d.Path);
-
-        Logger.Log($"Creating parent folders");
-
-        foreach (var folder in parents)
-        {
-            Logger.Log($"Creating {folder}");
-
-            try
-            {
-                if (DataStore.EnsureFolderExistsExt(_db, folder, folderCache, out var folderId))
-                {
-                    var children = orphanedFolders.Where(d => d.ParentPath == folder);
-
-                    foreach (var child in children)
-                    {
-                        _db.Execute("UPDATE Folder SET ParentId = ? WHERE Id = ?", folderId, child.Id);
-                    }
-                }
-                else
-                {
-                    Logger.Log($"Root folder not found for {folder}");
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Log(e.Message);
-            }
-
-        }
-
-        var cleanup = @"DELETE FROM Folder WHERE Id IN 
-(
-     SELECT f.Id FROM Folder f 
-     LEFT JOIN Image i ON f.Id = i.FolderId
-     WHERE ParentId = 0 AND IsRoot = 0
-     GROUP BY f.Id
-     HAVING COUNT(i.Id) = 0
-)";
-
-        var count = _db.Execute(cleanup);
-
-        Logger.Log($"Removed {count} empty orphaned folders");
-
-        Logger.Log($"Migrating excluded paths");
-
-        _db.Execute("UPDATE Folder SET Excluded = 0");
-
-        var excludeProperty = type.GetProperty("ExcludePaths");
-
-        var excludePaths = (List<string>)excludeProperty.GetValue(_settings);
-
-        if (excludePaths != null && excludePaths.Any())
-        {
-
-            foreach (var folder in excludePaths)
-            {
-                Logger.Log($"Excluding {folder}");
-
-                try
-                {
-                    if (DataStore.EnsureFolderExistsExt(_db, folder, folderCache, out var folderId))
-                    {
-                        Logger.Log($"Setting {folder} as Excluded");
-                        _db.Execute("UPDATE Folder SET Excluded = 1 WHERE Id = ?", folderId);
-                    }
-                    else
-                    {
-                        Logger.Log($"Root folder not found for {folder}");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.Message);
-                }
-
-            }
-
-            Logger.Log($"{excludePaths.Count} paths excluded from config.json");
-
-        }
-
-        // Return empty statement so that nothing happens
-        return ";";
     }
 }

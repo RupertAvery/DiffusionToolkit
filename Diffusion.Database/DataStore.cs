@@ -42,7 +42,7 @@ public partial class DataStore
         DatabasePath = databasePath;
     }
 
-    public async Task Create(object settings, Func<object> notify, Action<object> complete)
+    public async Task Create(Func<object> notify, Action<object> complete)
     {
         var databaseDir = Path.GetDirectoryName(DatabasePath);
 
@@ -61,9 +61,8 @@ public partial class DataStore
         }
 
         db.LoadExtension("extensions\\path0.dll");
-
-
-        var migrations = new Migrations(db, settings);
+        
+        var migrations = new Migrations(db);
 
         if (migrations.RequiresMigration(MigrationType.Pre))
         {

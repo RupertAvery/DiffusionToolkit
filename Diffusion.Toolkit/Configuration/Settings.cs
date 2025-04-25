@@ -24,7 +24,7 @@ public class Settings : SettingsContainer, IScanOptions
     private Size? _windowSize;
     private bool _dontShowWelcomeOnStartup;
     private string _theme;
-    private bool _watchFolders;
+    //private bool _watchFolders;
     private bool _hideNsfw;
     private bool _hideDeleted;
     private bool _nsfwBlur;
@@ -104,7 +104,7 @@ public class Settings : SettingsContainer, IScanOptions
         PreviewGridHeight2 = "3*";
         SlideShowDelay = 5;
 
-        WatchFolders = true;
+        //WatchFolders = true;
         ScanUnavailable = false;
         ShowNotifications = true;
         FitToPreview = true;
@@ -241,11 +241,11 @@ public class Settings : SettingsContainer, IScanOptions
         set => UpdateValue(ref _theme, value);
     }
 
-    public bool WatchFolders
-    {
-        get => _watchFolders;
-        set => UpdateValue(ref _watchFolders, value);
-    }
+    //public bool WatchFolders
+    //{
+    //    get => _watchFolders;
+    //    set => UpdateValue(ref _watchFolders, value);
+    //}
 
     public bool HideNSFW
     {
