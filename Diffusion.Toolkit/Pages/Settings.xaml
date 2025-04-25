@@ -22,14 +22,9 @@
             <converters:IsIndexSelectedConverter x:Key="IsIndexSelectedConverter"></converters:IsIndexSelectedConverter>
             <converters:IndexOfConverter x:Key="IndexOfConverter"></converters:IndexOfConverter>
             <converters:NotNullConverter x:Key="NotNullConverter"></converters:NotNullConverter>
-            <models:SettingsModel x:Key="TestData">
-                <models:SettingsModel.ImagePaths>
-                    <system:String>Hello world!</system:String>
-                </models:SettingsModel.ImagePaths>
-            </models:SettingsModel>
         </ResourceDictionary>
     </local:NavigationPage.Resources>
-    <Grid d:DataContext="{StaticResource TestData}" Margin="0,0,0,10">
+    <Grid Margin="0,0,0,10">
         <Grid.RowDefinitions>
             <RowDefinition Height="38"/>
             <RowDefinition/>
