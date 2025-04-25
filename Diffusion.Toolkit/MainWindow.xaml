@@ -18,7 +18,6 @@
         ResizeMode="CanResizeWithGrip"
         Style="{StaticResource BorderlessWindowStyle}"
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
-        MenuWidth="215"
         TitleWidth="*"
         Title="Diffusion Toolkit"
         TitleTextVisibility="Hidden"
@@ -360,7 +359,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Menu Grid.Row="0">
+        <Menu x:Name="Menu" Grid.Row="0">
             <MenuItem Header="{lex:Loc Menu.File}">
                 <MenuItem Header="{lex:Loc Menu.File.Close}" Command="{Binding CloseCommand}"/>
             </MenuItem>
