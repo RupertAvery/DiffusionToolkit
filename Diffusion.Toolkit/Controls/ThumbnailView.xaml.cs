@@ -807,6 +807,7 @@ namespace Diffusion.Toolkit.Controls
                     dataObject.SetData(DataFormats.FileDrop, items.Select(t => t.Path).ToArray());
                     dataObject.SetData(DragAndDrop.DragFiles, items.ToArray());
 
+                    // TODO : Randomly hangs?
                     DragDrop.DoDragDrop(source, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
                     _dragStarted = false;
                     e.Handled = true;

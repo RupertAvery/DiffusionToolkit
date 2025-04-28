@@ -185,6 +185,9 @@
                         <CheckBox IsChecked="{Binding CheckForUpdatesOnStartup}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.CheckForUpdatesOnStartup}"></CheckBox>
 
                         <CheckBox IsChecked="{Binding PortableMode}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.PortableMode}"></CheckBox>
+
+                        <CheckBox IsChecked="{Binding SoftwareOnly}" Margin="0,10,0,0" Content="{lex:Loc Settings.General.SoftwareOnly}"></CheckBox>
+
                     </StackPanel>
                 </Grid>
 
@@ -386,7 +389,6 @@
             <Label VerticalAlignment="Center" FontSize="22" FontWeight="DemiBold" Content="{lex:Loc Settings}"></Label>
             <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsDirty}" Click="ApplyChanges_OnClick" Grid.Column="1" Content="{lex:Loc Settings.ApplyChanges}"></Button>
             <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsDirty}" Click="RevertChanges_OnClick" Grid.Column="2" Content="{lex:Loc Settings.RevertChanges}"></Button>
-            <Button Height="26" VerticalAlignment="Center" Margin="0,0,10,0" IsEnabled="{Binding IsFoldersDirty}" Click="RevertFolders_OnClick" Grid.Column="3" Content="{lex:Loc Settings.RevertFolders}"></Button>
         </Grid>
     </Grid>
 </local:NavigationPage>

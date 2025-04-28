@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Interop;
 using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit.Configuration;
@@ -73,11 +74,10 @@ public class Settings : SettingsContainer, IScanOptions
     private bool _showFilenames;
     private int _thumbnailSpacing;
     private ThumbnailViewMode _thumbnailViewMode;
+    private RenderMode _renderMode;
 
     public Settings()
     {
-        ImagePaths = new List<string>();
-        ExcludePaths = new List<string>();
         NSFWTags = new List<string>() { "nsfw", "nude", "naked" };
         FileExtensions = ".png, .jpg, .jpeg, .webp";
         Theme = "System";
@@ -461,21 +461,6 @@ public class Settings : SettingsContainer, IScanOptions
         set => UpdateValue(ref _sortQueriesBy, value);
     }
 
-
-    [Obsolete]
-    public List<string> ImagePaths
-    {
-        get => _imagePaths;
-        set => UpdateList(ref _imagePaths, value);
-    }
-
-    [Obsolete]
-    public List<string> ExcludePaths
-    {
-        get => _excludePaths;
-        set => UpdateList(ref _excludePaths, value);
-    }
-
     public bool ShowTags
     {
         get => _showTags;
@@ -517,5 +502,11 @@ public class Settings : SettingsContainer, IScanOptions
     {
         get => _thumbnailViewMode;
         set => UpdateValue(ref _thumbnailViewMode, value);
+    }
+
+    public RenderMode RenderMode
+    {
+        get => _renderMode;
+        set => UpdateValue(ref _renderMode, value);
     }
 }

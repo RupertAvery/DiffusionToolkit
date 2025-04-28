@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using Diffusion.Database;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Localization;
@@ -68,8 +69,6 @@ namespace Diffusion.Toolkit.Pages
 
         private void InitializeSettings()
         {
-            InitializeFolders();
-
             _model.CheckForUpdatesOnStartup = _settings.CheckForUpdatesOnStartup;
             _model.ScanForNewImagesOnStartup = _settings.ScanForNewImagesOnStartup;
 
@@ -77,6 +76,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.ModelRootPath = _settings.ModelRootPath;
             _model.FileExtensions = _settings.FileExtensions;
+            _model.SoftwareOnly = _settings.RenderMode == RenderMode.SoftwareOnly;
 
             _model.PageSize = _settings.PageSize;
             _model.UseBuiltInViewer = _settings.UseBuiltInViewer.GetValueOrDefault(true);
@@ -112,15 +112,6 @@ namespace Diffusion.Toolkit.Pages
             _model.Theme = _settings.Theme;
             _model.Culture = _settings.Culture;
             _model.SetPristine();
-        }
-
-        private void InitializeFolders()
-        {
-            _model.ImagePaths = new ObservableCollection<string>(ServiceLocator.FolderService.RootFolders.Select(d => d.Path));
-            _model.ExcludePaths = new ObservableCollection<string>(ServiceLocator.FolderService.RootExcludedFolders.Select(d => d.Path));
-            //_model.RecurseFolders = _settings.RecurseFolders;
-            _model.SetFoldersPristine();
-            _folderChanges.Clear();
         }
 
         private void LoadCultures()
@@ -185,174 +176,7 @@ namespace Diffusion.Toolkit.Pages
         }
 
         private Window _window;
-
-        private void AddFolder_OnClick(object sender, RoutedEventArgs e)
-        {
-            using var dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
-            {
-                var path = dialog.FileName;
-
-                if (_model.ImagePaths.Any(d => path.StartsWith(d + "\\", StringComparison.OrdinalIgnoreCase)))
-                {
-                    MessageBox.Show(this._window,
-                        "The selected folder is already included the path of one of the existing folders",
-                        "Add folder", MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                    return;
-                }
-                else if (_model.ImagePaths.Any(d => d.Equals(path, StringComparison.OrdinalIgnoreCase)))
-                {
-                    return;
-                }
-                else if (_model.ImagePaths.Any(d => d.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
-                {
-                    MessageBox.Show(this._window,
-                        "One or more of the existing folders is included the path of the selected folder",
-                        "Add folder", MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
-                }
-
-                _model.ImagePaths.Add(path);
-
-                if (!ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Contains(path))
-                {
-                    _folderChanges.Add(new FolderChange()
-                    {
-                        FolderType = FolderType.Root,
-                        ChangeType = ChangeType.Add,
-                        Path = path,
-                    });
-                }
-                else
-                {
-                    var removeChange = _folderChanges.Find(d =>
-                        d is { FolderType: FolderType.Root, ChangeType: ChangeType.Remove } && d.Path == path);
-                    if (removeChange != null)
-                    {
-                        _folderChanges.Remove(removeChange);
-                    }
-                }
-
-                _model.SetFoldersDirty();
-
-            }
-
-        }
-
-        private void RemoveFolder_OnClick(object sender, RoutedEventArgs e)
-        {
-            var result = MessageBox.Show(this._window,
-                "Are you sure you want to remove this folder? Images and any custom metadata in the database will be removed. Images on disk will not be affected",
-                "Remove folder", MessageBoxButton.YesNo,
-                MessageBoxImage.Exclamation, MessageBoxResult.No);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                var path = _model.ImagePaths[_model.SelectedIndex];
-                _model.ImagePaths.RemoveAt(_model.SelectedIndex);
-                
-                if (ServiceLocator.FolderService.RootFolders.Select(d => d.Path).Contains(path))
-                {
-                    _folderChanges.Add(new FolderChange()
-                    {
-                        FolderType = FolderType.Root,
-                        ChangeType = ChangeType.Remove,
-                        Path = path,
-                    });
-                }
-                else
-                {
-                    var addChange = _folderChanges.Find(d =>
-                        d is { FolderType: FolderType.Root, ChangeType: ChangeType.Add } && d.Path == path);
-                    if (addChange != null)
-                    {
-                        _folderChanges.Remove(addChange);
-                    }
-                }
-
-                _model.SetFoldersDirty();
-            }
-        }
-
-
-        private void ExcludedAddFolder_OnClick(object sender, RoutedEventArgs e)
-        {
-            using var dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
-            {
-                var path = dialog.FileName;
-
-                if (_model.ImagePaths.All(d => !path.StartsWith(d)))
-                {
-                    MessageBox.Show(this._window,
-                        "The selected folder must be on the path of one of the included folders",
-                        "Add Excluded folder", MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                    return;
-                }
-
-                if (!ServiceLocator.FolderService.ExcludedFolders.Select(d => d.Path).Contains(path))
-                {
-                    _folderChanges.Add(new FolderChange()
-                    {
-                        FolderType = FolderType.Excluded,
-                        ChangeType = ChangeType.Add,
-                        Path = path,
-                    });
-                }
-                else
-                {
-                    var removeChange = _folderChanges.Find(d =>
-                        d is { FolderType: FolderType.Excluded, ChangeType: ChangeType.Remove } && d.Path == path);
-                    if (removeChange != null)
-                    {
-                        _folderChanges.Remove(removeChange);
-                    }
-                }
-
-                _model.ExcludePaths.Add(path);
-            }
-
-        }
-
-        private void ExcludedRemoveFolder_OnClick(object sender, RoutedEventArgs e)
-        {
-            var result = MessageBox.Show(this._window,
-                "Are you sure you want to remove this folder?",
-                "Remove Excluded folder", MessageBoxButton.YesNo,
-                MessageBoxImage.Question, MessageBoxResult.No);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                var path = _model.ExcludePaths[_model.ExcludedSelectedIndex];
-                _model.ExcludePaths.RemoveAt(_model.ExcludedSelectedIndex);
-
-                if (ServiceLocator.FolderService.ExcludedFolders.Select(d => d.Path).Contains(path))
-                {
-                    _folderChanges.Add(new FolderChange()
-                    {
-                        FolderType = FolderType.Excluded,
-                        ChangeType = ChangeType.Remove,
-                        Path = path,
-                    });
-                }
-                else
-                {
-                    var addChange = _folderChanges.Find(d =>
-                        d is { FolderType: FolderType.Excluded, ChangeType: ChangeType.Add } && d.Path == path);
-                    if (addChange != null)
-                    {
-                        _folderChanges.Remove(addChange);
-                    }
-                }
-            }
-        }
-
-
+        
         private void BrowseModelPath_OnClick(object sender, RoutedEventArgs e)
         {
             using var dialog = new CommonOpenFileDialog();
@@ -516,61 +340,10 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void ChangeFolderPath_OnClick(object sender, RoutedEventArgs e)
-        {
-            using var dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
-            dialog.EnsurePathExists = false;
-            var oldPath = _model.ImagePaths[_model.SelectedIndex];
-
-            dialog.InitialDirectory = oldPath;
-
-            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
-            {
-                var newPath = dialog.FileName;
-                if (oldPath != newPath)
-                {
-                    _model.ImagePaths[_model.SelectedIndex] = newPath;
-                    _folderChanges.Add(new FolderChange()
-                    {
-                        ChangeType = ChangeType.ChangePath,
-                        Path = oldPath,
-                        NewPath = newPath
-                    });
-                    _model.SetFoldersDirty();
-                }
-            }
-        }
-
-        private void RevertFolders_OnClick(object sender, RoutedEventArgs e)
-        {
-            InitializeFolders();
-        }
-
         private void ApplyChanges_OnClick(object sender, RoutedEventArgs e)
         {
             ApplySettings();
-
-
-            if (_model.IsFoldersDirty)
-            {
-                if (ServiceLocator.MainModel.IsBusy)
-                {
-                    MessageBox.Show(ServiceLocator.WindowService.CurrentWindow, GetLocalizedText("Settings.Apply.Folders.Busy"), "Settings", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-                }
-                else
-                {
-                    var changes = _folderChanges.ToList();
-                    _folderChanges.Clear();
-                    _model.SetFoldersPristine();
-
-                    Task.Run(async () =>
-                    {
-                        await ServiceLocator.FolderService.ApplyFolderChanges(changes, true);
-                    });
-                }
-            }
-
+            
             _model.SetPristine();
         }
 
@@ -586,10 +359,6 @@ namespace Diffusion.Toolkit.Pages
             {
                 _settings.SetPristine();
 
-                // TODO: Remove, these are no longer used
-                _settings.ImagePaths = _model.ImagePaths.ToList();
-                _settings.ExcludePaths = _model.ExcludePaths.ToList();
-
                 _settings.ModelRootPath = _model.ModelRootPath;
                 _settings.FileExtensions = _model.FileExtensions;
                 _settings.Theme = _model.Theme;
@@ -602,8 +371,8 @@ namespace Diffusion.Toolkit.Pages
                 _settings.NSFWTags = _model.NSFWTags.Split("\r\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
                 _settings.HashCache = _model.HashCache;
                 _settings.PortableMode = _model.PortableMode;
-                //_settings.RecurseFolders = _model.RecurseFolders;
-
+                _settings.RenderMode = _model.SoftwareOnly ? RenderMode.SoftwareOnly : RenderMode.Default;
+                
                 _settings.UseBuiltInViewer = _model.UseBuiltInViewer;
                 _settings.OpenInFullScreen = _model.OpenInFullScreen;
                 _settings.UseSystemDefault = _model.UseSystemDefault;

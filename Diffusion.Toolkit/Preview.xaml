@@ -12,30 +12,12 @@
         lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
         lex:LocalizeDictionary.Separation="."
         lex:LocalizeDictionary.DefaultProvider="{StaticResource LocalizationProvider}"
-        MenuWidth="900"
-        TitleWidth="300"
+        MenuWidth="150"
+        TitleWidth="*"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:PreviewModel, IsDesignTimeCreatable=True}"
         BorderThickness="0"
         Height="450" Width="800">
-    <Window.Resources>
-        <converters:InverseBoolToVisibilityCollapsedConverter x:Key="invBoolToVisCol"></converters:InverseBoolToVisibilityCollapsedConverter>
-        <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
-        <converters:InverseBoolToVisibilityConverter x:Key="invBoolToVis"></converters:InverseBoolToVisibilityConverter>
-        <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
-        <converters:BoolToBlurIntConverter x:Key="boolToBlur"></converters:BoolToBlurIntConverter>
-        <converters:BoolToBlurIntMultiConverter x:Key="boolToBlurMulti"></converters:BoolToBlurIntMultiConverter>
-        <converters:BoolToVisibilityConverter x:Key="boolToVis"></converters:BoolToVisibilityConverter>
-        <converters:BoolToVisibilityMultiConverter x:Key="boolToVisMulti"></converters:BoolToVisibilityMultiConverter>
-        <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
-        <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
-        <converters:InvBoolToOpacityConverter x:Key="InvBoolToOpacity"></converters:InvBoolToOpacityConverter>
-        <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
-        <converters:StringToVisibilityConverter x:Key="strToVis"></converters:StringToVisibilityConverter>
-        <converters:StretchConverter x:Key="stretch"></converters:StretchConverter>
-        <converters:SizeConverter x:Key="SizeConverter"></converters:SizeConverter>
-        <converters:ZeroConverter x:Key="ZeroConverter"></converters:ZeroConverter>
-    </Window.Resources>
     <Window.Style >
         <Style TargetType="{x:Type local:BorderlessWindow}" BasedOn="{StaticResource BorderlessWindowStyle}">
             <Setter Property="TitleVisibility" Value="Hidden"/>

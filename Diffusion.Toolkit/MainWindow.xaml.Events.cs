@@ -3,16 +3,12 @@ using Diffusion.Toolkit.Models;
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Diffusion.Common;
 using System.Windows.Forms;
 using System.Windows.Interop;
-using WPFLocalizeExtension.Providers;
-using System.Collections.ObjectModel;
+using System.Windows.Media;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;
@@ -343,6 +339,10 @@ namespace Diffusion.Toolkit
                     _search.SetPageSize(_settings.PageSize);
                     _prompts.SetPageSize(_settings.PageSize);
                     _search.SearchImages();
+                    break;
+
+                case nameof(Settings.RenderMode):
+                    RenderOptions.ProcessRenderMode = _settings.RenderMode;
                     break;
 
                 case nameof(Settings.ModelRootPath):

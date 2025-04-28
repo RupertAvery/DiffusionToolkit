@@ -48,11 +48,10 @@ public class SettingsModel : BaseNotify
     private bool _confirmDeletion;
     private bool _permanentlyDelete;
     private bool _showFilenames;
+    private bool _softwareOnly;
 
     public SettingsModel()
     {
-        ImagePaths = new ObservableCollection<string>();
-        ExcludePaths = new ObservableCollection<string>();
         SelectedIndex = -1;
         ExcludedSelectedIndex = -1;
         ExternalApplications = new ObservableCollection<ExternalApplicationModel>();
@@ -82,36 +81,6 @@ public class SettingsModel : BaseNotify
     {
         ServiceLocator.MainModel.IsSettingsDirty = IsDirty;
     }
-
-    public ObservableCollection<string> ImagePaths
-    {
-        get => _imagePaths;
-        set
-        {
-            SetField(ref _imagePaths, value, false);
-            RegisterObservableChanges(_imagePaths, SetFoldersDirty);
-        }
-    }
-
-    public ObservableCollection<string> ExcludePaths
-    {
-        get => _excludePaths;
-        set
-        {
-            SetField(ref _excludePaths, value, false);
-            RegisterObservableChanges(_excludePaths, SetFoldersDirty);
-        }
-    }
-
-    //public bool? RecurseFolders
-    //{
-    //    get => _recurseFolders;
-    //    set
-    //    {
-    //        SetField(ref _recurseFolders, value, false);
-    //        SetFoldersDirty();
-    //    }
-    //}
 
     public int SelectedIndex
     {
@@ -316,32 +285,18 @@ public class SettingsModel : BaseNotify
         }
     }
 
+    public bool SoftwareOnly
+    {
+        get => _softwareOnly;
+        set => SetField(ref _softwareOnly, value);
+    }
+
     public ExternalApplicationModel? SelectedApplication
     {
         get => _selectedApplication;
         set => SetField(ref _selectedApplication, value, false);
     }
 
-    public override bool IsDirty => _isDirty || _isFoldersDirty;
-
-    public bool IsFoldersDirty
-    {
-        get => _isFoldersDirty;
-    }
-
-
-    public void SetFoldersDirty()
-    {
-        _isFoldersDirty = true;
-        OnPropertyChanged(nameof(IsDirty));
-        OnPropertyChanged(nameof(IsFoldersDirty));
-    }
-
-    public void SetFoldersPristine()
-    {
-        _isFoldersDirty = false;
-        OnPropertyChanged(nameof(IsDirty));
-        OnPropertyChanged(nameof(IsFoldersDirty));
-    }
+    public override bool IsDirty => _isDirty;
 
 }

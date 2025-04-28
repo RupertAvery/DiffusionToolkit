@@ -39,6 +39,7 @@ using Diffusion.Toolkit.Common;
 using Settings = Diffusion.Toolkit.Configuration.Settings;
 using Diffusion.Database.Models;
 using Image = System.Windows.Controls.Image;
+using System.Windows.Media;
 
 namespace Diffusion.Toolkit
 {
@@ -67,6 +68,7 @@ namespace Diffusion.Toolkit
 
         public MainWindow()
         {
+
             try
             {
                 Logger.Log("===========================================");
@@ -189,7 +191,7 @@ namespace Diffusion.Toolkit
                     if (Thread.CurrentThread.CurrentCulture.Name != menuLanguage)
                     {
                         Menu.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                        MenuWidth = new GridLength(Menu.DesiredSize.Width);
+                        MenuWidth = new GridLength(Menu.DesiredSize.Width + 10);
                         menuLanguage = Thread.CurrentThread.CurrentCulture.Name;
                     }
                 };
@@ -847,6 +849,8 @@ namespace Diffusion.Toolkit
                     }
                 }
             }
+
+            RenderOptions.ProcessRenderMode = _settings.RenderMode;
 
             Logger.Log($"Init completed");
 
