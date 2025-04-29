@@ -99,18 +99,23 @@ namespace Diffusion.Toolkit.Controls
 
         public void ReloadThumbnailsView()
         {
-            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+            var wrapPanel = GetChildOfType<WrapPanel>(this);
 
             if (wrapPanel == null || wrapPanel.Children.Count == 0)
+                return; // 🔐 Protects against out-of-range indexing here
+
+            var scrollViewer = GetChildOfType<ScrollViewer>(this);
+            if (scrollViewer == null)
                 return;
 
-            var scrollViewer = GetChildOfType<ScrollViewer>(this)!;
-
             var offset = scrollViewer.VerticalOffset;
-
             var height = scrollViewer.ViewportHeight;
 
             var item = wrapPanel.Children[0] as ListViewItem;
+
+            // 🛡️ Additional verification
+            if (item == null)
+                return;
 
             var preloadSize = item.ActualHeight * 2;
 
@@ -121,7 +126,10 @@ namespace Diffusion.Toolkit.Controls
             for (var i = 0; i < wrapPanel.Children.Count; i++)
             {
                 item = wrapPanel.Children[i] as ListViewItem;
-                
+
+                if (item == null)
+                    continue; // 🛡️ Additional verification
+
                 if (top + item.ActualHeight >= (offset - preloadSize) && top <= (offset + height + preloadSize))
                 {
                     if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
