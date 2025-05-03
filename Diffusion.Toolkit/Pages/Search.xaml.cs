@@ -1952,7 +1952,7 @@ namespace Diffusion.Toolkit.Pages
 
                 var updatedImages = ServiceLocator.DataStore.GetImagesView(ids);
 
-                var imageLookup = _model.Images.ToDictionary(d => d.Id);
+                var imageLookup = _model.Images.Where(d => d is { EntryType: EntryType.File, IsEmpty: false }).ToDictionary(d => d.Id);
 
                 foreach (var image in updatedImages)
                 {
