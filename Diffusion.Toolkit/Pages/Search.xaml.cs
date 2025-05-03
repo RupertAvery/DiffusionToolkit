@@ -327,7 +327,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.OpenCommand = new RelayCommand<object>(async (o) =>
             {
-                if (_currentModeSettings.ViewMode == ViewMode.Folder && 
+                if (_currentModeSettings.ViewMode == ViewMode.Folder &&
                     (_model.SelectedImageEntry.EntryType is EntryType.Folder or EntryType.RootFolder))
                 {
                     _model.FolderPath = _model.SelectedImageEntry.Path;
@@ -1191,7 +1191,7 @@ namespace Diffusion.Toolkit.Pages
         public static BitmapImage GetBitmapImage(string path)
         {
             BitmapImage bitmap;
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             {
                 bitmap = new BitmapImage();
                 bitmap.BeginInit();
@@ -1582,7 +1582,7 @@ namespace Diffusion.Toolkit.Pages
                     dest.Dispatcher = Dispatcher;
                     dest.Thumbnail = null;
                     dest.IsEmpty = false;
-                    
+
 
                     dest.IsRecursive = false;
                     dest.IsWatched = false;
