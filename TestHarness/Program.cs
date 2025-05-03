@@ -30,9 +30,11 @@ using SQLite;
 
 using var civitai = new CivitaiClient();
 
-var collection = new LiteModelCollection();
+var collection = new ModelCollection();
 
-var results = await GetNextPage("https://civitai.com/api/v1/models?limit=100&page=1&types=Checkpoint&cursor=3%7C28%7C638698");
+//Checkpoint, TextualInversion, Hypernetwork, AestheticGradient, LORA,
+
+var results = await GetNextPage("https://civitai.com/api/v1/models?limit=100&page=1&types=LORA&cursor=26%7C229%7C112346");
 
 collection.Models.AddRange(results.Items);
 
@@ -49,29 +51,38 @@ while (!string.IsNullOrEmpty(results.Metadata.NextPage))
 //    collection.Models.AddRange(results.Items);
 //}
 
-//var options = new JsonSerializerOptions()
-//{
-//    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-//    Converters = { new JsonStringEnumConverter() }
-//};
+var options = new JsonSerializerOptions()
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    Converters = { new JsonStringEnumConverter() }
+};
 
-//var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
+var baseTime = new DateTime(1970, 1, 1, 0, 0, 0);
 
-//var mTime = DateTime.Now - baseTime;
+var mTime = DateTime.Now - baseTime;
 
-//collection.Date = mTime.TotalSeconds;
+collection.Date = mTime.TotalSeconds;
 
-//var json = JsonSerializer.Serialize(collection, options);
+var json = JsonSerializer.Serialize(collection, options);
 
-//File.WriteAllText("models.json", json);
+File.WriteAllText($"loras2-{DateTime.Now:yyyy-MM-dd}.json", json);
 
 
-async Task<Results<LiteModel>> GetNextPage(string nextPageUrl)
+async Task<Results<LiteModel>> GetNextPageLite(string nextPageUrl)
 {
     Console.WriteLine($"Fetching {nextPageUrl}");
 
     return await civitai.GetLiteModels(nextPageUrl, CancellationToken.None);
 }
+
+
+async Task<Results<Diffusion.Civitai.Models.Model>?> GetNextPage(string nextPageUrl)
+{
+    Console.WriteLine($"Fetching {nextPageUrl}");
+
+    return await civitai.GetModels(nextPageUrl, CancellationToken.None);
+}
+
 
 
 async Task<Results<LiteModel>> GetPage(int page, int? total = 0)

@@ -33,6 +33,12 @@ public class CivitaiClient : IDisposable
         return await GetResponseResults<Results<LiteModel>>(_httpClient, url, token);
     }
 
+    public async Task<Results<Model>?> GetModels(string url, CancellationToken token)
+    {
+        return await GetResponseResults<Results<Model>>(_httpClient, url, token);
+    }
+
+
     public async Task<Results<Model>?> GetModelsAsync(ModelSearchParameters searchParameters, CancellationToken token)
     {
         string queryString = GetQueryString(searchParameters);

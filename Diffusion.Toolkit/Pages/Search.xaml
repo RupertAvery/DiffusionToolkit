@@ -47,6 +47,7 @@
             <converters:InvBoolToOpacityConverter x:Key="InvBoolToOpacityConverter"></converters:InvBoolToOpacityConverter>
             <converters:MultiBoolToVisibilityCollapsedConverter x:Key="MultiBoolToVisibilityCollapsedConverter"></converters:MultiBoolToVisibilityCollapsedConverter>
             <converters:InvertBoolConverter x:Key="InvertBoolConverter"></converters:InvertBoolConverter>
+            <converters:UnderlineConverter x:Key="UnderlineConverter"></converters:UnderlineConverter>
         </ResourceDictionary>
     </local:NavigationPage.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
@@ -640,7 +641,7 @@
                                                                             <ColumnDefinition Width="70"/>
                                                                         </Grid.ColumnDefinitions>
                                                                         <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
-                                                                        <Label FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="1"  Content="{Binding Name}"></Label>
+                                                                        <Label FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="1"  Content="{Binding Name, Converter={StaticResource UnderlineConverter}}"></Label>
                                                                         <Label FontFamily="Calibri" FontWeight="Light" FontSize="16"  Padding="4" Grid.Column="2" Content="{Binding ImageCount, Converter={StaticResource NumberFormatConverter}}" HorizontalAlignment="Right"></Label>
                                                                     </Grid>
                                                                 </ControlTemplate>
@@ -711,7 +712,7 @@
                                                                             <ColumnDefinition Width="*"/>
                                                                         </Grid.ColumnDefinitions>
                                                                         <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
-                                                                        <Label FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="1"  Content="{Binding Name}"></Label>
+                                                                        <Label FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="1"  Content="{Binding Name, Converter={StaticResource UnderlineConverter}}"></Label>
                                                                     </Grid>
                                                                 </ControlTemplate>
                                                             </Button.Template>
