@@ -100,10 +100,10 @@ public class Metadata
                     fileParameters = Metadata.ReadFromFileInternal(file);
                     failed = false;
                 }
-                catch (IOException) when (retry < 3)
+                catch (IOException) when (retry < 10)
                 {
                     failed = true;
-                    Thread.Sleep(100);
+                    Thread.Sleep(500);
                     retry++;
                 }
             } while (failed);
