@@ -17,7 +17,7 @@ public static partial class QueryBuilder
     private static readonly Regex FolderRegex = new Regex("\\bfolder:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex PathRegex = new Regex("\\bpath:\\s*(?:(?<criteria>starts with|contains|ends with)\\s+)?(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex DateRegex = new Regex("\\bdate:\\s*(?:(?<prep1>between|before|since|from)\\s+)?(?<date1>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})(?:\\s+(?<prep2>and|up to|to)\\s+(?<date2>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex DateRegex = new Regex("\\bdate:\\s*(?:(?<prep1>between|before|since|from)\\s+)?(?<date1>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})(?:\\s+(?<prep2>and|up to|to|-)\\s+(?<date2>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex SeedRegex = new Regex("\\bseed:\\s*(?<start>[0-9?*]+)(?:\\s*-\\s*(?<end>\\S+))?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex StepsRegex = new Regex("\\bsteps:\\s*(\\d+)(?:\\|(\\d+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
@@ -818,8 +818,8 @@ public static partial class QueryBuilder
             var date1 = match.Groups["date1"].Value;
             var date2 = match.Groups["date2"].Value;
 
-            var prep1 = match.Groups["prep1"].Value;
-            var prep2 = match.Groups["prep2"].Value;
+            var prep1Match = match.Groups["prep1"];
+            var prep2Match = match.Groups["prep2"];
 
             var date = ParseDate(date1);
 
@@ -828,8 +828,13 @@ public static partial class QueryBuilder
             var start = date.Date;
             var end = date.Date;
 
-            if (!string.IsNullOrEmpty(prep1))
+            var prep2 = prep2Match.Value;
+
+
+            if (prep1Match.Success)
             {
+                var prep1 = prep1Match.Value;
+
                 switch (prep1.ToLower())
                 {
                     case "between":
@@ -877,6 +882,19 @@ public static partial class QueryBuilder
                         else
                             throw new Exception($"Unexpected: {prep2}");
                         break;
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(prep2) && prep2.ToLower() == "-")
+                {
+                    if (!string.IsNullOrEmpty(date2))
+                    {
+                        var endDate = ParseDate(date2);
+                        end = endDate.Date;
+                    }
+                    else
+                        throw new Exception("Expected: end date");
                 }
             }
 

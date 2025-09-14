@@ -161,6 +161,7 @@ namespace Diffusion.Toolkit
 
                 PreviewMouseDown += (sender, args) =>
                 {
+                    if (args.Source == QueryInput) return;
                     QueryPopup.IsOpen = false;
                 };
 
