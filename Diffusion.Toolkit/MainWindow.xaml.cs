@@ -40,6 +40,8 @@ using Settings = Diffusion.Toolkit.Configuration.Settings;
 using Diffusion.Database.Models;
 using Image = System.Windows.Controls.Image;
 using System.Windows.Media;
+using SixLabors.ImageSharp;
+using Size = System.Windows.Size;
 
 namespace Diffusion.Toolkit
 {
@@ -365,7 +367,44 @@ namespace Diffusion.Toolkit
                     _previewWindow?.SetCurrentImage(image);
                 };
 
-                if (fullscreen)
+                void UpdatePreviewWindowState()
+                {
+                    _settings.PreviewWindowState.Top = _previewWindow.Top;
+                    _settings.PreviewWindowState.Left = _previewWindow.Left;
+                    _settings.PreviewWindowState.Height = _previewWindow.Height;
+                    _settings.PreviewWindowState.Width = _previewWindow.Width;
+                    _settings.PreviewWindowState.State = _previewWindow.WindowState;
+                    _settings.PreviewWindowState.IsFullScreen = _previewWindow.IsFullScreen;
+                    _settings.PreviewWindowState.IsSet = true;
+                    _settings.SetDirty();
+                }
+
+                _previewWindow.LocationChanged += (sender, args) =>
+                {
+                    UpdatePreviewWindowState();
+                };
+
+                _previewWindow.SizeChanged += (sender, args) =>
+                {
+                    UpdatePreviewWindowState();
+                };
+
+                _previewWindow.StateChanged += (sender, args) =>
+                {
+                    UpdatePreviewWindowState();
+                };
+
+                if (_settings.PreviewWindowState.IsSet)
+                {
+                    _previewWindow.WindowStartupLocation = WindowStartupLocation.Manual;
+                    _previewWindow.WindowState = _settings.PreviewWindowState.State;
+                    _previewWindow.Width = _settings.PreviewWindowState.Width;
+                    _previewWindow.Height = _settings.PreviewWindowState.Height;
+                    _previewWindow.Top = _settings.PreviewWindowState.Top;
+                    _previewWindow.Left = _settings.PreviewWindowState.Left;
+                }
+
+                if (fullscreen || _settings.PreviewWindowState.IsFullScreen)
                 {
                     _previewWindow.ShowFullScreen();
                 }

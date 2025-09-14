@@ -15,3 +15,4 @@
 * Fix for AutoRefresh being broken by the last update
 * Date search fix for Query
 * Prevent clicking on query input to edit from dismissing it
+* Remember last position and state of Preview window

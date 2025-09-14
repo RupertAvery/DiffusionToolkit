@@ -75,6 +75,7 @@ public class Settings : SettingsContainer, IScanOptions
     private int _thumbnailSpacing;
     private ThumbnailViewMode _thumbnailViewMode;
     private RenderMode _renderMode;
+    private PreviewWindowState _previewWindowState;
 
     public Settings()
     {
@@ -124,6 +125,7 @@ public class Settings : SettingsContainer, IScanOptions
 
         NavigationSection = new NavigationSectionSettings();
         NavigationSection.Attach(this);
+        PreviewWindowState = new PreviewWindowState();
 
         //if (initialize)
         //{
@@ -509,4 +511,22 @@ public class Settings : SettingsContainer, IScanOptions
         get => _renderMode;
         set => UpdateValue(ref _renderMode, value);
     }
+
+    public PreviewWindowState PreviewWindowState
+    {
+        get => _previewWindowState;
+        set => UpdateValue(ref _previewWindowState, value);
+    }
+
+}
+
+public class PreviewWindowState
+{
+    public bool IsSet { get; set; }
+    public WindowState State { get; set; }
+    public double Top { get; set; }
+    public double Left { get; set; }
+    public double Width { get; set; }
+    public double Height { get; set; }
+    public bool IsFullScreen { get; set; }
 }
