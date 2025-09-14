@@ -13,3 +13,5 @@
 * Numerous fixes to folder-related stuff like renaming. 
 * Fix for root folder name at the root of a drive (e.g. `X:\`) showing as blank
 * Fix for AutoRefresh being broken by the last update
+* Date search fix for Query
+* Prevent clicking on query input to edit from dismissing it
