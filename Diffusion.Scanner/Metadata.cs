@@ -619,6 +619,18 @@ public class Metadata
             return 0m;
         }
 
+        long GetLongTag(string key)
+        {
+            if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
+            {
+                workflowBuilder.AppendLine(tag.Description);
+                var value = tag.Description.Substring($"{key}: ".Length);
+
+                return long.Parse(value);
+            }
+
+            return 0;
+        }
 
         int GetIntTag(string key)
         {
@@ -639,7 +651,7 @@ public class Metadata
         fp.Height = GetIntTag("height");
         fp.Steps = GetIntTag("num_inference_steps");
         fp.CFGScale = GetDecimalTag("guidance_scale");
-        fp.Seed = GetIntTag("seed");
+        fp.Seed = GetLongTag("seed");
         fp.Sampler = GetTag("sampler_name");
         fp.Model = GetTag("use_stable_diffusion_model");
 
