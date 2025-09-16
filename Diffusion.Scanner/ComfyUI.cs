@@ -24,7 +24,7 @@ namespace Diffusion.IO
         {
             var hash = Id.GetHashCode();
 
-            if(Name != null)
+            if (Name != null)
             {
                 hash = (hash * 397) ^ Name.GetHashCode();
             }
@@ -65,11 +65,20 @@ namespace Diffusion.IO
         {
             if (workflow == null) return null;
             var root = JsonDocument.Parse(workflow);
-            var rootElements = root.RootElement.EnumerateObject().ToDictionary(n => n.Name, n => n.Value);
 
+            JsonElement rootElement = root.RootElement;
+
+            if (rootElement.TryGetProperty("prompt", out var tempElement))
+            {
+                rootElement = tempElement;
+            }
+
+            var rootProperties = rootElement
+                .EnumerateObject().ToDictionary(n => n.Name, n => n.Value);
+            
             var nodes = new List<Node>();
 
-            foreach (var element in rootElements)
+            foreach (var element in rootProperties)
             {
                 var node = new Node();
                 node.Id = element.Key;

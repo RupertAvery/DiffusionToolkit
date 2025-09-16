@@ -1,18 +1,17 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using MetadataExtractor;
-using MetadataExtractor.Formats.Jpeg;
-using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
 using System.Globalization;
-using System.Reflection.Metadata.Ecma335;
-using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
 using System.Text;
-using System.Security.Cryptography;
 using SixLabors.ImageSharp;
+using MetadataExtractor;
+using MetadataExtractor.Formats.Jpeg;
+using MetadataExtractor.Formats.Png;
+using MetadataExtractor.Formats.WebP;
+using MetadataExtractor.Formats.QuickTime;
 
 namespace Diffusion.IO;
 
@@ -51,6 +50,7 @@ public class Metadata
         PNG,
         JPEG,
         WebP,
+        MP4,
         Other,
     }
 
@@ -154,11 +154,23 @@ public class Metadata
         // Some PNGs are JPEGs in disguise, read the magic to make sure we have the correct file type
         var fileType = GetFileType(stream);
 
+        if (fileType == FileType.Other)
+        {
+            if (Path.GetExtension(file).ToLowerInvariant() == ".mp4")
+            {
+                fileType = FileType.MP4;
+            }
+        }
+
         stream.Seek(0, SeekOrigin.Begin);
 
         // Now, attempt to read the metadata
         switch (fileType)
         {
+            case FileType.MP4:
+                {
+                    break;
+                }
             case FileType.PNG:
                 {
                     IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(stream);
@@ -255,7 +267,7 @@ public class Metadata
                                     {
                                         var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
                                         format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
-                                        var tempParameters = isJson ? ReadComfyUIParameters(file, tag.Description) : ReadEasyDiffusionParameters(file, directories);
+                                        var tempParameters = isJson ? ReadComfyUIParameters(tag.Description) : ReadEasyDiffusionParameters(file, directories);
 
                                         if (fileParameters == null)
                                         {
@@ -400,6 +412,25 @@ public class Metadata
                                                     _ => fileParameters
                                                 };
                                             }
+                                            else
+                                            {
+                                                if (tag.Description.StartsWith("{\"prompt\":"))
+                                                {
+                                                    format = MetaFormat.ComfyUI;
+                                                    var tempParameters =  ReadComfyUIParameters(tag.Description, true);
+
+                                                    if (fileParameters == null)
+                                                    {
+                                                        fileParameters = tempParameters;
+                                                    }
+                                                    else
+                                                    {
+                                                        fileParameters.WorkflowId = tempParameters.WorkflowId;
+                                                        fileParameters.Workflow = tempParameters.Workflow;
+                                                        fileParameters.Nodes = tempParameters.Nodes;
+                                                    }
+                                                }
+                                            }
                                             break;
                                     }
                                 }
@@ -495,7 +526,7 @@ public class Metadata
 
         fileParameters.Width = width;
         fileParameters.Height = height;
-        
+
         return fileParameters;
     }
 
@@ -699,27 +730,39 @@ public class Metadata
 
 
 
-    private static FileParameters ReadComfyUIParameters(string file, string description)
+    private static FileParameters ReadComfyUIParameters(string description, bool isProperJson = false)
     {
         var fp = new FileParameters();
 
         try
         {
-            var json = description.Substring("prompt: ".Length);
+            if (!isProperJson)
+            {
+                var json = description.Substring("prompt: ".Length);
 
-            // fix for errant nodes
-            json = json.Replace("NaN", "null");
+                // fix for errant nodes
+                json = json.Replace("NaN", "null");
 
-            fp.Workflow = json;
+                fp.Workflow = json;
 
-            var root = JsonDocument.Parse(json);
+                var root = JsonDocument.Parse(json);
+                fp.WorkflowId = GetHashCode(root.RootElement).ToString("X");
 
-            fp.WorkflowId = GetHashCode(root.RootElement).ToString("X");
+                var parser = new ComfyUIParser();
+                var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
 
-            var parser = new ComfyUIParser();
-            var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
+                fp.Nodes = pnodes;
+            }
+            else
+            {
+                fp.Workflow = description;
 
-            fp.Nodes = pnodes;
+                var parser = new ComfyUIParser();
+                var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
+
+                fp.Nodes = pnodes;
+            }
+
 
             return fp;
         }
