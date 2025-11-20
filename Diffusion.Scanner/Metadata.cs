@@ -458,9 +458,120 @@ public class Metadata
                 {
                     IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(stream);
 
+                    var format = MetaFormat.Unknown;
+
                     try
                     {
-                        fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        // Added ComfyUI metadata loading
+                        foreach (var directory in directories)
+                        {
+                            if (directory.Name == "Exif IFD0")
+                            {
+                                foreach (var tag in directory.Tags)
+                                {
+                                    switch (tag.Name)
+                                    {
+                                        case "Make":
+                                           // The workflow is stored in the Make tag.
+                                           if (!string.IsNullOrEmpty(tag.Description))
+                                           {
+                                               try
+                                               {
+                                                   // Check if it is JSON format
+                                                   var makeData = tag.Description.Trim().Substring("workflow:".Length);
+                                                   if (makeData.StartsWith("{"))
+                                                   {
+                                                       format = MetaFormat.ComfyUI;
+                                                       fileParameters ??= new FileParameters();
+                                                       fileParameters.Workflow = makeData;
+                                                        
+                                                       var parser = new ComfyUIParser();
+                                                       var pnodes = parser.Parse(fileParameters.WorkflowId, fileParameters.Workflow);
+                                                       fileParameters.Nodes = pnodes;
+                                                        
+                                                       // Generate WorkflowId
+                                                       var root = JsonDocument.Parse(makeData);
+                                                       fileParameters.WorkflowId = GetHashCode(root.RootElement).ToString("X");
+                                                   }
+                                               }
+                                               catch (Exception e)
+                                               {
+                                                   Logger.Log($"Error parsing Make tag as ComfyUI workflow: {e.Message}");
+                                               }
+                                           }
+                                           break;
+
+                                        case "Model":
+                                            // The Model tag contains prompt data
+                                            if (!string.IsNullOrEmpty(tag.Description))
+                                            {
+                                                try
+                                                {
+                                                    // Check if it is JSON format
+                                                    var modelData = tag.Description.Trim().Substring("prompt:".Length);
+                                                    if (modelData.StartsWith("{"))
+                                                    {
+                                                        format = MetaFormat.ComfyUI;
+                                                        var tempParameters = ReadComfyUIParameters($"prompt: {modelData}", false);
+                                                        
+                                                        if (fileParameters == null)
+                                                        {
+                                                            fileParameters = tempParameters;
+                                                        }
+                                                        else
+                                                        {
+                                                            // If both workflow and prompt exist, the prompt information is merged.
+                                                            if (tempParameters.Nodes != null)
+                                                            {
+                                                                fileParameters.WorkflowId = tempParameters.WorkflowId;
+                                                                fileParameters.Workflow = tempParameters.Workflow;
+                                                                fileParameters.Nodes = tempParameters.Nodes;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    Logger.Log($"Error parsing Model tag as ComfyUI prompt: {e.Message}");
+                                                }
+                                            }
+                                            break;
+                                    }
+                                }
+                            }
+                            // Check User Comment in Exif SubIFD (supports the conventional A1111 format)
+                            else if (directory.Name == "Exif SubIFD")
+                            {
+                                foreach (var tag in directory.Tags)
+                                {
+                                    if (tag.Name == "User Comment")
+                                    {
+                                        if (tag.Description.StartsWith("{\"prompt\":"))
+                                        {
+                                            format = MetaFormat.ComfyUI;
+                                            var tempParameters = ReadComfyUIParameters(tag.Description, true);
+
+                                            if (fileParameters == null)
+                                            {
+                                                fileParameters = tempParameters;
+                                            }
+                                            else
+                                            {
+                                                fileParameters.WorkflowId = tempParameters.WorkflowId;
+                                                fileParameters.Workflow = tempParameters.Workflow;
+                                                fileParameters.Nodes = tempParameters.Nodes;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // If ComfyUI metadata is not found, load the legacy A1111 parameters
+                        if (fileParameters == null)
+                        {
+                            fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        }
                     }
                     catch (Exception e)
                     {
