@@ -548,11 +548,11 @@ namespace Diffusion.Toolkit
             }
 
 
-
-
-
             // TODO: Find a better place to put this:
             // Set defaults for new version features
+
+
+
             if (semVer < SemanticVersion.Parse("v1.9.0"))
             {
                 _settings.ShowTags = true;
@@ -563,6 +563,12 @@ namespace Diffusion.Toolkit
                 _settings.PermanentlyDelete = false;
             }
 
+            if (semVer < SemanticVersion.Parse("v1.10.0"))
+            {
+                _settings.FileExtensions = $"{_settings.FileExtensions}, .mp4";
+                _settings.LoopVideo = true;
+                _settings.RenderMode = RenderMode.Default;
+            }
 
             if (semVer < AppInfo.Version)
             {

@@ -66,6 +66,7 @@
     <None Remove="Localization\fr-FR.json" />
     <None Remove="Release Notes\What%27s New v1.0.md" />
     <None Remove="Release Notes\What%27s New v1.1.md" />
+    <None Remove="Release Notes\What%27s New v1.10.0.md" />
     <None Remove="Release Notes\What%27s New v1.2.md" />
     <None Remove="Release Notes\What%27s New v1.3.md" />
     <None Remove="Release Notes\What%27s New v1.4.md" />
@@ -102,6 +103,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Release Notes\What's New v1.1.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.10.0.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Release Notes\What's New v1.2.md">
