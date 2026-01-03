@@ -257,6 +257,11 @@ namespace Diffusion.Toolkit
         {
             OnKeyDown(e);
         }
+
+        private void PreviewPane_OnLoaded(object sender, RoutedEventArgs e)
+        {
+           PreviewPane.SetFocus();
+        }
     }
 
 
