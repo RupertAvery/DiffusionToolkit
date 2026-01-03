@@ -19,9 +19,6 @@ namespace Diffusion.Toolkit
         private List<string> _files;
         private int _currentFile;
         private List<FolderChange> _folderChanges = new List<FolderChange>();
-        private string _markdown;
-        private bool _canNext;
-        private bool _canPrevious;
 
         public ICommand Escape { get; set; }
         public ICommand PreviousCommand { get; set; }
@@ -29,19 +26,20 @@ namespace Diffusion.Toolkit
 
         public bool CanPrevious
         {
-            get => _canPrevious;
-            set => SetField(ref _canPrevious, value);
+            get;
+            set => SetField(ref field, value);
         }
+
         public bool CanNext
         {
-            get => _canNext;
-            set => SetField(ref _canNext, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public string Markdown
         {
-            get => _markdown;
-            set => SetField(ref _markdown, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public Style Style { get; set; }

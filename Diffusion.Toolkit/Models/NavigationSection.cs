@@ -1,23 +1,10 @@
-﻿using Diffusion.Toolkit.Configuration;
+﻿using System.Diagnostics.CodeAnalysis;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Models;
 
 public class NavigationSection : BaseNotify
 {
-    private AccordionState _folderState;
-    private AccordionState _modelState;
-    private AccordionState _albumState;
-    private AccordionState _queryState;
-    private bool _showFolders;
-    private bool _showModels;
-    private bool _showAlbums;
-    private bool _showQueries;
-    private FoldersSection? _foldersSection;
-    private double _folderHeight;
-    private double _albumHeight;
-    private double _modelHeight;
-    private double _queryHeight;
-
     public NavigationSection()
     {
         FoldersSection = new FoldersSection();
@@ -25,80 +12,81 @@ public class NavigationSection : BaseNotify
 
     public bool ShowFolders
     {
-        get => _showFolders;
-        set => SetField(ref _showFolders, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ShowModels
     {
-        get => _showModels;
-        set => SetField(ref _showModels, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ShowAlbums
     {
-        get => _showAlbums;
-        set => SetField(ref _showAlbums, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ShowQueries
     {
-        get => _showQueries;
-        set => SetField(ref _showQueries, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public AccordionState FolderState
     {
-        get => _folderState;
-        set => SetField(ref _folderState, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double FolderHeight
     {
-        get => _folderHeight;
-        set => SetField(ref _folderHeight, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public AccordionState ModelState
     {
-        get => _modelState;
-        set => SetField(ref _modelState, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double ModelHeight
     {
-        get => _modelHeight;
-        set => SetField(ref _modelHeight, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public AccordionState AlbumState
     {
-        get => _albumState;
-        set => SetField(ref _albumState, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double AlbumHeight
     {
-        get => _albumHeight;
-        set => SetField(ref _albumHeight, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public AccordionState QueryState
     {
-        get => _queryState;
-        set => SetField(ref _queryState, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double QueryHeight
     {
-        get => _queryHeight;
-        set => SetField(ref _queryHeight, value);
+        get;
+        set => SetField(ref field, value);
     }
 
+    [field: AllowNull, MaybeNull]
     public FoldersSection FoldersSection
     {
-        get => _foldersSection;
-        set => SetField(ref _foldersSection, value);
+        get;
+        set => SetField(ref field, value);
     }
 }

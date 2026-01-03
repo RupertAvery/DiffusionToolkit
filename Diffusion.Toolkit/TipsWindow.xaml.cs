@@ -8,26 +8,22 @@ namespace Diffusion.Toolkit
 {
     public class TipsModel : BaseNotify
     {
-        private string _markdown;
-        private Style _style;
-        private ICommand _escape;
-
         public string Markdown
         {
-            get => _markdown;
-            set => SetField(ref _markdown, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public Style Style
         {
-            get => _style;
-            set => SetField(ref _style, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public ICommand Escape
         {
-            get => _escape;
-            set => SetField(ref _escape, value);
+            get;
+            set => SetField(ref field, value);
         }
     }
 

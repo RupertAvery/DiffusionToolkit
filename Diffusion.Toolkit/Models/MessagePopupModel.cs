@@ -5,25 +5,6 @@ namespace Diffusion.Toolkit.Models;
 
 public class MessagePopupModel : BaseNotify
 {
-    private ICommand _okCommand;
-    private bool _isVisible;
-    private string _message;
-    private string _title;
-    private ICommand _cancelCommand;
-    private ICommand _yesCommand;
-    private ICommand _noCommand;
-    private bool _hasOk;
-    private bool _hasCancel;
-    private bool _hasYes;
-    private bool _hasNo;
-
-    private double _height;
-    private double _width;
-    private UIElement _placementTarget;
-    private string? _input;
-    private bool _showInput;
-
-
     public MessagePopupModel()
     {
 
@@ -31,98 +12,98 @@ public class MessagePopupModel : BaseNotify
 
     public UIElement PlacementTarget
     {
-        get => _placementTarget;
-        set => SetField(ref _placementTarget, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public bool IsVisible
     {
-        get => _isVisible;
-        set => SetField(ref _isVisible, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Title
     {
-        get => _title;
-        set => SetField(ref _title, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Message
     {
-        get => _message;
-        set => SetField(ref _message, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand OKCommand
     {
-        get => _okCommand;
-        set => SetField(ref _okCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand CancelCommand
     {
-        get => _cancelCommand;
-        set => SetField(ref _cancelCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand YesCommand
     {
-        get => _yesCommand;
-        set => SetField(ref _yesCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand NoCommand
     {
-        get => _noCommand;
-        set => SetField(ref _noCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasOk
     {
-        get => _hasOk;
-        set => SetField(ref _hasOk, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasCancel
     {
-        get => _hasCancel;
-        set => SetField(ref _hasCancel, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasYes
     {
-        get => _hasYes;
-        set => SetField(ref _hasYes, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasNo
     {
-        get => _hasNo;
-        set => SetField(ref _hasNo, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double Width
     {
-        get => _width;
-        set => SetField(ref _width, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double Height
     {
-        get => _height;
-        set => SetField(ref _height, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string? Input
     {
-        get => _input;
-        set => SetField(ref _input, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ShowInput
     {
-        get => _showInput;
-        set => SetField(ref _showInput, value);
+        get;
+        set => SetField(ref field, value);
     }
 }

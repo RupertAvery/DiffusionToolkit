@@ -11,35 +11,32 @@ namespace Diffusion.Toolkit;
 
 public class AlbumSortModel : BaseNotify
 {
-    private ObservableCollection<Album> _albums;
-    private ObservableCollection<Album> _sortedAlbums;
-    private Album? _selectedAlbum;
-    private string _sortAlbumsBy;
     public ICommand Escape { get; set; }
 
     public string SortAlbumsBy
     {
-        get => _sortAlbumsBy;
-        set => SetField(ref _sortAlbumsBy, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public Album? SelectedAlbum
     {
-        get => _selectedAlbum;
-        set => SetField(ref _selectedAlbum, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ObservableCollection<Album> Albums
     {
-        get => _albums;
-        set => SetField(ref _albums, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ObservableCollection<Album> SortedAlbums
     {
-        get => _sortedAlbums;
-        set => SetField(ref _sortedAlbums, value);
+        get;
+        set => SetField(ref field, value);
     }
+
     public ICommand MoveUpCommand { get; set; }
     public ICommand MoveDownCommand { get; set; }
 }

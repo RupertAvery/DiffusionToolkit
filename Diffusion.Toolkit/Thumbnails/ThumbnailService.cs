@@ -105,13 +105,13 @@ public class ThumbnailService
 
     public int Size
     {
-        get => _size;
+        get;
         set
         {
-            _size = value;
+            field = value;
             ThumbnailCache.Instance.Clear();
         }
-    }
+    } = 128;
 
     public bool EnableCache
     {
@@ -160,7 +160,6 @@ public class ThumbnailService
         return Task.WhenAll(consumers);
     }
 
-    private int _size = 128;
     private bool _enableCache;
 
 

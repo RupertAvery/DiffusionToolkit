@@ -10,45 +10,11 @@ namespace Diffusion.Toolkit.Models;
 
 public class SettingsModel : BaseNotify
 {
-    private string _modelRootPath;
     private ObservableCollection<string> _imagePaths;
-    private int _selectedIndex;
-    private int _excludedSelectedIndex;
-    private string _fileExtensions;
-    private int _pageSize;
-    private string _theme;
-    private string _culture;
-    private bool _checkForUpdatesOnStartup;
-    private bool _scanForNewImagesOnStartup;
-    private bool _autoTagNsfw;
-    private string _nsfwTags;
-    private string _hashCache;
-    private bool _portableMode;
+
     private ObservableCollection<string> _excludePaths;
     //private bool? _recurseFolders;
-    private ICommand _escape;
-    private bool _useBuiltInViewer;
-    private bool _openInFullScreen;
-    private bool _useSystemDefault;
-    private bool _useCustomViewer;
-    private string _customCommandLine;
-    private string _customCommandLineArgs;
-    private bool _autoRefresh;
-    private IEnumerable<Langauge> _cultures;
-    private int _slideShowDelay;
-    private bool _scrollNavigation;
-    private bool _advanceOnTag;
-    private bool _storeMetadata;
-    private bool _storeWorkflow;
-    private ObservableCollection<ExternalApplicationModel> _externalApplications;
-    private bool _scanUnavailable;
-    private ExternalApplicationModel? _selectedApplication;
-    private IEnumerable<OptionValue> _themeOptions;
     private bool _isFoldersDirty;
-    private bool _confirmDeletion;
-    private bool _permanentlyDelete;
-    private bool _showFilenames;
-    private bool _softwareOnly;
 
     public SettingsModel()
     {
@@ -84,218 +50,226 @@ public class SettingsModel : BaseNotify
 
     public int SelectedIndex
     {
-        get => _selectedIndex;
-        set => SetField(ref _selectedIndex, value, false);
+        get;
+        set => SetField(ref field, value, false);
     }
 
     public int ExcludedSelectedIndex
     {
-        get => _excludedSelectedIndex;
-        set => SetField(ref _excludedSelectedIndex, value, false);
+        get;
+        set => SetField(ref field, value, false);
     }
 
     public string FileExtensions
     {
-        get => _fileExtensions;
-        set => SetField(ref _fileExtensions, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string ModelRootPath
     {
-        get => _modelRootPath;
-        set => SetField(ref _modelRootPath, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int PageSize
     {
-        get => _pageSize;
-        set => SetField(ref _pageSize, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Theme
     {
-        get => _theme;
-        set => SetField(ref _theme, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Culture
     {
-        get => _culture;
-        set => SetField(ref _culture, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public IEnumerable<Langauge> Cultures
     {
-        get => _cultures;
-        set => SetField(ref _cultures, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool AutoRefresh
     {
-        get => _autoRefresh;
-        set => SetField(ref _autoRefresh, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public bool CheckForUpdatesOnStartup
     {
-        get => _checkForUpdatesOnStartup;
-        set => SetField(ref _checkForUpdatesOnStartup, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool PortableMode
     {
-        get => _portableMode;
-        set => SetField(ref _portableMode, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ScanForNewImagesOnStartup
     {
-        get => _scanForNewImagesOnStartup;
-        set => SetField(ref _scanForNewImagesOnStartup, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool AutoTagNSFW
     {
-        get => _autoTagNsfw;
-        set => SetField(ref _autoTagNsfw, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string NSFWTags
     {
-        get => _nsfwTags;
-        set => SetField(ref _nsfwTags, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string HashCache
     {
-        get => _hashCache;
-        set => SetField(ref _hashCache, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand Escape
     {
-        get => _escape;
-        set => SetField(ref _escape, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseBuiltInViewer
     {
-        get => _useBuiltInViewer;
-        set => SetField(ref _useBuiltInViewer, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool OpenInFullScreen
     {
-        get => _openInFullScreen;
-        set => SetField(ref _openInFullScreen, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseSystemDefault
     {
-        get => _useSystemDefault;
-        set => SetField(ref _useSystemDefault, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseCustomViewer
     {
-        get => _useCustomViewer;
-        set => SetField(ref _useCustomViewer, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string CustomCommandLine
     {
-        get => _customCommandLine;
-        set => SetField(ref _customCommandLine, value);
+        get;
+        set => SetField(ref field, value);
     }
+
     public string CustomCommandLineArgs
     {
-        get => _customCommandLineArgs;
-        set => SetField(ref _customCommandLineArgs, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public IEnumerable<OptionValue> ThemeOptions
     {
-        get => _themeOptions;
-        set => _themeOptions = value;
+        get;
+        set => field = value;
     }
 
     public int SlideShowDelay
     {
-        get => _slideShowDelay;
-        set => SetField(ref _slideShowDelay, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ScrollNavigation
     {
-        get => _scrollNavigation;
-        set => SetField(ref _scrollNavigation, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool AdvanceOnTag
     {
-        get => _advanceOnTag;
-        set => SetField(ref _advanceOnTag, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool StoreMetadata
     {
-        get => _storeMetadata;
-        set => SetField(ref _storeMetadata, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool StoreWorkflow
     {
-        get => _storeWorkflow;
-        set => SetField(ref _storeWorkflow, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ScanUnavailable
     {
-        get => _scanUnavailable;
-        set => SetField(ref _scanUnavailable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ShowFilenames
     {
-        get => _showFilenames;
-        set => SetField(ref _showFilenames, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool PermanentlyDelete
     {
-        get => _permanentlyDelete;
-        set => SetField(ref _permanentlyDelete, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ConfirmDeletion
     {
-        get => _confirmDeletion;
-        set => SetField(ref _confirmDeletion, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ObservableCollection<ExternalApplicationModel> ExternalApplications
     {
-        get => _externalApplications;
+        get;
         set
         {
-            SetField(ref _externalApplications, value);
-            RegisterObservableChanges(_externalApplications);
-            _externalApplications.CollectionChanged += ExternalApplicationsOnCollectionChanged;
+            SetField(ref field, value);
+            RegisterObservableChanges(field);
+            field.CollectionChanged += ExternalApplicationsOnCollectionChanged;
         }
     }
 
     public bool SoftwareOnly
     {
-        get => _softwareOnly;
-        set => SetField(ref _softwareOnly, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ExternalApplicationModel? SelectedApplication
     {
-        get => _selectedApplication;
-        set => SetField(ref _selectedApplication, value, false);
+        get;
+        set => SetField(ref field, value, false);
     }
+
+    public bool LoopVideo
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
 
     public override bool IsDirty => _isDirty;
 

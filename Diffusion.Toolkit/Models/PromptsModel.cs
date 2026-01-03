@@ -7,17 +7,13 @@ namespace Diffusion.Toolkit.Models;
 
 public class PromptsModel : BaseNotify
 {
-    private ObservableCollection<UsedPrompt> _prompts;
-    private ObservableCollection<UsedPrompt> _negativePrompts;
     private string _promptQuery;
     private int _promptDistance;
     private bool _fullTextPrompt;
     private ResultsView _promptsResults;
     private ResultsView _negativePromptsResults;
-    private UsedPrompt? _selectedPrompt;
-    private bool _isBusy;
 
-    
+
     public PromptsModel()
     {
         _promptsResults = new ResultsView();
@@ -25,10 +21,11 @@ public class PromptsModel : BaseNotify
     }
 
     public MainModel MainModel => ServiceLocator.MainModel;
+
     public ObservableCollection<UsedPrompt> Prompts
     {
-        get => _prompts;
-        set => SetField(ref _prompts, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ResultsView PromptsResults
@@ -39,8 +36,8 @@ public class PromptsModel : BaseNotify
 
     public ObservableCollection<UsedPrompt> NegativePrompts
     {
-        get => _negativePrompts;
-        set => SetField(ref _negativePrompts, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ResultsView NegativePromptsResults
@@ -87,13 +84,13 @@ public class PromptsModel : BaseNotify
 
     public UsedPrompt? SelectedPrompt
     {
-        get => _selectedPrompt;
-        set => SetField(ref _selectedPrompt, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsBusy
     {
-        get => _isBusy;
-        set => SetField(ref _isBusy, value);
+        get;
+        set => SetField(ref field, value);
     }
 }

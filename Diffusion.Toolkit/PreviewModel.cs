@@ -8,10 +8,7 @@ public class PreviewModel : BaseNotify
 {
   
     private ImageViewModel? _currentImage;
-    private bool _nsfwBlur;
     private bool _fitToPreview;
-    private bool _slideShowActive;
-    private bool _isTopHover;
 
     public PreviewModel()
     {
@@ -23,17 +20,17 @@ public class PreviewModel : BaseNotify
         get => _currentImage;
         set => SetField(ref _currentImage, value);
     }
-        
+
     public bool NSFWBlur
     {
-        get => _nsfwBlur;
-        set => SetField(ref _nsfwBlur, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool SlideShowActive
     {
-        get => _slideShowActive;
-        set => SetField(ref _slideShowActive, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand Close { get; set;  }
@@ -49,8 +46,8 @@ public class PreviewModel : BaseNotify
 
     public bool IsTopHover
     {
-        get => _isTopHover;
-        set => SetField(ref _isTopHover, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public MainModel MainModel => ServiceLocator.MainModel;

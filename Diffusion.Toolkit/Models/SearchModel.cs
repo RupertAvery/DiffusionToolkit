@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Input;
 using Diffusion.Common;
@@ -15,62 +16,24 @@ public class SearchModel : BaseNotify
 {
     private readonly MainModel _mainModel;
     private ObservableCollection<ImageEntry>? _images;
-    private ImageEntry? _selectedImage;
-    //public object _rowLock = new object();
-    private int _totalFiles;
-    private int _currentPosition;
 
-    private ICommand _searchCommand;
+    //public object _rowLock = new object();
+
     private string _searchText;
 
-    private int _page;
     private bool _isEmpty;
     private int _pages;
-    private string _results;
-    private string _resultStatus;
     private string _searchHint;
     private ImageViewModel? _currentImage;
     private float _imageOpacity;
-    private bool _hideIcons;
     private ObservableCollection<string> _searchHistory;
 
-    private ICommand? _refresh;
-    private ICommand? _focusSearch;
-    private string? _modeName;
-    private ICommand? _showDropDown;
-    private ICommand? _hideDropDown;
-    private ICommand? _copyFiles;
-    private ICommand _showFilter;
-    private ICommand _hideFilter;
-    private ICommand _clearSearch;
     private bool _isFilterVisible;
     private FilterControlModel _filter;
-    private ICommand _filterCommand;
-    private ICommand _clearCommand;
     private string _sortBy;
     private string _sortDirection;
-    private ICommand _openCommand;
-    private ICommand _goHome;
     private ViewMode _currentViewMode;
-    private string _folderPath;
-    private ICommand _goUp;
-    private string _album;
     private ObservableCollection<Album> _albums;
-    private ICommand _pageChangedCommand;
-    private IEnumerable<OptionValue> _sortOptions;
-    private IEnumerable<OptionValue> _sortOrderOptions;
-
-    private NavigationSection _navigationSection;
-    private MetadataSection _metadataSection;
-    private bool _isBusy;
-    private ICommand _showSearchSettings;
-    private bool _isSearchSettingsVisible;
-    private string _currentMode;
-    private bool _isSearchHelpVisible;
-    private ICommand _showSearchHelp;
-    private Style _searchHelpStyle;
-    private string _searchHelpMarkdown;
-    private bool _hasNoImagePaths;
 
     public SearchModel()
     {
@@ -140,21 +103,21 @@ public class SearchModel : BaseNotify
 
     public ImageEntry? SelectedImageEntry
     {
-        get => _selectedImage;
-        set => SetField(ref _selectedImage, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public int CurrentPosition
     {
-        get => _currentPosition;
-        set => SetField(ref _currentPosition, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int TotalFiles
     {
-        get => _totalFiles;
-        set => SetField(ref _totalFiles, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string SearchText
@@ -175,13 +138,13 @@ public class SearchModel : BaseNotify
 
     public ICommand SearchCommand
     {
-        get => _searchCommand;
-        set => SetField(ref _searchCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int Page
     {
-        get => _page;
+        get;
         set
         {
             if (value > _pages)
@@ -198,7 +161,7 @@ public class SearchModel : BaseNotify
                 value = 1;
             }
 
-            SetField(ref _page, value);
+            SetField(ref field, value);
         }
     }
 
@@ -216,14 +179,14 @@ public class SearchModel : BaseNotify
 
     public string Results
     {
-        get => _results;
-        set => SetField(ref _results, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string ResultStatus
     {
-        get => _resultStatus;
-        set => SetField(ref _resultStatus, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string SearchHint
@@ -240,74 +203,80 @@ public class SearchModel : BaseNotify
 
     public bool HideIcons
     {
-        get => _hideIcons;
-        set => SetField(ref _hideIcons, value);
+        get;
+        set => SetField(ref field, value);
     }
 
+    [field: AllowNull, MaybeNull]
     public ICommand Refresh
     {
-        get => _refresh;
-        set => SetField(ref _refresh, value);
+        get;
+        set => SetField(ref field, value);
     }
 
+    [field: AllowNull, MaybeNull]
     public ICommand FocusSearch
     {
-        get => _focusSearch;
-        set => SetField(ref _focusSearch, value);
+        get;
+        set => SetField(ref field, value);
     }
 
+    [field: AllowNull, MaybeNull]
     public string ModeName
     {
-        get => _modeName;
-        set => SetField(ref _modeName, value);
+        get;
+        set => SetField(ref field, value);
     }
 
+    [field: AllowNull, MaybeNull]
     public ICommand ShowDropDown
     {
-        get => _showDropDown;
-        set => SetField(ref _showDropDown, value);
+        get;
+        set => SetField(ref field, value);
     }
 
+    [field: AllowNull, MaybeNull]
     public ICommand HideDropDown
     {
-        get => _hideDropDown;
-        set => SetField(ref _hideDropDown, value);
+        get;
+        set => SetField(ref field, value);
     }
 
+    [field: AllowNull, MaybeNull]
     public ICommand CopyFiles
     {
-        get => _copyFiles;
-        set => SetField(ref _copyFiles, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ShowSearchHelp
     {
-        get => _showSearchHelp;
-        set => SetField(ref _showSearchHelp, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ShowSearchSettings
     {
-        get => _showSearchSettings;
-        set => SetField(ref _showSearchSettings, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ShowFilter
     {
-        get => _showFilter;
-        set => SetField(ref _showFilter, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand HideFilter
     {
-        get => _hideFilter;
-        set => SetField(ref _hideFilter, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ClearSearch
     {
-        get => _clearSearch;
-        set => SetField(ref _clearSearch, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsFilterVisible
@@ -324,20 +293,20 @@ public class SearchModel : BaseNotify
 
     public ICommand FilterCommand
     {
-        get => _filterCommand;
-        set => SetField(ref _filterCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ClearCommand
     {
-        get => _clearCommand;
-        set => SetField(ref _clearCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public IEnumerable<OptionValue> SortOptions
     {
-        get => _sortOptions;
-        set => SetField(ref _sortOptions, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string SortBy
@@ -348,8 +317,8 @@ public class SearchModel : BaseNotify
 
     public IEnumerable<OptionValue> SortOrderOptions
     {
-        get => _sortOrderOptions;
-        set => SetField(ref _sortOrderOptions, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string SortDirection
@@ -360,20 +329,20 @@ public class SearchModel : BaseNotify
 
     public ICommand OpenCommand
     {
-        get => _openCommand;
-        set => SetField(ref _openCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand GoHome
     {
-        get => _goHome;
-        set => SetField(ref _goHome, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand GoUp
     {
-        get => _goUp;
-        set => SetField(ref _goUp, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ViewMode CurrentViewMode
@@ -395,70 +364,70 @@ public class SearchModel : BaseNotify
     // TODO: merge this into above
     public string FolderPath
     {
-        get => _folderPath;
-        set => SetField(ref _folderPath, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Album
     {
-        get => _album;
-        set => SetField(ref _album, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand PageChangedCommand
     {
-        get => _pageChangedCommand;
-        set => SetField(ref _pageChangedCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public NavigationSection NavigationSection
     {
-        get => _navigationSection;
-        set => SetField(ref _navigationSection, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public MetadataSection MetadataSection
     {
-        get => _metadataSection;
-        set => SetField(ref _metadataSection, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsBusy
     {
-        get => _isBusy;
-        set => SetField(ref _isBusy, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string CurrentMode
     {
-        get => _currentMode;
-        set => SetField(ref _currentMode, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsSearchSettingsVisible
     {
-        get => _isSearchSettingsVisible;
-        set => SetField(ref _isSearchSettingsVisible, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public SearchSettings SearchSettings { get; set; }
 
     public bool IsSearchHelpVisible
     {
-        get => _isSearchHelpVisible;
-        set => SetField(ref _isSearchHelpVisible, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string SearchHelpMarkdown
     {
-        get => _searchHelpMarkdown;
-        set => SetField(ref _searchHelpMarkdown, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public Style SearchHelpStyle
     {
-        get => _searchHelpStyle;
-        set => SetField(ref _searchHelpStyle, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int Count { get; set; }
@@ -466,7 +435,7 @@ public class SearchModel : BaseNotify
 
     public bool HasNoImagePaths
     {
-        get => _hasNoImagePaths;
-        set => SetField(ref _hasNoImagePaths, value);
+        get;
+        set => SetField(ref field, value);
     }
 }

@@ -4,19 +4,10 @@ namespace Diffusion.Toolkit.Configuration;
 
 public class NavigationSectionSettings : SettingsContainer
 {
-    private AccordionState _folderState;
-    private AccordionState _modelState;
-    private AccordionState _albumState;
-    private AccordionState _queryState;
     private bool _showFolders;
     private bool _showModels;
     private bool _showAlbums;
     private bool _showQueries;
-    private double _folderHeight;
-    private double _modelHeight;
-    private double _albumHeight;
-    private double _queryHeight;
-    private bool _showSection;
 
     public NavigationSectionSettings()
     {
@@ -38,51 +29,51 @@ public class NavigationSectionSettings : SettingsContainer
 
     public AccordionState FolderState
     {
-        get => _folderState;
-        set => UpdateValue(ref _folderState, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
     public AccordionState ModelState
     {
-        get => _modelState;
-        set => UpdateValue(ref _modelState, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
     public AccordionState AlbumState
     {
-        get => _albumState;
-        set => UpdateValue(ref _albumState, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
     public AccordionState QueryState
     {
-        get => _queryState;
-        set => UpdateValue(ref _queryState, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
 
     public double FolderHeight
     {
-        get => _folderHeight;
-        set => UpdateValue(ref _folderHeight, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
     public double ModelHeight
     {
-        get => _modelHeight;
-        set => UpdateValue(ref _modelHeight, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
     public double AlbumHeight
     {
-        get => _albumHeight;
-        set => UpdateValue(ref _albumHeight, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
     public double QueryHeight
     {
-        get => _queryHeight;
-        set => UpdateValue(ref _queryHeight, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
     public bool ShowFolders
@@ -147,10 +138,9 @@ public class NavigationSectionSettings : SettingsContainer
 
     public bool ShowSection
     {
-        get => _showSection;
-        set => UpdateValue(ref _showSection, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
-
 
 
     public void Attach(Settings settings)

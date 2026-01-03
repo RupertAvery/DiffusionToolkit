@@ -13,87 +13,14 @@ namespace Diffusion.Toolkit.Models;
 
 public class MainModel : BaseNotify
 {
-    private Page _page;
-    private ICommand _rescan;
-    private ICommand _closeCommand;
-    private ICommand _settingsCommand;
-    private ICommand _rebuild;
-    private bool _showIcons;
-    private bool _hideIcons;
     private ICommand _removeMarked;
-    private int _totalProgress;
-    private int _currentProgress;
     private string _status;
-    private bool _isBusy;
-    private ICommand _cancelCommand;
-    private ICommand _aboutCommand;
-    private ICommand _helpCommand;
-    private ICommand _toggleInfoCommand;
-    private ICommand _toggleNsfwBlurCommand;
-    private ICommand _toggleHideNsfw;
-    private ICommand _toggleHideDeleted;
-    private bool _hideNsfw;
-    private bool _hideDeleted;
-    private bool _nsfwBlur;
-    private bool _fitToPreview;
-    private bool _actualSize;
-    private ICommand _toggleFitToPreview;
-    private ICommand _toggleActualSize;
-    private ICommand _setThumbnailSize;
-    private ICommand _poputPreview;
-    private ICommand _togglePreview;
     private bool _isPreviewVisible;
-    private ICommand _addAllToAlbum;
-    private ICommand _markAllForDeletion;
-    private ICommand _unmarkAllForDeletion;
-    private ICommand _removeMatching;
-    private ICommand _autoTagNsfw;
-    private ICommand _reloadHashes;
-    private ICommand _sortAlbum;
-    private ICommand _clearAlbums;
-    private ICommand _refresh;
-    private ICommand _quickCopy;
-    private int _thumbnailSize;
-    private ICommand _escape;
-    private ICommand _downloadCivitai;
-    private ICommand _addAlbumCommand;
-    private ICommand _addToAlbumCommand;
-    private ICommand _removeFromAlbumCommand;
-    private ICommand _renameAlbumCommand;
-    private ICommand _removeAlbumCommand;
-    private ObservableCollection<AlbumModel> _albums;
     private ObservableCollection<ImageEntry>? _selectedImages;
-    private AlbumListItem? _selectedAlbum;
-    private AlbumModel? _currentAlbum;
-    private ICommand _fixFoldersCommand;
-    private ICommand _removeExcludedImagesCommand;
-    private ICommand _cleanRemovedFoldersCommand;
-    private ICommand _showFilterCommand;
-    private ICommand _toggleAutoRefresh;
-    private bool _autoRefresh;
-    private IEnumerable<ModelViewModel>? _imageModels;
-    private IEnumerable<string> _imageModelNames;
     private ObservableCollection<FolderViewModel> _folders;
 
 
-    private FolderViewModel? _currentFolder;
-    private ICommand _resetLayout;
-    private ICommand _unavailableFilesCommand;
-    private bool _hideUnavailable;
-    private ICommand _toggleHideUnavailable;
-    private bool _autoAdvance;
-    private ICommand _toggleAutoAdvance;
-    private bool _hasSelectedAlbums;
-    private ICommand _clearModelsCommand;
-    private bool _hasSelectedModels;
-    private int _selectedAlbumsCount;
-    private int _selectedModelsCount;
-    private string _toastMessage;
     private ICommand _showSettingsCommand;
-    private ObservableCollection<QueryModel> _queries;
-    private QueryModel? _selectedQuery;
-    private ICommand _renameQueryCommand;
-    private ICommand _removeQueryCommand;
 
     public MainModel()
     {
@@ -112,82 +39,82 @@ public class MainModel : BaseNotify
 
     public string QueryText
     {
-        get => _queryText;
-        set => SetField(ref _queryText, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasQuery
     {
-        get => _hasQuery;
-        set => SetField(ref _hasQuery, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasFilter
     {
-        get => _hasFilter;
-        set => SetField(ref _hasFilter, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public Page Page
     {
-        get => _page;
-        set => SetField(ref _page, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand Rescan
     {
-        get => _rescan;
-        set => SetField(ref _rescan, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand RenameFileCommand { get; set; }
 
     public ICommand OpenWithCommand
     {
-        get => _openWithCommand;
-        set => SetField(ref _openWithCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand SettingsCommand
     {
-        get => _settingsCommand;
-        set => SetField(ref _settingsCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand CloseCommand
     {
-        get => _closeCommand;
-        set => SetField(ref _closeCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand Rebuild
     {
-        get => _rebuild;
-        set => SetField(ref _rebuild, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ReloadHashes
     {
-        get => _reloadHashes;
-        set => SetField(ref _reloadHashes, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ShowIcons
     {
-        get => _showIcons;
-        set => SetField(ref _showIcons, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HideIcons
     {
-        get => _hideIcons;
-        set => SetField(ref _hideIcons, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand GotoUrl
     {
-        get => _gotoUrl;
-        set => SetField(ref _gotoUrl, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Status
@@ -198,20 +125,20 @@ public class MainModel : BaseNotify
 
     public bool IsBusy
     {
-        get => _isBusy;
+        get;
         set
         {
-            SetField(ref _isBusy, value);
+            SetField(ref field, value);
             OnPropertyChanged(nameof(HasPendingTask));
         }
     }
 
     public bool HasQueued
     {
-        get => _hasQueued;
+        get;
         set
         {
-            SetField(ref _hasQueued, value);
+            SetField(ref field, value);
             OnPropertyChanged(nameof(HasPendingTask));
         }
     }
@@ -220,46 +147,46 @@ public class MainModel : BaseNotify
 
     public int CurrentProgress
     {
-        get => _currentProgress;
-        set => SetField(ref _currentProgress, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int TotalProgress
     {
-        get => _totalProgress;
-        set => SetField(ref _totalProgress, value);
+        get;
+        set => SetField(ref field, value);
     }
-    
+
     public ICommand CancelCommand
     {
-        get => _cancelCommand;
-        set => SetField(ref _cancelCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand AboutCommand
     {
-        get => _aboutCommand;
-        set => SetField(ref _aboutCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ReleaseNotesCommand { get; set; }
 
     public ICommand HelpCommand
     {
-        get => _helpCommand;
-        set => SetField(ref _helpCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleInfoCommand
     {
-        get => _toggleInfoCommand;
-        set => SetField(ref _toggleInfoCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleNSFWBlurCommand
     {
-        get => _toggleNsfwBlurCommand;
-        set => SetField(ref _toggleNsfwBlurCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleVisibilityCommand
@@ -268,128 +195,124 @@ public class MainModel : BaseNotify
         set;
     }
 
-    private ICommand _toggleTags;
-
     public ICommand ToggleTagsCommand
     {
-        get => _toggleTags;
-        set => SetField(ref _toggleTags, value);
+        get;
+        set => SetField(ref field, value);
     }
-
-    private bool _showTags;
 
     public bool ShowTags
     {
-        get => _showTags;
-        set => SetField(ref _showTags, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool AutoAdvance
     {
-        get => _autoAdvance;
-        set => SetField(ref _autoAdvance, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleAutoAdvance
     {
-        get => _toggleAutoAdvance;
-        set => SetField(ref _toggleAutoAdvance, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleHideNSFW
     {
-        get => _toggleHideNsfw;
-        set => SetField(ref _toggleHideNsfw, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleHideDeleted
     {
-        get => _toggleHideDeleted;
-        set => SetField(ref _toggleHideDeleted, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleHideUnavailable
     {
-        get => _toggleHideUnavailable;
-        set => SetField(ref _toggleHideUnavailable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleFilenamesCommand
     {
-        get => _toggleFilenamesCommand;
-        set => SetField(ref _toggleFilenamesCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool NSFWBlur
     {
-        get => _nsfwBlur;
-        set => SetField(ref _nsfwBlur, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HideNSFW
     {
-        get => _hideNsfw;
-        set => SetField(ref _hideNsfw, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HideDeleted
     {
-        get => _hideDeleted;
-        set => SetField(ref _hideDeleted, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HideUnavailable
     {
-        get => _hideUnavailable;
-        set => SetField(ref _hideUnavailable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool FitToPreview
     {
-        get => _fitToPreview;
-        set => SetField(ref _fitToPreview, value);
+        get;
+        set => SetField(ref field, value);
     }
-    
+
     public ICommand ToggleFitToPreview
     {
-        get => _toggleFitToPreview;
-        set => SetField(ref _toggleFitToPreview, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ActualSize
     {
-        get => _actualSize;
-        set => SetField(ref _actualSize, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleActualSize
     {
-        get => _toggleActualSize;
-        set => SetField(ref _toggleActualSize, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand SetThumbnailSize
     {
-        get => _setThumbnailSize;
-        set => SetField(ref _setThumbnailSize, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand PoputPreview
     {
-        get => _poputPreview;
-        set => SetField(ref _poputPreview, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ResetLayout
     {
-        get => _resetLayout;
-        set => SetField(ref _resetLayout, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand TogglePreview
     {
-        get => _togglePreview;
-        set => SetField(ref _togglePreview, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsPreviewVisible
@@ -412,169 +335,168 @@ public class MainModel : BaseNotify
 
     public ICommand AddAllToAlbum
     {
-        get => _addAllToAlbum;
-        set => SetField(ref _addAllToAlbum, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand MarkAllForDeletion
     {
-        get => _markAllForDeletion;
-        set => SetField(ref _markAllForDeletion, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand UnmarkAllForDeletion
     {
-        get => _unmarkAllForDeletion;
-        set => SetField(ref _unmarkAllForDeletion, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand RemoveMatching
     {
-        get => _removeMatching;
-        set => SetField(ref _removeMatching, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand AutoTagNSFW
     {
-        get => _autoTagNsfw;
-        set => SetField(ref _autoTagNsfw, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ClearModelsCommand
     {
-        get => _clearModelsCommand;
-        set => SetField(ref _clearModelsCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasSelectedModels
     {
-        get => _hasSelectedModels;
-        set => SetField(ref _hasSelectedModels, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ClearAlbumsCommand
     {
-        get => _clearAlbums;
-        set => SetField(ref _clearAlbums, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasSelectedAlbums
     {
-        get => _hasSelectedAlbums;
-        set => SetField(ref _hasSelectedAlbums, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand SortAlbumCommand
     {
-        get => _sortAlbum;
-        set => SetField(ref _sortAlbum, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand Refresh
     {
-        get => _refresh;
-        set => SetField(ref _refresh, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand QuickCopy
     {
-        get => _quickCopy;
-        set => SetField(ref _quickCopy, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int ThumbnailSize
     {
-        get => _thumbnailSize;
-        set => SetField(ref _thumbnailSize, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand Escape
     {
-        get => _escape;
-        set => SetField(ref _escape, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand DownloadCivitai
     {
-        get => _downloadCivitai;
-        set => SetField(ref _downloadCivitai, value);
+        get;
+        set => SetField(ref field, value);
     }
-    
+
     public ObservableCollection<AlbumModel> Albums
     {
-        get => _albums;
-        set => SetField(ref _albums, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public ObservableCollection<QueryModel> Queries
     {
-        get => _queries;
-        set => SetField(ref _queries, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public QueryModel? SelectedQuery
     {
-        get => _selectedQuery;
-        set => SetField(ref _selectedQuery, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int SelectedAlbumsCount
     {
-        get => _selectedAlbumsCount;
-        set => SetField(ref _selectedAlbumsCount, value);
+        get;
+        set => SetField(ref field, value);
     }
-
 
 
     public int SelectedModelsCount
     {
-        get => _selectedModelsCount;
-        set => SetField(ref _selectedModelsCount, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand AddAlbumCommand
     {
-        get => _addAlbumCommand;
-        set => SetField(ref _addAlbumCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand AddToAlbumCommand
     {
-        get => _addToAlbumCommand;
-        set => SetField(ref _addToAlbumCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public ICommand RemoveFromAlbumCommand
     {
-        get => _removeFromAlbumCommand;
-        set => SetField(ref _removeFromAlbumCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand RenameAlbumCommand
     {
-        get => _renameAlbumCommand;
-        set => SetField(ref _renameAlbumCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand RemoveAlbumCommand
     {
-        get => _removeAlbumCommand;
-        set => SetField(ref _removeAlbumCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public ICommand RenameQueryCommand
     {
-        get => _renameQueryCommand;
-        set => SetField(ref _renameQueryCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand RemoveQueryCommand
     {
-        get => _removeQueryCommand;
-        set => SetField(ref _removeQueryCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
@@ -586,45 +508,23 @@ public class MainModel : BaseNotify
 
     public AlbumListItem? SelectedAlbum
     {
-        get => _selectedAlbum;
-        set => SetField(ref _selectedAlbum, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public AlbumModel? CurrentAlbum
     {
-        get => _currentAlbum;
-        set => SetField(ref _currentAlbum, value);
+        get;
+        set => SetField(ref field, value);
     }
 
-    private ModelViewModel? _currentModel;
-    private string _activeView;
-    private Settings _settings;
-    private ICommand _reloadFoldersCommand;
     private int _progressTarget;
-    private bool _isSettingsDirty;
-    private ObservableCollection<Control> _openWithMenuItems;
-    private ICommand _openWithCommand;
-    private ICommand _gotoUrl;
-    private bool _foldersBusy;
-    private bool _showNotifications;
-    private bool _permanentlyDelete;
-    private ObservableCollection<Control> _albumMenuItems;
-    private ObservableCollection<Control> _selectionAlbumMenuItems;
-    private bool _showFilenames;
-    private ICommand _toggleFilenamesCommand;
-    private ImageEntry _currentImageEntry;
-    private ImageEntry _selectedImageEntry;
-    private ThumbnailViewMode _thumbnailViewMode;
     private QueryOptions _queryOptions;
-    private bool _hasQuery;
-    private bool _hasFilter;
-    private string _queryText;
-    private bool _hasQueued;
 
     public ModelViewModel? CurrentModel
     {
-        get => _currentModel;
-        set => SetField(ref _currentModel, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand CreateAlbumCommand { get; set; }
@@ -633,45 +533,45 @@ public class MainModel : BaseNotify
 
     public ICommand FixFoldersCommand
     {
-        get => _fixFoldersCommand;
-        set => SetField(ref _fixFoldersCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand RemoveExcludedImagesCommand
     {
-        get => _removeExcludedImagesCommand;
-        set => SetField(ref _removeExcludedImagesCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand CleanRemovedFoldersCommand
     {
-        get => _cleanRemovedFoldersCommand;
-        set => SetField(ref _cleanRemovedFoldersCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand UnavailableFilesCommand
     {
-        get => _unavailableFilesCommand;
-        set => SetField(ref _unavailableFilesCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public ICommand ShowFilterCommand
     {
-        get => _showFilterCommand;
-        set => SetField(ref _showFilterCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleAutoRefresh
     {
-        get => _toggleAutoRefresh;
-        set => SetField(ref _toggleAutoRefresh, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool AutoRefresh
     {
-        get => _autoRefresh;
-        set => SetField(ref _autoRefresh, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
@@ -683,26 +583,26 @@ public class MainModel : BaseNotify
 
     public IEnumerable<ModelViewModel>? ImageModels
     {
-        get => _imageModels;
-        set => SetField(ref _imageModels, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public IEnumerable<string> ImageModelNames
     {
-        get => _imageModelNames;
-        set => SetField(ref _imageModelNames, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string ActiveView
     {
-        get => _activeView;
-        set => SetField(ref _activeView, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public Settings Settings
     {
-        get => _settings;
-        set => SetField(ref _settings, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public Action<FolderViewModel> MoveSelectedImagesToFolder { get; set; }
@@ -710,14 +610,14 @@ public class MainModel : BaseNotify
 
     public FolderViewModel? CurrentFolder
     {
-        get => _currentFolder;
-        set => SetField(ref _currentFolder, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ReloadFoldersCommand
     {
-        get => _reloadFoldersCommand;
-        set => SetField(ref _reloadFoldersCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ScanFolderCommand { get; set; }
@@ -735,36 +635,37 @@ public class MainModel : BaseNotify
 
     public ICommand ToggleNavigationPane { get; set; }
     public ICommand ShowInExplorerCommand { get; set; }
+
     public string ToastMessage
     {
-        get => _toastMessage;
-        set => SetField(ref _toastMessage, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public QueryModel CurrentQuery { get; set; }
 
     public bool IsSettingsDirty
     {
-        get => _isSettingsDirty;
-        set => SetField(ref _isSettingsDirty, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ObservableCollection<Control> OpenWithMenuItems
     {
-        get => _openWithMenuItems;
-        set => SetField(ref _openWithMenuItems, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool FoldersBusy
     {
-        get => _foldersBusy;
-        set => SetField(ref _foldersBusy, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ShowNotifications
     {
-        get => _showNotifications;
-        set => SetField(ref _showNotifications, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleNotificationsCommand { get; set; }
@@ -773,48 +674,48 @@ public class MainModel : BaseNotify
 
     public bool PermanentlyDelete
     {
-        get => _permanentlyDelete;
-        set => SetField(ref _permanentlyDelete, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ObservableCollection<Control> AlbumMenuItems
     {
-        get => _albumMenuItems;
-        set => SetField(ref _albumMenuItems, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ObservableCollection<Control> SelectionAlbumMenuItems
     {
-        get => _selectionAlbumMenuItems;
-        set => SetField(ref _selectionAlbumMenuItems, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public bool ShowFilenames
     {
-        get => _showFilenames;
-        set => SetField(ref _showFilenames, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     // TODO: Consolidate these
     public ImageEntry SelectedImageEntry
     {
-        get => _selectedImageEntry;
-        set => SetField(ref _selectedImageEntry, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ImageEntry CurrentImageEntry
     {
-        get => _currentImageEntry;
-        set => SetField(ref _currentImageEntry, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ImageViewModel CurrentImage { get; set; }
 
     public ThumbnailViewMode ThumbnailViewMode
     {
-        get => _thumbnailViewMode;
-        set => SetField(ref _thumbnailViewMode, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand ToggleThumbnailViewModeCommand { get; set;  }

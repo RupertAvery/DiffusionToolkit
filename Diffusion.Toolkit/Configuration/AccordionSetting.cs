@@ -2,9 +2,6 @@
 
 public class AccordionSetting : SettingsContainer
 {
-    private AccordionState _accordionState;
-    private double _containerHeight;
-
     public void Attach(SettingsContainer settings)
     {
         SettingChanged += (sender, args) =>
@@ -12,15 +9,16 @@ public class AccordionSetting : SettingsContainer
             settings.SetDirty();
         };
     }
+
     public AccordionState AccordionState
     {
-        get => _accordionState;
-        set => UpdateValue(ref _accordionState, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 
     public double ContainerHeight
     {
-        get => _containerHeight;
-        set => UpdateValue(ref _containerHeight, value);
+        get;
+        set => UpdateValue(ref field, value);
     }
 }

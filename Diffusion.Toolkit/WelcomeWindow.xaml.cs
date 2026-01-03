@@ -18,14 +18,6 @@ namespace Diffusion.Toolkit
 {
     public class WelcomeModel : BaseNotify
     {
-        private ICommand _escape;
-        private int _step;
-        private ObservableCollection<string> _imagePaths;
-        private int _selectedIndex;
-        private bool _storeWorkflow;
-        private bool _storeMetadata;
-        private bool _scanForNewImagesOnStartup;
-
         private List<FolderChange> _folderChanges = new List<FolderChange>();
 
         public WelcomeModel()
@@ -35,42 +27,42 @@ namespace Diffusion.Toolkit
 
         public ICommand Escape
         {
-            get => _escape;
-            set => SetField(ref _escape, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public int Step
         {
-            get => _step;
+            get;
             set
             {
-                SetField(ref _step, value);
+                SetField(ref field, value);
                 OnPropertyChanged("NotStart");
             }
         }
 
         public int SelectedIndex
         {
-            get => _selectedIndex;
-            set => SetField(ref _selectedIndex, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public ObservableCollection<string> ImagePaths
         {
-            get => _imagePaths;
-            set => SetField(ref _imagePaths, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public bool StoreWorkflow
         {
-            get => _storeWorkflow;
-            set => SetField(ref _storeWorkflow, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public bool StoreMetadata
         {
-            get => _storeMetadata;
-            set => SetField(ref _storeMetadata, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public bool NotStart
@@ -89,8 +81,8 @@ namespace Diffusion.Toolkit
 
         public bool ScanForNewImagesOnStartup
         {
-            get => _scanForNewImagesOnStartup;
-            set => SetField(ref _scanForNewImagesOnStartup, value);
+            get;
+            set => SetField(ref field, value);
         }
     }
 

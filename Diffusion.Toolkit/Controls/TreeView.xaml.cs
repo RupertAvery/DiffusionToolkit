@@ -10,35 +10,30 @@ namespace Diffusion.Toolkit.Controls
 {
     public class TreeViewItem : BaseNotify
     {
-        private bool _visible;
-        private int _depth;
-        private FolderState _state;
-        private IEnumerable<TreeViewItem>? _children;
-
         public int Depth
         {
-            get => _depth;
-            set => SetField(ref _depth, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public bool Visible
         {
-            get => _visible;
-            set => SetField(ref _visible, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public FolderState State
         {
-            get => _state;
-            set => SetField(ref _state, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public IEnumerable<TreeViewItem>? Children
         {
-            get => _children;
+            get;
             set
             {
-                SetField(ref _children, value);
+                SetField(ref field, value);
                 OnPropertyChanged(nameof(HasChildren));
             }
         }

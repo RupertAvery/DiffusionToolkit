@@ -6,16 +6,10 @@ namespace Diffusion.Toolkit.Models;
 
 public class SearchSettings : BaseNotify
 {
-    private string _includeNodeProperties;
-    private bool _searchNodes;
-    private bool _searchRawData;
-    private bool _searchAllProperties;
-    private bool _searchNoProperties;
-
     public string IncludeNodeProperties
     {
-        get => _includeNodeProperties;
-        set => SetField(ref _includeNodeProperties, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public IEnumerable<string> GetNodePropertiesList()
@@ -35,25 +29,25 @@ public class SearchSettings : BaseNotify
     public bool SearchRawData
 
     {
-        get => _searchRawData;
-        set => SetField(ref _searchRawData, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool SearchNoProperties
     {
-        get => _searchNoProperties;
-        set => SetField(ref _searchNoProperties, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool SearchAllProperties
     {
-        get => _searchAllProperties;
-        set => SetField(ref _searchAllProperties, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool SearchNodes
     {
-        get => _searchNodes;
-        set => SetField(ref _searchNodes, value);
+        get;
+        set => SetField(ref field, value);
     }
 }

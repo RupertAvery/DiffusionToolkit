@@ -2,32 +2,27 @@
 
 public class ExternalApplicationModel : BaseNotify
 {
-    private string _name;
-    private string _path;
-    private string _commandLineArgs;
-    private string _shortcut;
-
     public string Name
     {
-        get => _name;
-        set => SetField(ref _name, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Path
     {
-        get => _path;
-        set => SetField(ref _path, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string CommandLineArgs
     {
-        get => _commandLineArgs;
-        set => SetField(ref _commandLineArgs, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Shortcut
     {
-        get => _shortcut;
-        set => SetField(ref _shortcut, value);
+        get;
+        set => SetField(ref field, value);
     }
 }

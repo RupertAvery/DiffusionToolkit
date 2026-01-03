@@ -14,67 +14,6 @@ namespace Diffusion.Toolkit.Controls;
 
 public class FilterControlModel : BaseNotify
 {
-    private bool _usePrompt;
-    private string _prompt;
-    private bool _usePromptEx;
-    private string _promptEx;
-    private bool _useNegativePrompt;
-    private string _negativePrompt;
-    private bool _useNegativePromptEx;
-    private string _negativePromptEx;
-    private bool _useSteps;
-    private string _steps;
-    private bool _useSampler;
-    private string _sampler;
-    private bool _useSeed;
-    private string? _seedStart;
-    private string? _seedEnd;
-    private bool _useCfgScale;
-    private string _cfgScale;
-    private bool _useSize;
-    private string _width;
-    private string _height;
-    private bool _useModelHash;
-    private string _modelHash;
-    private bool _useModelName;
-    private string _modelName;
-    private bool _useFavorite;
-    private bool _favorite;
-    private bool _useRating;
-    private string _ratingOp;
-    private int? _rating;
-    private bool _unrated;
-    private bool _useNsfw;
-    private bool _nsfw;
-    private bool _useForDeletion;
-    private bool _forDeletion;
-    private bool _useBatchSize;
-    private int _batchSize;
-    private bool _useBatchPos;
-    private int _batchPos;
-    private bool _noAestheticScore;
-    private bool _useAestheticScore;
-    private string _aestheticScoreOp;
-    private double? _aestheticScore;
-    private bool _usePath;
-    private string _path;
-    private bool _useCreationDate;
-    private DateTime? _start;
-    private DateTime? _end;
-    private bool _useHyperNet;
-    private string _hyperNet;
-    private bool _useHyperNetStr;
-    private string _hyperNetStrOp;
-    private double _hyperNetStr;
-    private bool _useNoMetadata;
-    private bool _noMetadata;
-    private bool _useInAlbum;
-    private bool _inAlbum;
-    private bool _useUnavailable;
-    private bool _unavailable;
-    private ObservableCollection<NodeFilter> _nodeFilters;
-    private string _sizeOp;
-
     public FilterControlModel()
     {
         PropertyChanged += FilterControlModel_PropertyChanged;
@@ -197,356 +136,356 @@ public class FilterControlModel : BaseNotify
 
     public bool UsePrompt
     {
-        get => _usePrompt;
-        set => SetField(ref _usePrompt, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Prompt
     {
-        get => _prompt;
-        set => SetField(ref _prompt, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UsePromptEx
     {
-        get => _usePromptEx;
-        set => SetField(ref _usePromptEx, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string PromptEx
     {
-        get => _promptEx;
-        set => SetField(ref _promptEx, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseNegativePrompt
     {
-        get => _useNegativePrompt;
-        set => SetField(ref _useNegativePrompt, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string NegativePrompt
     {
-        get => _negativePrompt;
-        set => SetField(ref _negativePrompt, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseNegativePromptEx
     {
-        get => _useNegativePromptEx;
-        set => SetField(ref _useNegativePromptEx, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string NegativePromptEx
     {
-        get => _negativePromptEx;
-        set => SetField(ref _negativePromptEx, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseSteps
     {
-        get => _useSteps;
-        set => SetField(ref _useSteps, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Steps
     {
-        get => _steps;
-        set => SetField(ref _steps, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseSampler
     {
-        get => _useSampler;
-        set => SetField(ref _useSampler, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Sampler
     {
-        get => _sampler;
-        set => SetField(ref _sampler, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseSeed
     {
-        get => _useSeed;
-        set => SetField(ref _useSeed, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string? SeedStart
     {
-        get => _seedStart;
-        set => SetField(ref _seedStart, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string? SeedEnd
     {
-        get => _seedEnd;
-        set => SetField(ref _seedEnd, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseCFGScale
     {
-        get => _useCfgScale;
-        set => SetField(ref _useCfgScale, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string CFGScale
     {
-        get => _cfgScale;
-        set => SetField(ref _cfgScale, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseSize
     {
-        get => _useSize;
-        set => SetField(ref _useSize, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string SizeOp
     {
-        get => _sizeOp;
-        set => SetField(ref _sizeOp, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Width
     {
-        get => _width;
-        set => SetField(ref _width, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Height
     {
-        get => _height;
-        set => SetField(ref _height, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseModelHash
     {
-        get => _useModelHash;
-        set => SetField(ref _useModelHash, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string ModelHash
     {
-        get => _modelHash;
-        set => SetField(ref _modelHash, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseModelName
     {
-        get => _useModelName;
-        set => SetField(ref _useModelName, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string ModelName
     {
-        get => _modelName;
-        set => SetField(ref _modelName, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseFavorite
     {
-        get => _useFavorite;
-        set => SetField(ref _useFavorite, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool Favorite
     {
-        get => _favorite;
-        set => SetField(ref _favorite, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseRating
     {
-        get => _useRating;
-        set => SetField(ref _useRating, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string RatingOp
     {
-        get => _ratingOp;
-        set => SetField(ref _ratingOp, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int? Rating
     {
-        get => _rating;
-        set => SetField(ref _rating, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool Unrated
     {
-        get => _unrated;
-        set => SetField(ref _unrated, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseNSFW
     {
-        get => _useNsfw;
-        set => SetField(ref _useNsfw, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool NSFW
     {
-        get => _nsfw;
-        set => SetField(ref _nsfw, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseForDeletion
     {
-        get => _useForDeletion;
-        set => SetField(ref _useForDeletion, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ForDeletion
     {
-        get => _forDeletion;
-        set => SetField(ref _forDeletion, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseBatchSize
     {
-        get => _useBatchSize;
-        set => SetField(ref _useBatchSize, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int BatchSize
     {
-        get => _batchSize;
-        set => SetField(ref _batchSize, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseBatchPos
     {
-        get => _useBatchPos;
-        set => SetField(ref _useBatchPos, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int BatchPos
     {
-        get => _batchPos;
-        set => SetField(ref _batchPos, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseAestheticScore
     {
-        get => _useAestheticScore;
-        set => SetField(ref _useAestheticScore, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool NoAestheticScore
     {
-        get => _noAestheticScore;
-        set => SetField(ref _noAestheticScore, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string AestheticScoreOp
     {
-        get => _aestheticScoreOp;
-        set => SetField(ref _aestheticScoreOp, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double? AestheticScore
     {
-        get => _aestheticScore;
-        set => SetField(ref _aestheticScore, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UsePath
     {
-        get => _usePath;
-        set => SetField(ref _usePath, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Path
     {
-        get => _path;
-        set => SetField(ref _path, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseCreationDate
     {
-        get => _useCreationDate;
-        set => SetField(ref _useCreationDate, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public DateTime? Start
     {
-        get => _start;
-        set => SetField(ref _start, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public DateTime? End
     {
-        get => _end;
-        set => SetField(ref _end, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseHyperNet
     {
-        get => _useHyperNet;
-        set => SetField(ref _useHyperNet, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string HyperNet
     {
-        get => _hyperNet;
-        set => SetField(ref _hyperNet, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseHyperNetStr
     {
-        get => _useHyperNetStr;
-        set => SetField(ref _useHyperNetStr, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string HyperNetStrOp
     {
-        get => _hyperNetStrOp;
-        set => SetField(ref _hyperNetStrOp, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double HyperNetStr
     {
-        get => _hyperNetStr;
-        set => SetField(ref _hyperNetStr, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseNoMetadata
     {
-        get => _useNoMetadata;
-        set => SetField(ref _useNoMetadata, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool NoMetadata
     {
-        get => _noMetadata;
-        set => SetField(ref _noMetadata, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseInAlbum
     {
-        get => _useInAlbum;
-        set => SetField(ref _useInAlbum, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool InAlbum
     {
-        get => _inAlbum;
-        set => SetField(ref _inAlbum, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseUnavailable
     {
-        get => _useUnavailable;
-        set => SetField(ref _useUnavailable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool Unavailable
     {
-        get => _unavailable;
-        set => SetField(ref _unavailable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsActive => (UsePrompt ||
@@ -580,12 +519,12 @@ public class FilterControlModel : BaseNotify
 
     public ObservableCollection<NodeFilter> NodeFilters
     {
-        get => _nodeFilters;
+        get;
         set
         {
-            SetField(ref _nodeFilters, value);
-            RegisterNodeFilters(_nodeFilters);
-            _nodeFilters.CollectionChanged += NodeFiltersOnCollectionChanged;
+            SetField(ref field, value);
+            RegisterNodeFilters(field);
+            field.CollectionChanged += NodeFiltersOnCollectionChanged;
         }
     }
 

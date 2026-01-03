@@ -7,19 +7,7 @@ namespace Diffusion.Toolkit.Models;
 public class ResultsView : BaseNotify
 {
     private ObservableCollection<ImageEntry> _images;
-    private int _page;
     private int _pages;
-    private bool _isEmpty;
-    private string _results;
-    private string _sortBy;
-    private string _sortDirection;
-    private string _resultStatus;
-
-    private ICommand _pageChangedCommand;
-    private ICommand _copyFiles;
-    private ICommand _openCommand;
-    private bool _isBusy;
-    private bool _isPromptsBusy;
 
     public ResultsView()
     {
@@ -36,21 +24,21 @@ public class ResultsView : BaseNotify
 
     public bool IsBusy
     {
-        get => _isBusy;
-        set => SetField(ref _isBusy, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsPromptsBusy
     {
-        get => _isPromptsBusy;
-        set => SetField(ref _isPromptsBusy, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public MainModel MainModel => ServiceLocator.MainModel;
 
     public int Page
     {
-        get => _page;
+        get;
         set
         {
             if (value > _pages)
@@ -67,14 +55,14 @@ public class ResultsView : BaseNotify
                 value = 1;
             }
 
-            SetField(ref _page, value);
+            SetField(ref field, value);
         }
     }
 
     public bool IsEmpty
     {
-        get => _isEmpty;
-        set => SetField(ref _isEmpty, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int Pages
@@ -85,47 +73,45 @@ public class ResultsView : BaseNotify
 
     public string Results
     {
-        get => _results;
-        set => SetField(ref _results, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string SortBy
     {
-        get => _sortBy;
-        set => SetField(ref _sortBy, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string SortDirection
     {
-        get => _sortDirection;
-        set => SetField(ref _sortDirection, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string ResultStatus
     {
-        get => _resultStatus;
-        set => SetField(ref _resultStatus, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ICommand PageChangedCommand
     {
-        get => _pageChangedCommand;
-        set => SetField(ref _pageChangedCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public ICommand OpenCommand
     {
-        get => _openCommand;
-        set => SetField(ref _openCommand, value);
+        get;
+        set => SetField(ref field, value);
     }
-
 
 
     public ICommand CopyFiles
     {
-        get => _copyFiles;
-        set => SetField(ref _copyFiles, value);
+        get;
+        set => SetField(ref field, value);
     }
-
 }

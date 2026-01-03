@@ -9,19 +9,7 @@ namespace Diffusion.Toolkit.Models;
 [DebuggerDisplay("{Path}")]
 public class FolderViewModel : BaseNotify
 {
-    private FolderState _state;
-    private bool _hasChildren;
-    private bool _visible;
-    private bool _isSelected;
-    private string _name;
-    private bool _isArchived;
-    private bool _isExcluded;
-    private bool _isRecursive;
-    private bool _isUnavailable;
     private bool _isScanned;
-    private bool _isBusy;
-    private ObservableCollection<FolderViewModel>? _children;
-    private bool _isHome;
 
     public MainModel MainModel => ServiceLocator.MainModel;
 
@@ -29,34 +17,34 @@ public class FolderViewModel : BaseNotify
 
     public FolderState State
     {
-        get => _state;
-        set => SetField(ref _state, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsSelected
     {
-        get => _isSelected;
-        set => SetField(ref _isSelected, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasChildren
     {
-        get => _hasChildren;
-        set => SetField(ref _hasChildren, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public FolderViewModel? Parent { get; set; }
 
     public bool Visible
     {
-        get => _visible;
-        set => SetField(ref _visible, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ObservableCollection<FolderViewModel>? Children
     {
-        get => _children;
-        set => SetField(ref _children, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int Depth { get; set; }
@@ -64,33 +52,33 @@ public class FolderViewModel : BaseNotify
 
     public string Name
     {
-        get => _name;
-        set => SetField(ref _name, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsUnavailable
     {
-        get => _isUnavailable;
-        set => SetField(ref _isUnavailable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
 
     public bool IsArchived
     {
-        get => _isArchived;
-        set => SetField(ref _isArchived, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsExcluded
     {
-        get => _isExcluded;
-        set => SetField(ref _isExcluded, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsRecursive
     {
-        get => _isRecursive;
-        set => SetField(ref _isRecursive, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsScanned
@@ -110,14 +98,14 @@ public class FolderViewModel : BaseNotify
 
     public bool IsBusy
     {
-        get => _isBusy;
-        set => SetField(ref _isBusy, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsHome
     {
-        get => _isHome;
-        set => SetField(ref _isHome, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public override bool Equals(object? obj)

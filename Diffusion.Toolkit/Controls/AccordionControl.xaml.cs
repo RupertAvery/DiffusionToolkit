@@ -120,8 +120,8 @@ namespace Diffusion.Toolkit.Controls
 
         public Visibility ContentVisibility
         {
-            get => _contentVisibility;
-            set => SetField(ref _contentVisibility, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public double ContainerHeight
@@ -158,8 +158,6 @@ namespace Diffusion.Toolkit.Controls
             OnPropertyChanged(propertyName);
             return true;
         }
-
-        private Visibility _contentVisibility;
 
         void SetState()
         {

@@ -2,12 +2,10 @@
 
 public class ModelViewModel : BaseNotify
 {
-    private bool _isTicked;
-
     public bool IsTicked
     {
-        get => _isTicked;
-        set => SetField(ref _isTicked, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Name { get; set; }

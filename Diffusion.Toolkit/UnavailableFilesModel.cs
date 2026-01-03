@@ -6,12 +6,10 @@ namespace Diffusion.Toolkit;
 
 public class ImageFileItem : BaseNotify
 {
-    private bool _isSelected;
-
     public bool IsSelected
     {
-        get => _isSelected;
-        set => SetField(ref _isSelected, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Path { get; set; }
@@ -22,67 +20,57 @@ public class ImageFileItem : BaseNotify
 
 public class UnavailableFilesModel : BaseNotify
 {
-    private bool _useRootFolders;
-    private bool _useSpecificFolders;
-    private ObservableCollection<ImageFileItem> _imagePaths;
-    private int _selectedIndex;
-    private bool _showUnavailableRootFolders;
-    private bool _removeImmediately;
-    private bool _markForDeletion;
-    private bool _isStartEnabled;
-    private bool _justUpdate;
-
     public bool UseRootFolders
     {
-        get => _useRootFolders;
-        set => SetField(ref _useRootFolders, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool UseSpecificFolders
     {
-        get => _useSpecificFolders;
-        set => SetField(ref _useSpecificFolders, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public ObservableCollection<ImageFileItem> ImagePaths
     {
-        get => _imagePaths;
-        set => SetField(ref _imagePaths, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int SelectedIndex
     {
-        get => _selectedIndex;
-        set => SetField(ref _selectedIndex, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ShowUnavailableRootFolders
     {
-        get => _showUnavailableRootFolders;
-        set => SetField(ref _showUnavailableRootFolders, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool JustUpdate
     {
-        get => _justUpdate;
-        set => SetField(ref _justUpdate, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool RemoveImmediately
     {
-        get => _removeImmediately;
-        set => SetField(ref _removeImmediately, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool MarkForDeletion
     {
-        get => _markForDeletion;
-        set => SetField(ref _markForDeletion, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsStartEnabled
     {
-        get => _isStartEnabled;
-        set => SetField(ref _isStartEnabled, value);
+        get;
+        set => SetField(ref field, value);
     }
 }

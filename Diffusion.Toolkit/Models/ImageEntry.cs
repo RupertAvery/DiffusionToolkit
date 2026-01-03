@@ -8,32 +8,8 @@ namespace Diffusion.Toolkit.Models;
 
 public class ImageEntry : BaseNotify
 {
-    private BitmapSource? _thumbnail;
-    private string? _fileName;
-    private int _id;
-    private bool _forDeletion;
-    private bool _favorite;
-    private int? _rating;
-    private bool _nsfw;
-    private string _name;
     private bool _isAlbum;
     private bool _isFolder;
-    private EntryType _entryType;
-    private string? _score;
-    private int _albumCount;
-    private IEnumerable<string> _albums;
-    private bool _unavailable;
-    private bool _hasError;
-    private bool _isEmpty;
-    private string _path;
-    private int _width;
-    private int _height;
-    private double _thumbnailHeight;
-    private double _thumbnailWidth;
-    private bool _isWatched;
-    private bool _isRecursive;
-    private int _count;
-    private long _size;
     private string _sizeFormatted;
 
     public ImageEntry(long batchId)
@@ -47,16 +23,16 @@ public class ImageEntry : BaseNotify
     public int Id
 
     {
-        get => _id;
-        set => SetField(ref _id, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public EntryType EntryType
     {
-        get => _entryType;
+        get;
         set
         {
-            var updated = SetField(ref _entryType, value);
+            var updated = SetField(ref field, value);
             // Force rebinding of template selector
             if (updated) OnPropertyChanged(nameof(Self));
         }
@@ -66,50 +42,50 @@ public class ImageEntry : BaseNotify
 
     public string Name
     {
-        get => _name;
-        set => SetField(ref _name, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ForDeletion
     {
-        get => _forDeletion;
-        set => SetField(ref _forDeletion, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool Favorite
     {
-        get => _favorite;
-        set => SetField(ref _favorite, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int? Rating
     {
-        get => _rating;
-        set => SetField(ref _rating, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string? Score
     {
-        get => _score;
-        set => SetField(ref _score, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool NSFW
     {
-        get => _nsfw;
-        set => SetField(ref _nsfw, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string? FileName
     {
-        get => _fileName;
-        set => SetField(ref _fileName, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public BitmapSource? Thumbnail
     {
-        get => _thumbnail;
-        set => SetField(ref _thumbnail, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public LoadState LoadState { get; set; }
@@ -118,88 +94,88 @@ public class ImageEntry : BaseNotify
 
     public bool Unavailable
     {
-        get => _unavailable;
-        set => SetField(ref _unavailable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int Height
     {
-        get => _height;
-        set => SetField(ref _height, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int Width
     {
-        get => _width;
-        set => SetField(ref _width, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double ThumbnailHeight
     {
-        get => _thumbnailHeight;
-        set => SetField(ref _thumbnailHeight, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public double ThumbnailWidth
     {
-        get => _thumbnailWidth;
-        set => SetField(ref _thumbnailWidth, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string Path
     {
-        get => _path;
-        set => SetField(ref _path, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public DateTime CreatedDate { get; set; }
 
     public int AlbumCount
     {
-        get => _albumCount;
-        set => SetField(ref _albumCount, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public IEnumerable<string> Albums
     {
-        get => _albums;
-        set => SetField(ref _albums, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasError
     {
-        get => _hasError;
-        set => SetField(ref _hasError, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsEmpty
     {
-        get => _isEmpty;
-        set => SetField(ref _isEmpty, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsWatched
     {
-        get => _isWatched;
-        set => SetField(ref _isWatched, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool IsRecursive
     {
-        get => _isRecursive;
-        set => SetField(ref _isRecursive, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int Count
     {
-        get => _count;
-        set => SetField(ref _count, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public long Size
     {
-        get => _size;
-        set => SetField(ref _size, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public void Clear()

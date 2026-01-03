@@ -82,18 +82,16 @@ namespace Diffusion.Toolkit.Localization
             return $"Key: {key}";
         }
 
-        private ObservableCollection<CultureInfo>? availableCultures = null;
-
         public ObservableCollection<CultureInfo> AvailableCultures
         {
             get
             {
-                if (availableCultures == null)
-                    availableCultures = new ObservableCollection<CultureInfo>();
+                if (field == null)
+                    field = new ObservableCollection<CultureInfo>();
 
-                return availableCultures;
+                return field;
             }
-        }
+        } = null;
 
         public event ProviderChangedEventHandler? ProviderChanged;
 

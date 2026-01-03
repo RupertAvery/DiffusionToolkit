@@ -27,32 +27,17 @@ public class WindowService
 
 public class ServiceLocator
 {
-    private static WindowService? _windowService;
-    private static AlbumService? _albumService;
-    private static FileService? _fileService;
     private static NavigatorService? _navigatorService;
-    private static ExternalApplicationsService? _externalApplicationsService;
-    private static ThumbnailService? _thumbnailService;
-    private static DatabaseWriterService? _databaseWriterService;
-    private static MetadataScannerService? _metadataScannerService;
-    private static FolderService? _folderService;
     private static MessageService? _messageServuce;
-    private static ProgressService? _progressService;
     private static DataStore? _dataStore;
 
     private static NavigationService? _navigationService;
 
     //private static ScanService? _scanManager;
     private static Settings? _settings;
-    private static PreviewService? _previewService;
-    private static ThumbnailNavigationService? _thumbnailNavigationService;
     private static SearchService? _searchService;
     private static ThumbnailCache? _thumbnailCache;
     private static ThumbnailService? _thumbnailLoader;
-    private static TaggingService? _taggingService;
-    private static NotificationService? _notificationService;
-    private static ScanningService? _scanningService;
-    private static ContextMenuService? _contextMenuService;
 
     public static DataStore? DataStore => _dataStore;
     public static Settings? Settings => _settings;
@@ -76,12 +61,12 @@ public class ServiceLocator
 
     public static PreviewService PreviewService
     {
-        get { return _previewService ??= new PreviewService(); }
+        get { return field ??= new PreviewService(); }
     }
 
     public static ThumbnailNavigationService ThumbnailNavigationService
     {
-        get { return _thumbnailNavigationService ??= new ThumbnailNavigationService(); }
+        get { return field ??= new ThumbnailNavigationService(); }
     }
 
     public static SearchService SearchService
@@ -92,30 +77,30 @@ public class ServiceLocator
 
     public static TaggingService TaggingService
     {
-        get { return _taggingService ??= new TaggingService(); }
+        get { return field ??= new TaggingService(); }
     }
 
     public static NotificationService NotificationService
     {
-        get { return _notificationService ??= new NotificationService(); }
+        get { return field ??= new NotificationService(); }
     }
 
     public static ScanningService ScanningService
     {
-        get { return _scanningService ??= new ScanningService(); }
+        get { return field ??= new ScanningService(); }
     }
 
     public static MainModel? MainModel { get; set; }
 
     public static FolderService FolderService
     {
-        get { return _folderService ??= new FolderService(); }
+        get { return field ??= new FolderService(); }
     }
 
 
     public static ProgressService ProgressService
     {
-        get { return _progressService ??= new ProgressService(); }
+        get { return field ??= new ProgressService(); }
     }
 
     public static MessageService MessageService
@@ -126,28 +111,28 @@ public class ServiceLocator
 
     public static MetadataScannerService MetadataScannerService
     {
-        get { return _metadataScannerService ??= new MetadataScannerService(); }
+        get { return field ??= new MetadataScannerService(); }
     }
 
 
     public static DatabaseWriterService DatabaseWriterService
     {
-        get { return _databaseWriterService ??= new DatabaseWriterService(); }
+        get { return field ??= new DatabaseWriterService(); }
     }
 
     public static ThumbnailService ThumbnailService
     {
-        get { return _thumbnailService ??= new ThumbnailService(); }
+        get { return field ??= new ThumbnailService(); }
     }
 
     public static ContextMenuService ContextMenuService
     {
-        get { return _contextMenuService ??= new ContextMenuService(); }
+        get { return field ??= new ContextMenuService(); }
     }
 
     public static ExternalApplicationsService ExternalApplicationsService
     {
-        get { return _externalApplicationsService ??= new ExternalApplicationsService(); }
+        get { return field ??= new ExternalApplicationsService(); }
     }
 
     public static NavigatorService NavigatorService
@@ -157,17 +142,17 @@ public class ServiceLocator
 
     public static FileService FileService
     {
-        get { return _fileService ??= new FileService(); }
+        get { return field ??= new FileService(); }
     }
 
     public static AlbumService AlbumService
     {
-        get { return _albumService ??= new AlbumService(); }
+        get { return field ??= new AlbumService(); }
     }
 
     public static WindowService WindowService
     {
-        get { return _windowService ??= new WindowService(); }
+        get { return field ??= new WindowService(); }
     }
 }
 

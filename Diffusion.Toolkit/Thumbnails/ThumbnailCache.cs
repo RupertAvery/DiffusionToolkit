@@ -102,14 +102,13 @@ public class ConnectionCacheEntry
 {
     private readonly string _path;
     private readonly ConcurrentDictionary<string, ConnectionCacheEntry> _connectionPool;
-    private readonly SQLiteConnection _connection;
     private Action _timeout;
 
     public ConnectionCacheEntry(string path, ConcurrentDictionary<string, ConnectionCacheEntry> connectionPool, SQLiteConnection connection)
     {
         _path = path;
         _connectionPool = connectionPool;
-        _connection = connection;
+        Connection = connection;
         _timeout = Utility.Debounce(() =>
         {
             if (_connectionPool.TryRemove(_path, out var cacheEntry))
@@ -119,7 +118,7 @@ public class ConnectionCacheEntry
         }, 2000);
     }
 
-    public SQLiteConnection Connection => _connection;
+    public SQLiteConnection Connection { get; }
 
 
     public void ResetTimeout()
