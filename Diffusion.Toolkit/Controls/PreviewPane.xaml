@@ -51,7 +51,6 @@
                 <RowDefinition Height="32"/>
             </Grid.RowDefinitions>
 
-
             <!--HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
             VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
 
@@ -108,7 +107,19 @@
                         </BlurEffect>
                     </Image.Effect>
                 </Image>
+
             </ScrollViewer>
+
+            <MediaElement x:Name="Player" Grid.Row="0" Grid.RowSpan="3"
+                          MouseMove="ScrollViewer_OnMouseMove"
+                          PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
+                          PreviewMouseWheel="UIElement_OnMouseWheel"  
+                          PreviewKeyUp="ScrollViewer_OnPreviewKeyUp"
+                          KeyDown="ScrollViewer_OnKeyDown"
+                          LoadedBehavior="Manual"
+                          Loaded="Player_OnLoaded"
+                          MediaEnded="Player_OnMediaEnded"
+                          ></MediaElement>
 
             <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
                   DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
@@ -136,6 +147,8 @@
 
                 </Grid>
             </Grid>
+
+
 
         </Grid>
 

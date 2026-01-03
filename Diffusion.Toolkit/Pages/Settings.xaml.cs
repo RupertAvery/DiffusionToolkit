@@ -91,6 +91,7 @@ namespace Diffusion.Toolkit.Pages
             _model.ShowFilenames = _settings.ShowFilenames;
             _model.PermanentlyDelete = _settings.PermanentlyDelete;
             _model.ConfirmDeletion = _settings.ConfirmDeletion;
+            _model.LoopVideo = _settings.LoopVideo;
 
             _model.AutoTagNSFW = _settings.AutoTagNSFW;
             _model.NSFWTags = string.Join("\r\n", _settings.NSFWTags);
@@ -385,6 +386,7 @@ namespace Diffusion.Toolkit.Pages
                 _settings.ShowFilenames = _model.ShowFilenames;
                 _settings.PermanentlyDelete = _model.PermanentlyDelete;
                 _settings.ConfirmDeletion = _model.ConfirmDeletion;
+                _settings.LoopVideo = _model.LoopVideo;
 
                 _settings.StoreMetadata = _model.StoreMetadata;
                 _settings.StoreWorkflow = _model.StoreWorkflow;

@@ -269,6 +269,11 @@
                     <CheckBox IsChecked="{Binding ConfirmDeletion}" Margin="0,10,0,0" Content="{lex:Loc Settings.Images.ConfirmDeletion}"></CheckBox>
                 </StackPanel>
             </TabItem>
+            <TabItem Header="{lex:Loc Settings.Video}">
+                <StackPanel Width="800" HorizontalAlignment="Left" Margin="10">
+                    <CheckBox IsChecked="{Binding LoopVideo}" Margin="0,10,0,0" Content="{lex:Loc Settings.Video.LoopVideo}"></CheckBox>
+                </StackPanel>
+            </TabItem>
             <TabItem Header="{lex:Loc Settings.Metadata}">
                 <StackPanel Width="800" HorizontalAlignment="Left" Margin="10">
                     <CheckBox IsChecked="{Binding StoreMetadata}" Margin="0,10,0,0" Content="{lex:Loc Settings.Metadata.StoreMetadata}"></CheckBox>

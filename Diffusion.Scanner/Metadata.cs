@@ -163,12 +163,47 @@ public class Metadata
         }
 
         stream.Seek(0, SeekOrigin.Begin);
+        int headerWidth = 0;
+        int headerHeight = 0;
 
         // Now, attempt to read the metadata
         switch (fileType)
         {
             case FileType.MP4:
                 {
+                    IEnumerable<Directory> directories = QuickTimeMetadataReader.ReadMetadata(stream);
+
+                    foreach (var directory in directories)
+                    {
+                        if(directory.Name == "QuickTime Track Header")
+                        {
+                            foreach (var tag in directory.Tags)
+                            {
+                                switch (tag.Name)
+                                {
+                                    case "Width":
+                                        headerWidth = int.Parse(tag.Description);
+                                        break;
+                                    case "Height":
+                                        headerHeight = int.Parse(tag.Description);
+                                        break;
+                                }
+                            }
+                            break;
+                        }
+                        else if (directory.Name == "QuickTime Metadata Header")
+                        {
+                            foreach (var tag in directory.Tags)
+                            {
+                                if (tag.Name == "Comment")
+                                {
+                                    fileParameters = ReadComfyUIParameters(tag.Description, true);
+                                }
+                            }
+                        }
+
+                    }
+
                     break;
                 }
             case FileType.PNG:
@@ -183,136 +218,160 @@ public class Metadata
 
                     foreach (var directory in directories)
                     {
-                        if (directory.Name == "PNG-tEXt")
+                        switch (directory.Name)
                         {
-                            foreach (var tag in directory.Tags)
+                            case "PNG-IHDR":
                             {
-                                if (tag.Name == "Textual Data")
+                                foreach (var tag in directory.Tags)
                                 {
-                                    if (tag.Description.StartsWith("parameters:"))
+                                    switch (tag.Name)
                                     {
-                                        if (fileParameters == null)
+                                        case "Image Width":
+                                            headerWidth = int.Parse(tag.Description);
+                                            break;
+                                        case "Image Height":
+                                            headerHeight = int.Parse(tag.Description);
+                                            break;
+                                    }
+                                }
+                                break;
+                            }
+                            case "PNG-tEXt":
+                            {
+                                foreach (var tag in directory.Tags)
+                                {
+                                    if (tag.Name == "Textual Data")
+                                    {
+                                        if (tag.Description.StartsWith("parameters:"))
                                         {
-                                            var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
-                                            if (isJson)
+                                            if (fileParameters == null)
                                             {
-                                                if (tag.Description.Contains("sui_image_params"))
+                                                var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
+                                                if (isJson)
                                                 {
-                                                    fileParameters = ReadStableSwarmParameters(tag.Description);
-                                                    format = MetaFormat.SwarmUI;
+                                                    if (tag.Description.Contains("sui_image_params"))
+                                                    {
+                                                        fileParameters = ReadStableSwarmParameters(tag.Description);
+                                                        format = MetaFormat.SwarmUI;
+                                                    }
+                                                    else
+                                                    {
+                                                        try
+                                                        {
+                                                            fileParameters = ReadRuinedFooocusParameters(tag.Description);
+                                                            format = MetaFormat.RuinedFooocus;
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            fileParameters = ReadA111Parameters(tag.Description);
+                                                            format = MetaFormat.A1111;
+                                                        }
+                                                    }
                                                 }
                                                 else
                                                 {
-                                                    try
-                                                    {
-                                                        fileParameters = ReadRuinedFooocusParameters(tag.Description);
-                                                        format = MetaFormat.RuinedFooocus;
-                                                    }
-                                                    catch (Exception e)
-                                                    {
-                                                        fileParameters = ReadA111Parameters(tag.Description);
-                                                        format = MetaFormat.A1111;
-                                                    }
+                                                    fileParameters = ReadA111Parameters(tag.Description);
+                                                    format = MetaFormat.A1111;
                                                 }
                                             }
-                                            else
+                                        }
+                                        else if (tag.Description.StartsWith("Comment:"))
+                                        {
+
+                                            if (fileParameters == null)
                                             {
-                                                fileParameters = ReadA111Parameters(tag.Description);
-                                                format = MetaFormat.A1111;
+                                                //if (directory.Tags.Any(t => t.Description == "Software: NovelAI"))
+                                                if (directory.Tags.Any(t => t.Description == "Software: NovelAI") || directories.Any(d => d.Tags.Any(t => t.Description == "Software: NovelAI")))
+                                                {
+                                                    format = MetaFormat.NovelAI;
+                                                    fileParameters = ReadNovelAIParameters(file, directories);
+                                                }
+                                                else
+                                                {
+                                                    format = MetaFormat.FooocusMRE;
+                                                    fileParameters = ReadFooocusMREParameters(tag.Description);
+                                                }
                                             }
                                         }
-                                    }
-                                    else if (tag.Description.StartsWith("Comment:"))
-                                    {
-
-                                        if (fileParameters == null)
+                                        else if (tag.Description == "Software: NovelAI")
                                         {
-                                            //if (directory.Tags.Any(t => t.Description == "Software: NovelAI"))
-                                            if (directory.Tags.Any(t => t.Description == "Software: NovelAI") || directories.Any(d => d.Tags.Any(t => t.Description == "Software: NovelAI")))
+                                            if (fileParameters == null)
                                             {
                                                 format = MetaFormat.NovelAI;
                                                 fileParameters = ReadNovelAIParameters(file, directories);
                                             }
+                                        }
+                                        else if (tag.Description.StartsWith("Dream: "))
+                                        {
+                                            format = MetaFormat.InvokeAI;
+                                            fileParameters = ReadInvokeAIParameters(file, tag.Description);
+                                        }
+                                        else if (tag.Description.StartsWith("sd-metadata: "))
+                                        {
+                                            format = MetaFormat.InvokeAINew;
+                                            fileParameters = ReadInvokeAIParametersNew(file, tag.Description);
+                                        }
+                                        else if (tag.Description.StartsWith("invokeai_metadata: "))
+                                        {
+                                            format = MetaFormat.InvokeAI2;
+                                            fileParameters = ReadInvokeAIParameters2(file, tag.Description);
+                                        }
+                                        else if (tag.Description.StartsWith("prompt: "))
+                                        {
+                                            var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
+                                            format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
+                                            var tempParameters = isJson ? ReadComfyUIParameters(tag.Description) : ReadEasyDiffusionParameters(file, directories);
+
+                                            if (fileParameters == null)
+                                            {
+                                                fileParameters = tempParameters;
+                                            }
                                             else
                                             {
-                                                format = MetaFormat.FooocusMRE;
-                                                fileParameters = ReadFooocusMREParameters(tag.Description);
+                                                fileParameters.WorkflowId = tempParameters.WorkflowId;
+                                                fileParameters.Workflow = tempParameters.Workflow;
+                                                fileParameters.Nodes = tempParameters.Nodes;
                                             }
                                         }
-                                    }
-                                    else if (tag.Description == "Software: NovelAI")
-                                    {
-                                        if (fileParameters == null)
+                                        else if (tag.Description.StartsWith("Score:"))
                                         {
-                                            format = MetaFormat.NovelAI;
-                                            fileParameters = ReadNovelAIParameters(file, directories);
+                                            decimal.TryParse(tag.Description[6..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
                                         }
-                                    }
-                                    else if (tag.Description.StartsWith("Dream: "))
-                                    {
-                                        format = MetaFormat.InvokeAI;
-                                        fileParameters = ReadInvokeAIParameters(file, tag.Description);
-                                    }
-                                    else if (tag.Description.StartsWith("sd-metadata: "))
-                                    {
-                                        format = MetaFormat.InvokeAINew;
-                                        fileParameters = ReadInvokeAIParametersNew(file, tag.Description);
-                                    }
-                                    else if (tag.Description.StartsWith("invokeai_metadata: "))
-                                    {
-                                        format = MetaFormat.InvokeAI2;
-                                        fileParameters = ReadInvokeAIParameters2(file, tag.Description);
-                                    }
-                                    else if (tag.Description.StartsWith("prompt: "))
-                                    {
-                                        var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
-                                        format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
-                                        var tempParameters = isJson ? ReadComfyUIParameters(tag.Description) : ReadEasyDiffusionParameters(file, directories);
+                                        else if (tag.Description.StartsWith("aesthetic_score:"))
+                                        {
+                                            decimal.TryParse(tag.Description[16..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
+                                        }
 
-                                        if (fileParameters == null)
-                                        {
-                                            fileParameters = tempParameters;
-                                        }
-                                        else
-                                        {
-                                            fileParameters.WorkflowId = tempParameters.WorkflowId;
-                                            fileParameters.Workflow = tempParameters.Workflow;
-                                            fileParameters.Nodes = tempParameters.Nodes;
-                                        }
                                     }
-                                    else if (tag.Description.StartsWith("Score:"))
-                                    {
-                                        decimal.TryParse(tag.Description[6..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
-                                    }
-                                    else if (tag.Description.StartsWith("aesthetic_score:"))
-                                    {
-                                        decimal.TryParse(tag.Description[16..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
-                                    }
-
                                 }
+
+                                break;
                             }
-                        }
-                        else if (directory.Name == "PNG-iTXt")
-                        {
-                            foreach (var tag in directory.Tags)
+                            case "PNG-iTXt":
                             {
-                                if (tag.Name == "Textual Data" && tag.Description.StartsWith("parameters:"))
+                                foreach (var tag in directory.Tags)
                                 {
-                                    format = MetaFormat.A1111;
-                                    fileParameters = ReadA111Parameters(tag.Description);
+                                    if (tag.Name == "Textual Data" && tag.Description.StartsWith("parameters:"))
+                                    {
+                                        format = MetaFormat.A1111;
+                                        fileParameters = ReadA111Parameters(tag.Description);
+                                    }
                                 }
-                            }
 
-                        }
-                        else if (directory.Name == "Exif SubIFD")
-                        {
-                            foreach (var tag in directory.Tags)
+                                break;
+                            }
+                            case "Exif SubIFD":
                             {
-                                if (tag.Name == "User Comment")
+                                foreach (var tag in directory.Tags)
                                 {
-                                    format = MetaFormat.A1111;
-                                    fileParameters = ReadA111Parameters(tag.Description);
+                                    if (tag.Name == "User Comment")
+                                    {
+                                        format = MetaFormat.A1111;
+                                        fileParameters = ReadA111Parameters(tag.Description);
+                                    }
                                 }
+
+                                break;
                             }
                         }
                     }
@@ -522,10 +581,22 @@ public class Metadata
 
         stream.Seek(0, SeekOrigin.Begin);
 
-        var (width, height) = GetImageSize(stream);
+        if (headerWidth > 0 && headerHeight > 0)
+        {
+            fileParameters.Width = headerWidth;
+            fileParameters.Height = headerHeight;
+        }
+        else
+        {
+            if (fileType != FileType.MP4)
+            {
+                var (width, height) = GetImageSize(stream);
 
-        fileParameters.Width = width;
-        fileParameters.Height = height;
+                fileParameters.Width = width;
+                fileParameters.Height = height;
+            }
+        }
+
 
         return fileParameters;
     }

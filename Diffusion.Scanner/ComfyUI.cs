@@ -73,6 +73,12 @@ namespace Diffusion.IO
                 rootElement = tempElement;
             }
 
+            if (rootElement.ValueKind == JsonValueKind.String)
+            {
+                var tempRoot = JsonDocument.Parse(rootElement.GetString());
+                rootElement = tempRoot.RootElement;
+            }
+
             var rootProperties = rootElement
                 .EnumerateObject().ToDictionary(n => n.Name, n => n.Value);
             

@@ -1,4 +1,7 @@
-﻿using Diffusion.Toolkit.Services;
+﻿using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
+using Diffusion.Video;
+using Emgu.CV.Cuda;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Resources;
 using System.Windows.Threading;
-using Diffusion.Toolkit.Models;
+using Stream = System.IO.Stream;
 
 namespace Diffusion.Toolkit.Thumbnails;
 
@@ -269,9 +272,12 @@ public class ThumbnailService
 
     private static Stream GenerateThumbnail(string path, int width, int height, int size)
     {
-        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
         var bitmap = new BitmapImage();
-        //bitmap.UriSource = new Uri(path);
+
+        using var stream = Path.GetExtension(path) == ".mp4" 
+            ? FrameExtractor.ExtractFrameToPNG(path) 
+            : new FileStream(path, FileMode.Open, FileAccess.Read);
+
         bitmap.BeginInit();
 
         if (width > height)
@@ -282,7 +288,7 @@ public class ThumbnailService
         {
             bitmap.DecodePixelHeight = size;
         }
-        //bitmap.CacheOption = BitmapCacheOption.OnLoad;
+
         bitmap.StreamSource = stream;
         bitmap.EndInit();
         bitmap.Freeze();
@@ -297,6 +303,7 @@ public class ThumbnailService
         ministream.Seek(0, SeekOrigin.Begin);
 
         return ministream;
+
     }
 
     public BitmapImage GetThumbnailDirect(string path, int width, int height)

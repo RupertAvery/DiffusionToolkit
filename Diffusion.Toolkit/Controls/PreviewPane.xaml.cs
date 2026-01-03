@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -62,8 +63,21 @@ namespace Diffusion.Toolkit.Controls
             if (e.Property.Name == nameof(Image))
             {
                 var preview = ((PreviewPane)d);
-                preview.SetHandler((ImageViewModel)e.NewValue);
-                preview.originalRating = ((ImageViewModel)e.NewValue).Rating;
+                var model = (ImageViewModel)e.NewValue;
+                preview.SetHandler(model);
+                preview.originalRating = model.Rating;
+                if (Path.GetExtension(model.Path) == ".mp4")
+                {
+                    preview.ScrollViewer.Visibility = Visibility.Hidden;
+                    preview.Player.Visibility = Visibility.Visible;
+                    preview.Player.Source = new Uri(model.Path, UriKind.Absolute);
+                    //preview.Player.Play();
+                }
+                else
+                {
+                    preview.ScrollViewer.Visibility = Visibility.Visible;
+                    preview.Player.Visibility = Visibility.Hidden;
+                }
             }
         }
 
@@ -273,7 +287,7 @@ namespace Diffusion.Toolkit.Controls
 
                     Debug.WriteLine(e.Delta);
 
-                    var ps = PresentationSource.FromVisual((ScrollViewer)sender);
+                    //var ps = PresentationSource.FromVisual((ScrollViewer)sender);
 
                     switch (vkey)
                     {
@@ -482,6 +496,19 @@ namespace Diffusion.Toolkit.Controls
         {
             ServiceLocator.ThumbnailNavigationService.MoveNext();
             e.Handled = true;
+        }
+
+        private void Player_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            ((MediaElement)sender).Play();
+        }
+
+        private void Player_OnMediaEnded(object sender, RoutedEventArgs e)
+        {
+            if (ServiceLocator.Settings.LoopVideo)
+            {
+                Player.Position = TimeSpan.FromMilliseconds(1);
+            }
         }
     }
 }

@@ -33,6 +33,7 @@ using Diffusion.Civitai.Models;
 using Metadata = Diffusion.IO.Metadata;
 using System.Security.Cryptography;
 using Diffusion.Common.Query;
+using Diffusion.Video;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -1188,18 +1189,21 @@ namespace Diffusion.Toolkit.Pages
         }
 
 
-        public static BitmapImage GetBitmapImage(string path)
+        public static BitmapImage? GetBitmapImage(string path)
         {
-            BitmapImage bitmap;
-            using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-            {
-                bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.StreamSource = stream;
-                bitmap.EndInit();
-            }
+            BitmapImage? bitmap = null;
+
+            using var stream = Path.GetExtension(path) == ".mp4"
+                ? FrameExtractor.ExtractFrameToPNG(path)
+                : new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.StreamSource = stream;
+            bitmap.EndInit();
             bitmap.Freeze();
+
             return bitmap;
         }
 

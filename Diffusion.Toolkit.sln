@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Scripting", "Diff
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBed", "TestBed\TestBed.csproj", "{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Video", "Diffusion.Video\Diffusion.Video.csproj", "{163B8A75-962D-46AB-89CD-B189B972BA94}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}.Release|Any CPU.Build.0 = Release|Any CPU
+		{163B8A75-962D-46AB-89CD-B189B972BA94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{163B8A75-962D-46AB-89CD-B189B972BA94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{163B8A75-962D-46AB-89CD-B189B972BA94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{163B8A75-962D-46AB-89CD-B189B972BA94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
