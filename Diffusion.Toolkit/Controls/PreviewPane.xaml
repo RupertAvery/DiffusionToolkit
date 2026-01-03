@@ -9,6 +9,8 @@
              xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
+             xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
+             xmlns:common="clr-namespace:Diffusion.Common;assembly=Diffusion.Common"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.Resources>
@@ -23,6 +25,50 @@
             <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
             <converters:IfLessThanConverter x:Key="iflessThan"></converters:IfLessThanConverter>
             <converters:IfGreaterThanConverter x:Key="ifGreaterThan"></converters:IfGreaterThanConverter>
+
+            <DataTemplate x:Key="ImageDataTemplate">
+                <ScrollViewer Grid.Row="0"  Grid.RowSpan="3"
+                              Loaded="ScrollViewer_OnLoaded"
+                              HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
+                              VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                >
+
+                    <Image 
+                           DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                           Stretch="None"
+                           Opacity="{Binding ForDeletion, Converter={StaticResource BoolToOpacity}}"
+                           RenderOptions.BitmapScalingMode="Fant"
+                           Source="{Binding Image}" >
+                        <Image.Visibility>
+                            <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
+                                <Binding Path="NSFW"></Binding>
+                                <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
+                            </MultiBinding>
+                        </Image.Visibility>
+                        <Image.Effect>
+                            <BlurEffect  KernelType="Gaussian">
+                                <BlurEffect.Radius>
+                                    <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
+                                        <Binding Path="NSFW"></Binding>
+                                        <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                                    </MultiBinding>
+                                </BlurEffect.Radius>
+                            </BlurEffect>
+                        </Image.Effect>
+                    </Image>
+
+                </ScrollViewer>
+            </DataTemplate>
+            <DataTemplate x:Key="VideoDataTemplate" DataType="{x:Type models:ImageViewModel}">
+                <MediaElement 
+                    DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                    Source="{Binding Path}"
+                    LoadedBehavior="Play"
+                    Loaded="Player_OnLoaded"
+                    MediaEnded="Player_OnMediaEnded"
+                    SpeedRatio="1"
+                ></MediaElement>
+            </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
@@ -44,7 +90,41 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition/>
             </Grid.RowDefinitions>-->
-        <Grid  Style="{StaticResource Preview}" Background="{x:Null}">
+        <!--<Grid  Style="{StaticResource Preview}" Background="{x:Null}"
+               x:Name="Grid"
+               MouseMove="Grid_OnMouseMove"
+               PreviewMouseWheel="UIElement_OnMouseWheel"  
+               PreviewKeyDown="Grid_OnPreviewKeyDown"
+               PreviewKeyUp="Grid_OnPreviewKeyUp"
+               KeyDown="Grid_OnKeyDown"
+        >-->
+
+        <Grid  Style="{StaticResource Preview}" Background="{x:Null}"
+               x:Name="Grid"
+               MouseMove="Grid_OnMouseMove"
+               PreviewMouseWheel="UIElement_OnMouseWheel"  
+               PreviewKeyDown="Grid_OnPreviewKeyDown"
+               PreviewKeyUp="Grid_OnPreviewKeyUp"
+               KeyDown="Grid_OnKeyDown"
+               Focusable="True"
+               >
+            <Grid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem x:Name="AlbumMenu" ItemsSource="{Binding MainModel.AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
+                    </MenuItem>
+                    <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding MainModel.SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
+                    <Separator />
+                    <MenuItem ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
+                    <Separator></Separator>
+                    <MenuItem Header="Fit to Preview" InputGestureText="CTRL+Shift+F" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
+                    <MenuItem Header="Actual Size" InputGestureText="CTRL+Shift+A" Command="{Binding MainModel.ToggleActualSize}" IsChecked="{Binding MainModel.ActualSize}"></MenuItem>
+                    <Separator></Separator>
+                    <MenuItem Header="Copy Path" Command="{Binding CopyPathCommand}"></MenuItem>
+                </ContextMenu>
+
+                <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
+
+            </Grid.ContextMenu>
             <Grid.RowDefinitions>
                 <RowDefinition Height="42"/>
                 <RowDefinition Height="*" />
@@ -57,69 +137,26 @@
             <!--HorizontalScrollBarVisibility="Hidden" 
             VerticalScrollBarVisibility="Hidden"-->
 
+            <Grid Background="Transparent" Grid.Row="0" Grid.RowSpan="3">
+                <ContentControl x:Name="Content" DataContext="{Binding Path=Image}">
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Setter Property="ContentTemplate" Value="{StaticResource ImageDataTemplate}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Type}" Value="{x:Static common:ImageType.Image}">
+                                    <Setter Property="ContentTemplate" Value="{StaticResource ImageDataTemplate}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Type}" Value="{x:Static common:ImageType.Video}">
+                                    <Setter Property="ContentTemplate" Value="{StaticResource VideoDataTemplate}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
+            </Grid>
 
-            <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
-                          HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
-                          VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
-                          MouseMove="ScrollViewer_OnMouseMove"
-                          PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
-                          PreviewMouseWheel="UIElement_OnMouseWheel"  
-                          PreviewKeyUp="ScrollViewer_OnPreviewKeyUp"
-                          KeyDown="ScrollViewer_OnKeyDown"
-            >
-                <ScrollViewer.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem x:Name="AlbumMenu" ItemsSource="{Binding MainModel.AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
-                        </MenuItem>
-                        <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding MainModel.SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
-                        <Separator />
-                        <MenuItem ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
-                        <Separator></Separator>
-                        <MenuItem Header="Fit to Preview" InputGestureText="CTRL+Shift+F" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
-                        <MenuItem Header="Actual Size" InputGestureText="CTRL+Shift+A" Command="{Binding MainModel.ToggleActualSize}" IsChecked="{Binding MainModel.ActualSize}"></MenuItem>
-                        <Separator></Separator>
-                        <MenuItem Header="Copy Path" Command="{Binding CopyPathCommand}"></MenuItem>
-                    </ContextMenu>
+    
 
-                    <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
-
-                </ScrollViewer.ContextMenu>
-                <Image x:Name="Preview"
-                       DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
-                       Stretch="None"
-                       Opacity="{Binding ForDeletion, Converter={StaticResource BoolToOpacity}}"
-                       RenderOptions.BitmapScalingMode="Fant"
-                       Source="{Binding Image}" >
-                    <Image.Visibility>
-                        <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
-                            <Binding Path="NSFW"></Binding>
-                            <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
-                        </MultiBinding>
-                    </Image.Visibility>
-                    <Image.Effect>
-                        <BlurEffect  KernelType="Gaussian">
-                            <BlurEffect.Radius>
-                                <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
-                                    <Binding Path="NSFW"></Binding>
-                                    <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
-                                </MultiBinding>
-                            </BlurEffect.Radius>
-                        </BlurEffect>
-                    </Image.Effect>
-                </Image>
-
-            </ScrollViewer>
-
-            <MediaElement x:Name="Player" Grid.Row="0" Grid.RowSpan="3"
-                          MouseMove="ScrollViewer_OnMouseMove"
-                          PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
-                          PreviewMouseWheel="UIElement_OnMouseWheel"  
-                          PreviewKeyUp="ScrollViewer_OnPreviewKeyUp"
-                          KeyDown="ScrollViewer_OnKeyDown"
-                          LoadedBehavior="Manual"
-                          Loaded="Player_OnLoaded"
-                          MediaEnded="Player_OnMediaEnded"
-                          ></MediaElement>
 
             <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
                   DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"

@@ -31,7 +31,7 @@ namespace Diffusion.Toolkit
 
         protected override void OnSourceInitialized(EventArgs e)
         {
-            PreviewPane.SetFocus();
+            //PreviewPane.SetFocus();
             base.OnSourceInitialized(e);
         }
 
@@ -185,7 +185,7 @@ namespace Diffusion.Toolkit
 
         private void PreviewPane_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
-            //OnPreviewKeyUp(e);
+            OnPreviewKeyUp(e);
 
             SetFocus();
         }
@@ -199,7 +199,7 @@ namespace Diffusion.Toolkit
         {
             RestartSlideShowTimer();
 
-            //OnPreviewKeyDown(e);
+            OnPreviewKeyDown(e);
 
 
             SetFocus();
@@ -251,6 +251,11 @@ namespace Diffusion.Toolkit
         private void FullScreen_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
             ToggleFullScreen();
+        }
+
+        private void PreviewPane_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            OnKeyDown(e);
         }
     }
 

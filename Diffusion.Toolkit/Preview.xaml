@@ -60,6 +60,7 @@
             PreviewKeyUp="PreviewPane_OnPreviewKeyUp"
             PreviewKeyDown="PreviewPane_OnPreviewKeyDown"
             MouseDoubleClick="PreviewPane_OnMouseDoubleClick"
+            KeyDown="PreviewPane_OnKeyDown"
             x:Name="PreviewPane" 
             AllowDrop="True" 
             Drop="PreviewPane_OnDrop"></controls:PreviewPane>

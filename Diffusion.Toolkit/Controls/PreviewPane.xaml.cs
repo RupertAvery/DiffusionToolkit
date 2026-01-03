@@ -1,4 +1,11 @@
-﻿using System;
+﻿using Diffusion.Common;
+using Diffusion.Database;
+using Diffusion.Toolkit.Behaviors;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -11,11 +18,8 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Diffusion.Database;
-using Diffusion.Toolkit.Behaviors;
-using Diffusion.Toolkit.Classes;
-using Diffusion.Toolkit.Models;
-using Diffusion.Toolkit.Services;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+using Image = System.Drawing.Image;
 using Point = System.Windows.Point;
 
 namespace Diffusion.Toolkit.Controls
@@ -58,6 +62,23 @@ namespace Diffusion.Toolkit.Controls
 
         private int? originalRating;
 
+        private static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+
+                    if (child != null && child is T)
+                        yield return (T)child;
+
+                    foreach (T childOfChild in FindVisualChildren<T>(child))
+                        yield return childOfChild;
+                }
+            }
+        }
+
         private static void PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.Property.Name == nameof(Image))
@@ -66,18 +87,12 @@ namespace Diffusion.Toolkit.Controls
                 var model = (ImageViewModel)e.NewValue;
                 preview.SetHandler(model);
                 preview.originalRating = model.Rating;
-                if (Path.GetExtension(model.Path) == ".mp4")
-                {
-                    preview.ScrollViewer.Visibility = Visibility.Hidden;
-                    preview.Player.Visibility = Visibility.Visible;
-                    preview.Player.Source = new Uri(model.Path, UriKind.Absolute);
-                    //preview.Player.Play();
-                }
-                else
-                {
-                    preview.ScrollViewer.Visibility = Visibility.Visible;
-                    preview.Player.Visibility = Visibility.Hidden;
-                }
+
+                //if (model.Type == ImageType.Video)
+                //{
+                //    preview.Player.Source = new Uri(model.Path, UriKind.Absolute);
+                //    preview.Player.Play();
+                //}
             }
         }
 
@@ -127,13 +142,17 @@ namespace Diffusion.Toolkit.Controls
         public ICommand CopyPathCommand { get; set; }
 
 
-        private ScrollDragger _scrollDragger;
+        private ScrollDragger? _scrollDragger = null;
+
+        private System.Windows.Controls.Image? Preview = null;
+        private System.Windows.Controls.ScrollViewer? ScrollViewer = null;
+        private System.Windows.Controls.MediaElement? Player = null;
 
         public PreviewPane()
         {
             InitializeComponent();
             InitIcons();
-            _scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
+            //_scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
             SizeChanged += OnSizeChanged;
 
 
@@ -160,7 +179,7 @@ namespace Diffusion.Toolkit.Controls
 
         private void FitToPreview()
         {
-            if (Image is { Image: { } })
+            if (Image is { Image: { }, Type: ImageType.Image })
             {
 
                 var ratio = ActualWidth / ActualHeight;
@@ -172,7 +191,7 @@ namespace Diffusion.Toolkit.Controls
 
                 factor = Math.Min(hfactor, vfactor);
 
-                Preview.LayoutTransform = new ScaleTransform(factor, factor);
+                Preview?.LayoutTransform = new ScaleTransform(factor, factor);
 
                 UpdateLayout();
             }
@@ -180,10 +199,9 @@ namespace Diffusion.Toolkit.Controls
 
         private void ActualSize()
         {
-            if (Image is { Image: { } })
+            if (Image is { Image: { }, Type: ImageType.Image })
             {
-
-                Preview.LayoutTransform = new ScaleTransform(1, 1);
+                Preview?.LayoutTransform = new ScaleTransform(1, 1);
                 UpdateLayout();
             }
         }
@@ -226,15 +244,21 @@ namespace Diffusion.Toolkit.Controls
 
         public void ResetZoom()
         {
-            Preview.LayoutTransform = new ScaleTransform(1, 1);
+            if (Image is { Image: { }, Type: ImageType.Image })
+            {
+                Preview?.LayoutTransform = new ScaleTransform(1, 1);
 
-            ScrollViewer.ScrollToHorizontalOffset(0);
-            ScrollViewer.ScrollToVerticalOffset(0);
-            this.UpdateLayout();
+                ScrollViewer?.ScrollToHorizontalOffset(0);
+                ScrollViewer?.ScrollToVerticalOffset(0);
+                this.UpdateLayout();
+            }
+
         }
 
         private void Zoom(MouseWheelEventArgs e)
         {
+            if (Image.Type == ImageType.Video) return;
+
             Point mouseAtImage = e.GetPosition(Preview); // ScrollViewer_CanvasMain.TranslatePoint(middleOfScrollViewer, Canvas_Main);
             Point mouseAtScrollViewer = e.GetPosition(ScrollViewer);
 
@@ -248,13 +272,13 @@ namespace Diffusion.Toolkit.Controls
 
             Preview.LayoutTransform = new ScaleTransform(newZoom, newZoom);
 
-            ScrollViewer.ScrollToHorizontalOffset(0);
-            ScrollViewer.ScrollToVerticalOffset(0);
+            ScrollViewer?.ScrollToHorizontalOffset(0);
+            ScrollViewer?.ScrollToVerticalOffset(0);
             this.UpdateLayout();
 
             Vector offset = Preview.TranslatePoint(mouseAtImage, ScrollViewer) - mouseAtScrollViewer; // (Vector)middleOfScrollViewer;
-            ScrollViewer.ScrollToHorizontalOffset(offset.X);
-            ScrollViewer.ScrollToVerticalOffset(offset.Y);
+            ScrollViewer?.ScrollToHorizontalOffset(offset.X);
+            ScrollViewer?.ScrollToVerticalOffset(offset.Y);
             this.UpdateLayout();
         }
 
@@ -311,6 +335,8 @@ namespace Diffusion.Toolkit.Controls
 
         public void ZoomPreview(double zoomDelta)
         {
+            if (Image.Type == ImageType.Video) return;
+
             var mouseAtScrollViewer = new Point(ScrollViewer.ViewportWidth / 2, ScrollViewer.ViewportHeight / 2);
             Point mouseAtImage = ScrollViewer.TranslatePoint(mouseAtScrollViewer, Preview);
 
@@ -330,7 +356,7 @@ namespace Diffusion.Toolkit.Controls
             this.UpdateLayout();
         }
 
-        private void ScrollViewer_OnKeyDown(object sender, KeyEventArgs e)
+        private void Grid_OnKeyDown(object sender, KeyEventArgs e)
         {
             //if (e.Key == Key.I && e.KeyboardDevice.Modifiers == ModifierKeys.None)
             //{
@@ -360,31 +386,31 @@ namespace Diffusion.Toolkit.Controls
                     ServiceLocator.TaggingService.Rate(this, Image.Id, null);
                     break;
                 case >= Key.D0 and <= Key.D9 when e.KeyboardDevice.Modifiers == ModifierKeys.None:
-                {
-                    int? rating = e.Key switch
                     {
-                        Key.D1 => 1,
-                        Key.D2 => 2,
-                        Key.D3 => 3,
-                        Key.D4 => 4,
-                        Key.D5 => 5,
-                        Key.D6 => 6,
-                        Key.D7 => 7,
-                        Key.D8 => 8,
-                        Key.D9 => 9,
-                        Key.D0 => 10,
-                    };
+                        int? rating = e.Key switch
+                        {
+                            Key.D1 => 1,
+                            Key.D2 => 2,
+                            Key.D3 => 3,
+                            Key.D4 => 4,
+                            Key.D5 => 5,
+                            Key.D6 => 6,
+                            Key.D7 => 7,
+                            Key.D8 => 8,
+                            Key.D9 => 9,
+                            Key.D0 => 10,
+                        };
 
-                    if (Image.Rating == rating)
-                    {
-                        rating = null;
+                        if (Image.Rating == rating)
+                        {
+                            rating = null;
+                        }
+
+                        Image.Rating = rating;
+
+                        ServiceLocator.TaggingService.Rate(this, Image.Id, rating);
+                        break;
                     }
-
-                    Image.Rating = rating;
-
-                    ServiceLocator.TaggingService.Rate(this, Image.Id, rating);
-                    break;
-                }
                 case Key.D0 when e.KeyboardDevice.Modifiers == ModifierKeys.Control:
                     ResetZoom();
                     e.Handled = true;
@@ -427,7 +453,7 @@ namespace Diffusion.Toolkit.Controls
             }
         }
 
-        private void ScrollViewer_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        private void Grid_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             OnPreviewKeyDown(e);
         }
@@ -439,15 +465,15 @@ namespace Diffusion.Toolkit.Controls
 
         public void SetFocus()
         {
-            ScrollViewer.Focus();
+            Grid.Focus();
         }
 
-        private void ScrollViewer_OnPreviewKeyUp(object sender, KeyEventArgs e)
+        private void Grid_OnPreviewKeyUp(object sender, KeyEventArgs e)
         {
             OnPreviewKeyUp(e);
         }
 
-        private void ScrollViewer_OnMouseMove(object sender, MouseEventArgs e)
+        private void Grid_OnMouseMove(object sender, MouseEventArgs e)
         {
             Window window = Window.GetWindow(this);
 
@@ -455,7 +481,11 @@ namespace Diffusion.Toolkit.Controls
 
             if (e.LeftButton == MouseButtonState.Pressed && !ctrlPressed)
             {
-                if (ScrollViewer.ScrollableHeight == 0 && ScrollViewer.ScrollableWidth == 0)
+                var canDrag = Image.Type == ImageType.Image
+                    ? ScrollViewer is { ScrollableHeight: 0, ScrollableWidth: 0 }
+                    : true;
+
+                if (canDrag)
                 {
                     DataObject dataObject = new DataObject();
                     dataObject.SetData(DataFormats.FileDrop, new[] { Image.Path });
@@ -500,15 +530,35 @@ namespace Diffusion.Toolkit.Controls
 
         private void Player_OnLoaded(object sender, RoutedEventArgs e)
         {
-            ((MediaElement)sender).Play();
+            _scrollDragger?.Close();
+
+            ScrollViewer = null;
+            Preview = null;
+            _scrollDragger = null;
+
+            Player = (MediaElement)sender;
         }
 
         private void Player_OnMediaEnded(object sender, RoutedEventArgs e)
         {
             if (ServiceLocator.Settings.LoopVideo)
             {
-                Player.Position = TimeSpan.FromMilliseconds(1);
+                Player?.Position = TimeSpan.FromMilliseconds(1);
             }
+
+            SetFocus();
+        }
+
+        private void ScrollViewer_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            Player = null;
+
+            ScrollViewer = (ScrollViewer)sender;
+            Preview = FindVisualChildren<System.Windows.Controls.Image>(ScrollViewer).First();
+
+            _scrollDragger = new ScrollDragger(Preview, ScrollViewer, handCursor, grabCursor);
+
+            SetFocus();
         }
     }
 }

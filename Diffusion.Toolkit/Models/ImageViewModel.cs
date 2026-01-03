@@ -4,6 +4,7 @@ using Diffusion.Toolkit.Controls;
 using System.Collections.Generic;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Diffusion.Common;
 using Diffusion.Toolkit.Services;
 using Node = Diffusion.IO.Node;
 
@@ -269,11 +270,18 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public ImageType Type
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
     public IReadOnlyCollection<Node> Nodes
     {
         get;
         set => SetField(ref field, value);
     }
+
 
     public string ErrorMessage
     {

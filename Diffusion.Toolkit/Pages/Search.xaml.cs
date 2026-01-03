@@ -1124,7 +1124,7 @@ namespace Diffusion.Toolkit.Pages
                     imageViewModel.AestheticScore = $"{parameters.AestheticScore}";
 
                     imageViewModel.Workflow = parameters.Workflow;
-
+                    imageViewModel.Type = parameters.Type;
                     try
                     {
                         var parser = new ComfyUIParser();

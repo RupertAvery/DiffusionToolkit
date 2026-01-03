@@ -1,4 +1,5 @@
-﻿using SQLite;
+﻿using Diffusion.Common;
+using SQLite;
 
 namespace Diffusion.Database.Models;
 
@@ -63,6 +64,7 @@ public class Image
     public DateTime? ViewedDate { get; set; }
     [UserDefined]
     public DateTime? TouchedDate { get; set; }
+    public ImageType Type { get; set; }
 }
 
 

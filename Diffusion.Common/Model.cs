@@ -8,3 +8,9 @@ public class Model
     public string? SHA256 { get; set; }
     public bool IsLocal { get; set; }
 }
+
+public enum ImageType
+{
+    Image = 0,
+    Video = 1
+}

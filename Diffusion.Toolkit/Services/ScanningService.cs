@@ -266,6 +266,7 @@ public class ScanningService
             NoMetadata = file.NoMetadata,
             WorkflowId = file.WorkflowId,
             HasError = file.HasError,
+            Type = file.Type,
             Hash = file.Hash
         };
 
