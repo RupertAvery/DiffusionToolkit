@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Input;
 using Diffusion.Common;
+using Diffusion.Common.Query;
 using Diffusion.Database.Models;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
@@ -434,6 +435,12 @@ public class SearchModel : BaseNotify
     public long Size { get; set; }
 
     public bool HasNoImagePaths
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public TagsMode TagsMode
     {
         get;
         set => SetField(ref field, value);

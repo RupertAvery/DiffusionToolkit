@@ -3,6 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace Diffusion.Common.Query;
 
+public enum TagsMode
+{
+    AND,
+    OR
+}
+
 public class QueryOptions 
 {
     public QueryOptions()
@@ -35,4 +41,5 @@ public class QueryOptions
     [JsonIgnore]
     public bool IsEmpty => Filter.IsEmpty && string.IsNullOrEmpty(Query);
 
+    public TagsMode TagsMode { get; set; }
 }

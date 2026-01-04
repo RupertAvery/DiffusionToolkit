@@ -400,7 +400,7 @@ namespace Diffusion.Toolkit.Services
 
                 foreach (var child in folderView.Children.ToList())
                 {
-                    if (!Directory.Exists(child.Path) && (!child.IsScanned || child.ForRemoval))
+                    if (child.ForRemoval || (!Directory.Exists(child.Path) && !child.IsScanned))
                     {
                         var grandChildren = GetVisualChildren(child).ToList();
 

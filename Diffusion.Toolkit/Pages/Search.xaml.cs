@@ -552,6 +552,8 @@ namespace Diffusion.Toolkit.Pages
             _model.NavigationSection.TagHeight = _settings.NavigationSection.TagHeight;
             _model.NavigationSection.QueryState = _settings.NavigationSection.QueryState;
 
+            _model.TagsMode = _settings.TagsMode;
+
             //_model.NavigationSection.ShowFolders = _settings.NavigationSection.ShowFolders;
             //_model.NavigationSection.ShowModels = _settings.NavigationSection.ShowModels;
             //_model.NavigationSection.ShowAlbums = _settings.NavigationSection.ShowAlbums;
@@ -838,6 +840,7 @@ namespace Diffusion.Toolkit.Pages
                         AlbumIds = albums,
                         Models = models,
                         TagIds = tags,
+                        TagsMode = _model.TagsMode,
                         Folder = _model.FolderPath == RootFolders ? null : _model.FolderPath,
                         SearchNodes = _model.SearchSettings.SearchNodes,
                         SearchAllProperties = _model.SearchSettings.SearchAllProperties,
@@ -999,7 +1002,14 @@ namespace Diffusion.Toolkit.Pages
 
                 ReloadMatches(new ReloadOptions() { Focus = true });
             }
+            else if (e.PropertyName == nameof(SearchModel.TagsMode))
+            {
+                ServiceLocator.Settings.TagsMode = _model.TagsMode;
 
+                QueryOptions.TagsMode = _model.TagsMode;
+
+                ReloadMatches(new ReloadOptions() { Focus = true });
+            }
             //else if (e.PropertyName == nameof(SearchModel.Page))
             //{
             //    ReloadMatches(true);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Interop;
+using Diffusion.Common.Query;
 using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit.Configuration;
@@ -32,7 +33,7 @@ public class Settings : SettingsContainer, IScanOptions
         SortAlbumsBy = "Name";
         SortBy = "Date Created";
         SortQueriesBy = "Name";
-        
+
         SortDirection = "Z-A";
         MetadataSection = new MetadataSectionSettings();
         MetadataSection.Attach(this);
@@ -463,6 +464,12 @@ public class Settings : SettingsContainer, IScanOptions
     public bool LoopVideo
     {
         get;
+        set => UpdateValue(ref field, value);
+    }
+
+    public TagsMode TagsMode
+    {
+        get; 
         set => UpdateValue(ref field, value);
     }
 }

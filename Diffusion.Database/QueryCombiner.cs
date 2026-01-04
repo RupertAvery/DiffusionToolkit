@@ -183,9 +183,26 @@ public static class QueryCombiner
 
         if (options.TagIds is { Count: > 0 })
         {
-            var placeholders = string.Join(",", options.TagIds.Select(a => "?"));
-            filters.Add($"SELECT DISTINCT m1.Id FROM Image m1 INNER JOIN ImageTag it ON it.ImageId = m1.Id INNER JOIN Tag t ON t.Id = it.TagId WHERE t.Id IN ({placeholders})");
-            bindings = bindings.Concat(options.TagIds.Cast<object>());
+            switch (options.TagsMode)
+            {
+                case TagsMode.OR:
+                {
+                    // OR
+                    var placeholders = string.Join(",", options.TagIds.Select(a => "?"));
+                    filters.Add($"SELECT DISTINCT m1.Id FROM Image m1 INNER JOIN ImageTag it ON it.ImageId = m1.Id INNER JOIN Tag t ON t.Id = it.TagId WHERE t.Id IN ({placeholders})");
+                    bindings = bindings.Concat(options.TagIds.Cast<object>());
+                    break;
+                }
+                case TagsMode.AND:
+                {
+                    foreach (var tagId in options.TagIds)
+                    {
+                        filters.Add($"SELECT DISTINCT m1.Id FROM Image m1 INNER JOIN ImageTag it ON it.ImageId = m1.Id WHERE it.TagId = ?");
+                        bindings = bindings.Append(tagId);
+                    }
+                    break;
+                }
+            }
         }
 
         if (options.Models is { Count: > 0 })
