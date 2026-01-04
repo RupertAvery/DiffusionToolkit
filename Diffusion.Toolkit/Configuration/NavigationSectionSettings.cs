@@ -14,6 +14,7 @@ public class NavigationSectionSettings : SettingsContainer
         FolderHeight = Double.PositiveInfinity;
         ModelHeight = Double.PositiveInfinity;
         AlbumHeight = Double.PositiveInfinity;
+        TagHeight = Double.PositiveInfinity;
     }
 
     public NavigationSectionSettings(bool initialize)
@@ -45,6 +46,12 @@ public class NavigationSectionSettings : SettingsContainer
         set => UpdateValue(ref field, value);
     }
 
+    public AccordionState TagState
+    {
+        get;
+        set => UpdateValue(ref field, value);
+    }
+
     public AccordionState QueryState
     {
         get;
@@ -65,6 +72,12 @@ public class NavigationSectionSettings : SettingsContainer
     }
 
     public double AlbumHeight
+    {
+        get;
+        set => UpdateValue(ref field, value);
+    }
+
+    public double TagHeight
     {
         get;
         set => UpdateValue(ref field, value);

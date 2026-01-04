@@ -25,11 +25,11 @@ namespace Diffusion.Toolkit
                 var title = GetLocalizedText("Actions.Albums.Create.Title");
 
                 var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Albums.Create.Message"), title);
-
-                name = name.Trim();
-
+                
                 if (result == PopupResult.OK)
                 {
+                    name = name.Trim();
+
                     if (string.IsNullOrWhiteSpace(name))
                     {
                         await ServiceLocator.MessageService.Show(GetLocalizedText("Actions.Albums.CannotBeEmpty.Message"), title, PopupButtons.OK);
@@ -171,6 +171,7 @@ namespace Diffusion.Toolkit
         {
             _model.Albums.First(d => d.Id == id).Name = name;
         }
+
 
         private void LoadAlbums()
         {

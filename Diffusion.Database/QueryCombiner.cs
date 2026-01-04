@@ -181,6 +181,12 @@ public static class QueryCombiner
             bindings = bindings.Concat(options.AlbumIds.Cast<object>());
         }
 
+        if (options.TagIds is { Count: > 0 })
+        {
+            var placeholders = string.Join(",", options.TagIds.Select(a => "?"));
+            filters.Add($"SELECT DISTINCT m1.Id FROM Image m1 INNER JOIN ImageTag it ON it.ImageId = m1.Id INNER JOIN Tag t ON t.Id = it.TagId WHERE t.Id IN ({placeholders})");
+            bindings = bindings.Concat(options.TagIds.Cast<object>());
+        }
 
         if (options.Models is { Count: > 0 })
         {

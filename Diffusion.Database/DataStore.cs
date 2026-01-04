@@ -138,6 +138,11 @@ public partial class DataStore
 
                 db.CreateIndex<Image>(image => image.Type);
 
+                db.CreateTable<Tag>();
+                db.CreateIndex<Tag>(tag => tag.Id);
+
+                db.CreateTable<ImageTag>();
+                db.CreateIndex<ImageTag>(tag => new { tag.ImageId, tag.TagId }, true);
 
                 db.CreateTable<Album>();
                 db.CreateIndex<Album>(album => album.Name, true);

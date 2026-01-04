@@ -202,9 +202,30 @@ namespace Diffusion.Toolkit.Controls
                 typeof(ThumbnailView),
                 new PropertyMetadata(default(object)));
 
+        public static readonly DependencyProperty AddTagCommandProperty = 
+            DependencyProperty.Register(
+                nameof(AddTagCommand), 
+                typeof(ICommand), 
+                typeof(ThumbnailView), 
+                new PropertyMetadata(default(object)));
+
+        public static readonly DependencyProperty RenameTagCommandProperty =
+            DependencyProperty.Register(
+                nameof(RenameTagCommand),
+                typeof(ICommand),
+                typeof(ThumbnailView),
+                new PropertyMetadata(default(object)));
+
         public static readonly DependencyProperty RemoveAlbumCommandProperty =
             DependencyProperty.Register(
                 nameof(RemoveAlbumCommand),
+                typeof(ICommand),
+                typeof(ThumbnailView),
+                new PropertyMetadata(default(object)));
+
+        public static readonly DependencyProperty RemoveTagCommandProperty =
+            DependencyProperty.Register(
+                nameof(RemoveTagCommand),
                 typeof(ICommand),
                 typeof(ThumbnailView),
                 new PropertyMetadata(default(object)));
@@ -434,6 +455,18 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(RemoveAlbumCommandProperty, value);
         }
 
+        public ICommand? RenameTagCommand
+        {
+            get => (ICommand)GetValue(RenameTagCommandProperty);
+            set => SetValue(RenameTagCommandProperty, value);
+        }
+
+        public ICommand? RemoveTagCommand
+        {
+            get => (ICommand)GetValue(RemoveTagCommandProperty);
+            set => SetValue(RemoveTagCommandProperty, value);
+        }
+
         public ICommand? CopyCommand
         {
             get => (ICommand)GetValue(CopyCommandProperty);
@@ -450,6 +483,12 @@ namespace Diffusion.Toolkit.Controls
         {
             get => (ViewMode)GetValue(ViewModeProperty);
             set => SetValue(ViewModeProperty, value);
+        }
+
+        public object AddTagCommand
+        {
+            get => (object)GetValue(AddTagCommandProperty);
+            set => SetValue(AddTagCommandProperty, value);
         }
 
         //public DataStore DataStore

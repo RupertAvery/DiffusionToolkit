@@ -127,6 +127,7 @@ namespace Diffusion.Toolkit
                 _model.AboutCommand = new RelayCommand<object>((o) => ShowAbout());
 
                 InitEvents();
+                InitTags();
                 InitAlbums();
                 InitQueries();
 
@@ -808,6 +809,7 @@ namespace Diffusion.Toolkit
             LoadQueries();
             LoadModels();
             LoadImageModels();
+            LoadTags();
             await InitFolders();
 
             ServiceLocator.ContextMenuService.Go();

@@ -7,6 +7,7 @@
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
              mc:Ignorable="d" 
              d:DesignHeight="776.386" d:DesignWidth="464.94">
     <UserControl.Resources>
@@ -221,6 +222,53 @@
 
                     </StackPanel>
                 </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Tags" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
+
+                <Grid  Background="Transparent" Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=TabControl, AncestorLevel=1}}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="20"></RowDefinition>
+                        <RowDefinition Height="*"></RowDefinition>
+                        <RowDefinition Height="20"></RowDefinition>
+                        <RowDefinition Height="36"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid  Background="Transparent" Grid.Row="0">
+                        <TextBox></TextBox>
+                    </Grid>
+                    <Grid  Background="Transparent" Grid.Row="1" ></Grid>
+                    <ScrollViewer Grid.Row="1" Background="Transparent" VerticalScrollBarVisibility="Auto">
+                        <ListView ItemsSource="{Binding ImageTags}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox IsChecked="{Binding IsTicked}" Content="{Binding Name}"></CheckBox>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListViewItem}">
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Padding" Value="5"/>
+                                    <!-- Add a trigger to handle focus if a dotted outline remains -->
+                                    <Style.Triggers>
+                                        <Trigger Property="IsFocused" Value="True">
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <!-- You might also need to set the focus visual style to null in more complex scenarios -->
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                        </ListView>
+                    </ScrollViewer>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="AddTagText" Grid.Column="0"></TextBox>
+                        <Button Style="{StaticResource BorderlessButton}" Grid.Column="1" Click="AddTagButton_OnClick">
+                            <fa:FontAwesome Icon="Plus"></fa:FontAwesome>
+                        </Button>
+                    </Grid>
+                </Grid>
             </TabItem>
             <TabItem Header="Workflow" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
                 <ScrollViewer Background="Transparent" VerticalScrollBarVisibility="Auto">

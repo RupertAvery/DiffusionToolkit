@@ -1,29 +1,17 @@
-﻿using System.Windows.Controls.Primitives;
-using System.Windows.Forms;
-using System.Windows;
-using System.Windows.Navigation;
-using System.Windows.Threading;
-using Diffusion.Common;
+﻿using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Thumbnails;
-using Diffusion.Toolkit.Classes;
+using System.Collections;
+using System.Windows.Controls.Primitives;
+using System.Windows.Forms;
+using System.Windows.Navigation;
+using System.Windows.Threading;
 
 namespace Diffusion.Toolkit.Services;
-
-public class WindowService
-{
-    private Window _window;
-
-    public Window CurrentWindow => _window;
-
-    public void SetWindow(Window window)
-    {
-        _window = window;
-    }
-}
 
 public class ServiceLocator
 {
@@ -148,6 +136,11 @@ public class ServiceLocator
     public static AlbumService AlbumService
     {
         get { return field ??= new AlbumService(); }
+    }
+
+    public static TagService TagService
+    {
+        get { return field ??= new TagService(); }
     }
 
     public static WindowService WindowService

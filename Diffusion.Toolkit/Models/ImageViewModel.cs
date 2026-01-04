@@ -282,8 +282,38 @@ public class ImageViewModel : BaseNotify
         set => SetField(ref field, value);
     }
 
-
+    public IReadOnlyCollection<ImageTagView> ImageTags
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+    
     public string ErrorMessage
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+}
+
+
+public class ImageTagView : BaseNotify
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    public bool IsTicked
+    {
+        get; 
+        set => SetField(ref field, value); 
+    }
+}
+
+public class TagFilterView : BaseNotify
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+
+    public bool IsTicked
     {
         get;
         set => SetField(ref field, value);

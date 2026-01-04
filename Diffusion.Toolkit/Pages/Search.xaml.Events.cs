@@ -31,11 +31,38 @@ namespace Diffusion.Toolkit.Pages
             OpenAlbum(albumModel);
         }
 
+        private void Tag_OnClick(object sender, RoutedEventArgs e)
+        {
+            var tagFilterView = ((TagFilterView)((FrameworkElement)sender).DataContext);
+
+            foreach (var tag in ServiceLocator.MainModel.Tags)
+            {
+                tag.IsTicked = false;
+            }
+
+            tagFilterView.IsTicked = true;
+
+            ServiceLocator.MainModel.SelectedTagsCount = 1;
+            ServiceLocator.MainModel.HasSelectedAlbums = true;
+
+            SearchImages(null);
+
+        }
+
         private void AlbumCheck_OnClick(object sender, RoutedEventArgs e)
         {
             var selectedAlbums = ServiceLocator.MainModel.Albums.Where(d => d.IsTicked).ToList();
             ServiceLocator.MainModel.SelectedAlbumsCount = selectedAlbums.Count;
             ServiceLocator.MainModel.HasSelectedAlbums = selectedAlbums.Any();
+
+            SearchImages(null);
+        }
+
+        private void TagCheck_OnClick(object sender, RoutedEventArgs e)
+        {
+            var selectedTags = ServiceLocator.MainModel.Tags.Where(d => d.IsTicked).ToList();
+            ServiceLocator.MainModel.SelectedTagsCount = selectedTags.Count;
+            ServiceLocator.MainModel.HasSelectedAlbums = selectedTags.Any();
 
             SearchImages(null);
         }

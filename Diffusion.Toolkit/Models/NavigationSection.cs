@@ -71,6 +71,18 @@ public class NavigationSection : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public AccordionState TagState
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public double TagHeight
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
     public AccordionState QueryState
     {
         get;
