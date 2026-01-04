@@ -12,6 +12,7 @@ using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor.Formats.Png;
 using MetadataExtractor.Formats.WebP;
 using MetadataExtractor.Formats.QuickTime;
+using MetadataExtractor.Formats.WebM;
 
 namespace Diffusion.IO;
 
@@ -51,13 +52,15 @@ public class Metadata
         JPEG,
         WebP,
         MP4,
-        Other,
+        WebM,
+        Other = -1,
     }
 
     private static byte[] PNGMagic = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
     private static byte[] JPEGMagic = new byte[] { 0xFF, 0xD8, 0xFF };
     private static byte[] RIFFMagic = new byte[] { 0x52, 0x49, 0x46, 0x46 };
     private static byte[] WebPMagic = new byte[] { 0x57, 0x45, 0x42, 0x50 };
+    private static byte[] WebMMagic = new byte[] { 0x1A, 0x45, 0xDF, 0xA3 };
 
     private static FileType GetFileType(Stream stream)
     {
@@ -78,6 +81,10 @@ public class Metadata
         if (span.Slice(0, 4).SequenceEqual(RIFFMagic) && span.Slice(8, 4).SequenceEqual(WebPMagic))
         {
             return FileType.WebP;
+        }
+        if (span.Slice(0, 4).SequenceEqual(WebMMagic))
+        {
+            return FileType.WebM;
         }
 
         return FileType.Other;
@@ -171,6 +178,33 @@ public class Metadata
         // Now, attempt to read the metadata
         switch (fileType)
         {
+            case FileType.WebM:
+                {
+                    imageType = ImageType.Video;
+
+                    IEnumerable<Directory> directories = WebMMetadataReader.ReadMetadata(stream);
+
+                    foreach (var directory in directories)
+                    {
+                        switch (directory.Name)
+                        {
+                            case "WebM Directory":
+                                {
+                                    foreach (var tag in directory.Tags)
+                                    {
+                                        if (tag.Name == "Comment")
+                                        {
+                                            fileParameters = ReadComfyUIParameters(tag.Description, true);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                        }
+                    }
+
+                    break;
+                }
             case FileType.MP4:
                 {
                     imageType = ImageType.Video;
@@ -182,34 +216,34 @@ public class Metadata
                         switch (directory.Name)
                         {
                             case "QuickTime Track Header":
-                            {
-                                foreach (var tag in directory.Tags)
                                 {
-                                    switch (tag.Name)
+                                    foreach (var tag in directory.Tags)
                                     {
-                                        case "Width":
-                                            headerWidth = int.Parse(tag.Description);
-                                            break;
-                                        case "Height":
-                                            headerHeight = int.Parse(tag.Description);
-                                            break;
+                                        switch (tag.Name)
+                                        {
+                                            case "Width":
+                                                headerWidth = int.Parse(tag.Description);
+                                                break;
+                                            case "Height":
+                                                headerHeight = int.Parse(tag.Description);
+                                                break;
+                                        }
                                     }
-                                }
 
-                                break;
-                            }
+                                    break;
+                                }
                             case "QuickTime Metadata Header":
-                            {
-                                foreach (var tag in directory.Tags)
                                 {
-                                    if (tag.Name == "Comment")
+                                    foreach (var tag in directory.Tags)
                                     {
-                                        fileParameters = ReadComfyUIParameters(tag.Description, true);
+                                        if (tag.Name == "Comment")
+                                        {
+                                            fileParameters = ReadComfyUIParameters(tag.Description, true);
+                                        }
                                     }
-                                }
 
-                                break;
-                            }
+                                    break;
+                                }
                         }
                     }
 
@@ -597,7 +631,7 @@ public class Metadata
         }
         else
         {
-            if (fileType != FileType.MP4)
+            if (imageType == ImageType.Image)
             {
                 var (width, height) = GetImageSize(stream);
 

@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Resources;
 using System.Windows.Threading;
+using Diffusion.Common;
 using Stream = System.IO.Stream;
 
 namespace Diffusion.Toolkit.Thumbnails;
@@ -78,6 +79,7 @@ public class ThumbnailService
             BatchId = image.BatchId,
             EntryType = image.EntryType,
             Path = image.Path,
+            Type = image.Type,
             Height = image.Height,
             Width = image.Width
         };
@@ -211,7 +213,7 @@ public class ThumbnailService
                                 continue;
                             }
 
-                            thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
+                            thumbnail = GetThumbnailImmediate(job.Data.Type, job.Data.Path, job.Data.Width, job.Data.Height, Size);
                         }
                         else
                         {
@@ -240,7 +242,7 @@ public class ThumbnailService
                             job.Completion(ThumbailResult.Failed);
                             continue;
                         }
-                        thumbnail = GetThumbnailImmediate(job.Data.Path, job.Data.Width, job.Data.Height, Size);
+                        thumbnail = GetThumbnailImmediate(job.Data.Type, job.Data.Path, job.Data.Width, job.Data.Height, Size);
                     }
                     else
                     {
@@ -270,11 +272,11 @@ public class ThumbnailService
         }
     }
 
-    private static Stream GenerateThumbnail(string path, int width, int height, int size)
+    private static Stream GenerateThumbnail(ImageType type, string path, int width, int height, int size)
     {
         var bitmap = new BitmapImage();
 
-        using var stream = Path.GetExtension(path) == ".mp4" 
+        using var stream = type == ImageType.Video
             ? FrameExtractor.ExtractFrameToPNG(path) 
             : new FileStream(path, FileMode.Open, FileAccess.Read);
 
@@ -306,13 +308,13 @@ public class ThumbnailService
 
     }
 
-    public BitmapImage GetThumbnailDirect(string path, int width, int height)
+    public BitmapImage GetThumbnailDirect(ImageType type, string path, int width, int height)
     {
         var bitmap = new BitmapImage();
         bitmap.BeginInit();
         if (File.Exists(path))
         {
-            bitmap.StreamSource = GenerateThumbnail(path, width, height, Size);
+            bitmap.StreamSource = GenerateThumbnail(type, path, width, height, Size);
         }
         else
         {
@@ -358,13 +360,13 @@ public class ThumbnailService
         }
     }
 
-    public BitmapImage GetThumbnailImmediate(string path, int width, int height, int size)
+    public BitmapImage GetThumbnailImmediate(ImageType type, string path, int width, int height, int size)
     {
         var bitmap = new BitmapImage();
         bitmap.BeginInit();
         if (File.Exists(path))
         {
-            bitmap.StreamSource = GenerateThumbnail(path, width, height, size);
+            bitmap.StreamSource = GenerateThumbnail(type, path, width, height, size);
         }
         else
         {

@@ -363,9 +363,9 @@ namespace Diffusion.Database
         const string allColumns = "FolderId, FileName, Prompt, NegativePrompt, Steps, Sampler, " +
                       "CFGScale, Seed, Width, Height, ModelHash, Model, BatchSize, BatchPos, CreatedDate, ModifiedDate, " +
                       "CustomTags, Rating, Favorite, ForDeletion, NSFW, " +
-                      "AestheticScore, HyperNetwork, HyperNetworkStrength, ClipSkip, ENSD, FileSize, NoMetadata, HasError";
+                      "AestheticScore, HyperNetwork, HyperNetworkStrength, ClipSkip, ENSD, FileSize, NoMetadata, HasError, Type";
 
-        const string columns = "Favorite, ForDeletion, Rating, AestheticScore, CreatedDate, NSFW, HasError";
+        const string columns = "Favorite, ForDeletion, Rating, AestheticScore, CreatedDate, NSFW, HasError, Type";
 
         public IEnumerable<ImageView> SearchEx(QueryOptions options, Sorting sorting, Paging? paging = null)
         {

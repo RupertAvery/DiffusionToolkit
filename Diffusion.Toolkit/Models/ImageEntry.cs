@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit.Models;
 
@@ -178,6 +179,8 @@ public class ImageEntry : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public ImageType Type { get; set; }
+
     public void Clear()
     {
         BatchId = 0;
@@ -204,5 +207,6 @@ public class ImageEntry : BaseNotify
         IsWatched = false;
         Count = 0;
         Size = 0;
+        Type = ImageType.Image;
     }
 }

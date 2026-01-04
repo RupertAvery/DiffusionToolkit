@@ -80,4 +80,5 @@ public class ImageView
     public bool NSFW { get; set; }
     public int  AlbumCount { get; set; }
     public bool HasError { get; set; }
+    public ImageType Type { get; set; }
 }

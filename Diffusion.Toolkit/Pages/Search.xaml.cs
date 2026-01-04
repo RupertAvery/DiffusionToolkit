@@ -1405,7 +1405,8 @@ namespace Diffusion.Toolkit.Pages
                     EntryType = EntryType.File,
                     AlbumCount = file.AlbumCount,
                     Dispatcher = Dispatcher,
-                    HasError = file.HasError
+                    HasError = file.HasError,
+                    Type = file.Type,
                 };
 
                 images.Add(imageEntry);
@@ -1510,6 +1511,7 @@ namespace Diffusion.Toolkit.Pages
                     dest.Dispatcher = Dispatcher;
                     dest.Thumbnail = null;
                     dest.IsEmpty = false;
+                    dest.Type = src.Type;
                     //dest.Count = src.Count;
                     //dest.Size = src.Size;
 
@@ -1570,6 +1572,7 @@ namespace Diffusion.Toolkit.Pages
                     dest.IsWatched = false;
                     dest.Count = 0;
                     dest.Size = 0;
+                    dest.Type = ImageType.Image;
                     dest.PropertyChanged -= ImageEntry_OnPropertyChanged;
 
                     offset += 1;
@@ -1606,6 +1609,7 @@ namespace Diffusion.Toolkit.Pages
                     dest.Dispatcher = Dispatcher;
                     dest.Thumbnail = null;
                     dest.IsEmpty = false;
+                    dest.Type = src.Type;
 
 
                     dest.IsRecursive = false;

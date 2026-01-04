@@ -60,6 +60,7 @@ public class Settings : SettingsContainer, IScanOptions
             "text_l",
             "text_positive",
             "text_negative",
+            "prompt",
         };
 
         ConfirmDeletion = true;

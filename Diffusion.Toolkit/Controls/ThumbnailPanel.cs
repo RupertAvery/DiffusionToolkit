@@ -121,6 +121,7 @@ public class ThumbnailPanel : FrameworkElement
                 Width = 256,
                 Height = 256,
                 Path = images.Path,
+                Type = images.Type,
                 BatchId = 0,
                 EntryType = EntryType.File
             }, result =>
