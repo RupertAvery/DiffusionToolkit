@@ -14,6 +14,17 @@ A new setting has been added: Settings > Video > Loop Video
 
 Currently ComfyUI workflows can be read from videos saved using the VideoHelperSuite - Video Combine node
 
+## Tags
+
+You can now create custom tags and add them to images in the Metadata panel. Open the Tags tab in any Metadata panel, 
+and begin by adding a Tag in the textbox at the bottom. Click the + button to add the tag to the list of available tags. 
+Place a check next to the tag name to add the tag to the selected image.
+
+You can also filter by one or more tags in the Tags filter panel on the left.
+
+You can add, rename and remove tags in the Tags filter panel.
+
+
 ## Others
 
 * Add support for ComfyUI workflows in JPEG files

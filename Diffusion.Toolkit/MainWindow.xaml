@@ -384,6 +384,7 @@
                 <MenuItem Header="{lex:Loc Menu.View.Folders}" IsChecked="{Binding Settings.NavigationSection.ShowFolders}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Folders"/>
                 <MenuItem Header="{lex:Loc Menu.View.Models}" IsChecked="{Binding Settings.NavigationSection.ShowModels}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Models"/>
                 <MenuItem Header="{lex:Loc Menu.View.Albums}" IsChecked="{Binding Settings.NavigationSection.ShowAlbums}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Albums"/>
+                <MenuItem Header="{lex:Loc Menu.View.Tags}" IsChecked="{Binding Settings.NavigationSection.ShowTags}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Tags"/>
                 <MenuItem Header="{lex:Loc Menu.View.Queries}" IsChecked="{Binding Settings.NavigationSection.ShowQueries}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Queries"/>
                 <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.FitToPreview}" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>

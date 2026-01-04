@@ -662,6 +662,7 @@
                                         HeaderBackground="#80000000"  Margin="0,0,0,5"
                                         Header="{lex:Loc Search.Navigation.Tags}"
                                         State="{Binding DataContext.NavigationSection.TagState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  
+                                        Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowTags, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                         CanResize="True"
                                         >
                                         <controls:AccordionControl.ButtonAreaContent>

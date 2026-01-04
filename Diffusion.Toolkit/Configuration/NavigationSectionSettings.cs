@@ -4,11 +4,6 @@ namespace Diffusion.Toolkit.Configuration;
 
 public class NavigationSectionSettings : SettingsContainer
 {
-    private bool _showFolders;
-    private bool _showModels;
-    private bool _showAlbums;
-    private bool _showQueries;
-
     public NavigationSectionSettings()
     {
         FolderHeight = Double.PositiveInfinity;
@@ -91,45 +86,56 @@ public class NavigationSectionSettings : SettingsContainer
 
     public bool ShowFolders
     {
-        get => _showFolders;
+        get;
         set
         {
-            UpdateValue(ref _showFolders, value);
+            UpdateValue(ref field, value);
             UpdateShowSection();
         }
     }
 
     public bool ShowModels
     {
-        get => _showModels;
+        get;
         set
         {
-            UpdateValue(ref _showModels, value);
+            UpdateValue(ref field, value);
             UpdateShowSection();
         }
     }
 
     public bool ShowAlbums
     {
-        get => _showAlbums;
+        get;
         set
         {
-            UpdateValue(ref _showAlbums, value);
-            UpdateShowSection();
-        }
-    }
-    
-    public bool ShowQueries
-    {
-        get => _showQueries;
-        set
-        {
-            UpdateValue(ref _showQueries, value);
+            UpdateValue(ref field, value);
             UpdateShowSection();
         }
     }
 
-    private bool HasVisibilePanels => _showFolders || _showModels || _showAlbums || _showQueries;
+    public bool ShowTags
+    {
+        get;
+        set
+        {
+            UpdateValue(ref field, value);
+            UpdateShowSection();
+        }
+    }
+
+
+    public bool ShowQueries
+    {
+        get;
+        set
+        {
+            UpdateValue(ref field, value);
+            UpdateShowSection();
+        }
+    }
+
+    private bool HasVisibilePanels => ShowFolders || ShowModels || ShowAlbums || ShowQueries || ShowTags;
 
     private void UpdateShowSection()
     {

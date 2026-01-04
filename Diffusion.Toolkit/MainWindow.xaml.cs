@@ -295,6 +295,9 @@ namespace Diffusion.Toolkit
                 case "Navigation.Albums":
                     _model.Settings.NavigationSection.ShowAlbums = !_model.Settings.NavigationSection.ShowAlbums;
                     break;
+                case "Navigation.Tags":
+                    _model.Settings.NavigationSection.ShowTags = !_model.Settings.NavigationSection.ShowTags;
+                    break;
                 case "Navigation.Queries":
                     _model.Settings.NavigationSection.ShowQueries = !_model.Settings.NavigationSection.ShowQueries;
                     break;
@@ -569,6 +572,7 @@ namespace Diffusion.Toolkit
                 _settings.FileExtensions = $"{_settings.FileExtensions}, .mp4";
                 _settings.LoopVideo = true;
                 _settings.RenderMode = RenderMode.Default;
+                _settings.NavigationSection.ShowTags = true;
             }
 
             if (semVer < AppInfo.Version)
