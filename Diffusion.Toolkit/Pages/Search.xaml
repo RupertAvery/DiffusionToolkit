@@ -660,6 +660,80 @@
 
                                     <controls:AccordionControl 
                                         HeaderBackground="#80000000"  Margin="0,0,0,5"
+                                        Header="{lex:Loc Search.Navigation.Tags}"
+                                        State="{Binding DataContext.NavigationSection.TagState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  
+                                        CanResize="True"
+                                        >
+                                        <controls:AccordionControl.ButtonAreaContent>
+                                            <Grid Background="{x:Null}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="26"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Tags.Buttons.CreateTag.ToolTip}" Command="{Binding MainModel.CreateTagCommand}">
+                                                    <fa:FontAwesome Icon="Plus"></fa:FontAwesome>
+                                                </Button>
+                                            </Grid>
+                                        </controls:AccordionControl.ButtonAreaContent>
+                                        <ItemsControl ItemsSource="{Binding Path=MainModel.Tags}" PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Background="Transparent" HorizontalAlignment="Stretch" Margin="2,0,2,0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="20"/>
+                                                            <ColumnDefinition/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsTicked}" Click="TagCheck_OnClick"></CheckBox>
+                                                        <Button Grid.Column="1" Style="{StaticResource SmallButton}" 
+                                                                Tag="{Binding .}"
+                                                                AllowDrop="True" 
+                                                                ToolTip="{Binding Name}"
+                                                                Click="Tag_OnClick"
+                                                                RenderTransformOrigin="0.179,0.476">
+                                                            <Button.ContextMenu>
+                                                                <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                                    <MenuItem Header="{lex:Loc Search.Navigation.Tags.ContextMenu.Rename}" Command="{Binding Source={StaticResource Proxy}, Path=Data.RenameTagCommand}" CommandParameter="{Binding .}"></MenuItem>
+                                                                    <MenuItem Header="{lex:Loc Search.Navigation.Tags.ContextMenu.Remove}" Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveTagCommand}" CommandParameter="{Binding .}"></MenuItem>
+                                                                </ContextMenu>
+                                                            </Button.ContextMenu>
+                                                            <Button.Template>
+                                                                <ControlTemplate TargetType="{x:Type Button}">
+                                                                    <Grid>
+                                                                        <Grid.Style>
+                                                                            <Style TargetType="Grid">
+                                                                                <Setter Property="Background" Value="{Binding Background, RelativeSource={RelativeSource AncestorType={x:Type Button}}}"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding IsTicked}" Value="true">
+                                                                                        <Setter Property="Background" Value="{StaticResource HighlightBrush}"></Setter>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Grid.Style>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="0"></ColumnDefinition>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                            <ColumnDefinition Width="70"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <fa:FontAwesome Icon="Filter" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{StaticResource DisabledForegroundBrush}"></fa:FontAwesome>
+                                                                        <Label FontFamily="Calibri" FontWeight="Light" FontSize="16" Padding="4" Grid.Column="1"  Content="{Binding Name, Converter={StaticResource UnderlineConverter}}"></Label>
+                                                                        <Label FontFamily="Calibri" FontWeight="Light" FontSize="16"  Padding="4" Grid.Column="2" Content="{Binding TagCount, Converter={StaticResource NumberFormatConverter}}" HorizontalAlignment="Right"></Label>
+                                                                    </Grid>
+                                                                </ControlTemplate>
+                                                            </Button.Template>
+                                                        </Button>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Vertical"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </controls:AccordionControl>
+
+                                    <controls:AccordionControl 
+                                        HeaderBackground="#80000000"  Margin="0,0,0,5"
                                         Header="{lex:Loc Search.Navigation.Queries}"
                                         Visibility="{Binding DataContext.MainModel.Settings.NavigationSection.ShowQueries, Converter={StaticResource boolToVisCol}, ElementName=NavigationThumbnailGrid}"
                                         State="{Binding DataContext.NavigationSection.QueryState, ElementName=NavigationThumbnailGrid, Mode=TwoWay}"  
@@ -831,6 +905,9 @@
                                             RemoveFromAlbumCommand="{Binding MainModel.RemoveFromAlbumCommand}"
                                             RemoveAlbumCommand="{Binding MainModel.RemoveAlbumCommand}"
                                             RenameAlbumCommand="{Binding MainModel.RenameAlbumCommand}"
+                                            AddTagCommand="{Binding MainModel.AddTagCommand}"
+                                            RemoveTagCommand="{Binding MainModel.RenameTagCommand}"
+                                            RenameTagCommand="{Binding MainModel.RenameTagCommand}"
                                             CopyCommand="{Binding CopyFiles}"
                                             ViewMode="{Binding CurrentViewMode}"
                                             CurrentImage="{Binding CurrentImage}">

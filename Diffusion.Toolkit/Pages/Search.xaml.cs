@@ -1,39 +1,40 @@
-﻿using Diffusion.Database;
+﻿using Diffusion.Civitai.Models;
+using Diffusion.Common;
+using Diffusion.Common.Query;
+using Diffusion.Database;
+using Diffusion.Database.Models;
+using Diffusion.IO;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Common;
+using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.Controls;
+using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
+using Diffusion.Video;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using Diffusion.Toolkit.Classes;
-using Model = Diffusion.Common.Model;
-using Diffusion.Toolkit.Controls;
-using System.Collections.Specialized;
-using System.Threading;
-using System.Threading.Tasks;
-using Diffusion.IO;
-using Diffusion.Toolkit.Common;
-using WPFLocalizeExtension.Engine;
 using System.Windows.Media;
-using Diffusion.Common;
-using Diffusion.Toolkit.Localization;
-using Diffusion.Toolkit.Services;
-using Diffusion.Database.Models;
-using Diffusion.Toolkit.Configuration;
-using SearchView = Diffusion.Common.SearchView;
-using Diffusion.Civitai.Models;
+using System.Windows.Media.Imaging;
+using WPFLocalizeExtension.Engine;
+using XmpCore.Impl;
 using Metadata = Diffusion.IO.Metadata;
-using System.Security.Cryptography;
-using Diffusion.Common.Query;
-using Diffusion.Video;
+using Model = Diffusion.Common.Model;
+using SearchView = Diffusion.Common.SearchView;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -507,6 +508,9 @@ namespace Diffusion.Toolkit.Pages
                     case nameof(NavigationSection.AlbumState):
                         _settings.NavigationSection.AlbumState = _model.NavigationSection.AlbumState;
                         break;
+                    case nameof(NavigationSection.TagState):
+                        _settings.NavigationSection.TagState = _model.NavigationSection.TagState;
+                        break;
                     case nameof(NavigationSection.QueryState):
                         _settings.NavigationSection.QueryState = _model.NavigationSection.QueryState;
                         break;
@@ -539,11 +543,13 @@ namespace Diffusion.Toolkit.Pages
             _model.NavigationSection.FolderState = _settings.NavigationSection.FolderState;
             _model.NavigationSection.ModelState = _settings.NavigationSection.ModelState;
             _model.NavigationSection.AlbumState = _settings.NavigationSection.AlbumState;
+            _model.NavigationSection.TagState = _settings.NavigationSection.TagState;
             _model.NavigationSection.QueryHeight = _settings.NavigationSection.QueryHeight;
 
             _model.NavigationSection.FolderHeight = _settings.NavigationSection.FolderHeight;
             _model.NavigationSection.ModelHeight = _settings.NavigationSection.ModelHeight;
             _model.NavigationSection.AlbumHeight = _settings.NavigationSection.AlbumHeight;
+            _model.NavigationSection.TagHeight = _settings.NavigationSection.TagHeight;
             _model.NavigationSection.QueryState = _settings.NavigationSection.QueryState;
 
             //_model.NavigationSection.ShowFolders = _settings.NavigationSection.ShowFolders;
@@ -772,6 +778,7 @@ namespace Diffusion.Toolkit.Pages
 
                 var albums = _model.MainModel.Albums.Where(d => d.IsTicked).Select(d => d.Id).ToList();
                 var models = _model.MainModel.ImageModels.Where(d => d.IsTicked).Select(d => new ModelInfo { Name = d.Name, Hash = d.Hash, HashV2 = d.Hashv2 }).ToList();
+                var tags = _model.MainModel.Tags.Where(d => d.IsTicked).Select(d => d.Id).ToList();
 
                 if (queryOptions != null)
                 {
@@ -830,6 +837,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                         AlbumIds = albums,
                         Models = models,
+                        TagIds = tags,
                         Folder = _model.FolderPath == RootFolders ? null : _model.FolderPath,
                         SearchNodes = _model.SearchSettings.SearchNodes,
                         SearchAllProperties = _model.SearchSettings.SearchAllProperties,
@@ -1125,6 +1133,7 @@ namespace Diffusion.Toolkit.Pages
 
                     imageViewModel.Workflow = parameters.Workflow;
                     imageViewModel.Type = parameters.Type;
+
                     try
                     {
                         var parser = new ComfyUIParser();
@@ -1134,6 +1143,7 @@ namespace Diffusion.Toolkit.Pages
                     {
                     }
 
+                    imageViewModel.ImageTags = ServiceLocator.TagService.GetImageTagViews(imageViewModel.Id);
 
                     var notFound = GetLocalizedText("Metadata.Modelname.NotFound");
 

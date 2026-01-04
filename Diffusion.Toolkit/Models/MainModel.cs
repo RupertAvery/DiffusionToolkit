@@ -387,6 +387,12 @@ public class MainModel : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public bool HasSelectedTags
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
     public ICommand SortAlbumCommand
     {
         get;
@@ -428,7 +434,12 @@ public class MainModel : BaseNotify
         get;
         set => SetField(ref field, value);
     }
-
+    
+    public ObservableCollection<TagFilterView> Tags
+    {
+        get;
+        set => SetField(ref field, value);
+    }
 
     public ObservableCollection<QueryModel> Queries
     {
@@ -448,6 +459,11 @@ public class MainModel : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public int SelectedTagsCount
+    {
+        get;
+        set => SetField(ref field, value);
+    }
 
     public int SelectedModelsCount
     {
@@ -480,7 +496,25 @@ public class MainModel : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public ICommand AddTagCommand
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public ICommand RenameTagCommand
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
     public ICommand RemoveAlbumCommand
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public ICommand RemoveTagCommand
     {
         get;
         set => SetField(ref field, value);
@@ -528,6 +562,9 @@ public class MainModel : BaseNotify
     }
 
     public ICommand CreateAlbumCommand { get; set; }
+
+    public ICommand CreateTagCommand { get; set; }
+
     public Action<IAlbumInfo> AddSelectedImagesToAlbum { get; set; }
 
 
@@ -721,4 +758,6 @@ public class MainModel : BaseNotify
     public ICommand ToggleThumbnailViewModeCommand { get; set;  }
     public ICommand FocusSearch { get; set; }
     public ICommand RefreshFolderCommand { get; set; }
+
+    
 }

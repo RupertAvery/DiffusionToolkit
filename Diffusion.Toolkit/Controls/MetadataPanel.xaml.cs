@@ -6,6 +6,7 @@ using System.Windows.Input;
 using Diffusion.Common;
 using Diffusion.Database.Models;
 using Diffusion.Toolkit.Configuration;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -77,6 +78,17 @@ namespace Diffusion.Toolkit.Controls
         private void UIElement_OnGotFocus(object sender, RoutedEventArgs e)
         {
             Keyboard.ClearFocus();
+        }
+
+        private void AddTagButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            var tagName = AddTagText.Text.Trim();
+            if (tagName.Length > 0)
+            {
+                ServiceLocator.DataStore.CreateTag(tagName);
+                AddTagText.Text = "";
+                CurrentImage.ImageTags = ServiceLocator.TagService.GetImageTagViews(CurrentImage.Id);
+            }
         }
     }
 }

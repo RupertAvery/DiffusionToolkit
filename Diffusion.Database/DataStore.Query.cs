@@ -22,6 +22,7 @@ namespace Diffusion.Database
 
             return count == 1;
         }
+
         public void CreateOrUpdateQuery(string name, QueryOptions queryOptions)
         {
             var json = JsonSerializer.Serialize(queryOptions);

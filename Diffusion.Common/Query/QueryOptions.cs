@@ -23,6 +23,8 @@ public class QueryOptions
     public bool HideNSFW { get; set; }
     public IReadOnlyCollection<int> AlbumIds { get; set; }
     public IReadOnlyCollection<ModelInfo> Models { get; set; }
+    public IReadOnlyCollection<int> TagIds { get; set; }
+
     public SearchView SearchView { get; set; }
     public bool SearchNodes { get; set; }
     public ComfyQueryOptions ComfyQueryOptions { get; set; }
@@ -32,4 +34,5 @@ public class QueryOptions
 
     [JsonIgnore]
     public bool IsEmpty => Filter.IsEmpty && string.IsNullOrEmpty(Query);
+
 }
