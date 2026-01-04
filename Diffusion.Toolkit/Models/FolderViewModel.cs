@@ -81,6 +81,8 @@ public class FolderViewModel : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public bool ForRemoval { get; set; }
+
     public bool IsScanned
     {
         get => _isScanned;

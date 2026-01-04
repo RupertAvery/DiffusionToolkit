@@ -373,7 +373,7 @@ namespace Diffusion.Toolkit.Services
             {
                 folderView.HasChildren = Directory.GetDirectories(folderView.Path, "*").Length > 0;
             }
-
+           
             if (folderView.State == FolderState.Expanded)
             {
                 var diskSubFolders = GetDiskSubFolders(folderView);
@@ -400,7 +400,7 @@ namespace Diffusion.Toolkit.Services
 
                 foreach (var child in folderView.Children.ToList())
                 {
-                    if (!Directory.Exists(child.Path) && !child.IsScanned)
+                    if (!Directory.Exists(child.Path) && (!child.IsScanned || child.ForRemoval))
                     {
                         var grandChildren = GetVisualChildren(child).ToList();
 
@@ -1073,6 +1073,8 @@ namespace Diffusion.Toolkit.Services
             if (result == PopupResult.Yes)
             {
                 ServiceLocator.DataStore.RemoveFolder(folder.Id);
+
+                folder.ForRemoval = true;
 
                 await LoadFolders();
 

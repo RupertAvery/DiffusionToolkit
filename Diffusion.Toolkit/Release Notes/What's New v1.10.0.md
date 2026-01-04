@@ -2,13 +2,15 @@
 
 ## Updated to .NET 10
 
+Diffusion Toolkit is now compiled with .NET 10
+
 Download and install the [.NET Desktop Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 
 ## (Experimental) Video Support
 
 This version adds support for indexing and previewing videos.
 
-The ".mp4" extension has been added to Settings > General > File Extensions.
+The ".mp4" extension will be added to Settings > General > File Extensions.  You can Rescan any folders containing images. Any new scans should include MP4 files.
 
 A new setting has been added: Settings > Video > Loop Video 
 
@@ -24,11 +26,13 @@ You can also filter by one or more tags in the Tags filter panel on the left.
 
 You can add, rename and remove tags in the Tags filter panel.
 
+The Tags filter should be visible. You can toggle it via Menu > View > Tags
 
 ## Others
 
 * Add support for ComfyUI workflows in JPEG files
 * Fixed errors reading Seed values larger than max INT
+* Fixed issues with Remove folders in Folder panel
 
 
  
