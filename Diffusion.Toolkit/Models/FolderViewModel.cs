@@ -50,6 +50,8 @@ public class FolderViewModel : BaseNotify
     public int Depth { get; set; }
     public string Path { get; set; }
 
+    public bool IsRoot => Depth == 0;
+
     public string Name
     {
         get;

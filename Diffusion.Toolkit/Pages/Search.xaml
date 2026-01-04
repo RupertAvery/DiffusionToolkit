@@ -290,8 +290,15 @@
                                                     <ColumnDefinition/>
                                                     <ColumnDefinition Width="26"/>
                                                     <ColumnDefinition Width="26"/>
+                                                    <ColumnDefinition Width="26"/>
                                                 </Grid.ColumnDefinitions>
-                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" 
+                                                <Button Grid.Column="1" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.Home.ToolTip}" Command="{Binding GoHome}">
+                                                    <fa:FontAwesome Icon="Home"></fa:FontAwesome>
+                                                </Button>
+                                                <Button Grid.Column="2" Style="{StaticResource BorderlessButton}" ToolTip="{lex:Loc Search.Folders.Buttons.CreateRootFolder.ToolTip}" Click="AddRootFolder_OnClick">
+                                                    <fa:FontAwesome Icon="Plus"></fa:FontAwesome>
+                                                </Button>
+                                                <Button Grid.Column="3" Style="{StaticResource BorderlessButton}" 
                                                         ToolTip="{lex:Loc Search.Folders.Buttons.Refresh.ToolTip}" 
                                                         Command="{Binding MainModel.ReloadFoldersCommand}"
                                                         IsEnabled="{Binding MainModel.FoldersBusy, Converter={StaticResource InvertBoolConverter}}"

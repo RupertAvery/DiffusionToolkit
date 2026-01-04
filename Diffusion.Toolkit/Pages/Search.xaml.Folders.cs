@@ -166,7 +166,7 @@ namespace Diffusion.Toolkit.Pages
             _model.NavigationSection.FoldersSection.CanCreateFolder = isSingleSelection && isAvailable;
             _model.NavigationSection.FoldersSection.CanDelete = !isRoot && isAvailable;
             _model.NavigationSection.FoldersSection.CanRename = !isRoot && isSingleSelection && isAvailable;
-            _model.NavigationSection.FoldersSection.CanRemove = !isRoot && isSingleSelection;
+            _model.NavigationSection.FoldersSection.CanRemove = isSingleSelection;
             _model.NavigationSection.FoldersSection.CanShowInExplorer = isSingleSelection && isAvailable;
             _model.NavigationSection.FoldersSection.CanArchive = isScanned && isAvailable && !isExcluded && !isArchived;
             _model.NavigationSection.FoldersSection.CanUnarchive =

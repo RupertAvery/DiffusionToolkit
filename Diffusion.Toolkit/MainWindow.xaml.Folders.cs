@@ -47,7 +47,14 @@ namespace Diffusion.Toolkit
 
             _model.RemoveFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>
             {
-                await ServiceLocator.FolderService.ShowRemoveFolderDialog(o);
+                if (o.IsRoot)
+                {
+                    await ServiceLocator.FolderService.ShowRemoveRootFolderDialog(o);
+                }
+                else
+                {
+                    await ServiceLocator.FolderService.ShowRemoveFolderDialog(o);
+                }
             });
 
             _model.DeleteFolderCommand = new AsyncCommand<FolderViewModel>(async (o) =>

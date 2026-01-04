@@ -41,7 +41,7 @@
             <RadioButton Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Date}">Date Created</RadioButton>
             <RadioButton Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}">Custom</RadioButton>
         </Grid>
-        <Grid  Grid.Row="1"  IsEnabled="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}">
+        <Grid  Grid.Row="1"  >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="380"/>
                 <ColumnDefinition Width="3"></ColumnDefinition>
@@ -54,7 +54,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <Grid Grid.Column="2" >
+            <Grid Grid.Column="2" IsEnabled="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}">
                 <StackPanel>
                     <Button Height="25" Command="{Binding MoveUpCommand}" Margin="0,0,0,5">Up</Button>
                     <Button Height="25" Command="{Binding MoveDownCommand}">Down</Button>

@@ -10,12 +10,15 @@ Download and install the [.NET Desktop Runtime](https://dotnet.microsoft.com/en-
 
 This version adds support for indexing and previewing videos, and reading and indexing embedded ComfyUI workflows.
 
-The ".mp4" extension will be added to **Settings > General > File Extensions**.  You can Scan New on any folders containing videos. Any new scans should include MP4 files.
+The `.mp4`, `.webm` and `.mkv` extensions have been automatically added to **Settings > General > File Extensions**.  You can Scan New on any folders containing videos. Any new scans should include video files.
 
 A new setting has been added: **Settings > Video > Loop Video**. This controls whether the preview loops upon reaching the end of the video.
 
-NOTE: Currently only ComfyUI workflows saved using the **VideoHelperSuite (VHS) - Video Combine** node are guaranteed to be read. If you have a ComfyUI video that has metadata that can't be read, 
-please raise an issue and attach the sample file.
+**NOTE 1:** Currently only ComfyUI workflows saved using the **VideoHelperSuite (VHS) - Video Combine** node are guaranteed to be read. 
+
+**NOTE 2:** WebM and MKV are not supported for playback in the preview, and it will display as blank. This is because the .NET WPF MediaElement does not support these formats.
+
+If you have a ComfyUI video that has metadata that can't be read, please raise an issue on Github and attach the sample file
 
 ## Tags
 
@@ -35,7 +38,9 @@ The Tags filter should be visible. You can toggle it via **Menu > View > Tags**
 * Add support for ComfyUI workflows in JPEG files
 * Fixed errors reading Seed values larger than max INT
 * Fixed issues with Remove folders in Folder panel
-
+  * You can now remove root folders directly from the panel
+  * You can remove unavailable root folders from the panel
+* Added some useful buttons to the Folders panel header
 
  
 

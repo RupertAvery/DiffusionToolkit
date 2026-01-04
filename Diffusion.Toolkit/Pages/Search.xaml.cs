@@ -346,10 +346,7 @@ namespace Diffusion.Toolkit.Pages
 
             _model.GoHome = new RelayCommand<object>((o) =>
             {
-                if (_currentModeSettings.ViewMode == ViewMode.Folder)
-                {
-                    OpenFolder(FolderViewModel.Home);
-                }
+                OpenFolder(FolderViewModel.Home);
             });
 
             _model.GoUp = new RelayCommand<object>((o) =>
