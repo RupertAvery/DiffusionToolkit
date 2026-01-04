@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Diffusion.Toolkit.Models;
@@ -7,6 +8,8 @@ namespace Diffusion.Toolkit.Services;
 
 public class TagService
 {
+    public Action LoadTags;
+
     public void CreateTag(string name)
     {
         ServiceLocator.DataStore.CreateTag(name);
@@ -24,12 +27,13 @@ public class TagService
 
     public ObservableCollection<TagFilterView> GetTagFilterViews()
     {
-        var allTags = ServiceLocator.DataStore.GetTags();
+        var allTags = ServiceLocator.DataStore.GetTagsWithCount();
 
         return new ObservableCollection<TagFilterView>(allTags.Select(d => new TagFilterView()
         {
             Id = d.Id,
             Name = d.Name,
+            TagCount = d.Count
         }));
     }
 
@@ -63,6 +67,8 @@ public class TagService
                         {
                             ServiceLocator.DataStore.RemoveImagesTag(ids, imageTag.Id);
                         }
+
+                        LoadTags?.Invoke();
                     }
                 }
                 else
@@ -77,6 +83,8 @@ public class TagService
                         {
                             ServiceLocator.DataStore.RemoveImageTag(imageModelId, imageTag.Id);
                         }
+
+                        LoadTags?.Invoke();
                     }
                 }
 

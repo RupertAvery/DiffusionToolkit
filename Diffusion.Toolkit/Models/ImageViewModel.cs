@@ -312,6 +312,7 @@ public class TagFilterView : BaseNotify
 {
     public int Id { get; set; }
     public string Name { get; set; }
+    public int TagCount { get; set; }
 
     public bool IsTicked
     {

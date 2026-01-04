@@ -23,6 +23,20 @@ namespace Diffusion.Database
             return models;
         }
 
+        public IEnumerable<TagCount> GetTagsWithCount()
+        {
+            using var db = OpenConnection();
+
+            var query = $"SELECT Id, Name, (SELECT COUNT(1) FROM {nameof(ImageTag)} IT WHERE T.Id = IT.TagId) AS [Count] FROM Tag T ORDER BY Name";
+
+            var models = db.Query<TagCount>(query);
+
+            db.Close();
+
+            return models;
+        }
+
+
         public void CreateTag(string name)
         {
             using var db = OpenConnection();

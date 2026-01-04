@@ -17,6 +17,8 @@ namespace Diffusion.Toolkit
     {
         private void InitTags()
         {
+            ServiceLocator.TagService.LoadTags = LoadTags;
+
             _model.CreateTagCommand = new AsyncCommand<object>(async (o) =>
             {
                 var title = GetLocalizedText("Actions.Tags.Create.Title");
