@@ -23,8 +23,8 @@ Thanks to Bill Meeks for putting together a demonstration video. This is for an 
 
 ## Prerequisites
 
-* Requires Visual Studio 2022
-* [.NET 6 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) (includes the desktop runtime)
+* Requires Visual Studio 2026
+* [.NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) (includes the desktop runtime)
 
 ## Building
 
@@ -35,12 +35,9 @@ A folder named `build` will be created, containing all the necessary files.
 
 # Features
 
-* Scan images, store and index prompts and other metadata (PNGInfo)
-* Search for your images
-    * Using a simple query
-    * Using the filter
+* Scan images and videos, store and index prompts and other metadata (PNGInfo)
 * View images and the metadata easily
-    * Toggle PNGInfo
+* Search for your images and videos through their metadata 
 * Tag your images 
     * Favorite
     * Rating (1-10)
@@ -55,6 +52,7 @@ A folder named `build` will be created, containing all the necessary files.
 * Albums
     * Select images, right-click > Add to Album
     * Drag and drop images to albums
+* Custom Tags
 * Folder View
 * View and search prompts
     * List Prompts and usage
@@ -69,6 +67,7 @@ A folder named `build` will be created, containing all the necessary files.
 * PNG
 * WebP
 * .TXT metadata
+* MP4 
 
 # Supported Metadata formats
 
