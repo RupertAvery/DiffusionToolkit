@@ -47,7 +47,7 @@ The Tags filter should be visible. You can toggle it via **Menu > View > Tags**
 * Added some useful buttons to the Folders panel header
 * **Rebuild Thumbnail** command added to thumbnail pane context menu
   * You can now regenerate cached thumbnails. This is useful if you replace a file with another one with the same filename and Diffusion Toolkit still shows the old thumbnail. 
-  
+* Support reading ComfyUI metadata saved using **Save Animated WEBP** node  #323 ([Kitagawa65536](https://github.com/Kitagawa65536))
 
  
 
