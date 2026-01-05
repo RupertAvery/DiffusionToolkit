@@ -10,6 +10,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Forms;
 using System.Windows.Navigation;
 using System.Windows.Threading;
+using Diffusion.ComfyUI;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -31,6 +32,7 @@ public class ServiceLocator
     public static Settings? Settings => _settings;
     public static ToastService ToastService { get; set; }
     public static Dispatcher Dispatcher { get; set; }
+    public static NodePropertyCache NodePropertyCache { get; set; }
 
     public static void SetDataStore(DataStore dataStore)
     {

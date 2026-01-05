@@ -34,3 +34,4 @@ packages
 build
 build-self-contained
 .vscode
+/Diffusion.Toolkit/Tools/*.json

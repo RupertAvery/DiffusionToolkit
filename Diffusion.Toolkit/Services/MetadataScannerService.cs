@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Diffusion.ComfyUI;
+using Diffusion.Common;
+using Diffusion.IO;
+using Diffusion.Toolkit.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -7,9 +11,6 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Diffusion.Common;
-using Diffusion.IO;
-using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -193,7 +194,7 @@ public class MetadataScannerService
             {
                 if (File.Exists(job.Path))
                 {
-                    var fileParameters = Metadata.ReadFromFile(job.Path);
+                    var fileParameters = Metadata.ReadFromFile(job.Path, new ComfyUIParser(ServiceLocator.NodePropertyCache));
 
                     count++;
 
@@ -256,7 +257,7 @@ public class MetadataScannerService
             {
                 if (File.Exists(job.Path))
                 {
-                    var fileParameters = Metadata.ReadFromFile(job.Path);
+                    var fileParameters = Metadata.ReadFromFile(job.Path, new ComfyUIParser(ServiceLocator.NodePropertyCache));
 
                     count++;
 

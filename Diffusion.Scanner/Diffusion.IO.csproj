@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Diffusion.ComfyUI\Diffusion.ComfyUI.csproj" />
     <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
   </ItemGroup>
 

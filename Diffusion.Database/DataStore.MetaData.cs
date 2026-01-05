@@ -2,7 +2,7 @@
 using Diffusion.Database.Models;
 using Microsoft.VisualBasic;
 using SQLite;
-using ComfyUINode = Diffusion.IO.Node;
+using ComfyUINode = Diffusion.ComfyUI.Node;
 
 namespace Diffusion.Database
 {

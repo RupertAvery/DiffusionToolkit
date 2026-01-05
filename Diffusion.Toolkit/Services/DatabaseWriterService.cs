@@ -9,7 +9,7 @@ using Diffusion.Database.Models;
 using Diffusion.IO;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Thumbnails;
-using Node = Diffusion.IO.Node;
+using Node = Diffusion.ComfyUI.Node;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -26,7 +26,7 @@ public class StartResult<T>
 }
 
 
-public delegate int WriteDelegate(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes,
+public delegate int WriteDelegate(IReadOnlyCollection<Image> images, IReadOnlyCollection<ComfyUI.Node> nodes,
     IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow,
     CancellationToken cancellationToken);
 
@@ -129,7 +129,7 @@ public class UnboundDataWriterQueue
     private async Task ProcessQueueTask(CancellationToken token)
     {
         var newImages = new List<Image>();
-        var newNodes = new List<IO.Node>();
+        var newNodes = new List<ComfyUI.Node>();
 
         var includeProperties = new List<string>();
 
@@ -155,7 +155,7 @@ public class UnboundDataWriterQueue
         }
     }
 
-    protected virtual int ProcessJob(RecordJob job, List<Image> newImages, List<IO.Node> newNodes,
+    protected virtual int ProcessJob(RecordJob job, List<Image> newImages, List<ComfyUI.Node> newNodes,
         IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, int completed,
         CancellationToken cancellationToken)
     {
@@ -404,7 +404,7 @@ public class DatabaseWriterService
     {
 
         var newImages = new List<Image>();
-        var newNodes = new List<IO.Node>();
+        var newNodes = new List<ComfyUI.Node>();
 
         var includeProperties = new List<string>();
 
@@ -480,7 +480,7 @@ public class DatabaseWriterService
     private async Task<int> ProcessUpdateTaskAsync(CancellationToken token)
     {
         var newImages = new List<Image>();
-        var newNodes = new List<IO.Node>();
+        var newNodes = new List<ComfyUI.Node>();
 
         var includeProperties = new List<string>();
 

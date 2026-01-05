@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using Diffusion.ComfyUI;
 using Diffusion.IO;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Services;

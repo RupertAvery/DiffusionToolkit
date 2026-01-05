@@ -6,7 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Diffusion.Common;
 using Diffusion.Toolkit.Services;
-using Node = Diffusion.IO.Node;
+using Node = Diffusion.ComfyUI.Node;
 
 namespace Diffusion.Toolkit.Models;
 

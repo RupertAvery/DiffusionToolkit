@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Diffusion.ComfyUI;
 using Diffusion.IO;
 
 namespace Diffusion.Toolkit.Controls;

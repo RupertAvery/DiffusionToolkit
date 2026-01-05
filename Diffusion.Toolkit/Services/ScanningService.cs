@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Diffusion.ComfyUI;
 using Diffusion.Common;
 using Diffusion.Database;
 using Diffusion.Database.Models;
@@ -13,6 +6,14 @@ using Diffusion.IO;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Localization;
 using Diffusion.Toolkit.Models;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Diffusion.Toolkit.Services;
 
@@ -234,9 +235,9 @@ public class ScanningService
     }
 
 
-    public (Image, IReadOnlyCollection<IO.Node>) ProcessFile(FileParameters file, bool storeMetadata, bool storeWorkflow)
+    public (Image, IReadOnlyCollection<ComfyUI.Node>) ProcessFile(FileParameters file, bool storeMetadata, bool storeWorkflow)
     {
-        var newNodes = new List<IO.Node>();
+        var newNodes = new List<ComfyUI.Node>();
 
         var fileInfo = new FileInfo(file.Path);
 
@@ -303,7 +304,7 @@ public class ScanningService
 
     private readonly object _lock = new object();
 
-    public int UpdateImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, CancellationToken cancellationToken)
+    public int UpdateImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<ComfyUI.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, CancellationToken cancellationToken)
     {
         lock (_lock)
         {
@@ -336,7 +337,7 @@ public class ScanningService
         }
     }
 
-    public int AddImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<IO.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, CancellationToken cancellationToken)
+    public int AddImages(IReadOnlyCollection<Image> images, IReadOnlyCollection<ComfyUI.Node> nodes, IReadOnlyCollection<string> includeProperties, Dictionary<string, Folder> folderCache, bool storeWorkflow, CancellationToken cancellationToken)
     {
         lock (_lock)
         {
@@ -392,7 +393,7 @@ public class ScanningService
             var folderIdCache = new Dictionary<string, int>();
 
             var newImages = new List<Image>();
-            var newNodes = new List<IO.Node>();
+            var newNodes = new List<ComfyUI.Node>();
 
             var includeProperties = new List<string>();
 
@@ -408,7 +409,7 @@ public class ScanningService
 
             var scanning = GetLocalizedText("Actions.Scanning.Status");
 
-            foreach (var file in MetadataScanner.Scan(filesToScan))
+            foreach (var file in MetadataScanner.Scan(filesToScan, new ComfyUIParser(ServiceLocator.NodePropertyCache)))
             {
                 if (cancellationToken.IsCancellationRequested)
                 {

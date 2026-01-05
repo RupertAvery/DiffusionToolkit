@@ -1,4 +1,5 @@
-﻿using Diffusion.Common;
+﻿using Diffusion.ComfyUI;
+using Diffusion.Common;
 
 namespace Diffusion.IO;
 

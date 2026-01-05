@@ -30,6 +30,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Diffusion.ComfyUI;
 using WPFLocalizeExtension.Engine;
 using XmpCore.Impl;
 using Metadata = Diffusion.IO.Metadata;
@@ -1064,7 +1065,7 @@ namespace Diffusion.Toolkit.Pages
                     return;
                 }
 
-                var parameters = Metadata.ReadFromFile(path);
+                var parameters = Metadata.ReadFromFile(path, new ComfyUIParser(ServiceLocator.NodePropertyCache));
 
                 var old = _model.CurrentImage.IsParametersVisible;
 
@@ -1143,7 +1144,7 @@ namespace Diffusion.Toolkit.Pages
 
                     try
                     {
-                        var parser = new ComfyUIParser();
+                        var parser = new ComfyUIParser(ServiceLocator.NodePropertyCache);
                         imageViewModel.Nodes = parser.Parse(parameters.WorkflowId, parameters.Workflow);
                     }
                     catch

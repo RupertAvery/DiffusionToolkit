@@ -1,0 +1,154 @@
+{
+  "CLIPLoader": [
+    "clip_name",
+    "type",
+    "device"
+  ],
+  "CLIPTextEncode": [
+    "text",
+    "clip"
+  ],
+  "Canny": [
+    "low_threshold",
+    "high_threshold"
+  ],
+  "ConditioningZeroOut": [
+    "conditioning"
+  ],
+  "DPRandomGenerator": [
+    "text",
+    "seed",
+    "autorefresh"
+  ],
+  "EmptyLatentImage": [
+    "width",
+    "height",
+    "batch_size"
+  ],
+  "EmptySD3LatentImage": [
+    "width",
+    "height",
+    "batch_size"
+  ],
+  "InjectLatentNoise+": [
+    "noise_seed",
+    "noise_strength",
+    "normalize",
+    "latent"
+  ],
+  "KSampler": [
+    "seed",
+    "steps",
+    "cfg",
+    "sampler_name",
+    "scheduler",
+    "denoise",
+    "model",
+    "positive",
+    "negative",
+    "latent_image"
+  ],
+  "LatentUpscaleBy": [
+    "upscale_method",
+    "scale_by",
+    "samples"
+  ],
+  "LoadImage": [
+    "image"
+  ],
+  "LoraLoaderModelOnly": [
+    "lora_name",
+    "strength_model",
+    "model"
+  ],
+  "ModelMergeSimple": [
+    "ratio",
+    "model1",
+    "model2"
+  ],
+  "ModelPatchLoader": [
+    "name"
+  ],
+  "ModelSamplingAuraFlow": [
+    "shift",
+    "model"
+  ],
+  "PreviewImage": [
+    "images"
+  ],
+  "ReActorFaceSwapOpt": [
+    "enabled",
+    "swap_model",
+    "facedetection",
+    "face_restore_model",
+    "face_restore_visibility",
+    "codeformer_weight",
+    "input_image",
+    "source_image",
+    "options"
+  ],
+  "ReActorOptions": [
+    "input_faces_order",
+    "input_faces_index",
+    "detect_gender_input",
+    "source_faces_order",
+    "source_faces_index",
+    "detect_gender_source",
+    "console_log_level"
+  ],
+  "SaveAnimatedWEBP": [
+    "filename_prefix",
+    "fps",
+    "lossless",
+    "quality",
+    "method",
+    "images"
+  ],
+  "SaveImageExtended": [
+    "filename_prefix",
+    "filename_keys",
+    "foldername_prefix",
+    "foldername_keys",
+    "delimiter",
+    "save_job_data",
+    "job_data_per_image",
+    "job_custom_text",
+    "save_metadata",
+    "counter_digits",
+    "counter_position",
+    "one_counter_per_folder",
+    "image_preview",
+    "output_ext",
+    "quality",
+    "named_keys",
+    "images"
+  ],
+  "Seed (rgthree)": [
+    "seed"
+  ],
+  "SeedVarianceEnhancer": [
+    "randomize_percent",
+    "strength",
+    "noise_insert",
+    "steps_switchover_percent",
+    "seed",
+    "mask_starts_at",
+    "mask_percent",
+    "log_to_console",
+    "conditioning"
+  ],
+  "UNETLoader": [
+    "unet_name",
+    "weight_dtype"
+  ],
+  "UpscaleModelLoader": [
+    "model_name"
+  ],
+  "VAEDecode": [
+    "samples",
+    "vae"
+  ],
+  "VAELoader": [
+    "vae_name"
+  ]
+}

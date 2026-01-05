@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.3.32811.315
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diffusion.Toolkit", "Diffusion.Toolkit\Diffusion.Toolkit.csproj", "{748CFC7D-004F-497B-86D9-3EB15EB39AD7}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestBed", "TestBed\TestBed.csproj", "{716CC6F5-69BB-4CBE-AAF4-DF1F3A483898}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.Video", "Diffusion.Video\Diffusion.Video.csproj", "{163B8A75-962D-46AB-89CD-B189B972BA94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diffusion.ComfyUI", "Diffusion.ComfyUI\Diffusion.ComfyUI.csproj", "{B845653E-1512-4841-B46C-5AC64757DBDA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,6 +77,10 @@ Global
 		{163B8A75-962D-46AB-89CD-B189B972BA94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{163B8A75-962D-46AB-89CD-B189B972BA94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{163B8A75-962D-46AB-89CD-B189B972BA94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B845653E-1512-4841-B46C-5AC64757DBDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B845653E-1512-4841-B46C-5AC64757DBDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B845653E-1512-4841-B46C-5AC64757DBDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B845653E-1512-4841-B46C-5AC64757DBDA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

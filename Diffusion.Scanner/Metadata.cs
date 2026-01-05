@@ -6,6 +6,7 @@ using Dir = System.IO.Directory;
 using System.Globalization;
 using Diffusion.Common;
 using System.Text;
+using Diffusion.ComfyUI;
 using SixLabors.ImageSharp;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Jpeg;
@@ -92,7 +93,7 @@ public class Metadata
 
 
 
-    public static FileParameters? ReadFromFile(string file)
+    public static FileParameters? ReadFromFile(string file, ComfyUIParser parser)
     {
         FileParameters? fileParameters = null;
 
@@ -104,7 +105,7 @@ public class Metadata
             {
                 try
                 {
-                    fileParameters = Metadata.ReadFromFileInternal(file);
+                    fileParameters = Metadata.ReadFromFileInternal(file, parser);
                     failed = false;
                 }
                 catch (IOException) when (retry < 10)
@@ -140,7 +141,7 @@ public class Metadata
         return fileParameters;
     }
 
-    public static FileParameters? ReadFromFileInternal(string file)
+    public static FileParameters? ReadFromFileInternal(string file, ComfyUIParser parser)
     {
         ImageType imageType = ImageType.Image;
 
@@ -194,7 +195,7 @@ public class Metadata
                                     {
                                         if (tag.Name == "Comment")
                                         {
-                                            fileParameters = ReadComfyUIParameters(tag.Description, true);
+                                            fileParameters = ReadComfyUIParameters(tag.Description, parser, true);
                                         }
                                     }
 
@@ -238,7 +239,7 @@ public class Metadata
                                     {
                                         if (tag.Name == "Comment")
                                         {
-                                            fileParameters = ReadComfyUIParameters(tag.Description, true);
+                                            fileParameters = ReadComfyUIParameters(tag.Description, parser, true);
                                         }
                                     }
 
@@ -363,7 +364,7 @@ public class Metadata
                                             {
                                                 var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
                                                 format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
-                                                var tempParameters = isJson ? ReadComfyUIParameters(tag.Description) : ReadEasyDiffusionParameters(file, directories);
+                                                var tempParameters = isJson ? ReadComfyUIParameters(tag.Description, parser) : ReadEasyDiffusionParameters(file, directories);
 
                                                 if (fileParameters == null)
                                                 {
@@ -519,7 +520,7 @@ public class Metadata
                                                 if (tag.Description.StartsWith("{\"prompt\":"))
                                                 {
                                                     format = MetaFormat.ComfyUI;
-                                                    var tempParameters = ReadComfyUIParameters(tag.Description, true);
+                                                    var tempParameters = ReadComfyUIParameters(tag.Description, parser, true);
 
                                                     if (fileParameters == null)
                                                     {
@@ -586,14 +587,14 @@ public class Metadata
                                                        format = MetaFormat.ComfyUI;
                                                        fileParameters ??= new FileParameters();
                                                        fileParameters.Workflow = makeData;
-                                                        
-                                                       var parser = new ComfyUIParser();
-                                                       var pnodes = parser.Parse(fileParameters.WorkflowId, fileParameters.Workflow);
+
+                                                       var root = JsonDocument.Parse(makeData);
+                                                       fileParameters.WorkflowId = GetHashCode(root.RootElement).ToString("X");
+
+                                                        var pnodes = parser.Parse(fileParameters.WorkflowId, fileParameters.Workflow);
                                                        fileParameters.Nodes = pnodes;
                                                         
                                                        // Generate WorkflowId
-                                                       var root = JsonDocument.Parse(makeData);
-                                                       fileParameters.WorkflowId = GetHashCode(root.RootElement).ToString("X");
                                                    }
                                                }
                                                catch (Exception e)
@@ -614,7 +615,7 @@ public class Metadata
                                                     if (modelData.StartsWith("{"))
                                                     {
                                                         format = MetaFormat.ComfyUI;
-                                                        var tempParameters = ReadComfyUIParameters($"prompt: {modelData}", false);
+                                                        var tempParameters = ReadComfyUIParameters($"prompt: {modelData}", parser, false);
                                                         
                                                         if (fileParameters == null)
                                                         {
@@ -651,7 +652,7 @@ public class Metadata
                                         if (tag.Description.StartsWith("{\"prompt\":"))
                                         {
                                             format = MetaFormat.ComfyUI;
-                                            var tempParameters = ReadComfyUIParameters(tag.Description, true);
+                                            var tempParameters = ReadComfyUIParameters(tag.Description, parser, true);
 
                                             if (fileParameters == null)
                                             {
@@ -925,6 +926,11 @@ public class Metadata
         return fp;
     }
 
+    /// <summary>
+    /// Generate a hash of the property names 
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
     private static int GetHashCode(JsonElement node)
     {
         int result = 0;
@@ -956,7 +962,7 @@ public class Metadata
 
 
 
-    private static FileParameters ReadComfyUIParameters(string description, bool isProperJson = false)
+    private static FileParameters ReadComfyUIParameters(string description, ComfyUIParser parser, bool isProperJson = false)
     {
         var fp = new FileParameters();
 
@@ -974,7 +980,6 @@ public class Metadata
                 var root = JsonDocument.Parse(json);
                 fp.WorkflowId = GetHashCode(root.RootElement).ToString("X");
 
-                var parser = new ComfyUIParser();
                 var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
 
                 fp.Nodes = pnodes;
@@ -983,7 +988,6 @@ public class Metadata
             {
                 fp.Workflow = description;
 
-                var parser = new ComfyUIParser();
                 var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
 
                 fp.Nodes = pnodes;

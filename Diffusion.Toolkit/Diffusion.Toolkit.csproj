@@ -78,6 +78,10 @@
     <None Remove="Release Notes\What%27s New v1.8.0.md" />
     <None Remove="SearchHelp.md" />
     <None Remove="Tips.md" />
+    <None Remove="Tools\comfy-nodes-2.json" />
+    <None Remove="Tools\comfy-nodes-3.json" />
+    <None Remove="Tools\comfy-nodes.json" />
+    <None Remove="Tools\workflow.json" />
   </ItemGroup>
 
   <ItemGroup>

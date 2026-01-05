@@ -1,46 +1,47 @@
-﻿using Diffusion.Common;
+﻿using Diffusion.Civitai.Models;
+using Diffusion.ComfyUI;
+using Diffusion.Common;
 using Diffusion.Database;
+using Diffusion.Database.Models;
+using Diffusion.IO;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Common;
+using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Pages;
+using Diffusion.Toolkit.Services;
+using Diffusion.Toolkit.Themes;
+using Diffusion.Toolkit.Thumbnails;
+using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Windows;
-using System.Windows.Controls;
-using Path = System.IO.Path;
-using Diffusion.Toolkit.Classes;
-using Search = Diffusion.Toolkit.Pages.Search;
-using Diffusion.Toolkit.Thumbnails;
-using Diffusion.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Diffusion.Toolkit.Themes;
-using Microsoft.Win32;
-using Diffusion.Toolkit.Pages;
-using MessageBox = System.Windows.MessageBox;
-using Model = Diffusion.Common.Model;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Windows.Interop;
-using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using Diffusion.Civitai.Models;
-using WPFLocalizeExtension.Engine;
-using Diffusion.Toolkit.Controls;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Markup;
-using System.Xml;
-using Diffusion.Toolkit.Services;
-using Diffusion.Toolkit.Common;
-using Settings = Diffusion.Toolkit.Configuration.Settings;
-using Diffusion.Database.Models;
-using Image = System.Windows.Controls.Image;
 using System.Windows.Media;
-using SixLabors.ImageSharp;
+using System.Xml;
+using WPFLocalizeExtension.Engine;
+using Image = System.Windows.Controls.Image;
+using MessageBox = System.Windows.MessageBox;
+using Model = Diffusion.Common.Model;
+using Path = System.IO.Path;
+using Search = Diffusion.Toolkit.Pages.Search;
+using Settings = Diffusion.Toolkit.Configuration.Settings;
 using Size = System.Windows.Size;
 
 namespace Diffusion.Toolkit
@@ -161,6 +162,10 @@ namespace Diffusion.Toolkit
 
                 ServiceLocator.MessageService = new MessageService(_messagePopupManager);
                 ServiceLocator.ToastService = new ToastService(ToastPopup);
+
+                var nodePropertyCache = new NodePropertyCache();
+                nodePropertyCache.Load("comfy-nodes.json");
+                ServiceLocator.NodePropertyCache = nodePropertyCache;
 
                 PreviewMouseDown += (sender, args) =>
                 {

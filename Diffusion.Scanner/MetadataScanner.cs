@@ -1,5 +1,6 @@
 ﻿using Diffusion.Common;
 using System.Threading;
+using Diffusion.ComfyUI;
 
 namespace Diffusion.IO
 {
@@ -160,13 +161,13 @@ namespace Diffusion.IO
 
 
 
-        public static IEnumerable<FileParameters> Scan(IEnumerable<string> files)
+        public static IEnumerable<FileParameters> Scan(IEnumerable<string> files, ComfyUIParser parser)
         {
             foreach (var file in files)
             {
                 FileParameters? fp = null;
 
-                fp = Metadata.ReadFromFile(file);
+                fp = Metadata.ReadFromFile(file, parser);
 
                 if (fp != null)
                 {
