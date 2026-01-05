@@ -601,6 +601,7 @@
                     <MenuItem Style="{StaticResource FolderMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.ScanNew}" Command="{Binding ScanFolderCommand}" />
                     <Separator Style="{StaticResource FolderSeparator}"/>
                     <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.Rescan}" Command="{Binding RescanCommand}" />
+                    <MenuItem Style="{StaticResource FileMenuItem}" Header="{lex:Loc Thumbnail.ContextMenu.RebuildThumbnail}" Command="{Binding RebuildThumbnailCommand}" />
                 </ContextMenu>
             </ListView.ContextMenu>
             <ListView.Template>

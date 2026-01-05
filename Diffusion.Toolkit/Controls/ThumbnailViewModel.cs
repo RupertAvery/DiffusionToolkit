@@ -361,6 +361,7 @@ public class ThumbnailViewModel : BaseNotify
     }
 
     public ICommand RescanCommand { get; set; }
+    public ICommand RebuildThumbnailCommand { get; set; }
     public ICommand PermanentlyDeleteCommand { get; set; }
 
     public int ThumbnailSpacing

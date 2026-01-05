@@ -283,6 +283,7 @@
   "Thumbnail.ContextMenu.ForDeletion": "For _Deletion",
   "Thumbnail.ContextMenu.OpenWith": "Open with...",
   "Thumbnail.ContextMenu.Restore": "_Restore",
+  "Thumbnail.ContextMenu.RebuildThumbnail": "Rebuild Thumbnail",
   "Thumbnail.ContextMenu.Rescan": "Rescan",
   "Thumbnail.ContextMenu.Remove": "Remove",
   "Thumbnail.ContextMenu.PermanentlyDelete": "Permanently Delete",

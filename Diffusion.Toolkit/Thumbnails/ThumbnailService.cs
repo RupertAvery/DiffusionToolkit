@@ -70,6 +70,44 @@ public class ThumbnailService
     private Dispatcher _dispatcher => ServiceLocator.Dispatcher;
 
 
+    public void RebuildThumbnail(ImageEntry image)
+    {
+        image.LoadState = LoadState.Loading;
+
+        var job = new ThumbnailJob()
+        {
+            BatchId = image.BatchId,
+            EntryType = image.EntryType,
+            Path = image.Path,
+            Type = image.Type,
+            Height = image.Height,
+            Width = image.Width,
+            Rebuild = true
+        };
+
+        _ = QueueAsync(job, (d) =>
+        {
+            image.LoadState = LoadState.Loaded;
+
+            if (d.Success)
+            {
+                _dispatcher.Invoke(() =>
+                {
+                    image.Thumbnail = d.Image;
+                    image.ThumbnailHeight = d.Image.Height;
+                    image.ThumbnailWidth = d.Image.Width;
+                });
+            }
+            else
+            {
+                _dispatcher.Invoke(() => { image.Unavailable = true; });
+            }
+
+            //Debug.WriteLine($"Finished job {job.RequestId}");
+            //OnPropertyChanged(nameof(Thumbnail));
+        });
+    }
+
     public void QueueImage(ImageEntry image)
     {
         image.LoadState = LoadState.Loading;
@@ -201,7 +239,7 @@ public class ThumbnailService
 
                 if (_enableCache)
                 {
-                    if (!ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path, Size,
+                    if (job.Data.Rebuild || !ThumbnailCache.Instance.TryGetThumbnail(job.Data.Path, Size,
                             out BitmapSource? thumbnail))
                     {
                         // Debug.WriteLine($"Loading from disk");

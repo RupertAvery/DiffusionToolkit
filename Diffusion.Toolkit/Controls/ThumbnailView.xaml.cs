@@ -76,6 +76,8 @@ namespace Diffusion.Toolkit.Controls
             Model.CopyCommand = new RelayCommand<object>(o => CopySelected());
             Model.MoveCommand = new RelayCommand<object>(o => MoveSelected());
             Model.RescanCommand = new AsyncCommand<object>(o => RescanSelected());
+            Model.RebuildThumbnailCommand = new RelayCommand<object>(o => RebuildThumbnails());
+
             Model.RescanFolderCommand = new AsyncCommand<object>(o => RescanFolder(true));
             Model.ScanFolderCommand = new AsyncCommand<object>(o => RescanFolder(false));
 
@@ -148,6 +150,16 @@ namespace Diffusion.Toolkit.Controls
 
         }
 
+
+        private void RebuildThumbnails()
+        {
+            var imageEntries = ThumbnailListView.SelectedItems.Cast<ImageEntry>().ToList();
+
+            foreach (var imageEntry in imageEntries)
+            {
+                ServiceLocator.ThumbnailService.RebuildThumbnail(imageEntry);
+            }
+        }
 
         private void CopySelected()
         {
