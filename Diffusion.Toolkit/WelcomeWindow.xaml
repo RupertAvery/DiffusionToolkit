@@ -52,8 +52,8 @@
                     </Grid.ColumnDefinitions>
                     <ListBox ItemsSource="{Binding ImagePaths}" SelectedIndex="{Binding SelectedIndex}" Margin="0,0,10,0"></ListBox>
                     <StackPanel Grid.Column="1">
-                        <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.AddFolder}"></Button>
-                        <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Settings.General.RemoveFolder}"></Button>
+                        <Button Click="AddFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Welcome.Folders.AddFolder}"></Button>
+                        <Button Click="RemoveFolder_OnClick" Margin="0,0,0,10" Height="26" Content="{lex:Loc Welcome.Folders.RemoveFolder}"></Button>
                     </StackPanel>
                 </Grid>
                 <CheckBox IsChecked="{Binding ScanForNewImagesOnStartup}" Margin="5,0,0,0" Content="{lex:Loc Settings.Images.ScanForNewImagesOnStartup}"></CheckBox>

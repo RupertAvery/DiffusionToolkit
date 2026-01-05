@@ -23,6 +23,8 @@ namespace Diffusion.Toolkit
         public WelcomeModel()
         {
             Step = 1;
+            StoreWorkflow = true;
+            StoreMetadata = true;
         }
 
         public ICommand Escape

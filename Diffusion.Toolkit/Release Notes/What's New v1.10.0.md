@@ -20,7 +20,7 @@ A new setting has been added: **Settings > Video > Loop Video**. This controls w
 
 If you have a ComfyUI video that has metadata that can't be read, please raise an issue on Github and attach the sample file
 
-You can now filter by **Type** (Image, Video) using the Filter popup
+You can now filter by **Type** (Image, Video) using the Filter popup, or by adding the query `type: image` or `type: video`
 
 ## Custom Tags
 

@@ -3,6 +3,8 @@
   "Welcome.Subtitle": "Let's get you started!",
   "Welcome.Folders.Title": "Select the folders you want to scan",
   "Welcome.Folders.Subtitle": "These folders will be watched for new content and will be scanned recursively.",
+  "Welcome.Folders.AddFolder": "Add Folder",
+  "Welcome.Folders.RemoveFolder": "Remove Folder",
   "Welcome.Metadata.Title": "Select additional metadata for searching",
   "Welcome.Metadata.Subtitle": " By default Diffusion Toolkit will store basic supported metadata. You may chose to store additional metadata as needed.",
   "Welcome.Metadata.ComfyUI": "Check this option if you use ComfyUI and you want to search in ComfyUI Node Properties.",
