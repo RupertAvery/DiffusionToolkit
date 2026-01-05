@@ -569,7 +569,15 @@ namespace Diffusion.Toolkit
 
             if (semVer < SemanticVersion.Parse("v1.10.0"))
             {
-                _settings.FileExtensions = $"{_settings.FileExtensions}, .mp4";
+                var existingExtensions = _settings.FileExtensions.Split(",", StringSplitOptions.TrimEntries).ToList();
+
+                existingExtensions.Add(".mp4");
+                existingExtensions.Add(".webm");
+                existingExtensions.Add(".mkv");
+
+                existingExtensions = existingExtensions.Distinct().ToList();
+
+                _settings.FileExtensions = string.Join(", ", existingExtensions);
                 _settings.LoopVideo = true;
                 _settings.RenderMode = RenderMode.Default;
                 _settings.NavigationSection.ShowTags = true;

@@ -545,8 +545,6 @@ namespace Diffusion.Toolkit.Controls
             {
                 Player?.Position = TimeSpan.FromMilliseconds(1);
             }
-
-            SetFocus();
         }
 
         private void ScrollViewer_OnLoaded(object sender, RoutedEventArgs e)
