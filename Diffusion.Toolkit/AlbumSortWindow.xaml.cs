@@ -1,12 +1,14 @@
-﻿using System.Collections.ObjectModel;
+﻿using Diffusion.Common;
+using Diffusion.Database;
+using Diffusion.Database.Models;
+using Diffusion.Toolkit.Behaviors;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Configuration;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
-using Diffusion.Common;
-using Diffusion.Database;
-using Diffusion.Database.Models;
-using Diffusion.Toolkit.Classes;
-using Diffusion.Toolkit.Configuration;
+using System.Windows.Controls;
 
 namespace Diffusion.Toolkit
 {
@@ -47,7 +49,7 @@ namespace Diffusion.Toolkit
 
         private void OnClosing(object? sender, CancelEventArgs e)
         {
-            if (_isDirty)
+            if (_isDirty&& _model.SortAlbumsBy == "Custom")
             {
                 _dataStore.UpdateAlbumsOrder(_model.Albums);
             }
@@ -145,6 +147,30 @@ namespace Diffusion.Toolkit
         private void Escape()
         {
             Close();
+        }
+
+        private void MoveItem(object sender, RoutedEventArgs e)
+        {
+            if (e is DragSortDropEventArgs dropArgs)
+            {
+                var sourceIndex = dropArgs.SourceIndex;
+                var targetIndex = dropArgs.TargetIndex;
+
+                if (sourceIndex == targetIndex)
+                    return;
+
+                var item = _model.SortedAlbums[sourceIndex];
+                _model.SortedAlbums.RemoveAt(sourceIndex);
+                _model.SortedAlbums.Insert(targetIndex, item);
+
+                for (int i = 0; i < _model.SortedAlbums.Count; i++)
+                {
+                    _model.SortedAlbums[i].Order = i + 1;
+                }
+                _isDirty = true;
+
+                UpdateSortedAlbums();
+            }
         }
     }
 }

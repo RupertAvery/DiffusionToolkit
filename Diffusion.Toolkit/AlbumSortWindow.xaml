@@ -5,6 +5,7 @@
                   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                   xmlns:local="clr-namespace:Diffusion.Toolkit"
                   xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+                  xmlns:dt="clr-namespace:Diffusion.Toolkit.Behaviors"
                   xmlns:lex="http://wpflocalizeextension.codeplex.com"
                   lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
                   lex:LocalizeDictionary.Separation="."
@@ -17,10 +18,9 @@
                   TitleWidth="*"
                   WindowStyle="ToolWindow"
                   Style="{StaticResource BorderlessWindowStyle}"
-                  Title="Sort Album" Height="450" Width="300">
+                  Title="{lex:Loc AlbumSort.Title}" Height="450" Width="300">
     <Window.Resources>
         <converters:SortAlbumsByConverter x:Key="SortAlbumsByConverter"></converters:SortAlbumsByConverter>
-
     </Window.Resources>
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding Escape}"></KeyBinding>
@@ -37,29 +37,37 @@
                 <ColumnDefinition/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <RadioButton Grid.Column="0" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Name}" >Name</RadioButton>
-            <RadioButton Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Date}">Date Created</RadioButton>
-            <RadioButton Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}">Custom</RadioButton>
+            <RadioButton Grid.Column="0" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Name}" Content="{lex:Loc AlbumSort.SortBy.Name}"></RadioButton>
+            <RadioButton Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Date}" Content="{lex:Loc AlbumSort.SortBy.DateCreated}"></RadioButton>
+            <RadioButton Grid.Column="2" VerticalAlignment="Center" IsChecked="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}" Content="{lex:Loc AlbumSort.SortBy.Custom}"></RadioButton>
         </Grid>
         <Grid  Grid.Row="1"  >
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="380"/>
-                <ColumnDefinition Width="3"></ColumnDefinition>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
-            <ListBox Name="ListBox" Grid.Column="0"  Margin="3,0" ItemsSource="{Binding SortedAlbums}" SelectedItem="{Binding SelectedAlbum}">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <AdornerDecorator>
+                <ListBox Name="ListBox"
+                         dt:DTBehaviors.IsDragSortable="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}" 
+                         dt:DTBehaviors.OnDragSortDrop="MoveItem"
+                         Margin="3,0" ItemsSource="{Binding SortedAlbums}" 
+                         SelectedItem="{Binding SelectedAlbum}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </AdornerDecorator>
             <Grid Grid.Column="2" IsEnabled="{Binding SortAlbumsBy, Converter={StaticResource SortAlbumsByConverter}, ConverterParameter=Custom}">
                 <StackPanel>
-                    <Button Height="25" Command="{Binding MoveUpCommand}" Margin="0,0,0,5">Up</Button>
-                    <Button Height="25" Command="{Binding MoveDownCommand}">Down</Button>
+                    <Button Height="25" Command="{Binding MoveUpCommand}" Margin="0,0,0,5" Content="{lex:Loc AlbumSort.Move.Up}"></Button>
+                    <Button Height="25" Command="{Binding MoveDownCommand}" Content="{lex:Loc AlbumSort.Move.Down}"></Button>
+                    <TextBlock Margin="5,20,5,5" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="Wrap" Text="{lex:Loc AlbumSort.DragToSortLabel}">
+                    </TextBlock>
                 </StackPanel>
-
+                    
             </Grid>
         </Grid>
     </Grid>

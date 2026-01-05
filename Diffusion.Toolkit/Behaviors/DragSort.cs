@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,9 +11,26 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Xml.Linq;
+using WPFLocalizeExtension.Providers;
 
 namespace Diffusion.Toolkit.Behaviors
 {
+    public class DragSortDropEventArgs : RoutedEventArgs
+    {
+        public int SourceIndex { get; }
+        public int TargetIndex { get; }
+
+        public DragSortDropEventArgs(RoutedEvent routedEvent, int sourceIndex, int targetIndex) : base(routedEvent)
+        {
+            SourceIndex = sourceIndex;
+            TargetIndex = targetIndex;
+        }
+
+    }
+
+
+
 
     public static partial class DTBehaviors
     {
@@ -23,8 +41,49 @@ namespace Diffusion.Toolkit.Behaviors
              typeof(DTBehaviors),
              new PropertyMetadata(false, OnIsDragSortableChanged));
 
+        public static readonly DependencyProperty OnDragSortDropProperty =
+            DependencyProperty.RegisterAttached(
+                "OnDragSortDrop",
+                typeof(RoutedEventHandler),
+                typeof(DTBehaviors),
+                new PropertyMetadata(null, OnDragSortDropChanged));
+
+
+        public static readonly RoutedEvent DragSortDropEvent =
+            EventManager.RegisterRoutedEvent(
+                "DragSortDropEvent",
+                RoutingStrategy.Bubble,
+                typeof(EventHandler<DragSortDropEventArgs>),
+                typeof(DTBehaviors));
+
+
+        private static Point _dragStartPoint;
+        private static bool _isDragging;
+
         public static bool GetIsDragSortable(DependencyObject obj) => (bool)obj.GetValue(IsDragSortableProperty);
+
         public static void SetIsDragSortable(DependencyObject obj, bool value) => obj.SetValue(IsDragSortableProperty, value);
+
+
+        public static RoutedEventHandler GetOnDragSortDrop(DependencyObject obj) => (RoutedEventHandler)obj.GetValue(OnDragSortDropProperty);
+
+        public static void SetOnDragSortDrop(DependencyObject obj, RoutedEventHandler value) => obj.SetValue(OnDragSortDropProperty, value);
+
+        private static void OnDragSortDropChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is ItemsControl itemsControl)
+            {
+                if (e.NewValue != null)
+                {
+                    itemsControl.AddHandler(DragSortDropEvent, GetOnDragSortDrop(itemsControl));
+                }
+                else
+                {
+                    itemsControl.RemoveHandler(DragSortDropEvent, GetOnDragSortDrop(itemsControl));
+                }
+            }
+        }
+
 
         private static void OnIsDragSortableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -34,17 +93,35 @@ namespace Diffusion.Toolkit.Behaviors
                 {
                     itemsControl.AllowDrop = true;
                     itemsControl.PreviewMouseMove += OnPreviewMouseMove;
+                    itemsControl.PreviewMouseLeftButtonDown += OnPreviewMouseLeftButtonDown;
                     itemsControl.DragOver += OnDragOver;
                     itemsControl.Drop += OnDrop;
+                    itemsControl.MouseUp += OnMouseUp;
                 }
                 else
                 {
                     itemsControl.AllowDrop = false;
                     itemsControl.PreviewMouseMove -= OnPreviewMouseMove;
+                    itemsControl.PreviewMouseLeftButtonDown -= OnPreviewMouseLeftButtonDown;
                     itemsControl.DragOver -= OnDragOver;
                     itemsControl.Drop -= OnDrop;
+                    itemsControl.MouseUp -= OnMouseUp;
                 }
             }
+        }
+
+        private static void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ItemsControl itemsControl)
+            {
+                _dragStartPoint = e.GetPosition(itemsControl);
+                _draggedItem = GetItemUnderMouse(itemsControl, _dragStartPoint);
+            }
+        }
+
+        private static void OnMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            ClearAdorners();
         }
 
         private static object? _draggedItem;
@@ -54,13 +131,24 @@ namespace Diffusion.Toolkit.Behaviors
 
         private static void OnPreviewMouseMove(object sender, MouseEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed && sender is ItemsControl itemsControl)
+            if (_isDragging || e.LeftButton != MouseButtonState.Pressed)
+                return;
+
+            if (sender is not ItemsControl itemsControl || _draggedItem == null)
+                return;
+
+            Point currentPos = e.GetPosition(itemsControl);
+            Vector diff = currentPos - _dragStartPoint;
+
+            if (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance)
             {
-                _draggedItem = GetItemUnderMouse(itemsControl, e.GetPosition(itemsControl));
-                if (_draggedItem != null)
-                {
-                    DragDrop.DoDragDrop(itemsControl, _draggedItem, DragDropEffects.Move);
-                }
+                _isDragging = true;
+
+                DragDrop.DoDragDrop(itemsControl, _draggedItem, DragDropEffects.Move);
+
+                _isDragging = false;
+                _draggedItem = null;
             }
         }
 
@@ -69,33 +157,41 @@ namespace Diffusion.Toolkit.Behaviors
             if (sender is not ItemsControl itemsControl || _draggedItem == null)
             {
                 e.Effects = DragDropEffects.None;
+                e.Handled = true;
                 return;
             }
 
             int index = GetItemIndexFromPoint(itemsControl, e.GetPosition(itemsControl));
             e.Effects = index >= 0 ? DragDropEffects.Move : DragDropEffects.None;
 
-            // Get or create the adorner layer
             _adornerLayer ??= AdornerLayer.GetAdornerLayer(itemsControl);
 
-            // Check if the dragged item adorner exists before adding
             if (_draggedAdorner == null)
             {
-                _draggedAdorner = new DraggedItemAdorner(itemsControl, _draggedItem);
+                _draggedAdorner = new DraggedItemAdorner(itemsControl, _draggedItem)
+                {
+                    IsHitTestVisible = false
+                };
                 _adornerLayer.Add(_draggedAdorner);
             }
+
             _draggedAdorner.SetPosition(e.GetPosition(itemsControl));
 
-            // Check if insertion adorner exists before adding
             if (_insertionAdorner != null)
-                _adornerLayer.Remove(_insertionAdorner); // Ensure only one insertion adorner
+                _adornerLayer.Remove(_insertionAdorner);
 
-            _insertionAdorner = new InsertionLineAdorner(itemsControl, index);
+            _insertionAdorner = new InsertionLineAdorner(itemsControl, index)
+            {
+                IsHitTestVisible = false
+            };
             _adornerLayer.Add(_insertionAdorner);
+
+            e.Handled = true;
         }
 
         private static void OnDrop(object sender, DragEventArgs e)
         {
+            
             if (sender is not ItemsControl itemsControl || _draggedItem == null) return;
 
             int index = GetItemIndexFromPoint(itemsControl, e.GetPosition(itemsControl));
@@ -103,10 +199,15 @@ namespace Diffusion.Toolkit.Behaviors
 
             if (itemsControl.ItemsSource is IList collection && collection.Contains(_draggedItem))
             {
-                collection.Remove(_draggedItem);
-                collection.Insert(index, _draggedItem);
+                //collection.Remove(_draggedItem);
+                //collection.Insert(index, _draggedItem);
+                var sourceIndex = collection.IndexOf(_draggedItem);
+
+                itemsControl.RaiseEvent(new DragSortDropEventArgs(DragSortDropEvent, sourceIndex, index));
             }
 
+            _isDragging = false;
+            _draggedItem = null;
             ClearAdorners();
         }
 
@@ -128,18 +229,30 @@ namespace Diffusion.Toolkit.Behaviors
 
         private static int GetItemIndexFromPoint(ItemsControl itemsControl, Point point)
         {
-            for (int i = 0; i < itemsControl.Items.Count; i++)
-            {
-                var item = itemsControl.ItemContainerGenerator.ContainerFromIndex(i) as FrameworkElement;
-                if (item != null)
-                {
-                    Rect bounds = VisualTreeHelper.GetDescendantBounds(item);
-                    if (bounds.Contains(item.TranslatePoint(point, itemsControl)))
-                        return i;
-                }
-            }
-            return -1;
+            var element = itemsControl.InputHitTest(point) as DependencyObject;
+            if (element == null)
+                return -1;
+
+            var container = ItemsControl.ContainerFromElement(itemsControl, element);
+            return container != null
+                ? itemsControl.ItemContainerGenerator.IndexFromContainer(container)
+                : -1;
         }
+
+        //private static int GetItemIndexFromPoint(ItemsControl itemsControl, Point point)
+        //{
+        //    for (int i = 0; i < itemsControl.Items.Count; i++)
+        //    {
+        //        var item = itemsControl.ItemContainerGenerator.ContainerFromIndex(i) as FrameworkElement;
+        //        if (item != null)
+        //        {
+        //            Rect bounds = VisualTreeHelper.GetDescendantBounds(item);
+        //            if (bounds.Contains(item.TranslatePoint(point, itemsControl)))
+        //                return i;
+        //        }
+        //    }
+        //    return -1;
+        //}
 
         private static void ClearAdorners()
         {
@@ -159,6 +272,7 @@ namespace Diffusion.Toolkit.Behaviors
         public DraggedItemAdorner(UIElement adornedElement, object draggedItem)
             : base(adornedElement)
         {
+            IsHitTestVisible = false;
             _visualBrush = new VisualBrush(new TextBlock
             {
                 Text = draggedItem.ToString(),
@@ -187,6 +301,16 @@ namespace Diffusion.Toolkit.Behaviors
             : base(adornedElement)
         {
             _index = index;
+            IsHitTestVisible = false;
+        }
+
+        private Brush LineBrush
+        {
+            get
+            {
+                field ??= (Brush)Application.Current.FindResource("SecondaryBrush");
+                return field;
+            }
         }
 
         protected override void OnRender(DrawingContext drawingContext)
@@ -195,12 +319,12 @@ namespace Diffusion.Toolkit.Behaviors
 
             if (_index > -1)
             {
-                var item = listBox.ItemContainerGenerator.ContainerFromIndex(_index) as FrameworkElement;
-
-                if (item != null)
+                if (listBox.ItemContainerGenerator.ContainerFromIndex(_index) is FrameworkElement item)
                 {
                     var position = item.TranslatePoint(new Point(0, -1), listBox);
-                    drawingContext.DrawLine(new Pen(Brushes.Red, 2), new Point(position.X, position.Y), new Point(listBox.ActualWidth, position.Y));
+
+
+                    drawingContext.DrawLine(new Pen(LineBrush, 2), new Point(position.X, position.Y), new Point(listBox.ActualWidth, position.Y));
                 }
             }
 
