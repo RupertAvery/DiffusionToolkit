@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
+using Diffusion.Common;
 using Diffusion.Common.Query;
 using Diffusion.Toolkit.Controls;
 using NodeFilter = Diffusion.Common.Query.NodeFilter;
@@ -136,9 +137,13 @@ public static class SearchControlModelExtensions
         filter.RatingOp = model.RatingOp;
         filter.Rating = model.Rating;
         filter.Unrated = model.Unrated;
+
+        filter.UseTypes = model.UseTypes;
+        filter.Types = model.Types.Where(d => d.IsChecked).Select(d => (ImageType)d.Value).ToList();
+
         filter.UseNSFW = model.UseNSFW;
         filter.NSFW = model.NSFW;
-        
+
         filter.UseForDeletion = model.UseForDeletion;
         filter.ForDeletion = model.ForDeletion;
 

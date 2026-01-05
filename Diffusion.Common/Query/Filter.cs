@@ -39,6 +39,8 @@ public class Filter
     public string RatingOp { get; set; }
     public int? Rating { get; set; }
     public bool Unrated { get; set; }
+    public bool UseTypes { get; set; }
+    public List<ImageType> Types { get; set; }
     public bool UseNSFW { get; set; }
     public bool NSFW { get; set; }
     public bool UseForDeletion { get; set; }
@@ -86,6 +88,7 @@ public class Filter
                             UseFavorite ||
                             UseRating ||
                             Unrated ||
+                            UseTypes ||
                             UseNSFW ||
                             UseForDeletion ||
                             UseBatchSize ||

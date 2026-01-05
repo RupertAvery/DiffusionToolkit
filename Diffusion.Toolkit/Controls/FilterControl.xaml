@@ -250,6 +250,30 @@
                                 <ColumnDefinition Width="130"/>
                                 <ColumnDefinition/>
                             </Grid.ColumnDefinitions>
+                            <CheckBox IsChecked="{Binding UseTypes}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.Type}"></CheckBox>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <ItemsControl ItemsSource="{Binding Types}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox Click="ButtonBase_OnClick" 
+                                                      Content="{Binding Name}" 
+                                                      IsChecked="{Binding IsChecked, Mode=TwoWay}" 
+                                                      Margin="5"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
+                        <Grid Margin="0,0,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="130"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding UseNSFW}" VerticalContentAlignment="Center" Content="{lex:Loc Filter.Metadata.NSFW}"></CheckBox>
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                 <RadioButton Click="ButtonBase_OnClick" GroupName="NSFW" IsChecked="{Binding NSFW, Mode=TwoWay, Converter={StaticResource isValueBool}, ConverterParameter=true}" Margin="0,0,10,0" Content="{lex:Loc Filter.Metadata.True}"></RadioButton>

@@ -1,51 +1,108 @@
-﻿using System;
+﻿using Diffusion.Common;
+using System;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using static Diffusion.IO.Metadata;
 
 namespace Diffusion.Database;
 
 public static partial class QueryBuilder
 {
-    public static readonly Regex DayRegex = new Regex("\\d+ day(?:s)? ago", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    public static readonly Regex MonthRegex = new Regex("(?:a|1|2|3) week(?:s)? ago", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    public static readonly Regex DayRegex =
+        new Regex("\\d+ day(?:s)? ago", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public static readonly Regex DateFormatRegex = new Regex("\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    public static readonly Regex MonthRegex =
+        new Regex("(?:a|1|2|3) week(?:s)? ago", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex AlbumRegex = new Regex("\\balbum:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex FolderRegex = new Regex("\\bfolder:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex PathRegex = new Regex("\\bpath:\\s*(?:(?<criteria>starts with|contains|ends with)\\s+)?(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    public static readonly Regex DateFormatRegex =
+        new Regex("\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex DateRegex = new Regex("\\bdate:\\s*(?:(?<prep1>between|before|since|from)\\s+)?(?<date1>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})(?:\\s+(?<prep2>and|up to|to|-)\\s+(?<date2>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex AlbumRegex = new Regex("\\balbum:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex SeedRegex = new Regex("\\bseed:\\s*(?<start>[0-9?*]+)(?:\\s*-\\s*(?<end>\\S+))?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex StepsRegex = new Regex("\\bsteps:\\s*(\\d+)(?:\\|(\\d+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex FolderRegex = new Regex("\\bfolder:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex PathRegex =
+        new Regex(
+            "\\bpath:\\s*(?:(?<criteria>starts with|contains|ends with)\\s+)?(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex DateRegex = new Regex(
+        "\\bdate:\\s*(?:(?<prep1>between|before|since|from)\\s+)?(?<date1>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2})(?:\\s+(?<prep2>and|up to|to|-)\\s+(?<date2>today|yesterday|\\d+ day(?:s)? ago|(?:a|1|2|3) week(?:s)? ago|(?:a|\\d{1,2}) month(?:s)? ago|\\d{1,2}[-/]\\d{1,2}[-/]\\d{4}|\\d{4}[-/]\\d{1,2}[-/]\\d{1,2}))?\\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex SeedRegex = new Regex("\\bseed:\\s*(?<start>[0-9?*]+)(?:\\s*-\\s*(?<end>\\S+))?",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex StepsRegex = new Regex("\\bsteps:\\s*(\\d+)(?:\\|(\\d+))*\\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex SamplerRegex = new Regex("sampler:", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex ModelNameRegex = new Regex("\\bmodel:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex ModelNameOrHashRegex = new Regex("\\bmodel_or_hash:\\s*(?:\"(?<name>[^\"]*)\"\\|(?<hash>[0-9a-f]*))", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex ModelNameRegex = new Regex("\\bmodel:\\s*(?:\"(?<value>[^\"]+)\"|(?<value>\\S+))",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex HashRegex = new Regex("\\b(?:model_hash|model hash):\\s*([0-9a-f]+)(?:\\s*\\|\\s*([0-9a-f]+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex CfgRegex = new Regex("\\b(?:cfg|cfg_scale|cfg scale):\\s*(\\d+(?:\\.\\d+)?)(?:\\s*\\|\\s*(\\d+(?:\\.\\d+)?))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex SizeRegex = new Regex("\\bsize:\\s*((?<width>\\d+|\\?)\\s*x\\s*(?<height>\\d+|\\?)|(?<orientation>portrait|landscape|square)|(?<ratio>\\d+:\\d+))[\\b]?", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex ModelNameOrHashRegex =
+        new Regex("\\bmodel_or_hash:\\s*(?:\"(?<name>[^\"]*)\"\\|(?<hash>[0-9a-f]*))",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex HashRegex =
+        new Regex("\\b(?:model_hash|model hash):\\s*([0-9a-f]+)(?:\\s*\\|\\s*([0-9a-f]+))*\\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex CfgRegex =
+        new Regex("\\b(?:cfg|cfg_scale|cfg scale):\\s*(\\d+(?:\\.\\d+)?)(?:\\s*\\|\\s*(\\d+(?:\\.\\d+)?))*\\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex SizeRegex =
+        new Regex(
+            "\\bsize:\\s*((?<width>\\d+|\\?)\\s*x\\s*(?<height>\\d+|\\?)|(?<orientation>portrait|landscape|square)|(?<ratio>\\d+:\\d+))[\\b]?",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     private static readonly Regex NumericRegex = new Regex("\\d+");
 
+    private static readonly Regex TypeRegex = new Regex("\\btype:\\s*(?<value>image|video)",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex AestheticScoreRegex = new Regex("\\baesthetic_score:\\s*(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+(?:\\.\\d+)?)\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex HypernetRegex = new Regex("\\bhypernet:\\s*(\\S+)(?:\\s*\\|\\s*(\\S+))*\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex HypernetStrRegex = new Regex("\\bhypernet strength:\\s*(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+(?:\\.\\d+)?)\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex AestheticScoreRegex =
+        new Regex("\\baesthetic_score:\\s*(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+(?:\\.\\d+)?)\\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex RatingRegex = new Regex("\\brating:\\s*(?:(?<value>none)|(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+))\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex ForeDeletionRegex = new Regex("\\b(?:for deletion|delete|to delete):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex FavoriteRegex = new Regex("\\b(?:favorite|fave):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex InAlbumRegex = new Regex("\\bin_album:\\s*(?<value>(?:true|false))?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex HypernetRegex = new Regex("\\bhypernet:\\s*(\\S+)(?:\\s*\\|\\s*(\\S+))*\\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex NSFWRegex = new Regex("\\b(?:nsfw):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-    private static readonly Regex NoMetadataRegex = new Regex("\\b(?:nometa|nometadata):\\s*(?<value>(?:true|false))?\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex HypernetStrRegex =
+        new Regex("\\bhypernet strength:\\s*(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+(?:\\.\\d+)?)\\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    private static readonly Regex NegativePromptRegex = new Regex("\\b(?:negative prompt|negative_prompt|negative):\\s*(?<value>.*)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    private static readonly Regex RatingRegex =
+        new Regex("\\brating:\\s*(?:(?<value>none)|(?<operator><|>|<=|>=|<>)?\\s*(?<value>\\d+))\\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex ForeDeletionRegex =
+        new Regex("\\b(?:for deletion|delete|to delete):\\s*(?<value>(?:true|false))?\\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex FavoriteRegex = new Regex("\\b(?:favorite|fave):\\s*(?<value>(?:true|false))?\\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex InAlbumRegex = new Regex("\\bin_album:\\s*(?<value>(?:true|false))?",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex NSFWRegex = new Regex("\\b(?:nsfw):\\s*(?<value>(?:true|false))?\\b",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex NoMetadataRegex =
+        new Regex("\\b(?:nometa|nometadata):\\s*(?<value>(?:true|false))?\\b",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    private static readonly Regex NegativePromptRegex =
+        new Regex("\\b(?:negative prompt|negative_prompt|negative):\\s*(?<value>.*)",
+            RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public static List<string> Samplers { get; set; }
 
@@ -53,7 +110,8 @@ public static partial class QueryBuilder
     public static bool HideDeleted { get; set; }
     public static bool HideUnavailable { get; set; }
 
-    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) QueryPrompt(string prompt)
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins) QueryPrompt(
+        string prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
         var joins = new List<string>();
@@ -88,7 +146,8 @@ public static partial class QueryBuilder
             );
     }
 
-    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) ParseParameters(string prompt)
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt)
+        ParseParameters(string prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
         var joins = new List<string>();
@@ -115,6 +174,7 @@ public static partial class QueryBuilder
             ParseHypernetStrength(ref prompt, conditions);
             ParseFavorite(ref prompt, conditions);
             ParseForDeletion(ref prompt, conditions);
+            ParseType(ref prompt, conditions);
             ParseNSFW(ref prompt, conditions);
             ParseInAlbum(ref prompt, conditions);
             ParseNoMetadata(ref prompt, conditions);
@@ -122,23 +182,24 @@ public static partial class QueryBuilder
             //ParseNegativePrompt(ref prompt, conditions);
             //ParsePrompt(ref prompt, conditions);
         }
-        
+
         return (string.Join(" AND ", conditions.Select(c => c.Key)),
-            conditions.SelectMany(c =>
-            {
-                return c.Value switch
+                conditions.SelectMany(c =>
                 {
-                    IEnumerable<object> orConditions => orConditions.Select(o => o),
-                    _ => new[] { c.Value }
-                };
-            }).Where(o => o != null),
-            joins,
-            prompt.Trim()
+                    return c.Value switch
+                    {
+                        IEnumerable<object> orConditions => orConditions.Select(o => o),
+                        _ => new[] { c.Value }
+                    };
+                }).Where(o => o != null),
+                joins,
+                prompt.Trim()
             );
     }
 
 
-    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt) Parse(string prompt)
+    public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<object> Joins, string TextPrompt)
+        Parse(string prompt)
     {
         var conditions = new List<KeyValuePair<string, object>>();
         var joins = new List<string>();
@@ -182,16 +243,16 @@ public static partial class QueryBuilder
         //}
 
         return (string.Join(" AND ", conditions.Select(c => c.Key)),
-            conditions.SelectMany(c =>
-            {
-                return c.Value switch
+                conditions.SelectMany(c =>
                 {
-                    IEnumerable<object> orConditions => orConditions.Select(o => o),
-                    _ => new[] { c.Value }
-                };
-            }).Where(o => o != null),
-            joins,
-            prompt.Trim()
+                    return c.Value switch
+                    {
+                        IEnumerable<object> orConditions => orConditions.Select(o => o),
+                        _ => new[] { c.Value }
+                    };
+                }).Where(o => o != null),
+                joins,
+                prompt.Trim()
             );
     }
 
@@ -210,7 +271,8 @@ public static partial class QueryBuilder
         }
     }
 
-    private static void ParseFolder(ref string prompt, List<KeyValuePair<string, object>> conditions, List<string> joins)
+    private static void ParseFolder(ref string prompt, List<KeyValuePair<string, object>> conditions,
+        List<string> joins)
     {
         var match = FolderRegex.Match(prompt);
 
@@ -236,7 +298,8 @@ public static partial class QueryBuilder
             {
                 if (value.Any(t => t is '*' or '?'))
                 {
-                    throw new Exception("Invalid path. Do not use *, ? if criteria 'starts with', 'contains', or 'ends with' is specified");
+                    throw new Exception(
+                        "Invalid path. Do not use *, ? if criteria 'starts with', 'contains', or 'ends with' is specified");
                 }
 
                 switch (match.Groups["criteria"].Value.ToLower())
@@ -319,11 +382,15 @@ public static partial class QueryBuilder
 
             if (value)
             {
-                conditions.Add(new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) > 0", null));
+                conditions.Add(
+                    new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) > 0",
+                        null));
             }
             else
             {
-                conditions.Add(new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) = 0", null));
+                conditions.Add(
+                    new KeyValuePair<string, object>("(SELECT COUNT(1) FROM AlbumImage WHERE ImageId = m1.Id) = 0",
+                        null));
             }
         }
 
@@ -409,7 +476,8 @@ public static partial class QueryBuilder
                 oper = match.Groups["operator"].Value;
             }
 
-            conditions.Add(new KeyValuePair<string, object>($"(HyperNetworkStrength {oper} ?)", decimal.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture)));
+            conditions.Add(new KeyValuePair<string, object>($"(HyperNetworkStrength {oper} ?)",
+                decimal.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture)));
         }
     }
 
@@ -429,7 +497,8 @@ public static partial class QueryBuilder
                 oper = match.Groups["operator"].Value;
             }
 
-            conditions.Add(new KeyValuePair<string, object>($"(AestheticScore {oper} ?)", decimal.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture)));
+            conditions.Add(new KeyValuePair<string, object>($"(AestheticScore {oper} ?)",
+                decimal.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture)));
         }
     }
 
@@ -456,7 +525,8 @@ public static partial class QueryBuilder
             }
             else
             {
-                conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)", int.Parse(value, CultureInfo.InvariantCulture)));
+                conditions.Add(new KeyValuePair<string, object>($"(Rating {oper} ?)",
+                    int.Parse(value, CultureInfo.InvariantCulture)));
             }
 
         }
@@ -573,7 +643,8 @@ public static partial class QueryBuilder
             {
                 if (match.Groups[i].Value.Length > 0)
                 {
-                    orConditions.Add(new KeyValuePair<string, object>("(CFGScale = ?)", float.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
+                    orConditions.Add(new KeyValuePair<string, object>("(CFGScale = ?)",
+                        float.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
                 }
             }
 
@@ -597,7 +668,8 @@ public static partial class QueryBuilder
             {
                 if (match.Groups[i].Value.Length > 0)
                 {
-                    orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", match.Groups[i].Value));
+                    orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)",
+                        match.Groups[i].Value));
                 }
             }
 
@@ -616,7 +688,8 @@ public static partial class QueryBuilder
             prompt = ModelNameRegex.Replace(prompt, String.Empty);
             var orConditions = new List<KeyValuePair<string, object>>();
 
-            var names = match.Groups[1].Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var names = match.Groups[1].Value.Split(new[] { ',' },
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
             foreach (var name in names)
             {
@@ -624,10 +697,12 @@ public static partial class QueryBuilder
                 {
                     if (model.Filename.Contains(name, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", model.Hash));
+                        orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)",
+                            model.Hash));
                         if (!string.IsNullOrEmpty(model.SHA256))
                         {
-                            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", model.SHA256.Substring(0, 10)));
+                            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)",
+                                model.SHA256.Substring(0, 10)));
                         }
                     }
                 }
@@ -710,7 +785,8 @@ public static partial class QueryBuilder
             var start = match.Index;
             var current = start + match.Length;
 
-            var normalizedSamplers = Samplers.Select(s => s.Trim().ToLower()).Distinct().OrderByDescending(s => s.Length).ToList();
+            var normalizedSamplers = Samplers.Select(s => s.Trim().ToLower()).Distinct()
+                .OrderByDescending(s => s.Length).ToList();
 
             var samplerList = new List<string>();
             var exit = false;
@@ -727,7 +803,8 @@ public static partial class QueryBuilder
                 foreach (var sampler in normalizedSamplers)
                 {
 
-                    if (prompt.Length - current >= sampler.Length && prompt.Substring(current, sampler.Length).ToLower() == sampler)
+                    if (prompt.Length - current >= sampler.Length &&
+                        prompt.Substring(current, sampler.Length).ToLower() == sampler)
                     {
                         samplerList.Add(sampler);
                         current += sampler.Length;
@@ -771,7 +848,8 @@ public static partial class QueryBuilder
             {
                 if (match.Groups[i].Value.Length > 0)
                 {
-                    orConditions.Add(new KeyValuePair<string, object>("(Steps = ?)", int.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
+                    orConditions.Add(new KeyValuePair<string, object>("(Steps = ?)",
+                        int.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
                 }
             }
 
@@ -791,7 +869,12 @@ public static partial class QueryBuilder
             prompt = SeedRegex.Replace(prompt, String.Empty);
             if (match.Groups["end"].Success)
             {
-                conditions.Add(new KeyValuePair<string, object>("(Seed BETWEEN ? AND ?)", new object[] { long.Parse(match.Groups["start"].Value, CultureInfo.InvariantCulture), long.Parse(match.Groups["end"].Value, CultureInfo.InvariantCulture) }));
+                conditions.Add(new KeyValuePair<string, object>("(Seed BETWEEN ? AND ?)",
+                    new object[]
+                    {
+                        long.Parse(match.Groups["start"].Value, CultureInfo.InvariantCulture),
+                        long.Parse(match.Groups["end"].Value, CultureInfo.InvariantCulture)
+                    }));
             }
             else
             {
@@ -803,8 +886,29 @@ public static partial class QueryBuilder
                     return;
                 }
 
-                conditions.Add(new KeyValuePair<string, object>("(Seed = ?)", long.Parse(start, CultureInfo.InvariantCulture)));
+                conditions.Add(new KeyValuePair<string, object>("(Seed = ?)",
+                    long.Parse(start, CultureInfo.InvariantCulture)));
             }
+        }
+    }
+
+    public static void ParseType(ref string prompt, List<KeyValuePair<string, object>> conditions)
+    {
+        var match = TypeRegex.Match(prompt);
+        if (match.Success)
+        {
+            prompt = TypeRegex.Replace(prompt, String.Empty);
+
+            var value = match.Groups["value"].Value;
+
+            ImageType type = value switch
+            {
+                "image" => ImageType.Image,
+                "video" => ImageType.Video,
+                _ => ImageType.Image
+            };
+
+            conditions.Add(new KeyValuePair<string, object>("(Type = ?)", type));
         }
     }
 

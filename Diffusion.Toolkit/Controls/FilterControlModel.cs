@@ -1,16 +1,43 @@
-﻿using System;
+﻿using Diffusion.Common.Query;
+using Diffusion.Database;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using Diffusion.Common.Query;
-using Diffusion.Database;
-using Diffusion.Toolkit.Classes;
-using Diffusion.Toolkit.Models;
+using Diffusion.Common;
 
 namespace Diffusion.Toolkit.Controls;
+
+public class CheckBoxItem : BaseNotify
+{
+    public string PropertyName { get; set; }
+
+    public bool IsChecked
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public string Name
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public object Value
+    {
+        get;
+        set;
+    }
+}
 
 public class FilterControlModel : BaseNotify
 {
@@ -38,7 +65,18 @@ public class FilterControlModel : BaseNotify
         NodePropertyComparisons = comps;
         SizeOp = "pixels";
 
+        Types = new ObservableCollection<CheckBoxItem>()
+        {
+            new CheckBoxItem() { PropertyName = "Types", Name = GetLocalizedText("Filter.Metadata.Types.Image"), Value = ImageType.Image },
+            new CheckBoxItem() { PropertyName = "Types", Name = GetLocalizedText("Filter.Metadata.Types.Video"), Value = ImageType.Video },
+        };
+
         AddNodeFilter();
+    }
+
+    private string GetLocalizedText(string key)
+    {
+        return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
     }
 
     private void NodeFiltersOnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -320,6 +358,18 @@ public class FilterControlModel : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public bool UseTypes
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public ObservableCollection<CheckBoxItem> Types
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
     public bool UseNSFW
     {
         get;
@@ -502,6 +552,7 @@ public class FilterControlModel : BaseNotify
                              UseFavorite ||
                              UseRating ||
                              Unrated ||
+                             UseTypes ||
                              UseNSFW ||
                              UseForDeletion ||
                              UseBatchSize ||
@@ -548,6 +599,10 @@ public class FilterControlModel : BaseNotify
         Rating = null;
         RatingOp = String.Empty;
         Unrated = false;
+        foreach (var type in Types)
+        {
+            type.IsChecked = false;
+        }
         NSFW = false;
         ForDeletion = false;
         BatchSize = 0;
@@ -576,6 +631,7 @@ public class FilterControlModel : BaseNotify
         UseModelName = false;
         UseFavorite = false;
         UseRating = false;
+        UseTypes = false;
         UseNSFW = false;
         UseForDeletion = false;
         UseBatchSize = false;

@@ -1,5 +1,6 @@
-﻿using System.Globalization;
-using Diffusion.Common.Query;
+﻿using Diffusion.Common.Query;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Diffusion.Database
 {
@@ -52,6 +53,7 @@ namespace Diffusion.Database
             FilterHypernetStrength(filter, conditions);
             FilterFavorite(filter, conditions);
             FilterForDeletion(filter, conditions);
+            FilterType(filter, conditions);
             FilterNSFW(filter, conditions);
             FilterNoMetadata(filter, conditions);
             FilterInAlbum(filter, conditions);
@@ -184,6 +186,24 @@ namespace Diffusion.Database
 
                 conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", value));
 
+            }
+        }
+
+        private static void FilterType(Filter filter, List<KeyValuePair<string, object>> conditions)
+        {
+            if (filter.UseTypes && filter.Types.Any())
+            {
+                var orConditions = new List<KeyValuePair<string, object>>();
+
+                foreach (var filterType in filter.Types)
+                {
+                    orConditions.Add(new KeyValuePair<string, object>("(Type = ?)", filterType));
+                }
+
+                var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
+                var values = orConditions.Select(c => c.Value);
+
+                conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
             }
         }
 
