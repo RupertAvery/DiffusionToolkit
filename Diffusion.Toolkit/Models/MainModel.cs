@@ -381,6 +381,12 @@ public class MainModel : BaseNotify
         set => SetField(ref field, value);
     }
 
+    public ICommand ClearTagsCommand
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
     public bool HasSelectedAlbums
     {
         get;

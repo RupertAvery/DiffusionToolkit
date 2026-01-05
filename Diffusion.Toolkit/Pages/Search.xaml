@@ -111,7 +111,7 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,10,0" Orientation="Horizontal">
-                    <Border Visibility="{Binding MainModel.HasSelectedModels, Converter={StaticResource boolToVisCol}}" Background="SeaGreen" CornerRadius="6" Height="24" Padding="6,0,6,0" Margin="0,0,10,0">
+                    <Border Margin="0,0,10,0" Visibility="{Binding MainModel.HasSelectedModels, Converter={StaticResource boolToVisCol}}" Background="SeaGreen" CornerRadius="6" Height="24" Padding="6,0,6,0">
                         <StackPanel Orientation="Horizontal">
                             <Label FontSize="10" Content="{lex:Loc Search.Navigation.Models}"></Label>
                             <Label FontSize="12" Content="{Binding MainModel.SelectedModelsCount}"></Label>
@@ -120,7 +120,7 @@
                             </Button>
                         </StackPanel>
                     </Border>
-                    <Border Visibility="{Binding MainModel.HasSelectedAlbums, Converter={StaticResource boolToVisCol}}" Background="SeaGreen" CornerRadius="6" Height="24" Padding="6,0,6,0">
+                    <Border Margin="0,0,10,0" Visibility="{Binding MainModel.HasSelectedAlbums, Converter={StaticResource boolToVisCol}}" Background="SeaGreen" CornerRadius="6" Height="24" Padding="6,0,6,0">
                         <StackPanel Orientation="Horizontal">
                             <Label FontSize="10">Albums:</Label>
                             <Label FontSize="12" Content="{Binding MainModel.SelectedAlbumsCount}"></Label>
@@ -129,6 +129,16 @@
                             </Button>
                         </StackPanel>
                     </Border>
+                    <Border Margin="0,0,10,0" Visibility="{Binding MainModel.HasSelectedTags, Converter={StaticResource boolToVisCol}}" Background="SeaGreen" CornerRadius="6" Height="24" Padding="6,0,6,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Label FontSize="10">Tags:</Label>
+                            <Label FontSize="12" Content="{Binding MainModel.SelectedTagsCount}"></Label>
+                            <Button Style="{StaticResource StaticButton}" Command="{Binding MainModel.ClearTagsCommand}">
+                                <fa:FontAwesome FontSize="10" Icon="Close"></fa:FontAwesome>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+
                 </StackPanel>
                 <Label Grid.Column="3" FontSize="12" VerticalContentAlignment="Center" Content="{lex:Loc Search.SortBy}"></Label>
                 <ComboBox Height="28" VerticalContentAlignment="Center" ItemsSource="{Binding SortOptions}" DisplayMemberPath="Name" SelectedValue="{Binding SortBy}" SelectedValuePath="Value"  Grid.Column="4" Margin="0,0,10,0">

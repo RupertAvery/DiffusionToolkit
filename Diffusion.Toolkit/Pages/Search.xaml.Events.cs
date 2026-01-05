@@ -43,7 +43,7 @@ namespace Diffusion.Toolkit.Pages
             tagFilterView.IsTicked = true;
 
             ServiceLocator.MainModel.SelectedTagsCount = 1;
-            ServiceLocator.MainModel.HasSelectedAlbums = true;
+            ServiceLocator.MainModel.HasSelectedTags = true;
 
             SearchImages(null);
 
@@ -62,7 +62,7 @@ namespace Diffusion.Toolkit.Pages
         {
             var selectedTags = ServiceLocator.MainModel.Tags.Where(d => d.IsTicked).ToList();
             ServiceLocator.MainModel.SelectedTagsCount = selectedTags.Count;
-            ServiceLocator.MainModel.HasSelectedAlbums = selectedTags.Any();
+            ServiceLocator.MainModel.HasSelectedTags = selectedTags.Any();
 
             SearchImages(null);
         }

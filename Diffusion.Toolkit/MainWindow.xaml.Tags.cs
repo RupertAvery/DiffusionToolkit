@@ -24,7 +24,7 @@ namespace Diffusion.Toolkit
                 var title = GetLocalizedText("Actions.Tags.Create.Title");
 
                 var (result, name) = await ServiceLocator.MessageService.ShowInput(GetLocalizedText("Actions.Tags.Create.Message"), title);
-                
+
                 if (result == PopupResult.OK)
                 {
                     name = name.Trim();
@@ -41,7 +41,7 @@ namespace Diffusion.Toolkit
                 }
             });
 
-          
+
             _model.RenameTagCommand = new AsyncCommand<TagFilterView>(async (tag) =>
             {
                 var title = GetLocalizedText("Actions.Tags.Rename.Title");
@@ -96,7 +96,22 @@ namespace Diffusion.Toolkit
 
         private void LoadTags()
         {
+            HashSet<int> currentSelected = new HashSet<int>();
+            
+            if (_model.Tags is { Count: > 0 })
+            {
+                currentSelected = _model.Tags.Where(d => d.IsTicked).Select(d => d.Id).ToHashSet();
+            }
+
             _model.Tags = ServiceLocator.TagService.GetTagFilterViews();
+
+            if (currentSelected.Any())
+            {
+                foreach (var tag in _model.Tags)
+                {
+                    tag.IsTicked = currentSelected.Contains(tag.Id);
+                }
+            }
         }
 
         public void UpdateTagName(int id, string name)

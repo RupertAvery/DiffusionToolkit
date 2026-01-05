@@ -236,6 +236,18 @@ namespace Diffusion.Toolkit
             ServiceLocator.SearchService.ExecuteSearch();
         }
 
+        private void ClearTags()
+        {
+            foreach (var tag in _model.Tags)
+            {
+                tag.IsTicked = false;
+            }
+            ServiceLocator.MainModel.SelectedTagsCount = 0;
+            ServiceLocator.MainModel.HasSelectedTags = false;
+
+            ServiceLocator.SearchService.ExecuteSearch();
+        }
+
         private void ClearModels()
         {
             foreach (var model in _model.ImageModels)

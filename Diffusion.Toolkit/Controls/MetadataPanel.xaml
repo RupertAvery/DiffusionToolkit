@@ -25,7 +25,7 @@
         </Grid.ContextMenu>
 
         <TabControl Background="Transparent" BorderBrush="{DynamicResource SecondaryBrush}">
-            <TabItem Header="Metadata" Background="Transparent" GotFocus="UIElement_OnGotFocus" HorizontalContentAlignment="Stretch">
+            <TabItem Header="Metadata" Background="Transparent" HorizontalContentAlignment="Stretch">
                 <ScrollViewer Background="Transparent" VerticalScrollBarVisibility="Auto">
                     <StackPanel Background="Transparent">
 
@@ -223,7 +223,7 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="Tags" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
+            <TabItem Header="Tags" Background="Transparent" HorizontalContentAlignment="Stretch">
 
                 <Grid  Background="Transparent" Height="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=TabControl, AncestorLevel=1}}">
                     <Grid.RowDefinitions>
@@ -233,11 +233,18 @@
                         <RowDefinition Height="36"></RowDefinition>
                     </Grid.RowDefinitions>
                     <Grid  Background="Transparent" Grid.Row="0">
-                        <TextBox></TextBox>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TagFilter" KeyDown="TagFilter_OnKeyDown" TextChanged="TagFilter_OnTextChanged"></TextBox>
+                        <Button Style="{StaticResource BorderlessButton}" Grid.Column="1" Click="ClearFilter_OnClick">
+                            <fa:FontAwesome Icon="Close"></fa:FontAwesome>
+                        </Button>
                     </Grid>
                     <Grid  Background="Transparent" Grid.Row="1" ></Grid>
                     <ScrollViewer Grid.Row="1" Background="Transparent" VerticalScrollBarVisibility="Auto">
-                        <ListView ItemsSource="{Binding ImageTags}">
+                        <ListView ItemsSource="{Binding FilteredTags}" PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <CheckBox IsChecked="{Binding IsTicked}" Content="{Binding Name}"></CheckBox>
@@ -263,26 +270,26 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="20"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="AddTagText" Grid.Column="0"></TextBox>
+                        <TextBox x:Name="AddTagText" Grid.Column="0" KeyDown="AddTagText_OnKeyDown"></TextBox>
                         <Button Style="{StaticResource BorderlessButton}" Grid.Column="1" Click="AddTagButton_OnClick">
                             <fa:FontAwesome Icon="Plus"></fa:FontAwesome>
                         </Button>
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Header="Workflow" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
+            <TabItem Header="Workflow" Background="Transparent" HorizontalContentAlignment="Stretch">
                 <ScrollViewer Background="Transparent" VerticalScrollBarVisibility="Auto">
                     <local:ComfyNodeStack Nodes="{Binding Nodes}" Background="Transparent"></local:ComfyNodeStack>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="Raw Metadata" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
+            <TabItem Header="Raw Metadata" Background="Transparent" HorizontalContentAlignment="Stretch">
                 <ScrollViewer Grid.Row="0" Background="Transparent" 
                               VerticalAlignment="Stretch"
                               VerticalScrollBarVisibility="Auto">
                     <TextBox FontFamily="Consolas" Padding="5" TextWrapping="Wrap" IsReadOnly="True" Margin="5" Text="{Binding Workflow}" Foreground="{StaticResource ForegroundBrush}"></TextBox>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Visibility="{Binding HasError, Converter={StaticResource boolToVis}}" Header="Errors" Background="Transparent" GotFocus="UIElement_OnGotFocus"  HorizontalContentAlignment="Stretch">
+            <TabItem Visibility="{Binding HasError, Converter={StaticResource boolToVis}}" Header="Errors" Background="Transparent" HorizontalContentAlignment="Stretch">
                 <Grid>
                     <ScrollViewer Grid.Row="0" Background="Transparent" 
                                   VerticalAlignment="Stretch"
