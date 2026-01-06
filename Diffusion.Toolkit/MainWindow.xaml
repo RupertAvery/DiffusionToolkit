@@ -428,6 +428,10 @@
                     <MenuItem Header="{lex:Loc Menu.Tools.Folders.RemoveExcludedImages}" Command="{Binding RemoveExcludedImagesCommand}"/>
                     <MenuItem Header="{lex:Loc Menu.Tools.Folders.CleanRemovedFolders}" Command="{Binding CleanRemovedFoldersCommand}"/>
                 </MenuItem>
+                <MenuItem Header="{lex:Loc Menu.Tools.Tags}">
+                    <MenuItem Header="{lex:Loc Menu.Tools.Tags.Import}" Command="{Binding ImportTagsCommand}"/>
+                    <MenuItem Header="{lex:Loc Menu.Tools.Tags.Export}" Command="{Binding ExportTagsCommand}"/>
+                </MenuItem>
                 <MenuItem Header="{lex:Loc Menu.Tools.UnavailableFiles}" Command="{Binding UnavailableFilesCommand}"></MenuItem>
             </MenuItem>
             <MenuItem Header="{lex:Loc Menu.Help}">

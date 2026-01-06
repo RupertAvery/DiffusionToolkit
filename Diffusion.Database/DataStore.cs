@@ -140,6 +140,7 @@ public partial class DataStore
 
                 db.CreateTable<Tag>();
                 db.CreateIndex<Tag>(tag => tag.Id);
+                db.CreateIndex<Tag>(tag => tag.Name);
 
                 db.CreateTable<ImageTag>();
                 db.CreateIndex<ImageTag>(tag => new { tag.ImageId, tag.TagId }, true);

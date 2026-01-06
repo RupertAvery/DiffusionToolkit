@@ -10,6 +10,11 @@ public class TagService
 {
     public Action LoadTags;
 
+    public void CreateTags(IEnumerable<string> names)
+    {
+        ServiceLocator.DataStore.CreateTags(names);
+    }
+
     public void CreateTag(string name)
     {
         ServiceLocator.DataStore.CreateTag(name);

@@ -1,15 +1,17 @@
 using Diffusion.Database;
-using System.Windows.Controls;
-using System.Windows;
-using SQLite;
-using System.Collections.Generic;
-using System.Linq;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
-using Diffusion.Database.Models;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using SQLite;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace Diffusion.Toolkit
 {
@@ -18,6 +20,47 @@ namespace Diffusion.Toolkit
         private void InitTags()
         {
             ServiceLocator.TagService.LoadTags = LoadTags;
+
+            _model.ImportTagsCommand = new AsyncCommand<object>(async (o) =>
+            {
+                using var dialog = new CommonOpenFileDialog();
+
+                dialog.Title = GetLocalizedText("Actions.Tags.ImportTags.Title");
+                dialog.Filters.Add(new CommonFileDialogFilter("Text files", "*.txt"));
+                dialog.Filters.Add(new CommonFileDialogFilter("All files", "*.*"));
+                dialog.DefaultExtension = "txt";
+
+                if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+                {
+                    var lines = File.ReadAllLines(dialog.FileName);
+                    var allTags = ServiceLocator.DataStore.GetTags();
+
+                    var tagLookup = allTags.Select(d => d.Name).ToHashSet();
+
+                    var normalizedlines = lines.Select(d => d.Trim()).Distinct().Where(d => d.Length > 0 && !tagLookup.Contains(d));
+
+                    ServiceLocator.TagService.CreateTags(normalizedlines);
+
+                    LoadTags();
+                }
+            });
+
+            _model.ExportTagsCommand = new AsyncCommand<object>(async (o) =>
+            {
+                using var dialog = new CommonSaveFileDialog();
+
+                dialog.Title = GetLocalizedText("Actions.Tags.ExportTags.Title");
+                dialog.Filters.Add(new CommonFileDialogFilter("Text files", "*.txt"));
+                dialog.Filters.Add(new CommonFileDialogFilter("All files", "*.*"));
+                dialog.DefaultExtension = "txt";
+
+                if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+                {
+                    var tags = ServiceLocator.DataStore.GetTags();
+
+                    File.WriteAllLines(dialog.FileName, tags.Select(d => d.Name));
+                }
+            });
 
             _model.CreateTagCommand = new AsyncCommand<object>(async (o) =>
             {
@@ -97,7 +140,7 @@ namespace Diffusion.Toolkit
         private void LoadTags()
         {
             HashSet<int> currentSelected = new HashSet<int>();
-            
+
             if (_model.Tags is { Count: > 0 })
             {
                 currentSelected = _model.Tags.Where(d => d.IsTicked).Select(d => d.Id).ToHashSet();

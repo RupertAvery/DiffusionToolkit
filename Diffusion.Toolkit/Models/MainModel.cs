@@ -569,6 +569,10 @@ public class MainModel : BaseNotify
 
     public ICommand CreateAlbumCommand { get; set; }
 
+    public ICommand ImportTagsCommand { get; set; }
+
+    public ICommand ExportTagsCommand { get; set; }
+
     public ICommand CreateTagCommand { get; set; }
 
     public Action<IAlbumInfo> AddSelectedImagesToAlbum { get; set; }

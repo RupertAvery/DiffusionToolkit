@@ -2,6 +2,7 @@
 using Diffusion.Common.Query;
 using Diffusion.Database.Models;
 using System;
+using System.Reflection.Emit;
 using System.Text;
 using System.Xml.Linq;
 
@@ -46,6 +47,33 @@ namespace Diffusion.Database
             lock (_lock)
             {
                 command.ExecuteNonQuery();
+            }
+
+            db.Close();
+        }
+
+        public void CreateTags(IEnumerable<string> names)
+        {
+            using var db = OpenConnection();
+
+            lock (_lock)
+            {
+                db.BeginTransaction();
+                try
+                {
+                    var command = db.CreateCommand("INSERT INTO Tag (Name) VALUES (@Name)");
+                    foreach (var name in names)
+                    {
+                        command.Bind("@Name", name);
+                        command.ExecuteNonQuery();
+                    }
+                    db.Commit();
+                }
+                catch (Exception e)
+                {
+                    db.Rollback();
+                    throw;
+                }
             }
 
             db.Close();
@@ -101,7 +129,7 @@ namespace Diffusion.Database
         {
             using var db = OpenConnection();
 
-            var command = db.CreateCommand("REPLACE INTO ImageTag (ImageId, TagId) VALUES (?,?)", id, tagId);
+            var command = db.CreateCommand("INSERT OR IGNORE INTO ImageTag (ImageId, TagId) VALUES (?,?)", id, tagId);
 
             lock (_lock)
             {
@@ -136,7 +164,7 @@ namespace Diffusion.Database
                 values.Add($"({id}, {tagId})");
             }
 
-            var command = db.CreateCommand($"REPLACE INTO ImageTag (ImageId, TagId) VALUES {string.Join(", ", values)}");
+            var command = db.CreateCommand($"INSERT OR IGNORE INTO ImageTag (ImageId, TagId) VALUES {string.Join(", ", values)}");
 
             lock (_lock)
             {
