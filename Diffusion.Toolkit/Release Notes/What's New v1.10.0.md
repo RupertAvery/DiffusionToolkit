@@ -20,22 +20,21 @@ A new setting has been added: **Settings > Video > Loop Video**. This controls w
 
 If you have a ComfyUI video that has metadata that can't be read, please raise an issue on Github and attach the sample file
 
-You can now filter by **Type** (Image, Video) using the Filter popup, or by adding the query `type: image` or `type: video`
+You can now filter by **Type** (Image, Video) using the Filter popup, or by adding the query `type: image` or `type: video`.
 
 ## Custom Tags
 
-You can now create custom tags and add them to media in the **Metadata** panel. Open the **Tags** tab in any Metadata panel, 
-and begin by adding a Tag in the textbox at the bottom. Click the + button to add the tag to the list of available tags. 
-Place a check next to the tag name to add the tag to the selected media.
+You can now create custom tags and add them to media in the **Metadata** panel. Open the **Tags** tab in any Metadata panel, and begin by entering the name of your new tag in the textbox at the bottom. Click the + button or press Enter to add the tag to the list of available tags. Place a check next to the tag name to add the tag to the selected media.
 
-If multiple media are selected, the tags will be applied to all the selected media.
+If multiple media are selected, the tag will be applied to all the selected media.
 
-You can also filter by one or more tags in the Tags filter panel on the left. Above the list of Tags you will see the options AND and OR. 
-This determines how multiple selected tags will affect the filter.
+You can also filter by one or more tags in the Tags filter panel on the left. Above the list of Tags you will see the options **AND** and **OR**. This determines how multiple selected tags will affect the filter.
 
-You can add, rename and remove tags in the Tags filter panel.
+You can add tags in the Tags filter panel by clicking on the + button in the Tag filter header, and rename or remove tags by right-clicking a tag in the list.
 
-The Tags filter should be visible. You can toggle it via **Menu > View > Tags**
+You can toggle the visibility of the Tags filter panel it via the menu in **View > Tags**
+
+You can import and export tags from the menu  in **Tools > Tags**. The import file must be a text file containing one tag on each line. Existing tags and duplicates will be ignored. Tags will be trimmed of whitespace.
 
 ## Others
 
