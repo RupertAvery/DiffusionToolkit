@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Diffusion.Common;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Themes;
 
@@ -20,6 +21,9 @@ public class ThumbnailIcons : FrameworkElement
     private static BitmapImage? _lightTrashIcon;
     private static BitmapImage? _darkHideIcon;
     private static BitmapImage? _lightHideIcon;
+
+    private static BitmapImage? _darkVideoIcon;
+    private static BitmapImage? _lightVideoIcon;
 
     private static Typeface _typeFace = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
     private static Typeface _typeFaceBoldCondensed = new Typeface(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Bold, FontStretches.Condensed);
@@ -42,6 +46,7 @@ public class ThumbnailIcons : FrameworkElement
                     case nameof(ImageEntry.ForDeletion):
                     case nameof(ImageEntry.Favorite):
                     case nameof(ImageEntry.Rating):
+                    case nameof(ImageEntry.Type):
                         var thumb = d as ThumbnailIcons;
                         thumb.InvalidateVisual();
                         break;
@@ -84,6 +89,10 @@ public class ThumbnailIcons : FrameworkElement
         _darkHideIcon = new BitmapImage(darkHideIconUri);
         Uri lightHideIconUri = GetUri("/Icons/Light/hide-24.png");
         _lightHideIcon = new BitmapImage(lightHideIconUri);
+        Uri darkVideoIconUri = GetUri("/Icons/Dark/video-24.png");
+        _darkVideoIcon = new BitmapImage(darkVideoIconUri);
+        Uri lightVideoIconUri = GetUri("/Icons/Light/video-24.png");
+        _lightVideoIcon = new BitmapImage(lightVideoIconUri);
         Uri errorIconUri = GetUri("/Icons/error-32.png");
         _errorIcon = new BitmapImage(errorIconUri);
     }
@@ -115,6 +124,21 @@ public class ThumbnailIcons : FrameworkElement
         if (Data.HasError)
         {
             drawingContext.DrawImage(_errorIcon, new Rect(new Point(x, y), new Size(24, 24)));
+            x += xOffset;
+        }
+
+
+
+        if (Data.Type == ImageType.Video)
+        {
+            if (ThemeManager.CurrentTheme == "Dark")
+            {
+                drawingContext.DrawImage(_darkVideoIcon, new Rect(new Point(x, y), new Size(24, 24)));
+            }
+            else if (ThemeManager.CurrentTheme == "Light")
+            {
+                drawingContext.DrawImage(_lightVideoIcon, new Rect(new Point(x, y), new Size(24, 24)));
+            }
             x += xOffset;
         }
 

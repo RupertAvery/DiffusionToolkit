@@ -179,7 +179,11 @@ public class ImageEntry : BaseNotify
         set => SetField(ref field, value);
     }
 
-    public ImageType Type { get; set; }
+    public ImageType Type
+    {
+        get;
+        set => SetField(ref field, value);
+    }
 
     public void Clear()
     {
