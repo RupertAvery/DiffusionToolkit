@@ -66,6 +66,7 @@
     <None Remove="Localization\default.json" />
     <None Remove="Localization\es-ES.json" />
     <None Remove="Localization\fr-FR.json" />
+    <None Remove="Localization\zh-CN.json" />
     <None Remove="Release Notes\What%27s New v1.0.md" />
     <None Remove="Release Notes\What%27s New v1.1.md" />
     <None Remove="Release Notes\What%27s New v1.10.0.md" />
@@ -101,6 +102,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Localization\fr-FR.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Localization\zh-CN.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="Localization\default.json">
