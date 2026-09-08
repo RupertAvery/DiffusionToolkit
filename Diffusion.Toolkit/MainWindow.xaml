@@ -4,12 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Diffusion.Toolkit"
+        xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
         xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
         xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
         xmlns:fa="http://schemas.fontawesome.io/icons/"
         xmlns:common="clr-namespace:Diffusion.Toolkit.Common"
         xmlns:lex="http://wpflocalizeextension.codeplex.com"
-        xmlns:localization="clr-namespace:Diffusion.Toolkit.Localization"
         xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
         lex:LocalizeDictionary.Provider="{StaticResource LocalizationProvider}"
         lex:LocalizeDictionary.Separation="."
@@ -18,10 +18,10 @@
         ResizeMode="CanResizeWithGrip"
         Style="{StaticResource BorderlessWindowStyle}"
         d:DataContext="{d:DesignInstance models:MainModel, IsDesignTimeCreatable=True}"
-        MenuWidth="300"
         TitleWidth="*"
-        ExtraButtonWidth="90"
-        Title="Diffusion Toolkit" Height="450" Width="800">
+        Title="Diffusion Toolkit"
+        TitleTextVisibility="Hidden"
+        Height="450" Width="800">
     <Window.InputBindings>
         <common:BareKeyBinding Key="I" Command="{Binding ToggleInfoCommand}"></common:BareKeyBinding>
         <common:BareKeyBinding Key="B" Command="{Binding ToggleNSFWBlurCommand}"></common:BareKeyBinding>
@@ -31,17 +31,17 @@
         <KeyBinding Key="F4" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Key="F5" Command="{Binding Refresh}"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="F5" Command="{Binding Refresh}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D1" Command="{Binding ShowFolders}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D2" Command="{Binding ShowAlbums}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D3" Command="{Binding ShowSearch}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D4" Command="{Binding ShowFavorite}"></KeyBinding>
-        <KeyBinding Modifiers="Control" Key="D5" Command="{Binding ShowMarked}"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="D1" Command="{Binding GotoUrl}" CommandParameter="search/#folders"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="D2" Command="{Binding GotoUrl}" CommandParameter="search/#images"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="D3" Command="{Binding GotoUrl}" CommandParameter="search/#favorites"></KeyBinding>
+        <KeyBinding Modifiers="Control" Key="D4" Command="{Binding GotoUrl}" CommandParameter="search/#deleted"></KeyBinding>
         <KeyBinding Modifiers="Control" Key="R" Command="{Binding Rescan}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="A" Command="{Binding ToggleActualSize}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="P" Command="{Binding TogglePreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="F" Command="{Binding ToggleFitToPreview}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="N" Command="{Binding ToggleHideNSFW}"></KeyBinding>
         <KeyBinding Modifiers="Control+Shift" Key="T" Command="{Binding ToggleAutoAdvance}"></KeyBinding>
+        <KeyBinding Key="F6" Command="{Binding FocusSearch}" Gesture="F6"></KeyBinding>
     </Window.InputBindings>
     <Window.Resources>
         <ResourceDictionary>
@@ -49,29 +49,319 @@
             <converters:ThumbnailSizeCheckedConverter x:Key="thumbSizeChecked"></converters:ThumbnailSizeCheckedConverter>
             <converters:StringMatchConverter x:Key="StringMatchConverter"></converters:StringMatchConverter>
             <converters:PopoutIconConverter x:Key="PopoutIconConverter"></converters:PopoutIconConverter>
+            <converters:ThumbnailViewModeConverter x:Key="ThumbnailViewModeConverter"></converters:ThumbnailViewModeConverter>
+            <converters:IfLessThanConverter x:Key="IfLessThanConverter"></converters:IfLessThanConverter>
         </ResourceDictionary>
     </Window.Resources>
+    <local:BorderlessWindow.TitleContent>
+        <Grid Background="{x:Null}">
+            <Grid Background="{x:Null}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Background="{x:Null}" Grid.Column="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Width, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}, Converter={StaticResource IfLessThanConverter}, ConverterParameter=780}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Hidden"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Grid Background="{x:Null}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="310"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="{x:Null}" Grid.Column="1" Margin="0,10,0,0" BorderThickness="1" CornerRadius="10" BorderBrush="{DynamicResource SecondaryBrush}" Width="300">
+                            <Grid Background="Transparent" MouseDown="QueryBar_OnMouseDown">
+                                <Label Foreground="{DynamicResource ForegroundBrush}" HorizontalContentAlignment="Center">Diffusion Toolkit</Label>
+                                <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Width="12" ToolTip="{lex:Loc QueryBar.Query.ToolTip}" PreviewMouseDown="QueryBar_OnMouseDown">
+                                    <fa:ImageAwesome.Style>
+                                        <Style TargetType="fa:ImageAwesome">
+                                            <Setter Property="Opacity" Value="0.2"></Setter>
+                                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasQuery}" Value="True">
+                                                    <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:ImageAwesome.Style>
+                                </fa:ImageAwesome>
+
+                                <fa:ImageAwesome  HorizontalAlignment="Right" Margin="0,0,10,0" Icon="Close" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Clear.ToolTip}" MouseDown="QueryClear_OnMouseDown">
+                                    <fa:ImageAwesome.Style>
+                                        <Style TargetType="fa:ImageAwesome">
+                                            <Setter Property="Opacity" Value="0.2"></Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:ImageAwesome.Style>
+                                </fa:ImageAwesome>
+                            </Grid>
+                        </Border>
+                        <StackPanel Margin="5,10,0,0"  Grid.Column="2" Orientation="Horizontal">
+                            <fa:ImageAwesome Margin="0,0,0,0" Icon="Refresh" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Refresh.ToolTip}" MouseDown="QueryRefresh_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <fa:ImageAwesome Margin="10,0,0,0" Icon="Sliders" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Settings.ToolTip}" MouseDown="QuerySettings_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <fa:ImageAwesome Margin="10,0,0,0" Icon="Filter"
+                                             Width="12" ToolTip="{lex:Loc QueryBar.Filter.ToolTip}"
+                                             MouseDown="QueryFilter_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasFilter}" Value="True">
+                                                <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </DataTrigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <fa:ImageAwesome Margin="10,0,10,0" Icon="Question" Foreground="{DynamicResource ForegroundBrush}" Width="10" ToolTip="{lex:Loc QueryBar.Help.ToolTip}" MouseDown="QueryHelp_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+
+                <Grid Background="{x:Null}" Grid.Column="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Visibility" Value="Hidden"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Width, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}, Converter={StaticResource IfLessThanConverter}, ConverterParameter=780}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Visible"></Setter>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Width, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}, Converter={StaticResource IfLessThanConverter}, ConverterParameter=620}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Hidden"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Grid Background="{x:Null}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Background="{x:Null}" Grid.Column="1" Margin="0,10,0,0" BorderThickness="1" CornerRadius="10" BorderBrush="{DynamicResource SecondaryBrush}" Width="200">
+                            <Grid Background="Transparent" MouseDown="QueryBar_OnMouseDown">
+                                <Label Foreground="{DynamicResource ForegroundBrush}" HorizontalContentAlignment="Center">Diffusion Toolkit</Label>
+                                <fa:ImageAwesome HorizontalAlignment="Left" Margin="10,0,0,0" Icon="Search" Width="12" ToolTip="{lex:Loc QueryBar.Query.ToolTip}" PreviewMouseDown="QueryBar_OnMouseDown">
+                                    <fa:ImageAwesome.Style>
+                                        <Style TargetType="fa:ImageAwesome">
+                                            <Setter Property="Opacity" Value="0.2"></Setter>
+                                            <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasQuery}" Value="True">
+                                                    <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:ImageAwesome.Style>
+                                </fa:ImageAwesome>
+
+                                <fa:ImageAwesome  HorizontalAlignment="Right" Margin="0,0,10,0" Icon="Close" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Clear.ToolTip}" MouseDown="QueryClear_OnMouseDown">
+                                    <fa:ImageAwesome.Style>
+                                        <Style TargetType="fa:ImageAwesome">
+                                            <Setter Property="Opacity" Value="0.2"></Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="1"></Setter>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </fa:ImageAwesome.Style>
+                                </fa:ImageAwesome>
+                            </Grid>
+                        </Border>
+                        <StackPanel Margin="5,10,0,0"  Grid.Column="2" Orientation="Horizontal">
+                            <fa:ImageAwesome Margin="0,0,0,0" Icon="Refresh" Foreground="{DynamicResource ForegroundBrush}" Width="12" ToolTip="{lex:Loc QueryBar.Refresh.ToolTip}" MouseDown="QueryRefresh_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                            <fa:ImageAwesome Margin="10,0,0,0" Icon="Filter"
+                                             Width="12" ToolTip="{lex:Loc QueryBar.Filter.ToolTip}"
+                                             MouseDown="QueryFilter_OnMouseDown">
+                                <fa:ImageAwesome.Style>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.2"></Setter>
+                                        <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasFilter}" Value="True">
+                                                <Setter Property="Foreground" Value="LawnGreen"></Setter>
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </DataTrigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="{DynamicResource ForegroundBrush}"></Setter>
+                                                <Setter Property="Opacity" Value="1"></Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Style>
+                            </fa:ImageAwesome>
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+
+            </Grid>
+            <Grid Background="{x:Null}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="150"/>
+                </Grid.ColumnDefinitions>
+                <Grid Background="{x:Null}" Grid.Column="1" Margin="0,10,0,0">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Width, RelativeSource={RelativeSource AncestorType=local:BorderlessWindow}, Converter={StaticResource IfLessThanConverter}, ConverterParameter=1090}" Value="{StaticResource TrueValue}">
+                                    <Setter Property="Visibility" Value="Hidden"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleNotificationsCommand}">
+                            <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.ShowNotifications}" Icon="Bell" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Resources>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.5"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding ShowNotifications}" Value="{StaticResource TrueValue}">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Resources>
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Style="{StaticResource StaticButton}" Margin="0,0,15,2" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleTagsCommand}">
+                            <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.ShowTags}" Icon="Star" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Resources>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.5"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding ShowTags}" Value="{StaticResource TrueValue}">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Resources>
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Style="{StaticResource StaticButton}" Margin="0,0,15,0" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding ToggleAutoAdvance}">
+                            <fa:ImageAwesome ToolTip="{lex:Loc Common.Controls.AutoAdvance}" Icon="ArrowRight" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <fa:ImageAwesome.Resources>
+                                    <Style TargetType="fa:ImageAwesome">
+                                        <Setter Property="Opacity" Value="0.5"></Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </Trigger>
+                                            <DataTrigger Binding="{Binding AutoAdvance}" Value="{StaticResource TrueValue}">
+                                                <Setter Property="Opacity" Value="1.0"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </fa:ImageAwesome.Resources>
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="0,0,15,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
+                            <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Button Margin="0,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
+                            <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+    </local:BorderlessWindow.TitleContent>
 
     <Grid x:Name="Host">
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="28"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Menu Grid.Row="0">
+        <Menu x:Name="Menu" Grid.Row="0">
             <MenuItem Header="{lex:Loc Menu.File}">
                 <MenuItem Header="{lex:Loc Menu.File.Close}" Command="{Binding CloseCommand}"/>
-            </MenuItem>
-            <MenuItem Header="{lex:Loc Menu.Edit}">
-                <!--<MenuItem Header="_Quick Copy" Command="{Binding QuickCopy}"/>
-                <Separator></Separator>-->
-                <MenuItem x:Name="EditMenu"  Header="{lex:Loc Menu.Edit.Settings}" Command="{Binding SettingsCommand}"/>
-                <Separator></Separator>
-                <MenuItem Header="{lex:Loc Menu.Edit.EmptyRecycleBin}" Command="{Binding RemoveMarked}"/>
-                <MenuItem Header="{lex:Loc Menu.Edit.RebuildMetadata}" Command="{Binding Rebuild}"/>
-                <MenuItem Header="{lex:Loc Menu.Edit.ReloadModels}" Command="{Binding ReloadHashes}"/>
-                <MenuItem Header="{lex:Loc Menu.Edit.DownloadCivitaiModels}" Command="{Binding DownloadCivitai}"/>
             </MenuItem>
             <MenuItem Header="{lex:Loc Menu.View}">
                 <MenuItem Header="{lex:Loc Menu.View.Filter}" Command="{Binding ShowFilterCommand}" InputGestureText="CTRL+F"/>
@@ -94,6 +384,8 @@
                 <MenuItem Header="{lex:Loc Menu.View.Folders}" IsChecked="{Binding Settings.NavigationSection.ShowFolders}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Folders"/>
                 <MenuItem Header="{lex:Loc Menu.View.Models}" IsChecked="{Binding Settings.NavigationSection.ShowModels}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Models"/>
                 <MenuItem Header="{lex:Loc Menu.View.Albums}" IsChecked="{Binding Settings.NavigationSection.ShowAlbums}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Albums"/>
+                <MenuItem Header="{lex:Loc Menu.View.Tags}" IsChecked="{Binding Settings.NavigationSection.ShowTags}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Tags"/>
+                <MenuItem Header="{lex:Loc Menu.View.Queries}" IsChecked="{Binding Settings.NavigationSection.ShowQueries}" Command="{Binding ToggleVisibilityCommand}" CommandParameter="Navigation.Queries"/>
                 <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.FitToPreview}" IsChecked="{Binding FitToPreview}" Command="{Binding ToggleFitToPreview}"  InputGestureText="Ctrl+Shift+F"/>
                 <MenuItem Header="{lex:Loc Menu.View.ActualSize}" IsChecked="{Binding ActualSize}" Command="{Binding ToggleActualSize}"  InputGestureText="Ctrl+Shift+A"/>
@@ -104,98 +396,54 @@
                 <MenuItem Header="{lex:Loc Menu.View.TogglePreview}" Command="{Binding TogglePreview}" InputGestureText="Ctrl+Shift+P"/>
                 <MenuItem Header="{lex:Loc Menu.View.PopoutPreview}" Command="{Binding PoputPreview}"/>
                 <Separator/>
+                <MenuItem Header="{lex:Loc Menu.View.ShowFilenames}" IsChecked="{Binding Settings.ShowFilenames}" Command="{Binding ToggleFilenamesCommand}"/>
+                <Separator/>
+                <MenuItem Header="{lex:Loc Menu.View.ClassicThumbnails}" IsChecked="{Binding ThumbnailViewMode, Converter={StaticResource ThumbnailViewModeConverter}, ConverterParameter={x:Static controls:ThumbnailViewMode.Classic}}" Command="{Binding ToggleThumbnailViewModeCommand}"  CommandParameter="{x:Static controls:ThumbnailViewMode.Classic}"/>
+                <MenuItem Header="{lex:Loc Menu.View.CompactThumbnails}" IsChecked="{Binding ThumbnailViewMode, Converter={StaticResource ThumbnailViewModeConverter}, ConverterParameter={x:Static controls:ThumbnailViewMode.Compact}}" Command="{Binding ToggleThumbnailViewModeCommand}"  CommandParameter="{x:Static controls:ThumbnailViewMode.Compact}"/>
+                <Separator/>
                 <MenuItem Header="{lex:Loc Menu.View.ResetLayout}" Command="{Binding ResetLayout}"/>
             </MenuItem>
             <!--<MenuItem Header="{lex:Loc Menu.Albums}">
                 <MenuItem Header="{lex:Loc Menu.Albums.AlbumPane}" IsChecked="{Binding ShowAlbumPanel}" Command="{Binding ToggleAlbum}" InputGestureText="Ctrl+Shift+A"/>
                 <MenuItem Header="{lex:Loc Menu.Albums.Sort}" Click="SortAlbums_OnClick"/>
             </MenuItem>-->
-            <MenuItem Header="{lex:Loc Menu.Tools}">
-                <MenuItem Header="{lex:Loc Menu.Tools.SearchResults}">
-                    <!--<MenuItem Header="Add all matching files to Album" Command="{Binding AddMatchingToAlbum}"/>
-                    <Separator></Separator>-->
-                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.AddAllToAlbum}" Command="{Binding AddAllToAlbum}"/>
-                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.MarkAllForDeletion}" Command="{Binding MarkAllForDeletion}"/>
-                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.UnmarkAllForDeletion}" Command="{Binding UnmarkAllForDeletion}"/>
-                    <Separator></Separator>
-                    <MenuItem Header="{lex:Loc Menu.Tools.SearchResults.RemoveMatching}" Command="{Binding RemoveMatching}"/>
-                </MenuItem>
+            <MenuItem Header="{lex:Loc Menu.Search}">
+                <MenuItem Header="{lex:Loc Menu.Search.Save}" Command="{Binding SaveQuery}"/>
                 <Separator></Separator>
-                <MenuItem Header="{lex:Loc Menu.Tools.AutoTagNSFW}" Command="{Binding AutoTagNSFW}"/>
+                <MenuItem Header="{lex:Loc Menu.Search.AutoTagNSFW}" Command="{Binding AutoTagNSFW}"/>
+                <MenuItem Header="{lex:Loc Menu.Search.AddAllToAlbum}" Command="{Binding AddAllToAlbum}"/>
+                <MenuItem Header="{lex:Loc Menu.Search.MarkAllForDeletion}" Command="{Binding MarkAllForDeletion}"/>
+                <MenuItem Header="{lex:Loc Menu.Search.UnmarkAllForDeletion}" Command="{Binding UnmarkAllForDeletion}"/>
+                <MenuItem Header="{lex:Loc Menu.Search.Rescan}" Command="{Binding RescanResults}"/>
+                <Separator></Separator>
+                <MenuItem Header="{lex:Loc Menu.Search.RemoveMatching}" Command="{Binding RemoveMatching}"/>
+            </MenuItem>
+            <MenuItem Header="{lex:Loc Menu.Tools}">
+                <MenuItem Header="{lex:Loc Menu.Tools.RebuildMetadata}" Command="{Binding Rebuild}"/>
+                <MenuItem Header="{lex:Loc Menu.Tools.ReloadModels}" Command="{Binding ReloadHashes}"/>
+                <MenuItem Header="{lex:Loc Menu.Tools.DownloadCivitaiModels}" Command="{Binding DownloadCivitai}"/>
                 <Separator></Separator>
                 <MenuItem Header="{lex:Loc Menu.Tools.Folders}">
                     <MenuItem Header="{lex:Loc Menu.Tools.Folders.FixMissingImages}" Command="{Binding FixFoldersCommand}"/>
                     <MenuItem Header="{lex:Loc Menu.Tools.Folders.RemoveExcludedImages}" Command="{Binding RemoveExcludedImagesCommand}"/>
                     <MenuItem Header="{lex:Loc Menu.Tools.Folders.CleanRemovedFolders}" Command="{Binding CleanRemovedFoldersCommand}"/>
                 </MenuItem>
+                <MenuItem Header="{lex:Loc Menu.Tools.Tags}">
+                    <MenuItem Header="{lex:Loc Menu.Tools.Tags.Import}" Command="{Binding ImportTagsCommand}"/>
+                    <MenuItem Header="{lex:Loc Menu.Tools.Tags.Export}" Command="{Binding ExportTagsCommand}"/>
+                </MenuItem>
                 <MenuItem Header="{lex:Loc Menu.Tools.UnavailableFiles}" Command="{Binding UnavailableFilesCommand}"></MenuItem>
             </MenuItem>
             <MenuItem Header="{lex:Loc Menu.Help}">
-                <MenuItem Header="{lex:Loc Menu.Help.About}" Command="{Binding AboutCommand}"/>
+                <!--<MenuItem Header="{lex:Loc Menu.Help.About}" Command="{Binding AboutCommand}"/>-->
+                <MenuItem Header="{lex:Loc Menu.Help.ReleaseNotes}" Command="{Binding ReleaseNotesCommand}"/>
                 <MenuItem Header="{lex:Loc Menu.Help.GettingStarted}" Command="{Binding HelpCommand}" InputGestureText="F1"/>
                 <Separator></Separator>
                 <MenuItem Header="{lex:Loc Menu.Help.CheckForUpdates}" Click="MenuItem_OnClick"/>
             </MenuItem>
         </Menu>
 
-        <Grid Background="{x:Null}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="150"/>
-            </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal" Grid.Column="1">
-                <Button Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding TogglePreview}">
-                    <fa:ImageAwesome ToolTip="Show/Hide Preview" Icon="Columns" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    </fa:ImageAwesome>
-                </Button>
-                <Button Margin="15,0,0,0" Style="{DynamicResource BorderlessButton}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Command="{Binding PoputPreview}">
-                    <fa:ImageAwesome ToolTip="Pop out Preview" Icon="WindowRestore" Width="16"  Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    </fa:ImageAwesome>
-                </Button>
-            </StackPanel>
-        </Grid>
-        <!--<ToolBar Grid.Row="1" Height="32" OverflowMode="Never">
-            <Button Command="{Binding ShowFolders}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button Command="{Binding ShowAlbums}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Albums (Ctrl+2)" Icon="FilePhotoOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button Command="{Binding ShowSearch}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Search (Ctrl+3)" Icon="Search" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button Command="{Binding ShowFavorite}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Favorites (Ctrl+4)" Icon="HeartOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button  Command="{Binding ShowMarked}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Button  Command="{Binding ShowPromptsCommand}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Prompts (Ctrl+6)" Icon="FileTextOutline" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Separator></Separator>
-            <Button Command="{Binding Rescan}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Separator></Separator>
-            <Button Command="{Binding ShowModels}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Models" Icon="PuzzlePiece" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-            <Separator></Separator>
-            <Button Command="{Binding Settings}">
-                <fa:ImageAwesome MinWidth="32" ToolTip="Settings" Icon="Gear" Width="28" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                </fa:ImageAwesome>
-            </Button>
-        </ToolBar>-->
+
 
         <Grid Grid.Row="1">
             <DockPanel>
@@ -203,52 +451,53 @@
                     <StackPanel Orientation="Vertical">
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Folders}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFolders}">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#folders">
                             <fa:ImageAwesome ToolTip="Folders (Ctrl+1)" Icon="FolderOutlinepenOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
-                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Albums}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowAlbums}">
-                            <fa:ImageAwesome ToolTip="Albums (Ctrl+2)" Icon="FilePhotoOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
-                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Diffusions}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowSearch}">
-                            <fa:ImageAwesome ToolTip="Search (Ctrl+3)" Icon="Search" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#images">
+                            <fa:ImageAwesome ToolTip="Search (Ctrl+2)" Icon="Search" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Favorites}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowFavorite}">
-                            <fa:ImageAwesome ToolTip="Favorites (Ctrl+4)" Icon="HeartOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#favorites">
+                            <fa:ImageAwesome ToolTip="Favorites (Ctrl+3)" Icon="HeartOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
+                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=For Deletion}"
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="search/#deleted">
+                            <fa:ImageAwesome ToolTip="For Deletion (Ctrl+4)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            </fa:ImageAwesome>
+                        </Button>
+                        <Separator BorderThickness="1" BorderBrush="{DynamicResource SecondaryBrush}"></Separator>
+                        <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Prompts}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowPromptsCommand}">
-                            <fa:ImageAwesome ToolTip="Prompts (Ctrl+6)" Icon="FileTextOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="prompts">
+                            <fa:ImageAwesome ToolTip="Prompts" Icon="FileTextOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                         <Button Margin="0,5,0,10" Height="16" Width="24" 
                                 behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Models}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowModels}">
+                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="models">
                             <fa:ImageAwesome ToolTip="Models" Icon="PuzzlePiece" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
+                        <Grid>
+                            <Button Margin="0,5,0,10" Height="16" Width="24" 
+                                    behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Settings}"
+                                    Style="{StaticResource BorderlessToolbarButton}" Command="{Binding GotoUrl}" CommandParameter="settings">
+                                <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                </fa:ImageAwesome>
+                            </Button>
+                            <Ellipse Fill="Red" Width="8" Height="8" Margin="15,0,0,15" Visibility="{Binding IsSettingsDirty, Converter={StaticResource boolToVisCol}}"></Ellipse>
+                        </Grid>
+                        <Separator BorderThickness="1" BorderBrush="{DynamicResource SecondaryBrush}"></Separator>
                         <Button Margin="0,5,0,10" Height="16" Width="24" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding Rescan}">
                             <fa:ImageAwesome ToolTip="Scan folders for new images (Ctrl+R)" Icon="Refresh" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
-                        <Button Margin="0,5,0,10" Height="16" Width="24" Style="{StaticResource BorderlessToolbarButton}" Command="{Binding SettingsCommand}">
-                            <fa:ImageAwesome ToolTip="Settings" Icon="Gear" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
-                            </fa:ImageAwesome>
-                        </Button>
-                        <Button Margin="0,5,0,10" Height="16" Width="24" 
-                                behaviors:DTBehaviors.IsSelected="{Binding ActiveView, Converter={StaticResource StringMatchConverter}, ConverterParameter=Recycle Bin}"
-                                Style="{StaticResource BorderlessToolbarButton}" Command="{Binding ShowMarked}">
-                            <fa:ImageAwesome ToolTip="Recycle bin (Ctrl+5)" Icon="TrashOutline" Width="16" Foreground="{DynamicResource ForegroundBrush}" VerticalAlignment="Center" HorizontalAlignment="Center">
                             </fa:ImageAwesome>
                         </Button>
                     </StackPanel>
@@ -257,12 +506,13 @@
             </DockPanel>
         </Grid>
 
-        <Grid Grid.Row="2" ColumnSpan="3">
+
+        <Grid Grid.Row="2" ColumnSpan="3" Visibility="{Binding HasPendingTask, Converter={StaticResource boolToVisCol}}" >
             <DockPanel HorizontalAlignment="Stretch">
-                <Button DockPanel.Dock="Right"  Width="50" Visibility="{Binding IsBusy, Converter={StaticResource boolToVisCol}}" Command="{Binding CancelCommand}">Cancel</Button>
-                <Grid DockPanel.Dock="Top" HorizontalAlignment="Stretch">
+                <Button Background="Red" Visibility="{Binding IsBusy, Converter={StaticResource boolToVisCol}}" Foreground="White" FontWeight="DemiBold" DockPanel.Dock="Left"  Width="120" Command="{Binding CancelCommand}" Content="{lex:Loc Common.Buttons.Cancel}"></Button>
+                <Grid DockPanel.Dock="Right" HorizontalAlignment="Stretch">
                     <ProgressBar Value="{Binding CurrentProgress}" Maximum="{Binding TotalProgress}" HorizontalAlignment="Stretch"></ProgressBar>
-                    <Label Content="{Binding Status}"></Label>
+                    <Label VerticalContentAlignment="Center" Content="{Binding Status}"></Label>
                 </Grid>
             </DockPanel>
         </Grid>
@@ -270,7 +520,7 @@
         <Grid RowSpan="4" x:Name="PopupHost" Visibility="Hidden"  Background="#000000" Opacity="0.5">
         </Grid>
 
-        <Popup  x:Name="ToastPopup"  Width="300" Height="100" Placement="Custom"  
+        <Popup x:Name="ToastPopup"  Width="300" Height="100" Placement="Custom"  
                 PlacementTarget="{Binding ElementName=Host}"
                 CustomPopupPlacementCallback="GetPopupPlacement"
                 AllowsTransparency="True" PopupAnimation="Fade"
@@ -289,8 +539,29 @@
                     </Border.Effect>
                 </Border>
                 <Grid Background="Transparent" Margin="10,25,10,20" IsHitTestVisible="False">
-                    <TextBlock Foreground="{DynamicResource ForegroundBrush}" TextAlignment="Center" TextWrapping="WrapWithOverflow" x:Name="ToastMessage" Width="280" Padding="10"></TextBlock>
+                    <TextBlock Foreground="{DynamicResource ForegroundBrush}" TextAlignment="Center" TextWrapping="WrapWithOverflow" Text="{Binding ToastMessage}" Width="280" Padding="10"></TextBlock>
                 </Grid>
+            </Grid>
+        </Popup>
+
+        <Popup x:Name="QueryPopup" Width="900" Height="50" Placement="Custom" PlacementTarget="{Binding ElementName=Host}"
+               CustomPopupPlacementCallback="GetQueryPopupPlacement"
+               AllowsTransparency="True" PopupAnimation="Fade"
+               IsOpen="False">
+            <Grid Background="Transparent">
+                <Border         
+                    BorderBrush="{DynamicResource SecondaryBrush}"
+                    Background="{DynamicResource PrimaryBrush}"
+                    BorderThickness="2"
+                    CornerRadius="5"
+                    Opacity="1"
+                    Margin="0"
+                    Padding="6">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="15" Opacity="0.8"  ShadowDepth="8" Direction="-90" RenderingBias="Quality" />
+                    </Border.Effect>
+                    <TextBox x:Name="QueryInput" FontSize="18" Foreground="{DynamicResource ForegroundBrush}" TextWrapping="WrapWithOverflow" Padding="2" VerticalContentAlignment="Center" KeyDown="QueryInput_OnKeyDown" Text="{Binding QueryText, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                </Border>
             </Grid>
         </Popup>
     </Grid>

@@ -1,75 +1,121 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
+using Diffusion.Toolkit.Services;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Diffusion.Toolkit
 {
-    public class Toast
-    {
-        public string Message { get; set; }
-        public string Caption { get; set; }
-        public int Timeout { get; set; }
-    }
-
     public partial class MainWindow
     {
-        private Queue<Toast> _toastMessages = new Queue<Toast>();
-        private void DismissToast()
+        private void CloseToast(object sender, MouseButtonEventArgs e)
         {
-            ToastPopup.IsOpen = false;
-            if (_toastMessages.Count > 0)
-            {
-                DisplayToast();
-            }
-        }
-
-        private void DisplayToast()
-        {
-            ToastPopup.IsOpen = true;
-            var toast = _toastMessages.Dequeue();
-            ToastMessage.Text = toast.Message;
-            Task.Delay(toast.Timeout * 1000).ContinueWith((_) =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    DismissToast();
-                });
-            });
-        }
-
-        private void Toast(string message, string caption, int timeout = 5)
-        {
-            if (timeout == 0)
-            {
-                timeout = 5;
-            }
-
-            _toastMessages.Enqueue(new Toast()
-            {
-                Message = message,
-                Caption = caption,
-                Timeout = timeout
-            });
-
-            if (!ToastPopup.IsOpen)
-            {
-                DisplayToast();
-            }
+            ServiceLocator.ToastService.DismissToast();
         }
 
         public CustomPopupPlacement[] GetPopupPlacement(Size popupSize, Size targetSize, Point offset)
         {
-            var point = new Point(ActualWidth - popupSize.Width, ActualHeight - popupSize.Height - 50);
+            PresentationSource source = PresentationSource.FromVisual(this);
+
+            double dpiX = 96, dpiY = 96;
+            if (source != null)
+            {
+                dpiX = 96.0 * source.CompositionTarget.TransformToDevice.M11;
+                dpiY = 96.0 * source.CompositionTarget.TransformToDevice.M22;
+            }
+
+            var width = ActualWidth * dpiX / 96.0;
+            var height = ActualHeight * dpiY / 96.0;
+
+            var point = new Point(width - popupSize.Width, height - popupSize.Height - 50);
             return new[] { new CustomPopupPlacement(point, PopupPrimaryAxis.None) };
         }
 
-        private void CloseToast(object sender, MouseButtonEventArgs e)
+        public CustomPopupPlacement[] GetQueryPopupPlacement(Size popupSize, Size targetSize, Point offset)
         {
-            DismissToast();
+            PresentationSource source = PresentationSource.FromVisual(this);
+
+            double dpiX = 96, dpiY = 96;
+            if (source != null)
+            {
+                dpiX = 96.0 * source.CompositionTarget.TransformToDevice.M11;
+                dpiY = 96.0 * source.CompositionTarget.TransformToDevice.M22;
+            }
+
+            var width = ActualWidth * dpiX / 96.0;
+            var height = ActualHeight * dpiY / 96.0;
+
+            var point = new Point(width / 2 - popupSize.Width / 2, 50);
+            return new[] { new CustomPopupPlacement(point, PopupPrimaryAxis.None) };
+        }
+
+        private void OpenQueryBar()
+        {
+            QueryPopup.IsOpen = true;
+            QueryInput.SelectionStart = 0;
+            QueryInput.SelectionLength = QueryInput.Text.Length;
+            QueryInput.Focus();
+        }
+
+        private void QueryBar_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Debug.WriteLine($"Level 1 - {sender.GetType().Name}");
+
+            OpenQueryBar();
+            e.Handled = true;
+        }
+
+        private void QueryInput_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                QueryPopup.IsOpen = false;
+                _search.SetQuery(QueryInput.Text);
+                _search.SearchImages();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                QueryPopup.IsOpen = false;
+                e.Handled = true;
+            }
+        }
+
+        private void QueryFilter_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.ShowFilter();
+            e.Handled = true;
+        }
+
+        private void QuerySettings_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.OpenSearchSettings();
+            e.Handled = true;
+        }
+
+        private void QueryRefresh_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.Refresh();
+            e.Handled = true;
+        }
+
+        private void QueryClear_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            QueryInput.Text = "";
+            _search.ClearQueryFilter();
+            e.Handled = true;
+        }
+
+        private void QueryHelp_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            _search.OpenSearchHelp();
+            e.Handled = true;
         }
     }
 }

@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
 	<UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>diffusion-toolkit.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,6 +26,8 @@
     <None Remove="Icons\Dark\settings-32.png" />
     <None Remove="Icons\Dark\trash-32.png" />
     <None Remove="Icons\Dark\gallery-32.png" />
+    <None Remove="Icons\Dark\trash-solid-32.png" />
+    <None Remove="Icons\Dark\video-24.png" />
     <None Remove="Icons\error-32.png" />
     <None Remove="Icons\favorite-32.png" />
     <None Remove="Icons\filter-32.png" />
@@ -45,6 +48,8 @@
     <None Remove="Icons\Light\settings-32.png" />
     <None Remove="Icons\Light\trash-32.png" />
     <None Remove="Icons\Light\gallery-32.png" />
+    <None Remove="Icons\Light\trash-solid-32.png" />
+    <None Remove="Icons\Light\video-24.png" />
     <None Remove="Icons\link-32.png" />
     <None Remove="Icons\models-32.png" />
     <None Remove="Icons\rebuild-32.png" />
@@ -61,6 +66,24 @@
     <None Remove="Localization\default.json" />
     <None Remove="Localization\es-ES.json" />
     <None Remove="Localization\fr-FR.json" />
+    <None Remove="Release Notes\What%27s New v1.0.md" />
+    <None Remove="Release Notes\What%27s New v1.1.md" />
+    <None Remove="Release Notes\What%27s New v1.10.0.md" />
+    <None Remove="Release Notes\What%27s New v1.2.md" />
+    <None Remove="Release Notes\What%27s New v1.3.md" />
+    <None Remove="Release Notes\What%27s New v1.4.md" />
+    <None Remove="Release Notes\What%27s New v1.5.1.md" />
+    <None Remove="Release Notes\What%27s New v1.5.md" />
+    <None Remove="Release Notes\What%27s New v1.6.1.md" />
+    <None Remove="Release Notes\What%27s New v1.6.md" />
+    <None Remove="Release Notes\What%27s New v1.7.0.md" />
+    <None Remove="Release Notes\What%27s New v1.8.0.md" />
+    <None Remove="SearchHelp.md" />
+    <None Remove="Tips.md" />
+    <None Remove="Tools\comfy-nodes-2.json" />
+    <None Remove="Tools\comfy-nodes-3.json" />
+    <None Remove="Tools\comfy-nodes.json" />
+    <None Remove="Tools\workflow.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -68,6 +91,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Icons\Dark\trash-solid-32.png" />
+    <Resource Include="Icons\Dark\video-24.png" />
     <Resource Include="Icons\error-32.png" />
     <EmbeddedResource Include="Localization\de-DE.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -81,12 +106,54 @@
     <EmbeddedResource Include="Localization\default.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.0.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.1.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.10.0.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.2.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.3.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.4.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.5.1.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.5.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.6.1.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.6.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.7.0.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What's New v1.8.0.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What%27s New v1.9.1.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Release Notes\What%27s New v1.9.0.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
-    <PackageReference Include="WindowsAPICodePack-Shell" Version="1.1.1" />
     <PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
     <PackageReference Include="XmpCore" Version="6.1.10.1" />
   </ItemGroup>
@@ -96,6 +163,7 @@
     <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
     <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
     <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
+    <ProjectReference Include="..\Diffusion.Video\Diffusion.Video.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -139,10 +207,18 @@
     <Resource Include="Icons\Light\settings-32.png" />
     <Resource Include="Icons\Light\trash-32.png" />
     <Resource Include="Icons\Light\gallery-32.png" />
+    <Resource Include="Icons\Light\trash-solid-32.png" />
+    <Resource Include="Icons\Light\video-24.png" />
     <Resource Include="Icons\star-32.png" />
     <Resource Include="Icons\x-mark-16.png" />
     <Resource Include="Icons\x-mark-32.png" />
     <Resource Include="Images\thumbnail.png" />
+    <EmbeddedResource Include="SearchHelp.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tips.md">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -153,6 +229,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="TipsWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="ReleaseNotes.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -173,10 +252,10 @@
     <None Update="Localization\README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="samplers.txt">
+    <None Update="Localization\update.py">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Tips.md">
+    <None Update="samplers.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="version.txt">

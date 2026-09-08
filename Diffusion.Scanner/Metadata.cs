@@ -1,32 +1,34 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Concurrent;
+using System.Text.Json;
 using System.Text.RegularExpressions;
-using MetadataExtractor;
-using MetadataExtractor.Formats.Jpeg;
-using MetadataExtractor.Formats.Png;
 using Directory = MetadataExtractor.Directory;
 using Dir = System.IO.Directory;
 using System.Globalization;
-using MetadataExtractor.Formats.WebP;
 using Diffusion.Common;
-using System.Linq;
-using System.IO;
-using System.Xml.Linq;
+using System.Text;
+using Diffusion.ComfyUI;
+using SixLabors.ImageSharp;
+using MetadataExtractor;
+using MetadataExtractor.Formats.Jpeg;
+using MetadataExtractor.Formats.Png;
+using MetadataExtractor.Formats.WebP;
+using MetadataExtractor.Formats.QuickTime;
+using MetadataExtractor.Formats.WebM;
 
 namespace Diffusion.IO;
 
 public class Metadata
 {
-    private static Dictionary<string, List<string>> DirectoryTextFileCache = new Dictionary<string, List<string>>();
+    private static ConcurrentDictionary<string, List<string>> DirectoryTextFileCache = new ConcurrentDictionary<string, List<string>>();
 
     public static List<string> GetDirectoryTextFileCache(string path)
     {
-        if (!DirectoryTextFileCache.TryGetValue(path, out var files))
+        var files = Dir.GetFiles(path, "*.txt").ToList();
+        // TODO: Fix possible duplicate path
+        return DirectoryTextFileCache.AddOrUpdate(path, files, (a, b) =>
         {
-            files = Dir.GetFiles(path, "*.txt").ToList();
-            DirectoryTextFileCache.Add(path, files);
-        }
-
-        return files;
+            return b.Concat(files).Distinct().ToList();
+        });
     }
 
     public enum MetaFormat
@@ -41,6 +43,7 @@ public class Metadata
         RuinedFooocus,
         FooocusMRE,
         Fooocus,
+        SwarmUI,
         Unknown,
     }
 
@@ -49,13 +52,16 @@ public class Metadata
         PNG,
         JPEG,
         WebP,
-        Other,
+        MP4,
+        WebM,
+        Other = -1,
     }
 
     private static byte[] PNGMagic = new byte[] { 0x89, 0x50, 0x4E, 0x47 };
     private static byte[] JPEGMagic = new byte[] { 0xFF, 0xD8, 0xFF };
     private static byte[] RIFFMagic = new byte[] { 0x52, 0x49, 0x46, 0x46 };
     private static byte[] WebPMagic = new byte[] { 0x57, 0x45, 0x42, 0x50 };
+    private static byte[] WebMMagic = new byte[] { 0x1A, 0x45, 0xDF, 0xA3 };
 
     private static FileType GetFileType(Stream stream)
     {
@@ -77,17 +83,41 @@ public class Metadata
         {
             return FileType.WebP;
         }
+        if (span.Slice(0, 4).SequenceEqual(WebMMagic))
+        {
+            return FileType.WebM;
+        }
 
         return FileType.Other;
     }
 
-    public static FileParameters? ReadFromFile(string file)
+
+
+    public static FileParameters? ReadFromFile(string file, ComfyUIParser parser)
     {
         FileParameters? fileParameters = null;
 
         try
         {
-            fileParameters = Metadata.ReadFromFileInternal(file);
+            bool failed = false;
+            int retry = 0;
+            do
+            {
+                try
+                {
+                    fileParameters = Metadata.ReadFromFileInternal(file, parser);
+                    failed = false;
+                }
+                catch (IOException) when (retry < 10)
+                {
+                    failed = true;
+                    Thread.Sleep(500);
+                    retry++;
+                }
+            } while (failed);
+
+
+
         }
         catch (Exception e)
         {
@@ -111,20 +141,115 @@ public class Metadata
         return fileParameters;
     }
 
-    public static FileParameters? ReadFromFileInternal(string file)
+    public static FileParameters? ReadFromFileInternal(string file, ComfyUIParser parser)
     {
+        ImageType imageType = ImageType.Image;
+
         FileParameters? fileParameters = null;
 
         var ext = Path.GetExtension(file).ToLowerInvariant();
 
-        using var stream = File.OpenRead(file);
+        using var stream = new MemoryStream();
+        string hash;
 
-        var fileType = GetFileType(stream);
+        // Read the entire file into memory since we're going to hash it anyway, and also read metadata
+        using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            // Custom copy with hash to avoid reading the entire stream twice
+            hash = fileStream.CopyAndHash(stream).ToHexString();
+        }
 
         stream.Seek(0, SeekOrigin.Begin);
 
+        // Some PNGs are JPEGs in disguise, read the magic to make sure we have the correct file type
+        var fileType = GetFileType(stream);
+
+        if (fileType == FileType.Other)
+        {
+            if (Path.GetExtension(file).ToLowerInvariant() == ".mp4")
+            {
+                fileType = FileType.MP4;
+            }
+        }
+
+        stream.Seek(0, SeekOrigin.Begin);
+        int headerWidth = 0;
+        int headerHeight = 0;
+
+        // Now, attempt to read the metadata
         switch (fileType)
         {
+            case FileType.WebM:
+                {
+                    imageType = ImageType.Video;
+
+                    IEnumerable<Directory> directories = WebMMetadataReader.ReadMetadata(stream);
+
+                    foreach (var directory in directories)
+                    {
+                        switch (directory.Name)
+                        {
+                            case "WebM Directory":
+                                {
+                                    foreach (var tag in directory.Tags)
+                                    {
+                                        if (tag.Name == "Comment")
+                                        {
+                                            fileParameters = ReadComfyUIParameters(tag.Description, parser, true);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                        }
+                    }
+
+                    break;
+                }
+            case FileType.MP4:
+                {
+                    imageType = ImageType.Video;
+
+                    IEnumerable<Directory> directories = QuickTimeMetadataReader.ReadMetadata(stream);
+
+                    foreach (var directory in directories)
+                    {
+                        switch (directory.Name)
+                        {
+                            case "QuickTime Track Header":
+                                {
+                                    foreach (var tag in directory.Tags)
+                                    {
+                                        switch (tag.Name)
+                                        {
+                                            case "Width":
+                                                headerWidth = int.Parse(tag.Description);
+                                                break;
+                                            case "Height":
+                                                headerHeight = int.Parse(tag.Description);
+                                                break;
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            case "QuickTime Metadata Header":
+                                {
+                                    foreach (var tag in directory.Tags)
+                                    {
+                                        if (tag.Name == "Comment")
+                                        {
+                                            fileParameters = ReadComfyUIParameters(tag.Description, parser, true);
+                                        }
+                                    }
+
+                                    break;
+                                }
+                        }
+                    }
+
+                    break;
+                }
             case FileType.PNG:
                 {
                     IEnumerable<Directory> directories = PngMetadataReader.ReadMetadata(stream);
@@ -137,135 +262,162 @@ public class Metadata
 
                     foreach (var directory in directories)
                     {
-                        if (directory.Name == "PNG-tEXt")
+                        switch (directory.Name)
                         {
-                            foreach (var tag in directory.Tags)
-                            {
-                                if (tag.Name == "Textual Data")
+                            case "PNG-IHDR":
                                 {
-                                    if (tag.Description.StartsWith("parameters:"))
+                                    foreach (var tag in directory.Tags)
                                     {
-                                        var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
-                                        format = isJson ? MetaFormat.RuinedFooocus : MetaFormat.A1111;
-                                        var tempParameters = isJson ? ReadRuinedFooocusParameters(tag.Description) : ReadA111Parameters(tag.Description);
-
-
-                                        if (fileParameters != null)
+                                        switch (tag.Name)
                                         {
-                                            if (fileParameters.Workflow != null)
-                                            {
-                                                tempParameters.Workflow = fileParameters.Workflow;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            // tempParameters.Workflow = fileParameters.Workflow;
-                                        }
-                                        
-                                        fileParameters = tempParameters;
-
-                                    }
-                                    else if (tag.Description.StartsWith("Comment:"))
-                                    {
-
-                                        if (fileParameters == null)
-                                        {
-                                            //if (directory.Tags.Any(t => t.Description == "Software: NovelAI"))
-                                            if (directory.Tags.Any(t => t.Description == "Software: NovelAI") || directories.Any(d => d.Tags.Any(t => t.Description == "Software: NovelAI")))
-                                            {
-                                                format = MetaFormat.NovelAI;
-                                                fileParameters = ReadNovelAIParameters(file, directories);
-                                            }
-                                            else
-                                            {
-                                                format = MetaFormat.FooocusMRE;
-                                                fileParameters = ReadFooocusMREParameters(tag.Description);
-                                            }
+                                            case "Image Width":
+                                                headerWidth = int.Parse(tag.Description);
+                                                break;
+                                            case "Image Height":
+                                                headerHeight = int.Parse(tag.Description);
+                                                break;
                                         }
                                     }
-                                    else if (tag.Description == "Software: NovelAI")
-                                    {
-                                        if (fileParameters == null)
-                                        {
-                                            format = MetaFormat.NovelAI;
-                                            fileParameters = ReadNovelAIParameters(file, directories);
-                                        }
-                                    }
-                                    else if (tag.Description.StartsWith("Dream: "))
-                                    {
-                                        format = MetaFormat.InvokeAI;
-                                        fileParameters = ReadInvokeAIParameters(file, tag.Description);
-                                    }
-                                    else if (tag.Description.StartsWith("sd-metadata: "))
-                                    {
-                                        format = MetaFormat.InvokeAINew;
-                                        fileParameters = ReadInvokeAIParametersNew(file, tag.Description);
-                                    }
-                                    else if (tag.Description.StartsWith("invokeai_metadata: "))
-                                    {
-                                        format = MetaFormat.InvokeAI2;
-                                        fileParameters = ReadInvokeAIParameters2(file, tag.Description);
-                                    }
-                                    else if (tag.Description.StartsWith("prompt: "))
-                                    {
-                                        var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
-                                        format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
-                                        var tempParameters = isJson ? ReadComfyUIParameters(file, tag.Description) : ReadEasyDiffusionParameters(file, directories);
-
-                                        if (fileParameters == null)
-                                        {
-                                            fileParameters = tempParameters;
-                                        }
-                                        else
-                                        {
-                                            fileParameters.Workflow = tempParameters.Workflow;
-                                            fileParameters.Nodes = tempParameters.Nodes;
-                                        }
-                                    }
-                                    else if (tag.Description.StartsWith("Score:"))
-                                    {
-                                        decimal.TryParse(tag.Description[6..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
-                                    }
-                                    else if (tag.Description.StartsWith("aesthetic_score:"))
-                                    {
-                                        decimal.TryParse(tag.Description[16..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
-                                    }
-
+                                    break;
                                 }
-                            }
-                        }
-                        else if (directory.Name == "PNG-iTXt")
-                        {
-                            foreach (var tag in directory.Tags)
-                            {
-                                if (tag.Name == "Textual Data" && tag.Description.StartsWith("parameters:"))
+                            case "PNG-tEXt":
                                 {
-                                    format = MetaFormat.A1111;
-                                    fileParameters = ReadA111Parameters(tag.Description);
-                                }
-                            }
+                                    foreach (var tag in directory.Tags)
+                                    {
+                                        if (tag.Name == "Textual Data")
+                                        {
+                                            if (tag.Description.StartsWith("parameters:"))
+                                            {
+                                                if (fileParameters == null)
+                                                {
+                                                    var isJson = tag.Description.Substring("parameters: ".Length).Trim().StartsWith("{");
+                                                    if (isJson)
+                                                    {
+                                                        if (tag.Description.Contains("sui_image_params"))
+                                                        {
+                                                            fileParameters = ReadStableSwarmParameters(tag.Description);
+                                                            format = MetaFormat.SwarmUI;
+                                                        }
+                                                        else
+                                                        {
+                                                            try
+                                                            {
+                                                                fileParameters = ReadRuinedFooocusParameters(tag.Description);
+                                                                format = MetaFormat.RuinedFooocus;
+                                                            }
+                                                            catch (Exception e)
+                                                            {
+                                                                fileParameters = ReadA111Parameters(tag.Description);
+                                                                format = MetaFormat.A1111;
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        fileParameters = ReadA111Parameters(tag.Description);
+                                                        format = MetaFormat.A1111;
+                                                    }
+                                                }
+                                            }
+                                            else if (tag.Description.StartsWith("Comment:"))
+                                            {
 
-                        }
-                        else if (directory.Name == "Exif SubIFD")
-                        {
-                            foreach (var tag in directory.Tags)
-                            {
-                                if (tag.Name == "User Comment")
+                                                if (fileParameters == null)
+                                                {
+                                                    //if (directory.Tags.Any(t => t.Description == "Software: NovelAI"))
+                                                    if (directory.Tags.Any(t => t.Description == "Software: NovelAI") || directories.Any(d => d.Tags.Any(t => t.Description == "Software: NovelAI")))
+                                                    {
+                                                        format = MetaFormat.NovelAI;
+                                                        fileParameters = ReadNovelAIParameters(file, directories);
+                                                    }
+                                                    else
+                                                    {
+                                                        format = MetaFormat.FooocusMRE;
+                                                        fileParameters = ReadFooocusMREParameters(tag.Description);
+                                                    }
+                                                }
+                                            }
+                                            else if (tag.Description == "Software: NovelAI")
+                                            {
+                                                if (fileParameters == null)
+                                                {
+                                                    format = MetaFormat.NovelAI;
+                                                    fileParameters = ReadNovelAIParameters(file, directories);
+                                                }
+                                            }
+                                            else if (tag.Description.StartsWith("Dream: "))
+                                            {
+                                                format = MetaFormat.InvokeAI;
+                                                fileParameters = ReadInvokeAIParameters(file, tag.Description);
+                                            }
+                                            else if (tag.Description.StartsWith("sd-metadata: "))
+                                            {
+                                                format = MetaFormat.InvokeAINew;
+                                                fileParameters = ReadInvokeAIParametersNew(file, tag.Description);
+                                            }
+                                            else if (tag.Description.StartsWith("invokeai_metadata: "))
+                                            {
+                                                format = MetaFormat.InvokeAI2;
+                                                fileParameters = ReadInvokeAIParameters2(file, tag.Description);
+                                            }
+                                            else if (tag.Description.StartsWith("prompt: "))
+                                            {
+                                                var isJson = tag.Description.Substring("prompt: ".Length).Trim().StartsWith("{");
+                                                format = isJson ? MetaFormat.ComfyUI : MetaFormat.EasyDiffusion;
+                                                var tempParameters = isJson ? ReadComfyUIParameters(tag.Description, parser) : ReadEasyDiffusionParameters(file, directories);
+
+                                                if (fileParameters == null)
+                                                {
+                                                    fileParameters = tempParameters;
+                                                }
+                                                else
+                                                {
+                                                    fileParameters.WorkflowId = tempParameters.WorkflowId;
+                                                    fileParameters.Workflow = tempParameters.Workflow;
+                                                    fileParameters.Nodes = tempParameters.Nodes;
+                                                }
+                                            }
+                                            else if (tag.Description.StartsWith("Score:"))
+                                            {
+                                                decimal.TryParse(tag.Description[6..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
+                                            }
+                                            else if (tag.Description.StartsWith("aesthetic_score:"))
+                                            {
+                                                decimal.TryParse(tag.Description[16..], NumberStyles.Any, CultureInfo.InvariantCulture, out aestheticScore);
+                                            }
+
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            case "PNG-iTXt":
                                 {
-                                    format = MetaFormat.A1111;
-                                    fileParameters = ReadA111Parameters(tag.Description);
+                                    foreach (var tag in directory.Tags)
+                                    {
+                                        if (tag.Name == "Textual Data" && tag.Description.StartsWith("parameters:"))
+                                        {
+                                            format = MetaFormat.A1111;
+                                            fileParameters = ReadA111Parameters(tag.Description);
+                                        }
+                                    }
+
+                                    break;
                                 }
-                            }
+                            case "Exif SubIFD":
+                                {
+                                    foreach (var tag in directory.Tags)
+                                    {
+                                        if (tag.Name == "User Comment")
+                                        {
+                                            format = MetaFormat.A1111;
+                                            fileParameters = ReadA111Parameters(tag.Description);
+                                        }
+                                    }
+
+                                    break;
+                                }
                         }
-                    }
-
-                    try
-                    {
-
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Log($"An error occurred while reading {file}: {e.Message}\r\n\r\n{e.StackTrace}");
                     }
 
 
@@ -303,6 +455,7 @@ public class Metadata
 
                     break;
                 }
+
             case FileType.JPEG:
                 {
                     var format = MetaFormat.Unknown;
@@ -362,6 +515,25 @@ public class Metadata
                                                     _ => fileParameters
                                                 };
                                             }
+                                            else
+                                            {
+                                                if (tag.Description.StartsWith("{\"prompt\":"))
+                                                {
+                                                    format = MetaFormat.ComfyUI;
+                                                    var tempParameters = ReadComfyUIParameters(tag.Description, parser, true);
+
+                                                    if (fileParameters == null)
+                                                    {
+                                                        fileParameters = tempParameters;
+                                                    }
+                                                    else
+                                                    {
+                                                        fileParameters.WorkflowId = tempParameters.WorkflowId;
+                                                        fileParameters.Workflow = tempParameters.Workflow;
+                                                        fileParameters.Nodes = tempParameters.Nodes;
+                                                    }
+                                                }
+                                            }
                                             break;
                                     }
                                 }
@@ -384,13 +556,125 @@ public class Metadata
 
                     break;
                 }
+
             case FileType.WebP:
                 {
                     IEnumerable<Directory> directories = WebPMetadataReader.ReadMetadata(stream);
 
+                    var format = MetaFormat.Unknown;
+
                     try
                     {
-                        fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        // Added ComfyUI metadata loading
+                        foreach (var directory in directories)
+                        {
+                            if (directory.Name == "Exif IFD0")
+                            {
+                                foreach (var tag in directory.Tags)
+                                {
+                                    switch (tag.Name)
+                                    {
+                                        case "Make":
+                                           // The workflow is stored in the Make tag.
+                                           if (!string.IsNullOrEmpty(tag.Description))
+                                           {
+                                               try
+                                               {
+                                                   // Check if it is JSON format
+                                                   var makeData = tag.Description.Trim().Substring("workflow:".Length);
+                                                   if (makeData.StartsWith("{"))
+                                                   {
+                                                       format = MetaFormat.ComfyUI;
+                                                       fileParameters ??= new FileParameters();
+                                                       fileParameters.Workflow = makeData;
+
+                                                       var root = JsonDocument.Parse(makeData);
+                                                       fileParameters.WorkflowId = GetHashCode(root.RootElement).ToString("X");
+
+                                                        var pnodes = parser.Parse(fileParameters.WorkflowId, fileParameters.Workflow);
+                                                       fileParameters.Nodes = pnodes;
+                                                        
+                                                       // Generate WorkflowId
+                                                   }
+                                               }
+                                               catch (Exception e)
+                                               {
+                                                   Logger.Log($"Error parsing Make tag as ComfyUI workflow: {e.Message}");
+                                               }
+                                           }
+                                           break;
+
+                                        case "Model":
+                                            // The Model tag contains prompt data
+                                            if (!string.IsNullOrEmpty(tag.Description))
+                                            {
+                                                try
+                                                {
+                                                    // Check if it is JSON format
+                                                    var modelData = tag.Description.Trim().Substring("prompt:".Length);
+                                                    if (modelData.StartsWith("{"))
+                                                    {
+                                                        format = MetaFormat.ComfyUI;
+                                                        var tempParameters = ReadComfyUIParameters($"prompt: {modelData}", parser, false);
+                                                        
+                                                        if (fileParameters == null)
+                                                        {
+                                                            fileParameters = tempParameters;
+                                                        }
+                                                        else
+                                                        {
+                                                            // If both workflow and prompt exist, the prompt information is merged.
+                                                            if (tempParameters.Nodes != null)
+                                                            {
+                                                                fileParameters.WorkflowId = tempParameters.WorkflowId;
+                                                                fileParameters.Workflow = tempParameters.Workflow;
+                                                                fileParameters.Nodes = tempParameters.Nodes;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    Logger.Log($"Error parsing Model tag as ComfyUI prompt: {e.Message}");
+                                                }
+                                            }
+                                            break;
+                                    }
+                                }
+                            }
+                            // Check User Comment in Exif SubIFD (supports the conventional A1111 format)
+                            else if (directory.Name == "Exif SubIFD")
+                            {
+                                foreach (var tag in directory.Tags)
+                                {
+                                    if (tag.Name == "User Comment")
+                                    {
+                                        if (tag.Description.StartsWith("{\"prompt\":"))
+                                        {
+                                            format = MetaFormat.ComfyUI;
+                                            var tempParameters = ReadComfyUIParameters(tag.Description, parser, true);
+
+                                            if (fileParameters == null)
+                                            {
+                                                fileParameters = tempParameters;
+                                            }
+                                            else
+                                            {
+                                                fileParameters.WorkflowId = tempParameters.WorkflowId;
+                                                fileParameters.Workflow = tempParameters.Workflow;
+                                                fileParameters.Nodes = tempParameters.Nodes;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // If ComfyUI metadata is not found, load the legacy A1111 parameters
+                        if (fileParameters == null)
+                        {
+                            fileParameters = ReadAutomatic1111Parameters(file, directories);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -401,10 +685,12 @@ public class Metadata
                 }
         }
 
+        // Nothing matched and we still don't have any metadata
         if (fileParameters == null)
         {
             try
             {
+                // Check if there is a .TXT metadata file (Automatic1111)
                 var parameterFile = file.Replace(ext, ".txt", StringComparison.InvariantCultureIgnoreCase);
 
                 if (File.Exists(parameterFile))
@@ -436,13 +722,47 @@ public class Metadata
         // Try to read from Stealth Alpha channel if PNG
         if (fileParameters == null && fileType == FileType.PNG)
         {
-            var metadata = StealthPng.Read(file);
-            return ReadA111Parameters(metadata);
+            stream.Seek(0, SeekOrigin.Begin);
+            var metadata = StealthPng.Read(stream);
+            fileParameters = ReadA111Parameters(metadata);
         }
+
+        if (fileParameters == null)
+        {
+            fileParameters = new FileParameters();
+            fileParameters.NoMetadata = true;
+            fileParameters.Hash = hash;
+        }
+
+        stream.Seek(0, SeekOrigin.Begin);
+
+        if (headerWidth > 0 && headerHeight > 0)
+        {
+            fileParameters.Width = headerWidth;
+            fileParameters.Height = headerHeight;
+        }
+        else
+        {
+            if (imageType == ImageType.Image)
+            {
+                var (width, height) = GetImageSize(stream);
+
+                fileParameters.Width = width;
+                fileParameters.Height = height;
+            }
+        }
+
+        fileParameters.Type = imageType;
 
         return fileParameters;
     }
 
+
+    public static (int width, int height) GetImageSize(Stream stream)
+    {
+        ImageInfo info = Image.Identify(stream);
+        return (info.Width, info.Height);
+    }
 
     private static FileParameters DetectAndReadMetaType(string parameters)
     {
@@ -463,8 +783,13 @@ public class Metadata
 
     private static FileParameters ReadInvokeAIParameters(string file, string description)
     {
-        var fp = new FileParameters();
         var command = description.Substring("Dream: ".Length);
+
+        var fp = new FileParameters();
+
+        fp.WorkflowId = command.GetHashCode().ToString("X");
+        fp.Workflow = command;
+
         var start = command.IndexOf("\"");
         var end = command.IndexOf("\"", start + 1);
         fp.Prompt = command.Substring(start + 1, end - start - 1);
@@ -513,10 +838,13 @@ public class Metadata
     {
         var fp = new FileParameters();
 
+        var workflowBuilder = new StringBuilder();
+
         string? GetTag(string key)
         {
             if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
             {
+                workflowBuilder.AppendLine(tag.Description);
                 return tag.Description.Substring($"{key}: ".Length);
             }
 
@@ -527,6 +855,7 @@ public class Metadata
         {
             if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
             {
+                workflowBuilder.AppendLine(tag.Description);
                 var value = tag.Description.Substring($"{key}: ".Length);
 
                 return float.Parse(value);
@@ -539,6 +868,7 @@ public class Metadata
         {
             if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
             {
+                workflowBuilder.AppendLine(tag.Description);
                 var value = tag.Description.Substring($"{key}: ".Length);
 
                 return decimal.Parse(value);
@@ -547,11 +877,24 @@ public class Metadata
             return 0m;
         }
 
+        long GetLongTag(string key)
+        {
+            if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
+            {
+                workflowBuilder.AppendLine(tag.Description);
+                var value = tag.Description.Substring($"{key}: ".Length);
+
+                return long.Parse(value);
+            }
+
+            return 0;
+        }
 
         int GetIntTag(string key)
         {
             if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith($"{key}: "), out var tag))
             {
+                workflowBuilder.AppendLine(tag.Description);
                 var value = tag.Description.Substring($"{key}: ".Length);
 
                 return int.Parse(value);
@@ -566,18 +909,28 @@ public class Metadata
         fp.Height = GetIntTag("height");
         fp.Steps = GetIntTag("num_inference_steps");
         fp.CFGScale = GetDecimalTag("guidance_scale");
-        fp.Seed = GetIntTag("seed");
+        fp.Seed = GetLongTag("seed");
         fp.Sampler = GetTag("sampler_name");
         fp.Model = GetTag("use_stable_diffusion_model");
 
 
         fp.OtherParameters = $"Steps: {fp.Steps} Sampler: {fp.Sampler} CFG Scale: {fp.CFGScale} Seed: {fp.Seed} Size: {fp.Width}x{fp.Height}";
 
+        var workflow = workflowBuilder.ToString();
+
+        fp.WorkflowId = workflow.GetHashCode().ToString("X");
+        fp.Workflow = workflow;
+
         //    return fp;
 
         return fp;
     }
 
+    /// <summary>
+    /// Generate a hash of the property names 
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
     private static int GetHashCode(JsonElement node)
     {
         int result = 0;
@@ -609,51 +962,36 @@ public class Metadata
 
 
 
-    private static FileParameters ReadComfyUIParameters(string file, string description)
+    private static FileParameters ReadComfyUIParameters(string description, ComfyUIParser parser, bool isProperJson = false)
     {
         var fp = new FileParameters();
 
         try
         {
-            var json = description.Substring("prompt: ".Length);
+            if (!isProperJson)
+            {
+                var json = description.Substring("prompt: ".Length);
 
-            // fix for errant nodes
-            json = json.Replace("NaN", "null");
+                // fix for errant nodes
+                json = json.Replace("NaN", "null");
 
-            fp.Workflow = json;
+                fp.Workflow = json;
 
-            var root = JsonDocument.Parse(json);
+                var root = JsonDocument.Parse(json);
+                fp.WorkflowId = GetHashCode(root.RootElement).ToString("X");
 
-            //var nodes = root.RootElement.EnumerateObject().ToDictionary(o => o.Name, o => o.Value);
+                var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
 
-            fp.WorkflowId = GetHashCode(root.RootElement).ToString("X");
+                fp.Nodes = pnodes;
+            }
+            else
+            {
+                fp.Workflow = description;
 
-            var parser = new ComfyUIParser();
-            var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
-            fp.Nodes = pnodes;
+                var pnodes = parser.Parse(fp.WorkflowId, fp.Workflow);
 
-            //var clipTextEncoders = nodes.Values.Where(o =>
-            //{
-            //    if (o.TryGetProperty("class_type", out var element))
-            //    {
-            //        return element.GetString() == "CLIPTextEncode";
-            //    }
-
-            //    return false;
-            //}).ToList();
-
-            //if (clipTextEncoders.Count > 0)
-            //{
-            //    var inputs = clipTextEncoders[0].GetProperty("inputs");
-            //    if (inputs.TryGetProperty("text", out var value))
-            //    {
-            //        if (value.ValueKind == JsonValueKind.String)
-            //        {
-            //            fp.Prompt = value.GetString();
-            //        }
-            //    }
-            //}
-
+                fp.Nodes = pnodes;
+            }
 
 
             return fp;
@@ -666,8 +1004,12 @@ public class Metadata
 
     private static FileParameters ReadInvokeAIParametersNew(string file, string description)
     {
-        var fp = new FileParameters();
         var json = description.Substring("sd-metadata: ".Length);
+
+        var fp = new FileParameters();
+        fp.WorkflowId = json.GetHashCode().ToString("X");
+        fp.Workflow = json;
+
         var root = JsonDocument.Parse(json);
         var image = root.RootElement.GetProperty("image");
         var prompt = image.GetProperty("prompt");
@@ -699,8 +1041,12 @@ public class Metadata
 
     private static FileParameters ReadInvokeAIParameters2(string file, string description)
     {
-        var fp = new FileParameters();
         var json = description.Substring("invokeai_metadata: ".Length);
+
+        var fp = new FileParameters();
+        fp.WorkflowId = json.GetHashCode().ToString("X");
+        fp.Workflow = json;
+
         var root = JsonDocument.Parse(json);
         var image = root.RootElement;
 
@@ -727,8 +1073,11 @@ public class Metadata
 
         Tag tag;
 
+        var workflowBuilder = new StringBuilder();
+
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Description:"), out tag))
         {
+            workflowBuilder.AppendLine(tag.Description);
             fileParameters.Prompt = tag.Description.Substring("Description: ".Length);
         }
 
@@ -738,6 +1087,7 @@ public class Metadata
             var match = hashRegex.Match(tag.Description.Substring("Source: ".Length));
             if (match.Success)
             {
+                workflowBuilder.AppendLine(tag.Description);
                 fileParameters.ModelHash = match.Groups[0].Value;
             }
         }
@@ -747,6 +1097,8 @@ public class Metadata
 
         if (TryFindTag(directories, "PNG-tEXt", "Textual Data", tag => tag.Description.StartsWith("Comment:"), out tag))
         {
+            workflowBuilder.AppendLine(tag.Description);
+
             var json = JsonDocument.Parse(tag.Description.Substring("Comment: ".Length));
 
             fileParameters.Steps = json.RootElement.GetProperty("steps").GetInt32();
@@ -790,12 +1142,21 @@ public class Metadata
             }
         }
 
+
+        var workflow = workflowBuilder.ToString();
+        fileParameters.WorkflowId = workflow.GetHashCode().ToString("X");
+        fileParameters.Workflow = workflow;
+
+
         return fileParameters;
     }
 
     private static FileParameters ReadStableDiffusionParameters(string data)
     {
         var fileParameters = new FileParameters();
+
+        fileParameters.WorkflowId = data.GetHashCode().ToString("X");
+        fileParameters.Workflow = data;
 
         var parts = data.Split(new[] { '\n' });
 
@@ -915,6 +1276,9 @@ public class Metadata
         var json = data.Substring("Comment: ".Length);
         var root = JsonDocument.Parse(json);
 
+        fp.WorkflowId = json.GetHashCode().ToString("X");
+        fp.Workflow = json;
+
         fp.Prompt = root.RootElement.GetProperty("prompt").GetString();
 
         string real_prompt;
@@ -976,11 +1340,19 @@ public class Metadata
 
     private static FileParameters ReadStableSwarmParameters(string data)
     {
+        if (data.StartsWith("parameters: "))
+        {
+            data = data.Substring("parameters: ".Length);
+        }
+
         var json = JsonDocument.Parse(data);
+
+        var fp = new FileParameters();
+        fp.WorkflowId = data.GetHashCode().ToString("X");
+        fp.Workflow = data;
 
         var root = json.RootElement;
 
-        var fp = new FileParameters();
 
         var suiRoot = root.GetProperty("sui_image_params");
 
@@ -1015,11 +1387,14 @@ public class Metadata
 
     private static FileParameters ReadFooocusParameters(string data)
     {
+        var fp = new FileParameters();
+
+        fp.WorkflowId = data.GetHashCode().ToString("X");
+        fp.Workflow = data;
+
         var json = JsonDocument.Parse(data);
 
         var root = json.RootElement;
-
-        var fp = new FileParameters();
 
         var fullPrompt = root.GetProperty("full_prompt").EnumerateArray().Select(x => x.GetString());
         var fullNegativePrompt = root.GetProperty("full_negative_prompt").EnumerateArray().Select(x => x.GetString());
@@ -1046,14 +1421,19 @@ public class Metadata
 
     private static FileParameters ReadRuinedFooocusParameters(string data)
     {
-        var json = JsonDocument.Parse(data.Substring("parameters: ".Length));
+        var parameters = data.Substring("parameters: ".Length);
+        var json = JsonDocument.Parse(parameters);
 
         var root = json.RootElement;
 
         var fp = new FileParameters();
 
+
         if (root.TryGetProperty("software", out var softwareProperty))
         {
+            fp.WorkflowId = parameters.GetHashCode().ToString("X");
+            fp.Workflow = parameters;
+
             var software = softwareProperty.GetString();
 
             if (software == "RuinedFooocus")
@@ -1091,6 +1471,8 @@ public class Metadata
         const string negativePromptKey = "Negative prompt:";
         const string stepsKey = "Steps:";
 
+        fileParameters.WorkflowId = data.GetHashCode().ToString("X");
+        fileParameters.Workflow = data;
         fileParameters.Parameters = data;
 
         var state = 0;
@@ -1149,45 +1531,53 @@ public class Metadata
                     foreach (var keyValue in subParts)
                     {
                         var kvp = keyValue.Split(new[] { ':' });
-                        switch (kvp[0].Trim())
+                        try
                         {
-                            case "Steps":
-                                fileParameters.Steps = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Sampler":
-                                fileParameters.Sampler = kvp[1].Trim();
-                                break;
-                            case "CFG scale":
-                                fileParameters.CFGScale = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Seed":
-                                fileParameters.Seed = long.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Size":
-                                var size = kvp[1].Split(new[] { 'x' });
-                                fileParameters.Width = int.Parse(size[0].Trim(), CultureInfo.InvariantCulture);
-                                fileParameters.Height = int.Parse(size[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Model hash":
-                                fileParameters.ModelHash = kvp[1].Trim();
-                                break;
-                            case "Model":
-                                fileParameters.Model = kvp[1].Trim();
-                                break;
-                            case "Batch size":
-                                fileParameters.BatchSize = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "Hypernet":
-                                fileParameters.HyperNetwork = kvp[1].Trim();
-                                break;
-                            case "Hypernet strength":
-                                fileParameters.HyperNetworkStrength = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
-                            case "aesthetic_score":
-                            case "Score":
-                                fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
-                                break;
+                            switch (kvp[0].Trim())
+                            {
+                                case "Steps":
+                                    fileParameters.Steps = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Sampler":
+                                    fileParameters.Sampler = kvp[1].Trim();
+                                    break;
+                                case "CFG scale":
+                                    fileParameters.CFGScale = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Seed":
+                                    fileParameters.Seed = long.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Size":
+                                    var size = kvp[1].Split(new[] { 'x' });
+                                    fileParameters.Width = int.Parse(size[0].Trim(), CultureInfo.InvariantCulture);
+                                    fileParameters.Height = int.Parse(size[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Model hash":
+                                    fileParameters.ModelHash = kvp[1].Trim();
+                                    break;
+                                case "Model":
+                                    fileParameters.Model = kvp[1].Trim();
+                                    break;
+                                case "Batch size":
+                                    fileParameters.BatchSize = int.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "Hypernet":
+                                    fileParameters.HyperNetwork = kvp[1].Trim();
+                                    break;
+                                case "Hypernet strength":
+                                    fileParameters.HyperNetworkStrength = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                                case "aesthetic_score":
+                                case "Score":
+                                    fileParameters.AestheticScore = decimal.Parse(kvp[1].Trim(), CultureInfo.InvariantCulture);
+                                    break;
+                            }
                         }
+                        catch (Exception)
+                        {
+
+                        }
+
                     }
 
                     state = 3;

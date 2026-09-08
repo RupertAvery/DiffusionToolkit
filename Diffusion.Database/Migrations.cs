@@ -1,11 +1,11 @@
 ﻿using System.Reflection;
-using System.Xml.Linq;
 using Diffusion.Common;
+using Diffusion.Database.Models;
 using SQLite;
 
 namespace Diffusion.Database;
 
-public class Migrations
+public partial class Migrations
 {
     private readonly SQLiteConnection _db;
 
@@ -54,7 +54,7 @@ public class Migrations
                 {
                     var name = methodInfo.Name;
 
-                    var migrate = methodInfo.GetCustomAttributes<MigrateAttribute>().FirstOrDefault();
+                    var migrate = methodInfo.GetCustomAttributes<MigrateAttribute>().First();
 
                     if (migrate is { Name: { } })
                     {
@@ -63,9 +63,14 @@ public class Migrations
 
                     var sql = (string)methodInfo.Invoke(this, null)!;
 
+
+
                     if (sql != null)
                     {
-                        _db.BeginTransaction();
+                        if (!migrate.NoTransaction)
+                        {
+                            _db.BeginTransaction();
+                        }
 
                         var statements = sql.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -77,12 +82,14 @@ public class Migrations
                                 command.ExecuteNonQuery();
                             }
                         }
+
+                        _db.Execute("INSERT INTO Migration (Name) VALUES (?)", name);
+
+                        if (!migrate.NoTransaction)
+                        {
+                            _db.Commit();
+                        }
                     }
-
-
-                    _db.Execute("INSERT INTO Migration (Name) VALUES (?)", name);
-
-                    _db.Commit();
 
                     Logger.Log($"Executed Migration {name}");
                 }
@@ -93,91 +100,5 @@ public class Migrations
             Logger.Log($"Error executing migration: {e.Message}");
             Logger.Log($"{e.StackTrace}");
         }
-    }
-
-
-    [Migrate(MigrationType.Pre)]
-    private string RupertAvery20240203_0001_UniquePaths()
-    {
-        var tableExists = _db.ExecuteScalar<int>("SELECT COUNT(1) FROM sqlite_master WHERE type='table' AND name='Image'") == 1;
-
-        if (!tableExists)
-        {
-            return null;
-        }
-
-        var dupePaths = _db.QueryScalars<string>("SELECT Path FROM Image GROUP BY Path HAVING COUNT(*) > 1");
-
-        void RemoveImages(IEnumerable<int> ids)
-        {
-            _db.BeginTransaction();
-
-            var albumQuery = "DELETE FROM AlbumImage WHERE ImageId = @Id";
-            var albumCommand = _db.CreateCommand(albumQuery);
-
-            var query = "DELETE FROM Image WHERE Id = @Id";
-            var command = _db.CreateCommand(query);
-
-            foreach (var id in ids)
-            {
-                albumCommand.Bind("@Id", id);
-                albumCommand.ExecuteNonQuery();
-
-                command.Bind("@Id", id);
-                command.ExecuteNonQuery();
-            }
-
-            _db.Commit();
-        }
-
-        if (dupePaths.Any())
-        {
-            var dupeImages = _db.Query<Image>($"SELECT * FROM Image WHERE Path IN ({string.Join(",", dupePaths.Select(p => $"'{p.Replace("'", "''")}'"))})");
-            var groups = dupeImages.GroupBy(image => image.Path);
-            var ids = new List<int>();
-            foreach (var group in groups)
-            {
-                var lowest = group.MinBy(image => image.Id);
-                var dupes = group.Where(i => i.Id != lowest.Id);
-                ids.AddRange(dupes.Select(i => i.Id));
-            }
-            RemoveImages(ids);
-        }
-
-        return "DROP INDEX IF EXISTS 'Image_Path';";
-    }
-
-    [Migrate]
-    private string RupertAvery20240102_0001_LoadFileNamesFromPaths()
-    {
-        return "UPDATE Image SET FileName = path_basename(replace(Path, '\\','/'))";
-    }
-
-    [Migrate]
-    private string RupertAvery20231224_0001_CleanupOrphanedAlbumImageEntries()
-    {
-        return "DELETE FROM AlbumImage WHERE AlbumId IN (SELECT AlbumId FROM AlbumImage WHERE AlbumId NOT IN (SELECT Id FROM Album));" +
-               "DELETE FROM AlbumImage WHERE ImageId NOT IN(SELECT Id FROM Image);";
-    }
-
-    [Migrate]
-    private string RupertAvery20231224_0002_AlbumImageForeignKeys()
-    {
-        return @"DROP TABLE IF EXISTS ""AlbumImageTemp"";
-CREATE TABLE IF NOT EXISTS ""AlbumImageTemp""(
-    ""AlbumId""   integer,
-    ""ImageId""   integer,
-    CONSTRAINT ""FK_AlbumImage_AlbumId"" FOREIGN KEY(""AlbumId"") REFERENCES Album(""Id""),
-    CONSTRAINT ""FK_AlbumImage_ImageId"" FOREIGN KEY(""ImageId"") REFERENCES Image(""Id"")
-);
-INSERT INTO AlbumImageTemp SELECT AlbumId, ImageId FROM AlbumImage;
-DROP TABLE ""AlbumImage"";
-ALTER TABLE ""AlbumImageTemp"" RENAME TO ""AlbumImage"";";
-    }
-
-    [Migrate(MigrationType.Post)]
-    private string RupertAvery20240818_0001_SetUnavailable()
-    {
-        return "UPDATE Image SET Unavailable = 0";
     }
 }

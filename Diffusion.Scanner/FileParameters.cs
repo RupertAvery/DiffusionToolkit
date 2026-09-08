@@ -1,4 +1,7 @@
-﻿namespace Diffusion.IO;
+﻿using Diffusion.ComfyUI;
+using Diffusion.Common;
+
+namespace Diffusion.IO;
 
 public class FileParameters
 {
@@ -33,4 +36,6 @@ public class FileParameters
     public string ErrorMessage { get; set; }
 
     public IReadOnlyCollection<Node>? Nodes { get; set; }
+    public string? Hash { get; set; }
+    public ImageType Type { get; set; }
 }

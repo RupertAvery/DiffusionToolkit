@@ -3,13 +3,17 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Pages;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Controls
 {
     public class PageChangedEventArgs
     {
         public int Page { get; set; }
-        public bool GotoEnd { get; set; }
+        public CursorPosition CursorPosition { get; set; }
         public Action? OnCompleted { get; set; }
     }
 
@@ -42,7 +46,7 @@ namespace Diffusion.Toolkit.Controls
             PageChangedCommand?.Execute(args);
         }
 
-        public void GoPrevPage(Action? onCompleted, bool gotoEnd = false)
+        public bool GoPrevPage(Action? onCompleted, bool gotoEnd = false)
         {
             if (Model.Page > 1)
             {
@@ -52,16 +56,18 @@ namespace Diffusion.Toolkit.Controls
                 var args = new PageChangedEventArgs()
                 {
                     Page = Model.Page,
-                    GotoEnd = gotoEnd,
+                    CursorPosition = gotoEnd ? CursorPosition.End : CursorPosition.Start,
                     OnCompleted = onCompleted
                 };
 
                 PageChangedCommand?.Execute(args);
+                return true;
             }
 
+            return false;
         }
 
-        public void GoNextPage(Action? onCompleted)
+        public bool GoNextPage(Action? onCompleted)
         {
             if (Model.Page < Model.Pages)
             {
@@ -71,11 +77,14 @@ namespace Diffusion.Toolkit.Controls
                 var args = new PageChangedEventArgs()
                 {
                     Page = Model.Page,
+                    CursorPosition = CursorPosition.Start,
                     OnCompleted = onCompleted
                 };
 
                 PageChangedCommand?.Execute(args);
+                return true;
             }
+            return false;
         }
 
         public void SetPagingEnabled()
@@ -83,18 +92,30 @@ namespace Diffusion.Toolkit.Controls
             Model.SetPagingEnabled(Model.Page);
         }
 
-        public void ReloadThumbnailsView(double offset)
+        public void ClearSelection()
         {
-            var wrapPanel = GetChildOfType<WrapPanel>(this)!;
+            ThumbnailListView.SelectedItems.Clear();
+        }
+
+        public void ReloadThumbnailsView()
+        {
+            var wrapPanel = GetChildOfType<WrapPanel>(this);
 
             if (wrapPanel == null || wrapPanel.Children.Count == 0)
+                return; // 🔐 Protects against out-of-range indexing here
+
+            var scrollViewer = GetChildOfType<ScrollViewer>(this);
+            if (scrollViewer == null)
                 return;
 
-            var scrollViewer = GetChildOfType<ScrollViewer>(this)!;
-
+            var offset = scrollViewer.VerticalOffset;
             var height = scrollViewer.ViewportHeight;
 
             var item = wrapPanel.Children[0] as ListViewItem;
+
+            // 🛡️ Additional verification
+            if (item == null)
+                return;
 
             var preloadSize = item.ActualHeight * 2;
 
@@ -105,12 +126,15 @@ namespace Diffusion.Toolkit.Controls
             for (var i = 0; i < wrapPanel.Children.Count; i++)
             {
                 item = wrapPanel.Children[i] as ListViewItem;
-                
+
+                if (item == null)
+                    continue; // 🛡️ Additional verification
+
                 if (top + item.ActualHeight >= (offset - preloadSize) && top <= (offset + height + preloadSize))
                 {
                     if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
                     {
-                        imageEntry.LoadThumbnail();
+                        ServiceLocator.ThumbnailService.QueueImage(imageEntry);
                     }
                 }
 
@@ -128,71 +152,25 @@ namespace Diffusion.Toolkit.Controls
                     left = 0;
                 }
             }
-
-            //var start = ((int)offset / (int)item.ActualHeight * columnWidth);
-            //var end = ((int)(offset + height) / (int)item.ActualHeight * columnWidth + columnWidth);
-
-            //end = Math.Min(wrapPanel.Children.Count, end);
-
-            //for (int i = start; i < end; i++)
-            //{
-            //    item = wrapPanel.Children[i] as ListViewItem;
-
-            //    if (item?.DataContext is ImageEntry { LoadState: LoadState.Unloaded } imageEntry)
-            //    {
-            //        imageEntry.LoadThumbnail();
-            //    }
-            //}
         }
 
         private void ScrollViewer_OnScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            _debounceRedrawThumbnails(e.VerticalOffset);
-            //ReloadThumbnailsView(e.VerticalOffset);
+            _debounceRedrawThumbnails();
         }
 
+        private void RemoveRootFolder_OnClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement { DataContext: ImageEntry { EntryType: EntryType.RootFolder } rootFolder })
+            {
+                ServiceLocator.FolderService.ShowRemoveRootFolderDialog(new FolderViewModel()
+                {
+                    Id = rootFolder.Id,
+                    Path = rootFolder.Path,
+                    Name = rootFolder.Name
+                });
+            }
+        }
     }
 
-    public static class Utility
-    {
-        public static Action Debounce(Action func, int milliseconds = 300)
-        {
-            CancellationTokenSource? cancelTokenSource = null;
-
-            return () =>
-            {
-                cancelTokenSource?.Cancel();
-                cancelTokenSource = new CancellationTokenSource();
-
-                Task.Delay(milliseconds, cancelTokenSource.Token)
-                    .ContinueWith(t =>
-                    {
-                        if (t.IsCompletedSuccessfully)
-                        {
-                            func();
-                        }
-                    }, TaskScheduler.Default);
-            };
-        }
-
-        public static Action<T> Debounce<T>(Action<T> func, int milliseconds = 300)
-        {
-            CancellationTokenSource? cancelTokenSource = null;
-
-            return (arg) =>
-            {
-                cancelTokenSource?.Cancel();
-                cancelTokenSource = new CancellationTokenSource();
-
-                Task.Delay(milliseconds, cancelTokenSource.Token)
-                    .ContinueWith(t =>
-                    {
-                        if (t.IsCompletedSuccessfully)
-                        {
-                            func(arg);
-                        }
-                    }, TaskScheduler.Default);
-            };
-        }
-    }
 }

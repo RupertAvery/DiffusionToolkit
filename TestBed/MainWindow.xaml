@@ -1,0 +1,19 @@
+﻿<Window x:Class="TestBed.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TestBed"
+        xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls;assembly=Diffusion.Toolkit"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance {x:Type local:TestBedModel}}"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <controls:ThumbnailPanel x:Name="ThumbnailPanel" ScrollHeight="{Binding ScrollHeight, Mode=TwoWay}" ImageEntries="{Binding ImageEntries}"></controls:ThumbnailPanel>
+        <ScrollBar Maximum="{Binding ScrollHeight}" Scroll="ScrollBar_OnScroll" Grid.Column="1"></ScrollBar>
+    </Grid>
+</Window>

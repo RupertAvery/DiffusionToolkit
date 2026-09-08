@@ -7,27 +7,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Diffusion.Database;
 using Model = Diffusion.Common.Model;
 using Path = System.IO.Path;
 using System.Text.Json;
-using Microsoft.Extensions.Options;
+using Diffusion.Toolkit.Services;
 
 namespace Diffusion.Toolkit.Pages
 {
     /// <summary>
     /// Interaction logic for Models.xaml
     /// </summary>
-    public partial class Models : Page
+    public partial class Models : NavigationPage
     {
-        private readonly Settings _settings;
+        private Configuration.Settings _settings => ServiceLocator.Settings;
 
         private ModelsModel _model;
 
-        public Models(IOptions<DataStore> dataStoreOptions, Settings settings)
+        public Models() : base("models")
         {
-            _settings = settings;
-
             InitializeComponent();
 
             _model = new ModelsModel();
@@ -75,7 +72,6 @@ namespace Diffusion.Toolkit.Pages
 
             UpdateFilteredModels();
         }
-
 
         private void ComputeSHA256_Click(object sender, RoutedEventArgs e)
         {

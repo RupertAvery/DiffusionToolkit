@@ -12,22 +12,22 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Diffusion.Database;
+using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit
 {
     public class ManageAlbumModel : BaseNotify
     {
-        private Album _selectedAlbum;
-
         public bool SortByName { get; set; }
         public bool SortByDate { get; set; }
         public bool SortManually { get; set; }
 
         public Album SelectedAlbum
         {
-            get => _selectedAlbum;
-            set => SetField(ref _selectedAlbum, value);
+            get;
+            set => SetField(ref field, value);
         }
 
         public ICommand Escape { get; set; }

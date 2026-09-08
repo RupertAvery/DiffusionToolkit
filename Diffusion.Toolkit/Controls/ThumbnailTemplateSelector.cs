@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls;
 
@@ -24,7 +25,6 @@ public class ThumbnailTemplateSelector : DataTemplateSelector
             {
                 EntryType.File => "FileDataTemplate",
                 EntryType.Folder => "FolderDataTemplate",
-                EntryType.Album => "AlbumDataTemplate",
                 _ => throw new ArgumentOutOfRangeException()
             };
 

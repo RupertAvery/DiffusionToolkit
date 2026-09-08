@@ -1,11 +1,12 @@
-﻿using Diffusion.Toolkit.Localization;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls;
 
@@ -102,14 +103,14 @@ public class Thumbnail : FrameworkElement
                 1
             );
 
-            double centerX = (ActualWidth - formattedText.Width) / 2;
-            double centerY = (ActualHeight - formattedText.Height) / 2;
+            double centerX = (Width - formattedText.Width) / 2;
+            double centerY = (Height - formattedText.Height) / 2;
 
             drawingContext.DrawText(formattedText, new Point(centerX, centerY));
 
             var margin = 5;
 
-            var borderRect = new Rect(margin, margin, Width - margin, Height - margin);
+            var borderRect = new Rect(margin, margin, Math.Max(Width - margin, 128), Math.Max(Height - margin, 128));
 
             var pen = new Pen(Foreground, 1);
 
@@ -120,6 +121,7 @@ public class Thumbnail : FrameworkElement
                 DrawDeleted(drawingContext, 25);
             }
 
+            return;
         }
 
         if (Source == null)
@@ -167,8 +169,8 @@ public class Thumbnail : FrameworkElement
     {
         var margin = 5;
 
-        double centerX = ActualWidth / 2;
-        double centerY = ActualHeight / 2;
+        double centerX = Width / 2;
+        double centerY = Height / 2;
 
         drawingContext.PushOpacity(0.6);
         drawingContext.DrawImage(_lightTrashIcon, new Rect(new Point(centerX - 16 + 2, centerY - 16 + 2 + yOffset), new Size(32, 32)));

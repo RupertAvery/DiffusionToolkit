@@ -3,24 +3,113 @@ using Diffusion.Toolkit.Models;
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Diffusion.Common;
 using System.Windows.Forms;
 using System.Windows.Interop;
-using WPFLocalizeExtension.Providers;
-using System.Collections.ObjectModel;
+using System.Windows.Media;
+using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Localization;
+using Diffusion.Toolkit.Services;
+using Diffusion.Toolkit.Thumbnails;
 using WPFLocalizeExtension.Engine;
+using MessageBox = System.Windows.MessageBox;
+using Diffusion.Toolkit.Classes;
+using Diffusion.Toolkit.Controls;
 
 namespace Diffusion.Toolkit
 {
 
+
     public partial class MainWindow
     {
+        static readonly CultureInfo DefaultCulture = CultureInfo.CurrentCulture;
+
+        private async void OnActivated(object? sender, EventArgs e)
+        {
+            //await Task.Delay(500);
+
+            //if (addedTotal > 0)
+            //{
+            //    ServiceLocator.ScanningService.Report(addedTotal, 0, 0, false, false, false);
+            //    lock (_lock)
+            //    {
+            //        addedTotal = 0;
+            //    }
+            //}
+
+        }
+
+        private void InitEvents()
+        {
+            _model.ReleaseNotesCommand = new RelayCommand<object>((o) => ShowReleaseNotes());
+            _model.HelpCommand = new RelayCommand<object>((o) => ShowTips());
+            _model.ToggleInfoCommand = new RelayCommand<object>((o) => ToggleInfo());
+
+            _model.ToggleNSFWBlurCommand = new RelayCommand<object>((o) => ToggleNSFWBlur());
+
+            _model.ToggleHideNSFW = new RelayCommand<object>((o) => ToggleHideNSFW());
+            _model.ToggleHideDeleted = new RelayCommand<object>((o) => ToggleHideDeleted());
+            _model.ToggleHideUnavailable = new RelayCommand<object>((o) => ToggleHideUnavailable());
+
+            _model.ToggleFitToPreview = new RelayCommand<object>((o) => ToggleFitToPreview());
+            _model.ToggleActualSize = new RelayCommand<object>((o) => ToggleActualSize());
+
+            _model.ToggleAutoAdvance = new RelayCommand<object>((o) => ToggleAutoAdvance());
+            _model.ToggleTagsCommand = new RelayCommand<object>((o) => ToggleTags());
+            _model.ToggleNotificationsCommand = new RelayCommand<object>((o) => ToggleNotifications());
+
+            _model.NavigateToParentFolderCommand = new RelayCommand<object>((o) =>
+            {
+                NavigateToParentFolder();
+                _search.ThumbnailListView.FocusCurrentItem();
+            });
+
+            _model.SetThumbnailSize = new RelayCommand<object>((o) => SetThumbnailSize(int.Parse((string)o)));
+            _model.TogglePreview = new RelayCommand<object>((o) => TogglePreview());
+            _model.PoputPreview = new RelayCommand<object>((o) => PopoutPreview(true, true, false));
+
+            _model.ToggleFilenamesCommand = new RelayCommand<object>((o) => ToggleFilenames());
+
+            _model.ResetLayout = new RelayCommand<object>((o) => ResetLayout());
+
+            _model.RescanResults = new RelayCommand<object>((o) => RescanResults());
+            _model.AddAllToAlbum = new RelayCommand<object>((o) => AddAllToAlbum());
+            _model.MarkAllForDeletion = new RelayCommand<object>((o) => MarkAllForDeletion());
+            _model.UnmarkAllForDeletion = new RelayCommand<object>((o) => UnmarkAllForDeletion());
+            _model.RemoveMatching = new RelayCommand<object>((o) => RemoveFromDatabase());
+            _model.AutoTagNSFW = new RelayCommand<object>((o) => AutoTagNSFW());
+            _model.DownloadCivitai = new RelayCommand<object>((o) => DownloadCivitaiModels());
+
+            _model.FixFoldersCommand = new RelayCommand<object>((o) => FixFolders());
+            _model.RemoveExcludedImagesCommand = new RelayCommand<object>((o) => CleanExcludedPaths());
+            _model.CleanRemovedFoldersCommand = new AsyncCommand<object>(CleanRemovedFolders);
+
+            _model.UnavailableFilesCommand = new AsyncCommand<object>(UnavailableFiles);
+
+            _model.ShowFilterCommand = new RelayCommand<object>((o) => _search?.ShowFilter());
+            _model.ToggleAutoRefresh = new RelayCommand<object>((o) => ToggleAutoRefresh());
+
+            _model.SortAlbumCommand = new RelayCommand<object>((o) => SortAlbums());
+            _model.ClearAlbumsCommand = new RelayCommand<object>((o) => ClearAlbums());
+            _model.ClearTagsCommand = new RelayCommand<object>((o) => ClearTags());
+            _model.ClearModelsCommand = new RelayCommand<object>((o) => ClearModels());
+
+            _model.ToggleNavigationPane = new RelayCommand<object>((o) => ToggleNavigationPane());
+            _model.ToggleVisibilityCommand = new RelayCommand<string>((p) => ToggleVisibility(p));
+            _model.ToggleThumbnailViewModeCommand = new RelayCommand<ThumbnailViewMode>((p) => ToggleThumbnailViewMode(p));
+            _model.FocusSearch = new RelayCommand<object>((p) => OpenQueryBar());
+            _model.ShowInExplorerCommand = new RelayCommand<FolderViewModel>((p) => ShowInExplorer(p));
+        }
+
+        private void ToggleThumbnailViewMode(ThumbnailViewMode thumbnailViewMode)
+        {
+            _settings.ThumbnailViewMode = thumbnailViewMode;
+        }
+
+        // TODO: Move these to the property changed handlers and trigger on setting change
+
         private void ToggleHideNSFW()
         {
             _model.HideNSFW = !_model.HideNSFW;
@@ -28,9 +117,9 @@ namespace Diffusion.Toolkit
             _settings.HideNSFW = _model.HideNSFW;
             _search.SearchImages();
 
-            _prompts.ReloadPrompts();
-            _prompts.LoadImages();
-            LoadImageModels();
+            //_prompts.ReloadPrompts();
+            //_prompts.LoadImages();
+            //LoadImageModels();
         }
 
         private void ToggleHideDeleted()
@@ -40,8 +129,8 @@ namespace Diffusion.Toolkit
             _settings.HideDeleted = _model.HideDeleted;
             _search.SearchImages();
 
-            _prompts.ReloadPrompts();
-            _prompts.LoadImages();
+            //_prompts.ReloadPrompts();
+            //_prompts.LoadImages();
         }
 
         private void ToggleHideUnavailable()
@@ -51,14 +140,13 @@ namespace Diffusion.Toolkit
             _settings.HideUnavailable = _model.HideUnavailable;
             _search.SearchImages();
 
-            _prompts.ReloadPrompts();
-            _prompts.LoadImages();
+            //_prompts.ReloadPrompts();
+            //_prompts.LoadImages();
         }
 
         private void ToggleNSFWBlur()
         {
-            _model.NSFWBlur = !_model.NSFWBlur;
-            _settings.NSFWBlur = _model.NSFWBlur;
+            _settings.NSFWBlur = !_settings.NSFWBlur;
         }
 
         private void ToggleFitToPreview()
@@ -77,143 +165,45 @@ namespace Diffusion.Toolkit
             _settings.ActualSize = _model.ActualSize;
         }
 
+        private void ToggleNotifications()
+        {
+            _model.ShowNotifications = !_model.ShowNotifications;
+            _settings.ShowNotifications = _model.ShowNotifications;
+        }
+
+        private void ToggleAutoAdvance()
+        {
+            _settings.AutoAdvance = !_settings.AutoAdvance;
+        }
+
+        private void ToggleFilenames()
+        {
+            _settings.ShowFilenames = !_settings.ShowFilenames;
+        }
+
+        private void ToggleTags()
+        {
+            _model.ShowTags = !_model.ShowTags;
+            _model.Settings.ShowTags = _model.ShowTags;
+        }
+
         private void ToggleInfo()
         {
             _search.ToggleInfo();
         }
 
-        private void RemoveMarked(object obj)
-        {
-            if (_model.IsBusy)
-            {
-                return;
-            }
-            //var files = new List<ImagePath>();
-
-            //for (var i = 1; i <= 100; i++)
-            //{
-            //    files.Add(new ImagePath() { Id = i, Path = $"File{i:000}.png" });
-            //}
-
-            var files = _dataStore.GetMarkedImagePaths().ToList();
-            var count = 0;
-
-            if (files.Count == 0)
-            {
-                _messagePopupManager.Show("There are no files to delete", "Empty recycle bin");
-                return;
-            }
-
-            _progressCancellationTokenSource = new CancellationTokenSource();
-
-            _messagePopupManager.Show("This will delete the files from your hard drive! Are you sure you want to continue?", "Empty recycle bin", PopupButtons.YesNo).ContinueWith(t =>
-            {
-                if (t.Result == PopupResult.Yes)
-                {
-                    Task.Run(async () =>
-                    {
-                        _model.IsBusy = true;
-
-                        var cancelled = false;
-
-                        try
-                        {
-                            Dispatcher.Invoke(() =>
-                            {
-                                _model.TotalProgress = files.Count;
-                                _model.CurrentProgress = 0;
-                            });
-
-                            foreach (var imagePath in files)
-                            {
-                                if (_progressCancellationTokenSource.IsCancellationRequested)
-                                {
-                                    break;
-                                }
-
-                                try
-                                {
-                                    count++;
-
-                                    var filename = Path.GetFileName(imagePath.Path);
-
-                                    Dispatcher.Invoke(() =>
-                                    {
-                                        _model.Status = $"Deleting {filename}...";
-                                        _model.CurrentProgress = count;
-                                    });
-
-                                    _dataStore.DeleteImage(imagePath.Id);
-
-                                    File.Delete(imagePath.Path);
-                                    var dir = Path.GetDirectoryName(imagePath.Path);
-                                    var fileName = Path.GetFileNameWithoutExtension(imagePath.Path);
-                                    var textFilePath = Path.Join(dir, $"{fileName}.txt");
-
-                                    File.Delete(imagePath.Path);
-                                    if (File.Exists(textFilePath))
-                                    {
-                                        File.Delete(textFilePath);
-                                    }
-
-                                }
-                                catch (Exception e)
-                                {
-                                    Logger.Log($"Failed to delete {imagePath.Path}. \n\n {e.Message}");
-
-                                    var result = await Dispatcher.Invoke(async () =>
-                                    {
-                                        return await _messagePopupManager.Show($"Failed to delete {imagePath.Path}. \n\n {e.Message}", "Error", PopupButtons.OkCancel);
-                                    });
-
-                                    if (result == PopupResult.Cancel)
-                                    {
-                                        cancelled = true;
-                                        break;
-                                    }
-
-                                }
-                            }
-
-
-                            await Dispatcher.Invoke(async () =>
-                            {
-                                _model.TotalProgress = 100;
-                                _model.CurrentProgress = 0;
-
-                                LoadAlbums();
-
-                                if (cancelled || _progressCancellationTokenSource.IsCancellationRequested)
-                                {
-                                    await _messagePopupManager.Show($"The operation was cancelled.", "Empty recycle bin", PopupButtons.OK);
-                                }
-
-                                Toast($"{count} images were deleted", "Empty recycle bin");
-
-                            });
-
-                        }
-                        finally
-                        {
-                            _model.IsBusy = false;
-
-                            SetTotalFilesStatus();
-
-                            _search.ReloadMatches(null);
-
-                            //await _search.ReloadMatches();
-
-                        }
-                    });
-                }
-            });
-        }
-
         private void ShowAbout()
         {
-            var welcome = new WelcomeWindow(_settings!);
-            welcome.Owner = this;
-            welcome.ShowDialog();
+            //var welcome = new WelcomeWindow(_settings!);
+            //welcome.Owner = this;
+            //welcome.ShowDialog();
+        }
+
+        private void ShowReleaseNotes()
+        {
+            var window = new ReleaseNotesWindow();
+            window.Owner = this;
+            window.ShowDialog();
         }
 
         private void ShowTips()
@@ -228,16 +218,6 @@ namespace Diffusion.Toolkit
                 {
                     _tipsOpen = false;
                 };
-            }
-        }
-
-        private async Task CancelProgress(object o)
-        {
-            var dialogResult = await _messagePopupManager.Show(GetLocalizedText("Common.MessageBox.ConfirmCancelOperation"), GetLocalizedText("Common.MessageBox.Cancel"), PopupButtons.YesNo);
-
-            if (dialogResult == PopupResult.Yes)
-            {
-                _progressCancellationTokenSource.Cancel();
             }
         }
 
@@ -270,12 +250,53 @@ namespace Diffusion.Toolkit
             _settings.Left = this.Left;
         }
 
+        private bool _isClosing;
 
-        private void OnClosing(object? sender, CancelEventArgs e)
+        private async void OnClosing(object? sender, CancelEventArgs e)
         {
-            if (_settings.IsDirty())
+            try
             {
-                _configuration.Save(_settings);
+                Logger.Log("Attempting to shut down...");
+
+                if (_settings.IsDirty())
+                {
+                    _configuration.Save(_settings);
+                }
+
+                if (ServiceLocator.MainModel.IsBusy)
+                {
+                    Logger.Log("Operation in progress, waiting to shut down...");
+
+                    var d = MessageBox.Show(this, "An operation is currently in progress. Are you sure you want to exit?", "Confirm close", MessageBoxButton.YesNo);
+                    if (d == MessageBoxResult.No)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+
+
+                    e.Cancel = true;
+
+                    await Dispatcher.InvokeAsync(async () =>
+                    {
+                        ServiceLocator.ProgressService.Cancel();
+                        await ServiceLocator.ProgressService.WaitForCompletion();
+                        Close();
+                    });
+                }
+                else
+                {
+                    Logger.Log("Shutting down...");
+                    Logger.Log("Terminating Services...");
+                    _isClosing = true;
+
+                    ServiceLocator.DataStore.Close();
+                    ServiceLocator.ThumbnailService.Stop();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex);
             }
         }
 
@@ -285,5 +306,127 @@ namespace Diffusion.Toolkit
             return (string)JsonLocalizationProvider.Instance.GetLocalizedObject(key, null, CultureInfo.InvariantCulture);
         }
 
+        private void OnSettingsChanged(PropertyChangedEventArgs args)
+        {
+            // Don't do any database updates here
+            switch (args.PropertyName)
+            {
+                case nameof(Settings.ThumbnailViewMode):
+                    _model.ThumbnailViewMode = _settings.ThumbnailViewMode;
+                    break;
+
+                case nameof(Settings.NSFWBlur):
+                    _model.NSFWBlur = _settings.NSFWBlur;
+                    break;
+
+                case nameof(Settings.AutoAdvance):
+                    _model.AutoAdvance = _settings.AutoAdvance;
+                    break;
+
+                case nameof(Settings.AutoRefresh):
+                    _model.AutoRefresh = _settings.AutoRefresh;
+                    break;
+
+                case nameof(Settings.ShowFilenames):
+                    _model.ShowFilenames = _settings.ShowFilenames;
+                    break;
+
+                case nameof(Settings.PermanentlyDelete):
+                    _model.PermanentlyDelete = _settings.PermanentlyDelete;
+                    break;
+
+                case nameof(Settings.PageSize):
+                    ThumbnailCache.CreateInstance(_settings.PageSize * 5, _settings.PageSize * 2);
+                    _search.SetPageSize(_settings.PageSize);
+                    _prompts.SetPageSize(_settings.PageSize);
+                    _search.SearchImages();
+                    break;
+
+                case nameof(Settings.RenderMode):
+                    RenderOptions.ProcessRenderMode = _settings.RenderMode;
+                    break;
+
+                case nameof(Settings.ModelRootPath):
+                case nameof(Settings.HashCache):
+                    LoadModels();
+                    break;
+
+                case nameof(Settings.Theme):
+                    UpdateTheme(_settings.Theme);
+                    break;
+
+                case nameof(Settings.PortableMode):
+                    if (_settings.PortableMode)
+                    {
+                        GoPortable();
+                    }
+                    else
+                    {
+                        GoLocal();
+                    }
+                    break;
+
+                case nameof(Settings.Culture):
+                    if (_settings.Culture == "default")
+                    {
+                        LocalizeDictionary.Instance.Culture = DefaultCulture;
+                    }
+                    else
+                    {
+                        LocalizeDictionary.Instance.Culture = new CultureInfo(_settings.Culture);
+                    }
+                    break;
+
+            }
+        }
+
+        private async Task OpenWith(object sender, string? arg)
+        {
+            await ServiceLocator.ExternalApplicationsService.OpenWith(sender, int.Parse(arg));
+        }
+
+        private async Task RenameImageEntry()
+        {
+            var selectedImageEntry = ServiceLocator.MainModel.SelectedImageEntry;
+
+            if (selectedImageEntry == null) return;
+
+            var id = selectedImageEntry.Id;
+            var oldPath = selectedImageEntry.Path;
+            var entryType = selectedImageEntry.EntryType;
+
+            (bool, NamePath?) result = (false, null);
+
+            if (entryType == EntryType.File)
+            {
+                result = await ServiceLocator.FileService.RenameFile(id, oldPath);
+            }
+            else if (entryType == EntryType.Folder)
+            {
+                var name = selectedImageEntry.FileName;
+
+                result = await ServiceLocator.FolderService.ShowRenameFolderDialog(name, oldPath);
+            }
+
+            if (result.Item1)
+            {
+                selectedImageEntry.Name = result.Item2.Name;
+                selectedImageEntry.FileName = result.Item2.FileName;
+                selectedImageEntry.Path = result.Item2.Path;
+            }
+
+            //_search.Refresh();
+
+            //_search.ThumbnailListView.Focus();
+            _search.ThumbnailListView.FocusCurrentItem();
+
+        }
+
+        public void NavigateToParentFolder()
+        {
+            ServiceLocator.FolderService.NavigateToParentFolder();
+        }
     }
+
 }
+

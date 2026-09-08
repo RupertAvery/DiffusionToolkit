@@ -1,19 +1,32 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Input;
-using Diffusion.Database;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
+using Diffusion.Common;
+using Diffusion.Toolkit.Services;
+using Diffusion.Database.Models;
 
 namespace Diffusion.Toolkit.Controls
 {
     public partial class ThumbnailView
     {
+        public static readonly DependencyProperty SelectedIndexProperty =
+            DependencyProperty.Register(
+                name: nameof(SelectedIndex),
+                propertyType: typeof(int),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: -1,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
         public static readonly DependencyProperty ImagesProperty =
          DependencyProperty.Register(
              name: nameof(Images),
@@ -26,11 +39,11 @@ namespace Diffusion.Toolkit.Controls
 
         public static readonly DependencyProperty SelectedImageEntryProperty =
             DependencyProperty.Register(
-                nameof(SelectedImageEntry), 
-                typeof(ImageEntry), 
+                nameof(SelectedImageEntry),
+                typeof(ImageEntry),
                 typeof(ThumbnailView),
                 new FrameworkPropertyMetadata(
-                    null, 
+                    null,
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)
                 );
 
@@ -109,6 +122,17 @@ namespace Diffusion.Toolkit.Controls
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
+        public static readonly DependencyProperty IsBusyProperty =
+            DependencyProperty.Register(
+                name: nameof(IsBusy),
+                propertyType: typeof(bool),
+                ownerType: typeof(ThumbnailView),
+                typeMetadata: new FrameworkPropertyMetadata(
+                    defaultValue: false,
+                    FrameworkPropertyMetadataOptions.None,
+                    propertyChangedCallback: PropertyChangedCallback)
+            );
+
         public static readonly DependencyProperty ResultsProperty =
             DependencyProperty.Register(
                 name: nameof(Results),
@@ -164,11 +188,11 @@ namespace Diffusion.Toolkit.Controls
                     propertyChangedCallback: PropertyChangedCallback)
             );
 
-        public static readonly DependencyProperty RemoveFromAlbumCommandProperty = 
+        public static readonly DependencyProperty RemoveFromAlbumCommandProperty =
             DependencyProperty.Register(
-                nameof(RemoveFromAlbumCommand), 
-                typeof(ICommand), 
-                typeof(ThumbnailView), 
+                nameof(RemoveFromAlbumCommand),
+                typeof(ICommand),
+                typeof(ThumbnailView),
                 new PropertyMetadata(default(object)));
 
         public static readonly DependencyProperty RenameAlbumCommandProperty =
@@ -178,9 +202,30 @@ namespace Diffusion.Toolkit.Controls
                 typeof(ThumbnailView),
                 new PropertyMetadata(default(object)));
 
+        public static readonly DependencyProperty AddTagCommandProperty = 
+            DependencyProperty.Register(
+                nameof(AddTagCommand), 
+                typeof(ICommand), 
+                typeof(ThumbnailView), 
+                new PropertyMetadata(default(object)));
+
+        public static readonly DependencyProperty RenameTagCommandProperty =
+            DependencyProperty.Register(
+                nameof(RenameTagCommand),
+                typeof(ICommand),
+                typeof(ThumbnailView),
+                new PropertyMetadata(default(object)));
+
         public static readonly DependencyProperty RemoveAlbumCommandProperty =
             DependencyProperty.Register(
                 nameof(RemoveAlbumCommand),
+                typeof(ICommand),
+                typeof(ThumbnailView),
+                new PropertyMetadata(default(object)));
+
+        public static readonly DependencyProperty RemoveTagCommandProperty =
+            DependencyProperty.Register(
+                nameof(RemoveTagCommand),
                 typeof(ICommand),
                 typeof(ThumbnailView),
                 new PropertyMetadata(default(object)));
@@ -215,16 +260,6 @@ namespace Diffusion.Toolkit.Controls
                     FrameworkPropertyMetadataOptions.None,
                     propertyChangedCallback: PropertyChangedCallback));
 
-        public static readonly DependencyProperty AlbumsProperty =
-            DependencyProperty.Register(
-                name: nameof(Albums),
-                propertyType: typeof(ObservableCollection<Album>),
-                ownerType: typeof(ThumbnailView),
-                typeMetadata: new FrameworkPropertyMetadata(
-                    defaultValue: null,
-                    FrameworkPropertyMetadataOptions.None,
-                    propertyChangedCallback: PropertyChangedCallback));
-
         public static readonly DependencyProperty SelectedImagesProperty =
             DependencyProperty.Register(
                 name: nameof(SelectedImages),
@@ -241,6 +276,12 @@ namespace Diffusion.Toolkit.Controls
             {
                 switch (e.Property.Name)
                 {
+                    case nameof(SelectedIndex):
+                        {
+                            thumbnailView.ThumbnailListView.SelectedIndex = (int)e.NewValue;
+                            thumbnailView.FocusCurrentItem();
+                            break;
+                        }
                     case nameof(Images):
                         {
                             thumbnailView.Model.Images = (ObservableCollection<ImageEntry>)e.NewValue;
@@ -278,6 +319,9 @@ namespace Diffusion.Toolkit.Controls
                     case nameof(IsEmpty):
                         thumbnailView.Model.IsEmpty = (bool)e.NewValue;
                         break;
+                    case nameof(IsBusy):
+                        thumbnailView.Model.IsBusy = (bool)e.NewValue;
+                        break;
                     case nameof(Results):
                         thumbnailView.Model.Results = (string)e.NewValue;
                         break;
@@ -287,20 +331,9 @@ namespace Diffusion.Toolkit.Controls
                     case nameof(CurrentImage):
                         thumbnailView.Model.CurrentImage = (ImageViewModel)e.NewValue;
                         thumbnailView.Model.CurrentImage.SearchModelCommand = new RelayCommand<object>(thumbnailView.SearchModel);
-                        thumbnailView.Model.CurrentImage.CopyPathCommand = new RelayCommand<object>(thumbnailView.CopyPath);
-                        thumbnailView.Model.CurrentImage.CopyPromptCommand = new RelayCommand<object>(thumbnailView.CopyPrompt);
-                        thumbnailView.Model.CurrentImage.CopyNegativePromptCommand = new RelayCommand<object>(thumbnailView.CopyNegative);
-                        //_model.CurrentImage.CopySeed = new RelayCommand<object>(CopySeed);
-                        //_model.CurrentImage.CopyHash = new RelayCommand<object>(CopyHash);
-                        thumbnailView.Model.CurrentImage.CopyOthersCommand = new RelayCommand<object>(thumbnailView.CopyOthers);
-                        thumbnailView.Model.CurrentImage.CopyParametersCommand = new RelayCommand<object>(thumbnailView.CopyParameters);
-                        thumbnailView.Model.CurrentImage.ShowInExplorerCommand = new RelayCommand<object>(thumbnailView.ShowInExplorer);
                         //_model.CurrentImage.ShowInThumbnails = new RelayCommand<object>(ShowInThumbnails);
                         thumbnailView.Model.CurrentImage.DeleteCommand = new RelayCommand<object>(o => thumbnailView.DeleteSelected());
                         thumbnailView.Model.CurrentImage.FavoriteCommand = new RelayCommand<object>(o => thumbnailView.FavoriteSelected());
-                        break;
-                    case nameof(Albums):
-                        thumbnailView.ReloadAlbums();
                         break;
                 }
             }
@@ -313,16 +346,16 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(SelectedImagesProperty, value);
         }
 
-        public ObservableCollection<Album> Albums
-        {
-            get => (ObservableCollection<Album>)GetValue(AlbumsProperty);
-            set => SetValue(AlbumsProperty, value);
-        }
-
         public bool IsEmpty
         {
             get => (bool)GetValue(IsEmptyProperty);
             set => SetValue(IsEmptyProperty, value);
+        }
+
+        public bool IsBusy
+        {
+            get => (bool)GetValue(IsBusyProperty);
+            set => SetValue(IsBusyProperty, value);
         }
 
         public ICommand? AddAlbumCommand
@@ -392,6 +425,12 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(ImagesProperty, value);
         }
 
+        public int SelectedIndex
+        {
+            get => (int)GetValue(SelectedIndexProperty);
+            set => SetValue(SelectedIndexProperty, value);
+        }
+
         public ImageEntry? SelectedImageEntry
         {
             get => (ImageEntry)GetValue(SelectedImageEntryProperty);
@@ -416,6 +455,18 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(RemoveAlbumCommandProperty, value);
         }
 
+        public ICommand? RenameTagCommand
+        {
+            get => (ICommand)GetValue(RenameTagCommandProperty);
+            set => SetValue(RenameTagCommandProperty, value);
+        }
+
+        public ICommand? RemoveTagCommand
+        {
+            get => (ICommand)GetValue(RemoveTagCommandProperty);
+            set => SetValue(RemoveTagCommandProperty, value);
+        }
+
         public ICommand? CopyCommand
         {
             get => (ICommand)GetValue(CopyCommandProperty);
@@ -434,6 +485,12 @@ namespace Diffusion.Toolkit.Controls
             set => SetValue(ViewModeProperty, value);
         }
 
+        public object AddTagCommand
+        {
+            get => (object)GetValue(AddTagCommandProperty);
+            set => SetValue(AddTagCommandProperty, value);
+        }
+
         //public DataStore DataStore
         //{
         //    get => (DataStore)GetValue(DataStoreProperty);
@@ -448,6 +505,21 @@ namespace Diffusion.Toolkit.Controls
         private void ThumbnailListView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SelectedImages = new ObservableCollection<ImageEntry>(ThumbnailListView.SelectedItems.Cast<ImageEntry>());
+
+            _debounceUpdateSelection();
+        }
+
+        private Action _debounceUpdateSelection;
+
+        private void Init()
+        {
+            _debounceUpdateSelection = Utility.Debounce(() =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    ServiceLocator.AlbumService.UpdateSelectedImageAlbums();
+                });
+            }, 1000);
         }
     }
 }

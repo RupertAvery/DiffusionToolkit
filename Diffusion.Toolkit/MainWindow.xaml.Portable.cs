@@ -4,6 +4,7 @@ using Diffusion.Toolkit.Services;
 using System;
 using System.IO;
 using System.Windows;
+using Diffusion.Toolkit.Configuration;
 
 namespace Diffusion.Toolkit
 {
@@ -127,8 +128,6 @@ namespace Diffusion.Toolkit
             Logger.Log($"Opening database at {targetDbPath}");
 
             var dataStore = new DataStore(targetDbPath);
-
-            _dataStoreOptions.UpdateValue(dataStore);
 
             ServiceLocator.SetDataStore(dataStore);
         }

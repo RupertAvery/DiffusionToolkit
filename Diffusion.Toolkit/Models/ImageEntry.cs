@@ -1,187 +1,216 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using Diffusion.Toolkit.Thumbnails;
+using Diffusion.Common;
 
-namespace Diffusion.Toolkit;
-public enum EntryType
-{
-    File,
-    Folder,
-    Album
-}
-
-public enum LoadState
-{
-    Unloaded,
-    Loading,
-    Loaded,
-}
+namespace Diffusion.Toolkit.Models;
 
 public class ImageEntry : BaseNotify
 {
-    private BitmapSource? _thumbnail;
-    private string? _fileName;
-    private int _id;
-    private bool _forDeletion;
-    private bool _favorite;
-    private int? _rating;
-    private long _requestId;
-    private bool _nsfw;
-    private string _name;
     private bool _isAlbum;
     private bool _isFolder;
-    private EntryType _entryType;
-    private string? _score;
-    private int _albumCount;
-    private IEnumerable<string> _albums;
-    private bool _unavailable;
-    private bool _hasError;
+    private string _sizeFormatted;
 
-    public ImageEntry(long requestId)
+    public ImageEntry(long batchId)
     {
-        _requestId = requestId;
+        BatchId = batchId;
         LoadState = LoadState.Unloaded;
     }
+
+    public long BatchId { get; set; }
 
     public int Id
 
     {
-        get => _id;
-        set => SetField(ref _id, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public EntryType EntryType
     {
-        get => _entryType;
-        set => SetField(ref _entryType, value);
+        get;
+        set
+        {
+            var updated = SetField(ref field, value);
+            // Force rebinding of template selector
+            if (updated) OnPropertyChanged(nameof(Self));
+        }
     }
+
+    public ImageEntry Self => this;
 
     public string Name
     {
-        get => _name;
-        set => SetField(ref _name, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool ForDeletion
     {
-        get => _forDeletion;
-        set => SetField(ref _forDeletion, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool Favorite
     {
-        get => _favorite;
-        set => SetField(ref _favorite, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public int? Rating
     {
-        get => _rating;
-        set => SetField(ref _rating, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string? Score
     {
-        get => _score;
-        set => SetField(ref _score, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool NSFW
     {
-        get => _nsfw;
-        set => SetField(ref _nsfw, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public string? FileName
     {
-        get => _fileName;
-        set => SetField(ref _fileName, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public BitmapSource? Thumbnail
     {
-        get => _thumbnail;
-        set => SetField(ref _thumbnail, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public LoadState LoadState { get; set; }
 
     public Dispatcher? Dispatcher { get; set; }
 
-    public void LoadThumbnail()
-    {
-        LoadState = LoadState.Loading;
-
-        var job = new ThumbnailJob()
-        {
-            RequestId = _requestId,
-            EntryType = _entryType,
-            Path = Path,
-            Height = Height,
-            Width = Width
-        };
-
-        _ = ThumbnailLoader.Instance.QueueAsync(job, (d) =>
-        {
-            LoadState = LoadState.Loaded;
-
-            if (d.Success)
-            {
-                if (Dispatcher != null)
-                {
-                    Dispatcher.Invoke(() => { Thumbnail = d.Image; });
-                }
-                else
-                {
-                    Thumbnail = d.Image;
-                }
-            }
-            else
-            {
-                if (Dispatcher != null)
-                {
-                    Dispatcher.Invoke(() => { Unavailable = true; });
-                }
-                else
-                {
-                    Unavailable = true;
-                }
-            }
-
-            //Debug.WriteLine($"Finished job {job.RequestId}");
-            //OnPropertyChanged(nameof(Thumbnail));
-        });
-    }
-
     public bool Unavailable
     {
-        get => _unavailable;
-        set => SetField(ref _unavailable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
-    public int Height { get; set; }
-    public int Width { get; set; }
-    public string Path { get; set; }
+    public int Height
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public int Width
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public double ThumbnailHeight
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public double ThumbnailWidth
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public string Path
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
     public DateTime CreatedDate { get; set; }
 
     public int AlbumCount
     {
-        get => _albumCount;
-        set => SetField(ref _albumCount, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public IEnumerable<string> Albums
     {
-        get => _albums;
-        set => SetField(ref _albums, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     public bool HasError
     {
-        get => _hasError;
-        set => SetField(ref _hasError, value);
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public bool IsEmpty
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public bool IsWatched
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public bool IsRecursive
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public int Count
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public long Size
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public ImageType Type
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
+    public void Clear()
+    {
+        BatchId = 0;
+        Id = 0;
+        EntryType = EntryType.File;
+        Name = "";
+        Favorite = false;
+        ForDeletion = false;
+        Rating = null;
+        Score = "";
+        NSFW = false;
+        FileName = "";
+        Path = "";
+        CreatedDate = DateTime.MinValue;
+        AlbumCount = 0;
+        Albums = Enumerable.Empty<string>();
+        HasError = false;
+        Unavailable = false;
+        LoadState = LoadState.Loaded;
+        Dispatcher = Dispatcher;
+        Thumbnail = null;
+        IsEmpty = true;
+        IsRecursive = false;
+        IsWatched = false;
+        Count = 0;
+        Size = 0;
+        Type = ImageType.Image;
     }
 }

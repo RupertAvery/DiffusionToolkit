@@ -11,7 +11,7 @@ namespace Diffusion.IO
 {
     public class StealthPng
     {
-        public static string Read(string imagePath)
+        public static string Read(Stream stream)
         {
             bool confirmingSignature = true;
             bool sigConfirmed = false;
@@ -27,7 +27,7 @@ namespace Diffusion.IO
             string genInfo = "";
 
 
-            using (Bitmap bitmap = new Bitmap(imagePath))
+            using (Bitmap bitmap = new Bitmap(stream))
             {
                 bool hasAlpha = bitmap.PixelFormat is PixelFormat.Format24bppRgb or PixelFormat.Format32bppArgb;
 

@@ -9,7 +9,7 @@ namespace Diffusion.Toolkit.Behaviors
                 "IsDraggedOn",
                 typeof(bool),
                 typeof(DTBehaviors),
-                new PropertyMetadata(IsDraggedOnPropertyChanged)
+               new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.AffectsRender | FrameworkPropertyMetadataOptions.BindsTwoWayByDefault)
             );
 
         public static bool GetIsDraggedOn(DependencyObject obj)

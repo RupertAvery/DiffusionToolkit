@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Toolkit.Models;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -29,33 +30,10 @@ namespace Diffusion.Toolkit.Controls
             new PropertyMetadata(default(ImageEntry))
             );
 
-        //public DataStore DataStore
-        //{
-        //    set
-        //    {
-        //        ThumbnailListView.DataStore = value;
-        //    }
-        //}
-
-        public MessagePopupManager MessagePopupManager
-        {
-            set
-            {
-                ThumbnailListView.MessagePopupManager = value;
-            }
-        }
-
         public ThumbnailPaneModel Model
         {
             get => (ThumbnailPaneModel)GetValue(ModelProperty);
             set => SetValue(ModelProperty, value);
-        }
-
-
-        public Action<IList<ImageEntry>> MoveFiles
-        {
-            get => ThumbnailListView.MoveFiles;
-            set => ThumbnailListView.MoveFiles = value;
         }
 
         public ImageEntry SelectedImageEntry
@@ -67,9 +45,7 @@ namespace Diffusion.Toolkit.Controls
         public Action ClearQuery { get; set; }
 
         public Action SearchImages { get; set; }
-
-        public Action<bool> ReloadMatches { get; set; }
-
+        
         public ThumbnailPane()
         {
             InitializeComponent();
@@ -102,17 +78,6 @@ namespace Diffusion.Toolkit.Controls
             Model.SearchHint = $"Search for {randomHint}";
         }
 
-        public void SetPagingEnabled()
-        {
-            ThumbnailListView.SetPagingEnabled();
-        }
-
-        public void ResetView(bool focus)
-        {
-            ThumbnailListView.ResetView(focus);
-        }
-
-
         private void SearchTermTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)
@@ -122,11 +87,6 @@ namespace Diffusion.Toolkit.Controls
                     e.Handled = true;
                     break;
             }
-        }
-
-        private void ThumbnailListView_OnPageChangedEvent(object? sender, PageChangedEventArgs e)
-        {
-            ReloadMatches(true);
         }
     }
 }

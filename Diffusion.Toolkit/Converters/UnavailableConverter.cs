@@ -5,11 +5,13 @@ using System.Windows.Data;
 
 namespace Diffusion.Toolkit.Converters;
 
-public class UnavailableConverter : IValueConverter
+public class FolderUnavailableConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
     {
-        return (bool)value ? TextDecorations.Strikethrough : null;
+        if (value == null) return new TextDecorationCollection();
+
+        return (bool)value ? TextDecorations.Strikethrough : new TextDecorationCollection();
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -7,7 +7,10 @@
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+             xmlns:toolkit="clr-namespace:Diffusion.Toolkit"
+             xmlns:configuration="clr-namespace:Diffusion.Toolkit.Configuration"
              mc:Ignorable="d" 
+             Focusable="True"
              d:DesignHeight="200" d:DesignWidth="400">
     <UserControl.Resources>
         <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
@@ -27,7 +30,7 @@
                             <fa:ImageAwesome.Style>
                                 <Style>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static local:AccordionState.Expanded}">
+                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static configuration:AccordionState.Expanded}">
                                             <DataTrigger.EnterActions>
                                                 <BeginStoryboard>
                                                     <Storyboard TargetProperty="Rotation">
@@ -43,7 +46,7 @@
                                                 </BeginStoryboard>
                                             </DataTrigger.ExitActions>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static local:AccordionState.Collapsed}">
+                                        <DataTrigger Binding="{Binding State, RelativeSource={RelativeSource TemplatedParent}}" Value="{x:Static configuration:AccordionState.Collapsed}">
                                             <DataTrigger.EnterActions>
                                                 <BeginStoryboard>
                                                     <Storyboard TargetProperty="Rotation">
@@ -66,7 +69,7 @@
                         </fa:ImageAwesome>
                     </Button>
                     <Label Style="{StaticResource SmallCaps}" Grid.Column="1" Margin="0,0,0,0" Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}"></Label>
-                    <ContentControl Grid.Column="2" Content="{Binding ButtonAreaContent, RelativeSource={RelativeSource TemplatedParent}}"/>
+                    <ContentControl  Focusable="True" Grid.Column="2" Content="{Binding ButtonAreaContent, RelativeSource={RelativeSource TemplatedParent}}"/>
                 </Grid>
 
                 <Grid Background="Transparent" Margin="0,0,0,0" Visibility="{Binding ContentVisibility, RelativeSource={RelativeSource TemplatedParent}}">
@@ -78,7 +81,7 @@
                         <ScrollViewer Margin="0,5,0,5" behaviors:DTBehaviors.IsScrollDisabledAttached="True">
                             <ContentPresenter Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Content}" />
                         </ScrollViewer>
-                         </Border>
+                    </Border>
 
                     <Grid Visibility="{Binding CanResize, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource boolToVisCol}}" Grid.Row="1" Background="Transparent" Height="10" 
                           Opacity="50"

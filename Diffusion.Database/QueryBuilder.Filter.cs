@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using Diffusion.Common.Query;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Diffusion.Database
 {
@@ -11,28 +13,28 @@ namespace Diffusion.Database
             _models = models;
         }
 
-        public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<string> Joins) Filter(Filter filter)
+        public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<string> Joins) PreFilter(Filter filter)
         {
             var conditions = new List<KeyValuePair<string, object>>();
             var joins = new List<string>();
 
-            if (HideNSFW && !filter.UseNSFW)
-            {
-                conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
-                filter.UseNSFW = false;
-            }
+            //if (HideNSFW && !filter.UseNSFW)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+            //    filter.UseNSFW = false;
+            //}
 
-            if (HideDeleted && !filter.UseForDeletion)
-            {
-                conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", false));
-                filter.UseForDeletion = false;
-            }
+            //if (HideDeleted && !filter.UseForDeletion)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", false));
+            //    filter.UseForDeletion = false;
+            //}
 
-            if (HideUnavailable && !filter.UseUnavailable)
-            {
-                conditions.Add(new KeyValuePair<string, object>("(Unavailable = ?)", false));
-                filter.UseUnavailable = false;
-            }
+            //if (HideUnavailable && !filter.UseUnavailable)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(Unavailable = ?)", false));
+            //    filter.UseUnavailable = false;
+            //}
 
             FilterAlbum(filter, conditions, joins);
             FilterFolder(filter, conditions, joins);
@@ -51,10 +53,74 @@ namespace Diffusion.Database
             FilterHypernetStrength(filter, conditions);
             FilterFavorite(filter, conditions);
             FilterForDeletion(filter, conditions);
+            FilterType(filter, conditions);
             FilterNSFW(filter, conditions);
             FilterNoMetadata(filter, conditions);
             FilterInAlbum(filter, conditions);
             FilterUnavailable(filter, conditions);
+
+            //FilterNegativePrompt(filter, conditions);
+            //FilterPrompt(filter, conditions);
+
+            //FilterNegativePromptEx(filter, conditions);
+            //FilterPromptEx(filter, conditions);
+
+            return (string.Join(" AND ", conditions.Select(c => c.Key)),
+                conditions.SelectMany(c =>
+                {
+                    return c.Value switch
+                    {
+                        IEnumerable<object> orConditions => orConditions.Select(o => o),
+                        _ => new[] { c.Value }
+                    };
+                }).Where(o => o != null),
+                joins);
+        }
+
+        public static (string WhereClause, IEnumerable<object> Bindings, IEnumerable<string> Joins) Filter(Filter filter)
+        {
+            var conditions = new List<KeyValuePair<string, object>>();
+            var joins = new List<string>();
+
+            //if (HideNSFW && !filter.UseNSFW)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(NSFW = ? OR NSFW IS NULL)", false));
+            //    filter.UseNSFW = false;
+            //}
+
+            //if (HideDeleted && !filter.UseForDeletion)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", false));
+            //    filter.UseForDeletion = false;
+            //}
+
+            //if (HideUnavailable && !filter.UseUnavailable)
+            //{
+            //    conditions.Add(new KeyValuePair<string, object>("(Unavailable = ?)", false));
+            //    filter.UseUnavailable = false;
+            //}
+
+            //FilterAlbum(filter, conditions, joins);
+            //FilterFolder(filter, conditions, joins);
+            //FilterPath(filter, conditions);
+            //FilterDate(filter, conditions);
+            //FilterSeed(filter, conditions);
+            //FilterSteps(filter, conditions);
+            //FilterSampler(filter, conditions);
+            //FilterHash(filter, conditions);
+            //FilterModelName(filter, conditions);
+            //FilterCFG(filter, conditions);
+            //FilterSize(filter, conditions);
+            //FilterAestheticScore(filter, conditions);
+            //FilterRating(filter, conditions);
+            //FilterHypernet(filter, conditions);
+            //FilterHypernetStrength(filter, conditions);
+            //FilterFavorite(filter, conditions);
+            //FilterForDeletion(filter, conditions);
+            //FilterNSFW(filter, conditions);
+            //FilterNoMetadata(filter, conditions);
+            //FilterInAlbum(filter, conditions);
+            //FilterUnavailable(filter, conditions);
 
             FilterNegativePrompt(filter, conditions);
             FilterPrompt(filter, conditions);
@@ -102,10 +168,13 @@ namespace Diffusion.Database
         {
             if (filter.UsePath)
             {
-                var value = filter.Path;
+                if (!string.IsNullOrWhiteSpace(filter.Path))
+                {
 
-                conditions.Add(new KeyValuePair<string, object>("(m1.Path LIKE ?)", value.Replace("*", "%")));
+                    var value = filter.Path;
 
+                    conditions.Add(new KeyValuePair<string, object>("(m1.Path LIKE ?)", value.Replace("*", "%")));
+                }
             }
         }
 
@@ -117,6 +186,24 @@ namespace Diffusion.Database
 
                 conditions.Add(new KeyValuePair<string, object>("(ForDeletion = ?)", value));
 
+            }
+        }
+
+        private static void FilterType(Filter filter, List<KeyValuePair<string, object>> conditions)
+        {
+            if (filter.UseTypes && filter.Types.Any())
+            {
+                var orConditions = new List<KeyValuePair<string, object>>();
+
+                foreach (var filterType in filter.Types)
+                {
+                    orConditions.Add(new KeyValuePair<string, object>("(Type = ?)", filterType));
+                }
+
+                var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
+                var values = orConditions.Select(c => c.Value);
+
+                conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
             }
         }
 
@@ -269,7 +356,7 @@ namespace Diffusion.Database
         {
             if (filter.UsePrompt)
             {
-                if (filter.Prompt.Trim().Length == 0)
+                if (string.IsNullOrWhiteSpace(filter.Prompt))
                 {
                     conditions.Add(new KeyValuePair<string, object>("(Prompt LIKE ? OR Prompt IS NULL)", "%%"));
                     return;
@@ -307,18 +394,42 @@ namespace Diffusion.Database
         {
             if (filter.UseSize)
             {
-                var height = filter.Height;
-                if (NumericRegex.IsMatch(height))
+                switch (filter.SizeOp)
                 {
-                    conditions.Add(new KeyValuePair<string, object>("(Height = ?)", int.Parse(height, CultureInfo.InvariantCulture)));
-                }
+                    case "pixels":
+                        var height = filter.Height;
+                        if (height != null && NumericRegex.IsMatch(height))
+                        {
+                            conditions.Add(new KeyValuePair<string, object>("(Height = ?)", int.Parse(height, CultureInfo.InvariantCulture)));
+                        }
 
-                var width = filter.Width;
-                if (NumericRegex.IsMatch(width))
-                {
-                    conditions.Add(new KeyValuePair<string, object>("(Width = ?)", int.Parse(width, CultureInfo.InvariantCulture)));
-                }
+                        var width = filter.Width;
+                        if (width != null && NumericRegex.IsMatch(width))
+                        {
+                            conditions.Add(new KeyValuePair<string, object>("(Width = ?)", int.Parse(width, CultureInfo.InvariantCulture)));
+                        }
+                        break;
 
+                    case "ratio":
+                        var values = new object[] { filter.Width, filter.Height };
+
+                        conditions.Add(new KeyValuePair<string, object>(
+                            "(CAST(Width as REAL) / CAST(Height as REAL)) = (CAST(? as REAL) / CAST(? as REAL))", values.AsEnumerable()));
+                        break;
+
+                    case "landscape":
+                        conditions.Add(new KeyValuePair<string, object>("(Width > Height)", null));
+                        break;
+
+                    case "portrait":
+                        conditions.Add(new KeyValuePair<string, object>("(Width < Height)", null));
+                        break;
+
+                    case "square":
+                        conditions.Add(new KeyValuePair<string, object>("(Width = Height)", null));
+                        break;
+
+                }
             }
         }
 
@@ -326,23 +437,25 @@ namespace Diffusion.Database
         {
             if (filter.UseCFGScale)
             {
-                var orConditions = new List<KeyValuePair<string, object>>();
-
                 var match = CfgRegex.Match("cfg: " + filter.CFGScale);
 
-                for (var i = 1; i < match.Groups.Count; i++)
+                if (match.Success)
                 {
-                    if (match.Groups[i].Value.Length > 0)
+                    var orConditions = new List<KeyValuePair<string, object>>();
+
+                    for (var i = 1; i < match.Groups.Count; i++)
                     {
-                        orConditions.Add(new KeyValuePair<string, object>("(CFGScale = ?)", float.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
+                        if (match.Groups[i].Value.Length > 0)
+                        {
+                            orConditions.Add(new KeyValuePair<string, object>("(CFGScale = ?)", float.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
+                        }
                     }
+
+                    var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
+                    var values = orConditions.Select(c => c.Value);
+
+                    conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
                 }
-
-                var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
-                var values = orConditions.Select(c => c.Value);
-
-                conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
-
             }
         }
 
@@ -350,22 +463,26 @@ namespace Diffusion.Database
         {
             if (filter.UseModelHash)
             {
-                var orConditions = new List<KeyValuePair<string, object>>();
-
                 var match = HashRegex.Match("model_hash: " + filter.ModelHash);
 
-                for (var i = 1; i < match.Groups.Count; i++)
+                if (match.Success)
                 {
-                    if (match.Groups[i].Value.Length > 0)
+                    var orConditions = new List<KeyValuePair<string, object>>();
+
+                    for (var i = 1; i < match.Groups.Count; i++)
                     {
-                        orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", match.Groups[i].Value));
+                        if (match.Groups[i].Value.Length > 0)
+                        {
+                            orConditions.Add(new KeyValuePair<string, object>("(ModelHash = ? COLLATE NOCASE)", match.Groups[i].Value));
+                        }
                     }
+
+                    var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
+                    var values = orConditions.Select(c => c.Value);
+
+                    conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
                 }
 
-                var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
-                var values = orConditions.Select(c => c.Value);
-
-                conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
             }
         }
 
@@ -410,7 +527,7 @@ namespace Diffusion.Database
 
         private static void FilterSampler(Filter filter, List<KeyValuePair<string, object>> conditions)
         {
-            if (filter.UseSampler && !string.IsNullOrEmpty(filter.Sampler))
+            if (filter.UseSampler && !string.IsNullOrWhiteSpace(filter.Sampler))
             {
                 var samplerList = filter.Sampler.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -434,21 +551,24 @@ namespace Diffusion.Database
             {
                 var match = StepsRegex.Match("steps: " + filter.Steps);
 
-
-                var orConditions = new List<KeyValuePair<string, object>>();
-
-                for (var i = 1; i < match.Groups.Count; i++)
+                if (match.Success)
                 {
-                    if (match.Groups[i].Value.Length > 0)
+                    var orConditions = new List<KeyValuePair<string, object>>();
+
+                    for (var i = 1; i < match.Groups.Count; i++)
                     {
-                        orConditions.Add(new KeyValuePair<string, object>("(Steps = ?)", int.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
+                        if (match.Groups[i].Value.Length > 0)
+                        {
+                            orConditions.Add(new KeyValuePair<string, object>("(Steps = ?)", int.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture)));
+                        }
                     }
+
+                    var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
+                    var values = orConditions.Select(c => c.Value);
+
+                    conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
+
                 }
-
-                var keys = string.Join(" OR ", orConditions.Select(c => c.Key));
-                var values = orConditions.Select(c => c.Value);
-
-                conditions.Add(new KeyValuePair<string, object>($"({keys})", values));
             }
 
         }
@@ -457,13 +577,16 @@ namespace Diffusion.Database
         {
             if (filter.UseSeed)
             {
+                if (string.IsNullOrEmpty(filter.SeedStart))
+                {
+                    return;
+                }
                 if (!string.IsNullOrEmpty(filter.SeedEnd))
                 {
                     conditions.Add(new KeyValuePair<string, object>("(Seed BETWEEN ? AND ?)", new object[] { filter.SeedStart, filter.SeedEnd }));
                 }
                 else
                 {
-
                     if (filter.SeedStart.Contains("?") || filter.SeedStart.Contains("*"))
                     {
                         conditions.Add(new KeyValuePair<string, object>("(Seed LIKE ?)", filter.SeedStart.Replace("*", "%")));

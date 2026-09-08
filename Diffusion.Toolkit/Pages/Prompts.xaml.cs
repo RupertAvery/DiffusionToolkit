@@ -9,60 +9,62 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Diffusion.Database;
+using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
 using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Thumbnails;
-using Microsoft.Extensions.Options;
-using Image = Diffusion.Database.Image;
 
 namespace Diffusion.Toolkit.Pages
 {
     /// <summary>
     /// Interaction logic for Prompts.xaml
     /// </summary>
-    public partial class Prompts : Page
+    public partial class Prompts : NavigationPage
     {
-        private readonly DataStore _dataStore;
-        private readonly Settings _settings;
+        private DataStore _dataStore => ServiceLocator.DataStore;
+        private Configuration.Settings _settings => ServiceLocator.Settings;
         private PromptsModel _model;
+        private bool _isLoaded;
 
-        public Prompts(IOptions<DataStore> dataStoreOptions, MessagePopupManager messagePopupManager, MainModel mainModel, Settings settings)
+        public Prompts() : base("prompts")
         {
-            _dataStore = dataStoreOptions.Value;
-            _settings = settings;
             InitializeComponent();
 
-            _model = new PromptsModel(mainModel);
+            ServiceLocator.NavigatorService.OnNavigate += (sender, args) =>
+            {
+                if (this == args.TargetPage && !_isLoaded)
+                {
+                    LoadPrompts();
+                    _isLoaded = true;
+                }
+            };
+
+            _model = new PromptsModel();
 
             _model.PromptsResults.PageChangedCommand = new RelayCommand<PageChangedEventArgs>((o) =>
             {
-                ReloadMatches(true, o.GotoEnd);
+                ReloadMatches(new ReloadOptions() { Focus = true, CursorPosition = o.CursorPosition });
             });
 
             DataContext = _model;
 
-            ThumbnailListView.DataStoreOptions = dataStoreOptions;
-
-            ThumbnailListView.MessagePopupManager = messagePopupManager;
-
-            ReloadPrompts();
-
             _model.PropertyChanged += ModelOnPropertyChanged;
         }
 
-        public Settings Settings { get; set; }
+        public Configuration.Settings Settings { get; set; }
 
         private void ModelOnPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(PromptsModel.FullTextPrompt) || e.PropertyName == nameof(PromptsModel.PromptDistance))
             {
-                LoadPrompts();
+                Dispatcher.Invoke(() => { LoadPrompts(); });
             }
             if (e.PropertyName == nameof(PromptsModel.NegativeFullTextPrompt) || e.PropertyName == nameof(PromptsModel.NegativePromptDistance))
             {
-                LoadNegativePrompts();
+                Dispatcher.Invoke(() => { LoadNegativePrompts(); });
             }
         }
 
@@ -84,18 +86,30 @@ namespace Diffusion.Toolkit.Pages
 
         private void LoadPrompts()
         {
-            _model.Prompts = new ObservableCollection<UsedPrompt>(_dataStore.SearchPrompts(_model.PromptQuery, _model.FullTextPrompt, _model.PromptDistance));
+            Task.Run(() =>
+            {
+                _model.IsBusy = true;
+                var prompts = _dataStore.SearchPrompts(_model.PromptQuery, _model.FullTextPrompt, _model.PromptDistance);
+                _model.Prompts = new ObservableCollection<UsedPrompt>(prompts);
+                _model.IsBusy = false;
+            });
         }
 
         private void LoadNegativePrompts()
         {
-            _model.NegativePrompts = new ObservableCollection<UsedPrompt>(_dataStore.SearchNegativePrompts(_model.NegativePromptQuery, _model.NegativeFullTextPrompt, _model.NegativePromptDistance));
+            Task.Run(() =>
+            {
+                _model.IsBusy = true;
+                var prompts = _dataStore.SearchNegativePrompts(_model.NegativePromptQuery, _model.NegativeFullTextPrompt, _model.NegativePromptDistance);
+                _model.NegativePrompts = new ObservableCollection<UsedPrompt>(prompts);
+                _model.IsBusy = false;
+            });
         }
 
         public void ReloadPrompts()
         {
-            LoadPrompts();
-            LoadNegativePrompts();
+            
+            //LoadNegativePrompts();
         }
 
         public void LoadImages()
@@ -153,12 +167,12 @@ namespace Diffusion.Toolkit.Pages
             ReloadMatches();
         }
 
-        public void ReloadMatches(bool focus = true, bool gotoEnd = false)
+        public void ReloadMatches(ReloadOptions? reloadOptions = null)
         {
             Task.Run(() =>
             {
                 LoadMatches();
-                ThumbnailListView.ResetView(focus, gotoEnd);
+                ThumbnailListView.ResetView(reloadOptions);
             });
         }
 
@@ -168,16 +182,18 @@ namespace Diffusion.Toolkit.Pages
         {
             Dispatcher.Invoke(() =>
             {
-                _model.PromptsResults.Images?.Clear();
+                _model.IsBusy = true;
+                //_model.PromptsResults.Images?.Clear();
             });
 
             var images = new List<ImageEntry>();
 
-            var rId = r.NextInt64();
-            ThumbnailLoader.Instance.SetCurrentRequestId(rId);
+            ServiceLocator.ThumbnailService.StopCurrentBatch();
+
+            var rId = ServiceLocator.ThumbnailService.StartBatch();
 
 
-            IEnumerable<Image> matches = Enumerable.Empty<Image>();
+            IEnumerable<ImageView> matches = Enumerable.Empty<ImageView>();
 
 
             var query = _model.SelectedPrompt.Prompt;
@@ -205,7 +221,6 @@ namespace Diffusion.Toolkit.Pages
             var count = 0;
 
 
-
             foreach (var file in matches)
             {
                 var imageEntry = new ImageEntry(rId)
@@ -219,6 +234,7 @@ namespace Diffusion.Toolkit.Pages
                     CreatedDate = file.CreatedDate,
                     FileName = Path.GetFileName(file.Path),
                     NSFW = file.NSFW,
+                    AlbumCount = file.AlbumCount,
                     EntryType = EntryType.File
                 };
 
@@ -243,8 +259,51 @@ namespace Diffusion.Toolkit.Pages
             Dispatcher.Invoke(() =>
             {
                 _model.PromptsResults.Images = new ObservableCollection<ImageEntry>(images);
-                RefreshThumbnails();
+                //RefreshThumbnails();
+            });
 
+
+            Dispatcher.Invoke(() =>
+            {
+                if (_model.PromptsResults.Images == null || _model.PromptsResults.Images.Count != images.Count)
+                {
+                    _model.PromptsResults.Images = new ObservableCollection<ImageEntry>(images);
+                }
+                else
+                {
+                    for (var i = 0; i < images.Count; i++)
+                    {
+                        var dest = _model.PromptsResults.Images[i];
+                        var src = images[i];
+
+                        dest.BatchId = src.BatchId;
+                        dest.Id = src.Id;
+                        dest.EntryType = src.EntryType;
+                        dest.Name = src.Name;
+                        dest.ForDeletion = src.ForDeletion;
+                        dest.Favorite = src.Favorite;
+                        dest.Rating = src.Rating;
+                        dest.Score = src.Score;
+                        dest.NSFW = src.NSFW;
+                        dest.FileName = src.FileName;
+                        dest.Unavailable = src.Unavailable;
+                        dest.Height = src.Height;
+                        dest.Width = src.Width;
+                        dest.Path = src.Path;
+                        dest.CreatedDate = src.CreatedDate;
+                        dest.AlbumCount = src.AlbumCount;
+                        dest.Albums = src.Albums;
+                        dest.HasError = src.HasError;
+
+                        dest.LoadState = LoadState.Unloaded;
+                        dest.Dispatcher = Dispatcher;
+                        dest.Thumbnail = null;
+                    }
+                }
+
+                ThumbnailListView.ReloadThumbnailsView();
+
+                _model.IsBusy = false;
             });
 
             sw.Stop();
@@ -259,7 +318,7 @@ namespace Diffusion.Toolkit.Pages
         public void SetThumbnailSize(int thumbnailSize)
         {
             ThumbnailListView.SetThumbnailSize(thumbnailSize);
-            RefreshThumbnails();
+            //RefreshThumbnails();
         }
 
 
@@ -268,16 +327,16 @@ namespace Diffusion.Toolkit.Pages
             ThumbnailListView.PageSize = pageSize;
         }
 
-        public void RefreshThumbnails()
-        {
-            if (_model.PromptsResults.Images != null)
-            {
-                foreach (var image in _model.PromptsResults.Images)
-                {
-                    image.LoadThumbnail();
-                }
-            }
-        }
+        //public void RefreshThumbnails()
+        //{
+        //    if (_model.PromptsResults.Images != null)
+        //    {
+        //        foreach (var image in _model.PromptsResults.Images)
+        //        {
+        //            image.QueueLoadThumbnail();
+        //        }
+        //    }
+        //}
 
         private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {

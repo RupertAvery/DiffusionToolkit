@@ -6,9 +6,13 @@
              xmlns:local="clr-namespace:Diffusion.Toolkit.Controls"
              xmlns:fa="http://schemas.fontawesome.io/icons/"
              xmlns:classes="clr-namespace:Diffusion.Toolkit.Classes"
+             xmlns:behaviors="clr-namespace:Diffusion.Toolkit.Behaviors"
              xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
-             mc:Ignorable="d" 
+             xmlns:models="clr-namespace:Diffusion.Toolkit.Models"
+             xmlns:common="clr-namespace:Diffusion.Common;assembly=Diffusion.Common"
+             mc:Ignorable="d"
+             Focusable="True"
              d:DesignHeight="600" d:DesignWidth="800">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -19,19 +23,60 @@
             <converters:InverseBoolToVisibilityMultiConverter x:Key="invBoolToVisMulti"></converters:InverseBoolToVisibilityMultiConverter>
             <converters:BoolToOpacityConverter x:Key="BoolToOpacity"></converters:BoolToOpacityConverter>
             <converters:ScrollBarVisibilityConverter x:Key="scrollBarVisibility"></converters:ScrollBarVisibilityConverter>
+            <converters:IntToVisibilityConverter x:Key="intToVis"></converters:IntToVisibilityConverter>
+            <converters:IfLessThanConverter x:Key="iflessThan"></converters:IfLessThanConverter>
+            <converters:IfGreaterThanConverter x:Key="ifGreaterThan"></converters:IfGreaterThanConverter>
 
+            <DataTemplate x:Key="ImageDataTemplate">
+                <ScrollViewer Grid.Row="0"  Grid.RowSpan="3"
+                              Loaded="ScrollViewer_OnLoaded"
+                              HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
+                              VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                >
 
-            <Style x:Key="ShowOnHover" TargetType="Grid">
-                <Setter Property="Opacity" Value="0.25"/>
-                <Style.Triggers>
-                    <Trigger Property="IsMouseOver" Value="true">
-                        <Setter Property="StackPanel.Opacity" Value="1" />
-                    </Trigger>
-                </Style.Triggers>
-            </Style>
+                    <Image 
+                           DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                           Stretch="None"
+                           Opacity="{Binding ForDeletion, Converter={StaticResource BoolToOpacity}}"
+                           RenderOptions.BitmapScalingMode="Fant"
+                           Source="{Binding Image}" >
+                        <Image.Visibility>
+                            <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
+                                <Binding Path="NSFW"></Binding>
+                                <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
+                            </MultiBinding>
+                        </Image.Visibility>
+                        <Image.Effect>
+                            <BlurEffect  KernelType="Gaussian">
+                                <BlurEffect.Radius>
+                                    <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
+                                        <Binding Path="NSFW"></Binding>
+                                        <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
+                                    </MultiBinding>
+                                </BlurEffect.Radius>
+                            </BlurEffect>
+                        </Image.Effect>
+                    </Image>
+
+                </ScrollViewer>
+            </DataTemplate>
+            <DataTemplate x:Key="VideoDataTemplate" DataType="{x:Type models:ImageViewModel}">
+                <MediaElement 
+                    DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                    Source="{Binding Path}"
+                    LoadedBehavior="Manual"
+                    Loaded="Player_OnLoaded"
+                    MediaOpened="MediaElement_OnMediaOpened"
+                    MediaEnded="Player_OnMediaEnded"
+                    MouseDown="Player_OnMouseDown"
+                    SpeedRatio="1"
+                    Volume="{Binding MainModel.Settings.Volume, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
+                ></MediaElement>
+            </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="PreviewGrid" DataContext="{Binding ., RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Background="Transparent">
+
         <Grid  Background="{x:Null}" Visibility="{Binding IsLoading, Converter={StaticResource boolToVis}}">
             <fa:ImageAwesome Opacity="0.5" Icon="CircleOutlineNotch" Height="60" Spin="True" SpinDuration="1" Foreground="{StaticResource ForegroundBrush}" />
         </Grid>
@@ -49,13 +94,46 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition/>
             </Grid.RowDefinitions>-->
-        <Grid  Style="{StaticResource Preview}" Background="{x:Null}">
+        <!--<Grid  Style="{StaticResource Preview}" Background="{x:Null}"
+               x:Name="Grid"
+               MouseMove="Grid_OnMouseMove"
+               PreviewMouseWheel="UIElement_OnMouseWheel"  
+               PreviewKeyDown="Grid_OnPreviewKeyDown"
+               PreviewKeyUp="Grid_OnPreviewKeyUp"
+               KeyDown="Grid_OnKeyDown"
+        >-->
+
+        <Grid  Style="{StaticResource Preview}" Background="{x:Null}"
+               x:Name="Grid"
+               MouseMove="Grid_OnMouseMove"
+               PreviewMouseWheel="UIElement_OnMouseWheel"  
+               PreviewKeyDown="Grid_OnPreviewKeyDown"
+               PreviewKeyUp="Grid_OnPreviewKeyUp"
+               KeyDown="Grid_OnKeyDown"
+               Focusable="True"
+               >
+            <Grid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem x:Name="AlbumMenu" ItemsSource="{Binding MainModel.AlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.AddToAlbum}" >
+                    </MenuItem>
+                    <MenuItem x:Name="SelectionAlbumMenu" ItemsSource="{Binding MainModel.SelectionAlbumMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.RemoveFromAlbum}"></MenuItem>
+                    <Separator />
+                    <MenuItem ItemsSource="{Binding MainModel.OpenWithMenuItems}" Header="{lex:Loc Thumbnail.ContextMenu.OpenWith}"></MenuItem>
+                    <Separator></Separator>
+                    <MenuItem Header="Fit to Preview" InputGestureText="CTRL+Shift+F" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
+                    <MenuItem Header="Actual Size" InputGestureText="CTRL+Shift+A" Command="{Binding MainModel.ToggleActualSize}" IsChecked="{Binding MainModel.ActualSize}"></MenuItem>
+                    <Separator></Separator>
+                    <MenuItem Header="Copy Path" Command="{Binding CopyPathCommand}"></MenuItem>
+                </ContextMenu>
+
+                <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
+
+            </Grid.ContextMenu>
             <Grid.RowDefinitions>
                 <RowDefinition Height="42"/>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="32"/>
             </Grid.RowDefinitions>
-
 
             <!--HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
             VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
@@ -63,49 +141,26 @@
             <!--HorizontalScrollBarVisibility="Hidden" 
             VerticalScrollBarVisibility="Hidden"-->
 
+            <Grid Background="Transparent" Grid.Row="0" Grid.RowSpan="3">
+                <ContentControl x:Name="Content" DataContext="{Binding Path=Image}">
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Setter Property="ContentTemplate" Value="{StaticResource ImageDataTemplate}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Type}" Value="{x:Static common:ImageType.Image}">
+                                    <Setter Property="ContentTemplate" Value="{StaticResource ImageDataTemplate}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Type}" Value="{x:Static common:ImageType.Video}">
+                                    <Setter Property="ContentTemplate" Value="{StaticResource VideoDataTemplate}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
+            </Grid>
 
-            <ScrollViewer x:Name="ScrollViewer" Grid.Row="0"  Grid.RowSpan="3" 
-                          HorizontalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}" 
-                          VerticalScrollBarVisibility="{Binding MainModel.FitToPreview, Converter={StaticResource scrollBarVisibility}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
-                          MouseMove="ScrollViewer_OnMouseMove"
-                          PreviewKeyDown="ScrollViewer_OnPreviewKeyDown"
-                          PreviewMouseWheel="UIElement_OnMouseWheel"  
-                          PreviewKeyUp="ScrollViewer_OnPreviewKeyUp"
-                          KeyDown="ScrollViewer_OnKeyDown"
-            >
-                <ScrollViewer.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Fit to Preview" InputGestureText="CTRL+Shift+F" Command="{Binding MainModel.ToggleFitToPreview}" IsChecked="{Binding MainModel.FitToPreview}"></MenuItem>
-                        <MenuItem Header="Actual Size" InputGestureText="CTRL+Shift+A" Command="{Binding MainModel.ToggleActualSize}" IsChecked="{Binding MainModel.ActualSize}"></MenuItem>
-                    </ContextMenu>
-                    
-                    <!--Stretch="{Binding MainModel.FitToPreview, Converter={StaticResource stretch}, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"-->
+    
 
-                </ScrollViewer.ContextMenu>
-                <Image x:Name="Preview"
-                       DataContext="{Binding Image, RelativeSource={RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}}"
-                       Stretch="None"
-                       Opacity="{Binding ForDeletion, Converter={StaticResource BoolToOpacity}}"
-                       RenderOptions.BitmapScalingMode="Fant"
-                       Source="{Binding Image}" >
-                    <Image.Visibility>
-                        <MultiBinding Converter="{StaticResource invBoolToVisMulti}" ConverterParameter="20">
-                            <Binding Path="NSFW"></Binding>
-                            <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}" ></Binding>
-                        </MultiBinding>
-                    </Image.Visibility>
-                    <Image.Effect>
-                        <BlurEffect  KernelType="Gaussian">
-                            <BlurEffect.Radius>
-                                <MultiBinding Converter="{StaticResource boolToBlurMulti}" ConverterParameter="20">
-                                    <Binding Path="NSFW"></Binding>
-                                    <Binding Path="MainModel.NSFWBlur" RelativeSource="{RelativeSource  FindAncestor, AncestorType={x:Type UserControl}}"></Binding>
-                                </MultiBinding>
-                            </BlurEffect.Radius>
-                        </BlurEffect>
-                    </Image.Effect>
-                </Image>
-            </ScrollViewer>
 
             <Grid Grid.Row="0" RowSpan="3" Background="Transparent" IsHitTestVisible="False"
                   DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
@@ -130,15 +185,17 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="56"/>
                     </Grid.RowDefinitions>
- 
+
                 </Grid>
             </Grid>
+
+
 
         </Grid>
 
         <Image Height="32" Width="32" Source="/Icons/Dark/trash-32.png" Visibility="{Binding Path=Image.ForDeletion, Converter={StaticResource boolToVisCol}}">
             <Image.Effect>
-                <DropShadowEffect BlurRadius="5" Opacity="0.8"  ShadowDepth="6" Direction="-90" RenderingBias="Quality" />
+                <DropShadowEffect BlurRadius="2" Opacity="0.8" ShadowDepth="4" Direction="-45" RenderingBias="Quality" />
             </Image.Effect>
         </Image>
 
@@ -149,6 +206,152 @@
                 </StackPanel>
             </Border>
         </Grid>-->
+        <Grid Background="{x:Null}" Visibility="{Binding MainModel.ShowTags, Converter={StaticResource boolToVis}}">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="50"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Row="1" Grid.Column="1" Style="{StaticResource StaticButton}" HorizontalAlignment="Left" PreviewMouseDown="NavigatePrevious_OnPreviewMouseDown">
+                <fa:ImageAwesome Margin="0,4,0,0" Height="18" Icon="ArrowLeft" Foreground="{DynamicResource ForegroundBrush}">
+                    <fa:ImageAwesome.Resources>
+                        <Style TargetType="fa:ImageAwesome">
+                            <Setter Property="Opacity" Value="0.5"></Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="1.0"></Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </fa:ImageAwesome.Resources>
+                </fa:ImageAwesome>
+            </Button>
+            <local:StarRating Grid.Row="1" Grid.Column="2" x:Name="StarRating" Image="{Binding Image}">
+                <local:StarRating.Style>
+                    <Style TargetType="local:StarRating">
+                        <Setter Property="RatingSize" Value="Standard"></Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource iflessThan}, ConverterParameter=400}" Value="True">
+                                <Setter Property="RatingSize" Value="Compact"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </local:StarRating.Style>
+            </local:StarRating>
+            <Button Grid.Row="1" Grid.Column="3" Style="{StaticResource StaticButton}" HorizontalAlignment="Right" PreviewMouseDown="NavigateNext_OnPreviewMouseDown">
+                <fa:ImageAwesome Margin="0,4,0,0" Height="18" Icon="ArrowRight" Foreground="{DynamicResource ForegroundBrush}">
+                    <fa:ImageAwesome.Resources>
+                        <Style TargetType="fa:ImageAwesome">
+                            <Setter Property="Opacity" Value="0.5"></Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="1.0"></Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </fa:ImageAwesome.Resources>
+                </fa:ImageAwesome>
+            </Button>
+          
+        </Grid>
+        <Grid Background="{x:Null}">
+
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="100"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition>
+                    <RowDefinition.Style>
+                        <Style TargetType="{x:Type RowDefinition}">
+                            <Setter Property="Height" Value="0"></Setter>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource iflessThan}, ConverterParameter=570}" Value="True">
+                                    <Setter Property="Height" Value="50"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RowDefinition.Style>
+            </RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="32"/>
+            </Grid.ColumnDefinitions>
+            <Slider Grid.Row="1" Grid.Column="2" Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Center" Background="Transparent"
+                    Minimum="0"
+                    Maximum="1.0"
+                    Value="{Binding Volume}"
+                    Visibility="{Binding ShowVolume, Converter={StaticResource boolToVis}}"
+                    >
+            </Slider>
+            <Button Grid.Row="2" Grid.Column="1" ToolTip="Loop Video" Click="Loop_Click" DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource StaticButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Type}" Value="{x:Static common:ImageType.Image}">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Type}" Value="{x:Static common:ImageType.Video}">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                <fa:ImageAwesome Margin="0,4,0,0" Height="18" Icon="Repeat" Foreground="{DynamicResource ForegroundBrush}">
+                    <fa:ImageAwesome.Resources>
+                        <Style TargetType="fa:ImageAwesome">
+                            <Setter Property="Opacity" Value="0.5"></Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="1.0"></Setter>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding MainModel.Settings.LoopVideo, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Value="True" >
+                                    <Setter Property="Opacity" Value="1.0"></Setter>
+                                </DataTrigger>
+
+                            </Style.Triggers>
+                        </Style>
+                    </fa:ImageAwesome.Resources>
+                </fa:ImageAwesome>
+            </Button>
+            <Button Grid.Row="2" Grid.Column="2" ToolTip="Volume" Click="Volume_Click" DataContext="{Binding Image, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource StaticButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Type}" Value="{x:Static common:ImageType.Image}">
+                                <Setter Property="Visibility" Value="Hidden" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Type}" Value="{x:Static common:ImageType.Video}">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                <fa:ImageAwesome Margin="0,4,0,0" Height="18" Icon="VolumeOff" Foreground="{DynamicResource ForegroundBrush}">
+                    <fa:ImageAwesome.Resources>
+                        <Style TargetType="fa:ImageAwesome">
+                            <Setter Property="Opacity" Value="0.5"></Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Opacity" Value="1.0"></Setter>
+                                </Trigger>
+                                <DataTrigger Binding="{Binding ShowVolume, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}" Value="True" >
+                                    <Setter Property="Opacity" Value="1.0"></Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </fa:ImageAwesome.Resources>
+                </fa:ImageAwesome>
+            </Button>
+        </Grid>
 
     </Grid>
 </UserControl>

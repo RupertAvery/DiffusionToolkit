@@ -19,7 +19,7 @@ namespace Diffusion.Toolkit
     /// </summary>
     public partial class QuickCopy : BorderlessWindow
     {
-        public QuickCopy(Settings? settings)
+        public QuickCopy()
         {
             InitializeComponent();
         }

@@ -3,7 +3,10 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Windows;
+using Diffusion.Common;
+using Diffusion.Toolkit.Configuration;
 using WPFLocalizeExtension.Providers;
 
 namespace Diffusion.Toolkit.Localization
@@ -51,7 +54,7 @@ namespace Diffusion.Toolkit.Localization
 
         public object GetLocalizedObject(string key, DependencyObject target, CultureInfo culture)
         {
-            var currentCulture = Settings.Instance?.Culture ?? "en-US";
+            var currentCulture = Settings.Instance?.Culture ?? Thread.CurrentThread.CurrentCulture.Name;
 
             //File.AppendAllText("C:\\Temp\\DiffusionToolkit.log", key + "\r\n");
 
@@ -79,18 +82,16 @@ namespace Diffusion.Toolkit.Localization
             return $"Key: {key}";
         }
 
-        private ObservableCollection<CultureInfo>? availableCultures = null;
-
         public ObservableCollection<CultureInfo> AvailableCultures
         {
             get
             {
-                if (availableCultures == null)
-                    availableCultures = new ObservableCollection<CultureInfo>();
+                if (field == null)
+                    field = new ObservableCollection<CultureInfo>();
 
-                return availableCultures;
+                return field;
             }
-        }
+        } = null;
 
         public event ProviderChangedEventHandler? ProviderChanged;
 

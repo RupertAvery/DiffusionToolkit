@@ -2,6 +2,12 @@
 
 public class ModelViewModel : BaseNotify
 {
+    public bool IsTicked
+    {
+        get;
+        set => SetField(ref field, value);
+    }
+
     public string Name { get; set; }
     public string Hash { get; set; }
     public string Hashv2 { get; set; }

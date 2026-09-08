@@ -8,22 +8,48 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Diffusion.Civitai;
 using Diffusion.Civitai.Models;
+using Diffusion.Common;
 using Diffusion.Database;
+using SQLite;
+
+//var dbPath = @"C:\Users\ruper\AppData\Roaming\DiffusionToolkit\Backup-20240420-020535.db";
+
+
+//var ds = new DataStore(dbPath);
+//await ds.Create(null, null);
+
+//DataStore.EnsureFolderExists(new SQLiteConnection(dbPath), "D:\\Backup\\final\\character\\asuka");
+
+
+
+//return;
+
+//var migrations = new Migrations(new SQLiteConnection(dbPath), Settings.Instance);
+//migrations.RupertAvery20250405_0001_FixFolders();
 
 
 using var civitai = new CivitaiClient();
 
-var collection = new LiteModelCollection();
+var collection = new ModelCollection();
 
-var results = await GetPage(1);
+//Checkpoint, TextualInversion, Hypernetwork, AestheticGradient, LORA,
+
+var results = await GetNextPage("https://civitai.com/api/v1/models?limit=100&page=1&types=LORA&cursor=26%7C229%7C112346");
 
 collection.Models.AddRange(results.Items);
 
-while (results.Metadata.CurrentPage < results.Metadata.TotalPages)
+while (!string.IsNullOrEmpty(results.Metadata.NextPage))
 {
-    results = await GetPage(results.Metadata.CurrentPage + 1, results.Metadata.TotalPages);
+    results = await GetNextPage(results.Metadata.NextPage);
     collection.Models.AddRange(results.Items);
 }
+
+
+//while (results.Metadata.CurrentPage < results.Metadata.TotalPages)
+//{
+//    results = await GetPage(results.Metadata.CurrentPage + 1, results.Metadata.TotalPages);
+//    collection.Models.AddRange(results.Items);
+//}
 
 var options = new JsonSerializerOptions()
 {
@@ -39,7 +65,24 @@ collection.Date = mTime.TotalSeconds;
 
 var json = JsonSerializer.Serialize(collection, options);
 
-File.WriteAllText("models.json", json);
+File.WriteAllText($"loras2-{DateTime.Now:yyyy-MM-dd}.json", json);
+
+
+async Task<Results<LiteModel>> GetNextPageLite(string nextPageUrl)
+{
+    Console.WriteLine($"Fetching {nextPageUrl}");
+
+    return await civitai.GetLiteModels(nextPageUrl, CancellationToken.None);
+}
+
+
+async Task<Results<Diffusion.Civitai.Models.Model>?> GetNextPage(string nextPageUrl)
+{
+    Console.WriteLine($"Fetching {nextPageUrl}");
+
+    return await civitai.GetModels(nextPageUrl, CancellationToken.None);
+}
+
 
 
 async Task<Results<LiteModel>> GetPage(int page, int? total = 0)

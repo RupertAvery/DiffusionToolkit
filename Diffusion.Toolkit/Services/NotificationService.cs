@@ -11,5 +11,10 @@ namespace Diffusion.Toolkit.Services
         {
             Notify?.Invoke(this, text);
         }
+
+        public void Toast(string copiedPathToClipboard)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

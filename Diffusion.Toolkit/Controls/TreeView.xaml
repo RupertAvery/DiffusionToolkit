@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="Diffusion.Toolkit.Controls.TreeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="Diffusion.Toolkit.Controls.TreeView"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:converters="clr-namespace:Diffusion.Toolkit.Converters"
+             xmlns:fa="http://schemas.fontawesome.io/icons/"
+             xmlns:controls="clr-namespace:Diffusion.Toolkit.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="328">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <converters:BoolToVisibilityCollapsedConverter x:Key="boolToVisCol"></converters:BoolToVisibilityCollapsedConverter>
+            <converters:FolderDepthConverter x:Key="FolderDepthConverter"></converters:FolderDepthConverter>
+            <converters:FolderStateConverter x:Key="FolderStateConverter"></converters:FolderStateConverter>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="{x:Null}" 
+          DataContext="{Binding ., RelativeSource={RelativeSource AncestorType=UserControl}}"
+          >
+        <ItemsControl ItemsSource="{Binding Path=ItemsSource}" 
+                      PreviewMouseWheel="UIElement_OnPreviewMouseWheel">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid
+                        Background="{x:Null}"
+                        Tag="{Binding}" 
+                        Focusable="False"
+                        Visibility="{Binding Visible, Converter={StaticResource boolToVisCol}}"
+                        >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding Depth, Converter={StaticResource FolderDepthConverter}}"/>
+                            <ColumnDefinition Width="15"></ColumnDefinition>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="1" Background="Transparent" PreviewMouseLeftButtonDown="Expander_OnMouseDown">
+                            <fa:ImageAwesome  Rotation="{Binding State, Converter={StaticResource FolderStateConverter}}" Visibility="{Binding HasChildren, Converter={StaticResource boolToVis}}" Icon="AngleRight" Height="8" Foreground="{DynamicResource ForegroundBrush}"  />
+                        </Grid>
+                        <ContentPresenter DataContext="{Binding .}" Grid.Column="2" Content="{Binding TreeViewItemContent, RelativeSource={RelativeSource AncestorType=UserControl}}"></ContentPresenter>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

@@ -26,6 +26,7 @@ namespace Diffusion.Toolkit.Behaviors
         {
             if (d is FrameworkElement element)
             {
+                element.Focus();
                 element.BringIntoView();
             }
         }

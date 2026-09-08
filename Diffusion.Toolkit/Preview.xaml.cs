@@ -4,12 +4,14 @@ using Diffusion.Toolkit.Controls;
 using Diffusion.Toolkit.Models;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Diffusion.Common;
 using Diffusion.Toolkit.Services;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
 
 namespace Diffusion.Toolkit
 {
@@ -18,24 +20,23 @@ namespace Diffusion.Toolkit
     /// </summary>
     public partial class PreviewWindow : BorderlessWindow
     {
-        private readonly DataStore _dataStore;
+        private DataStore _dataStore => ServiceLocator.DataStore;
         private PreviewModel _model;
         private Action _onNext;
 
         public Action<string> OnDrop { get; set; }
 
-        public Action<int> Changed { get; set; }
+        //public Action<int> Changed { get; set; }
         public Action AdvanceSlideShow { get; set; }
 
         protected override void OnSourceInitialized(EventArgs e)
         {
-            PreviewPane.SetFocus();
+            //PreviewPane.SetFocus();
             base.OnSourceInitialized(e);
         }
 
-        public PreviewWindow(DataStore dataStore, MainModel mainModel)
+        public PreviewWindow()
         {
-            _dataStore = dataStore;
             _model = new PreviewModel();
             InitializeComponent();
             DataContext = _model;
@@ -47,43 +48,44 @@ namespace Diffusion.Toolkit
 
             PreviewPane.IsPopout = true;
 
-            PreviewPane.NSFW = (id, v) =>
+            ServiceLocator.TaggingService.TagUpdated += (sender, arguments) =>
             {
-                _dataStore.SetNSFW(id, v);
-                Changed?.Invoke(id);
+                //Changed?.Invoke(arguments.Id);
             };
 
-            PreviewPane.Favorite = (id, v) =>
-            {
-                _dataStore.SetFavorite(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.Rate = (id, v) =>
-            {
-                _dataStore.SetRating(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.Delete = (id, v) =>
-            {
-                _dataStore.SetDeleted(id, v);
-                Changed?.Invoke(id);
-            };
-
-            PreviewPane.MainModel = mainModel;
-
+            var mainModel = ServiceLocator.MainModel;
 
             _model.ToggleFitToPreview = mainModel.ToggleFitToPreview;
             _model.ToggleActualSize = mainModel.ToggleActualSize;
             _model.ToggleAutoAdvance = mainModel.ToggleAutoAdvance;
             _model.ToggleInfo = mainModel.ToggleInfoCommand;
+            _model.ToggleTagsCommand = mainModel.ToggleTagsCommand;
+
             //_slideShowDelay = mainModel.Settings.SlideShowDelay;
             _model.ToggleFullScreen = new RelayCommand<object>((o) => ToggleFullScreen());
             _model.StartStopSlideShow = new RelayCommand<object>((o) => StartStopSlideShow());
+            _model.OpenWithCommand = new AsyncCommand<string>((o) => OpenWith(this, o));
+
+            _model.IsTopHover = true;
+
+            Task.Delay(3000).ContinueWith(t =>
+            {
+                if (_mouseTriggered) return;
+                Dispatcher.Invoke(() =>
+                {
+                    _model.IsTopHover = false;
+                });
+            });
+
+            _debounceCloseTopBar = Utility.Debounce(() =>
+            {
+                _model.IsTopHover = false;
+            }, 2000);
 
             Closing += OnClosing;
         }
+
+        private Action _debounceCloseTopBar;
 
         private void RestartSlideShowTimer()
         {
@@ -99,7 +101,7 @@ namespace Diffusion.Toolkit
         }
 
         private Timer? _slideShowTimer = null;
-        private int _slideShowDelay => PreviewPane.MainModel.Settings.SlideShowDelay;
+        private int _slideShowDelay => ServiceLocator.Settings.SlideShowDelay;
 
         private void SlideShowAdvance(object? state)
         {
@@ -137,6 +139,7 @@ namespace Diffusion.Toolkit
         //private WindowStyle _lastWindowStyle;
 
         private Brush _background;
+        private bool _mouseTriggered;
 
         private void ToggleFullScreen()
         {
@@ -173,7 +176,7 @@ namespace Diffusion.Toolkit
 
         private void PreviewPane_OnDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) && !e.Data.GetDataPresent("DTCustomDragSource"))
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
                 OnDrop?.Invoke(files[0]);
@@ -210,6 +213,54 @@ namespace Diffusion.Toolkit
         private void PreviewPane_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Close();
+        }
+
+        private void Play_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            StartStopSlideShow();
+        }
+
+        private void Star_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ServiceLocator.MainModel.ShowTags = !ServiceLocator.MainModel.ShowTags;
+        }
+
+        private void AutoAdvance_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ServiceLocator.MainModel.AutoAdvance = !ServiceLocator.MainModel.AutoAdvance;
+        }
+
+        private async Task OpenWith(object sender, string? arg)
+        {
+            await ServiceLocator.ExternalApplicationsService.OpenWith(sender, int.Parse(arg));
+        }
+
+        private void UIElement_OnMouseEnter(object sender, MouseEventArgs e)
+        {
+            _mouseTriggered = true;
+            _model.IsTopHover = true;
+        }
+
+        private void UIElement_OnMouseLeave(object sender, MouseEventArgs e)
+        {
+            Debug.WriteLine("Left Top bar");
+            _debounceCloseTopBar();
+            //_model.IsTopHover = false;
+        }
+
+        private void FullScreen_OnMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            ToggleFullScreen();
+        }
+
+        private void PreviewPane_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            OnKeyDown(e);
+        }
+
+        private void PreviewPane_OnLoaded(object sender, RoutedEventArgs e)
+        {
+           PreviewPane.SetFocus();
         }
     }
 

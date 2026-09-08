@@ -85,7 +85,10 @@ namespace Diffusion.Toolkit.Controls
         public FilterControlModel Filter
         {
             get => (FilterControlModel)GetValue(FilterProperty);
-            set => SetValue(FilterProperty, value);
+            set
+            {
+                SetValue(FilterProperty, value);
+            }
         }
 
         public FilterControl()
@@ -158,28 +161,68 @@ namespace Diffusion.Toolkit.Controls
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
-            var checkBox = sender as RadioButton;
-            var binding = checkBox.GetBindingExpression(RadioButton.IsCheckedProperty);
-
-            var propertyName = binding.ResolvedSourcePropertyName;
-
-            if (propertyName.EndsWith("Op"))
+            BindingExpression binding = sender switch
             {
-                propertyName = propertyName.Substring(0, propertyName.Length - 2);
+                RadioButton radio => radio.GetBindingExpression(RadioButton.IsCheckedProperty),
+                CheckBox checkbox => checkbox.GetBindingExpression(CheckBox.IsCheckedProperty),
+                _ => null
+            };
+
+            if (binding != null)
+            {
+                string? propertyName = null;
+
+                var source = binding.ResolvedSource;
+
+                if (source is CheckBoxItem cbx)
+                {
+                    propertyName = cbx.PropertyName;
+                }
+                else
+                {
+                    propertyName = binding.ResolvedSourcePropertyName;
+
+                    if (propertyName.EndsWith("Op"))
+                    {
+                        propertyName = propertyName.Substring(0, propertyName.Length - 2);
+                    }
+                }
+
+                string checkBoxName = $"Use{propertyName}";
+
+                var prop = props.FirstOrDefault(x => x.Name == checkBoxName);
+                if (prop != null)
+                {
+                    prop.SetValue(Filter, true);
+                }
             }
 
-            string checkBoxName = $"Use{propertyName}";
-
-            var prop = props.FirstOrDefault(x => x.Name == checkBoxName);
-            if (prop != null)
-            {
-                prop.SetValue(Filter, true);
-            }
         }
 
         private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Filter.UseModelName = true;
+        }
+
+        private void AddFilter_OnClick(object sender, RoutedEventArgs e)
+        {
+            Filter.AddNodeFilter();
+        }
+
+        private void Property_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (((TextBox)sender).DataContext is NodeFilter filter)
+            {
+                filter.IsActive = true;
+            }
+        }
+
+        private void Value_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (((TextBox)sender).DataContext is NodeFilter filter)
+            {
+                filter.IsActive = true;
+            }
         }
     }
 

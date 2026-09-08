@@ -7,8 +7,10 @@ namespace Diffusion.Toolkit.Converters;
 
 public class BoolToVisibilityConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object parameter, CultureInfo culture)
     {
+        if (value == null) return Visibility.Hidden;
+
         return (bool)value ? Visibility.Visible : Visibility.Hidden;
     }
 

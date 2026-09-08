@@ -20,7 +20,6 @@ namespace Diffusion.Toolkit
         private Point mouseDownPosition;
         private Point positionBeforeDrag;
 
-        public bool IsFullScreen { get; private set; }
         public Grid WindowRoot { get; private set; }
         public Grid LayoutRoot { get; private set; }
         public Button MinimizeButton { get; private set; }
@@ -30,18 +29,60 @@ namespace Diffusion.Toolkit
         public Grid HeaderBar { get; private set; }
         public Grid TitleBar { get; private set; }
 
+        public static readonly DependencyProperty IsFullScreenProperty =
+            DependencyProperty.Register(
+                name: nameof(IsFullScreen),
+                propertyType: typeof(bool),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata());
+
+        public static readonly DependencyProperty TitleVisibilityProperty =
+            DependencyProperty.Register(
+                name: nameof(TitleVisibility),
+                propertyType: typeof(Visibility),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(Visibility.Visible));
+
+        public static readonly DependencyProperty TitleTextVisibilityProperty =
+            DependencyProperty.Register(
+                name: nameof(TitleTextVisibility),
+                propertyType: typeof(Visibility),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(Visibility.Visible));
+
         public static readonly DependencyProperty MenuWidthProperty =
             DependencyProperty.Register(
                 name: nameof(MenuWidth),
                 propertyType: typeof(GridLength),
                 ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(new GridLength(1, GridUnitType.Star)));
 
+        public bool IsFullScreen
+        {
+            get => (bool)GetValue(IsFullScreenProperty);
+            set => SetValue(IsFullScreenProperty, value);
+        }
+        
+        public Visibility TitleVisibility
+        {
+            get => (Visibility)GetValue(TitleVisibilityProperty);
+            set => SetValue(TitleVisibilityProperty, value);
+        }
+
+        public Visibility TitleTextVisibility
+        {
+            get => (Visibility)GetValue(TitleTextVisibilityProperty);
+            set => SetValue(TitleTextVisibilityProperty, value);
+        }
+
         public GridLength MenuWidth
         {
             get => (GridLength)GetValue(MenuWidthProperty);
             set => SetValue(MenuWidthProperty, value);
         }
+        
 
+        public static readonly DependencyProperty TitleContentProperty =
+            DependencyProperty.Register(
+                name: nameof(TitleContent),
+                propertyType: typeof(object),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(null));
 
         public static readonly DependencyProperty TitleWidthProperty =
             DependencyProperty.Register(
@@ -55,6 +96,13 @@ namespace Diffusion.Toolkit
                 propertyType: typeof(GridLength),
                 ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(GridLength.Auto));
 
+        public static readonly DependencyProperty ExtraButtonThresholdWidthProperty =
+            DependencyProperty.Register(
+                name: nameof(ExtraButtonThresholdWidth),
+                propertyType: typeof(GridLength),
+                ownerType: typeof(BorderlessWindow), new FrameworkPropertyMetadata(GridLength.Auto));
+
+
         private Point previousScreenBounds;
         private bool isManualDrag;
 
@@ -63,12 +111,23 @@ namespace Diffusion.Toolkit
             get => (GridLength)GetValue(TitleWidthProperty);
             set => SetValue(TitleWidthProperty, value);
         }
-
+        
+        public object TitleContent
+        {
+            get => (object)GetValue(TitleContentProperty);
+            set => SetValue(TitleContentProperty, value);
+        }
 
         public GridLength ExtraButtonWidth
         {
             get => (GridLength)GetValue(ExtraButtonWidthProperty);
             set => SetValue(ExtraButtonWidthProperty, value);
+        }
+
+        public GridLength ExtraButtonThresholdWidth
+        {
+            get => (GridLength)GetValue(ExtraButtonThresholdWidthProperty);
+            set => SetValue(ExtraButtonThresholdWidthProperty, value);
         }
 
         public T GetRequiredTemplateChild<T>(string childName) where T : DependencyObject
@@ -447,7 +506,7 @@ namespace Diffusion.Toolkit
 
                 double currentDPIScaleFactor = SystemHelper.GetCurrentDPIScaleFactor();
                 Rectangle workingArea = screen.WorkingArea;
-                MaxHeight = (workingArea.Height + 16) / currentDPIScaleFactor;
+                MaxHeight = double.PositiveInfinity;  //(workingArea.Height + 16) / currentDPIScaleFactor;
                 MaxWidth = double.PositiveInfinity;
 
                 if (WindowState != WindowState.Maximized)

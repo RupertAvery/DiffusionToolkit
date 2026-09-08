@@ -3,6 +3,7 @@ using Diffusion.Toolkit.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,16 +11,71 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Diffusion.Common;
 using Diffusion.Toolkit.Behaviors;
+using Diffusion.Toolkit.Services;
+using Diffusion.Database.Models;
+using Diffusion.Civitai.Models;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Diffusion.Toolkit.Pages
 {
     public partial class Search
     {
-
-        private void ExpandToPath(string path)
+        private void FolderPath_GotFocus(object sender, RoutedEventArgs e)
         {
-            var root = _model.MainModel.Folders.FirstOrDefault(f => f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
+            ((TextBox)sender).SelectionStart = 0;
+            if (_model.FolderPath != null)
+            {
+                ((TextBox)sender).SelectionLength = _model.FolderPath.Length;
+            }
+        }
+
+        private void FolderPath_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if (_model.FolderPath != null && Directory.Exists(_model.FolderPath))
+                {
+                    if (ServiceLocator.FolderService.RootFolders.Select(d => d.Path)
+                        .Any(d => _model.FolderPath.StartsWith(d)))
+                    {
+                        OpenPath(_model.FolderPath);
+                        return;
+                    }
+                }
+
+                ((TextBox)sender).SelectionStart = _model.FolderPath.Length;
+                ((TextBox)sender).SelectionLength = 0;
+
+            }
+            // TODO: implement autocomplete
+            //else if(e.Key is >= Key.A and <= Key.Z or >= Key.D0 and <= Key.D9)
+            //{
+            //    var textbox = (TextBox)sender;
+            //    if (textbox.Text == null) return;
+            //    var subdirs = Directory.GetDirectories(_currentModeSettings.CurrentFolderPath);
+
+            //    if (textbox.Text.EndsWith("\\")) return;
+
+            //    var currentText = textbox.Text;
+
+            //    var subdir = subdirs.FirstOrDefault(d => d.StartsWith(textbox.Text));
+
+            //    if (subdir != null)
+            //    {
+            //        textbox.Text = subdir;
+
+            //        textbox.SelectionStart = currentText.Length;
+            //        textbox.SelectionLength = subdir.Length;
+            //    }
+            //}
+        }
+
+        private async Task ExpandToPath(string path)
+        {
+            var root = ServiceLocator.MainModel.Folders.FirstOrDefault(f =>
+                f.Depth == 0 && path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
 
             var currentNode = root;
 
@@ -27,24 +83,27 @@ namespace Diffusion.Toolkit.Pages
             {
                 if (currentNode.State == FolderState.Collapsed)
                 {
-                    ToggleFolder(currentNode);
+                    await ToggleFolder(currentNode);
                 }
 
-                if (currentNode.Children != null)
+                var children = ServiceLocator.FolderService.GetVisualChildren(currentNode);
+
+                var enumerator = children.GetEnumerator();
+
+                var found = false;
+                while (enumerator.MoveNext())
                 {
-                    var nextNode = currentNode.Children.FirstOrDefault(f => path.StartsWith(f.Path, StringComparison.InvariantCultureIgnoreCase));
-                    if (nextNode != null)
+                    currentNode = enumerator.Current;
+                    if (path.StartsWith(currentNode.Path, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        currentNode = nextNode;
-                    }
-                    else
-                    {
+                        found = true;
                         break;
                     }
                 }
-                else
+
+                if (!found)
                 {
-                    break;
+                    currentNode = null;
                 }
             }
 
@@ -60,150 +119,208 @@ namespace Diffusion.Toolkit.Pages
             currentNode.IsSelected = true;
         }
 
-
-        private void Expander_Click(object sender, RoutedEventArgs e)
+        private async void Expander_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            var folder = ((Button)sender).DataContext as FolderViewModel;
-
-            ToggleFolder(folder);
-
-            e.Handled = true;
-        }
-
-        private void Expander_OnMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
-
-            if (!folder.IsUnavailable)
+            try
             {
-                ToggleFolder(folder);
-            }
+                var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
 
-            e.Handled = true;
+                if (!folder.IsUnavailable)
+                {
+                    await ToggleFolder(folder);
+                }
+
+                e.Handled = true;
+            }
+            catch (Exception exception)
+            {
+                Logger.Log(exception.Message);
+            }
         }
+
+        private Point _start;
+        private bool _dragStarted;
 
         private void Folder_OnClick(object sender, MouseButtonEventArgs e)
         {
-            var model = ((FolderViewModel)((Button)sender).DataContext);
+            this._start = e.GetPosition(null);
 
-            OpenFolder(model);
-        }
-
-        public void OpenFolder(FolderViewModel folder)
-        {
-            if (_currentModeSettings.CurrentFolder == folder.Path)
-                return;
-
-            var subFolders = folder.Children;
-
-            if (subFolders == null)
+            if (sender is Grid grid)
             {
-                if (folder.IsUnavailable) return;
-                subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
-                folder.HasChildren = subFolders.Any();
-                folder.Children = subFolders;
+                grid.Focus();
             }
 
-            if (_model.MainModel.CurrentFolder != null)
+            var folder = ((FrameworkElement)sender).DataContext as FolderViewModel;
+
+
+            var selectedFolders = ServiceLocator.FolderService.SelectedFolders.ToList();
+
+            var isInSelection = selectedFolders.Contains(folder);
+            var isSingleSelection = selectedFolders.Count == 1;
+            var isRoot = folder.Depth == 0;
+            var isAvailable = !folder.IsUnavailable;
+            var isScanned = folder.IsScanned;
+            var isExcluded = folder.IsExcluded;
+            var isArchived = folder.IsArchived;
+
+            _model.NavigationSection.FoldersSection.CanCreateFolder = isSingleSelection && isAvailable;
+            _model.NavigationSection.FoldersSection.CanDelete = !isRoot && isAvailable;
+            _model.NavigationSection.FoldersSection.CanRename = !isRoot && isSingleSelection && isAvailable;
+            _model.NavigationSection.FoldersSection.CanRemove = isSingleSelection;
+            _model.NavigationSection.FoldersSection.CanShowInExplorer = isSingleSelection && isAvailable;
+            _model.NavigationSection.FoldersSection.CanArchive = isScanned && isAvailable && !isExcluded && !isArchived;
+            _model.NavigationSection.FoldersSection.CanUnarchive =
+                isScanned && isAvailable && !isExcluded && isArchived;
+
+            _model.NavigationSection.FoldersSection.CanArchiveTree = isSingleSelection && isScanned && isAvailable && !isExcluded;
+            _model.NavigationSection.FoldersSection.CanUnarchiveTree = isSingleSelection && isScanned && isAvailable && !isExcluded;
+
+            _model.NavigationSection.FoldersSection.CanExclude = !isRoot && isAvailable && !isExcluded;
+            _model.NavigationSection.FoldersSection.CanUnexclude = !isRoot && isAvailable && isExcluded;
+
+            _model.NavigationSection.FoldersSection.CanExcludeTree = isSingleSelection && !isRoot && isAvailable;
+            _model.NavigationSection.FoldersSection.CanUnexcludeTree = isSingleSelection && !isRoot && isAvailable;
+
+
+            if (e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Grid or TextBlock))
             {
-                _model.MainModel.CurrentFolder.IsSelected = false;
+                _dragStarted = true;
             }
 
-            _model.MainModel.CurrentFolder = folder;
-
-            folder.IsSelected = true;
-
-            _model.NavigationSection.FoldersSection.CanDelete = folder.Depth > 0;
-            _model.NavigationSection.FoldersSection.CanRename = folder.Depth > 0;
-
-            _model.MainModel.ActiveView = "Folders";
-            SetMode("folders");
-            _model.FolderPath = folder.Path;
-            _currentModeSettings.CurrentFolder = folder.Path;
-
-            SearchImages(null);
-        }
-
-        private IEnumerable<FolderViewModel> GetSubFolders(FolderViewModel folder)
-        {
-            if (!Directory.Exists(folder.Path))
+            if (e.ChangedButton == MouseButton.Left)
             {
-                return Enumerable.Empty<FolderViewModel>();
-            }
-
-            var directories = Directory.GetDirectories(folder.Path, "*", new EnumerationOptions()
-            {
-                IgnoreInaccessible = true
-            });
-
-            return directories.Select(path => new FolderViewModel()
-            {
-                Parent = folder,
-                HasChildren = true,
-                Visible = true,
-                Depth = folder.Depth + 1,
-                Name = path.EndsWith("\\") ? "Root" : Path.GetFileName(path),
-                Path = path,
-            });
-        }
-
-        private void Folder_OnDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var folder = ((FolderViewModel)((Button)sender).DataContext);
-
-            if (!folder.IsUnavailable)
-            {
-                ToggleFolder(folder);
-            }
-
-            e.Handled = true;
-        }
-
-        private void ToggleFolder(FolderViewModel folder)
-        {
-            if (folder.State == FolderState.Collapsed)
-            {
-                var subFolders = folder.Children;
-
-                if (subFolders == null)
+                if (e.ClickCount == 2)
                 {
-                    subFolders = new ObservableCollection<FolderViewModel>(GetSubFolders(folder));
-                    folder.HasChildren = subFolders.Any();
-                    folder.Children = subFolders;
-
-                    if (subFolders.Any())
+                    if (!folder.IsUnavailable)
                     {
-                        var insertPoint = _model.MainModel.Folders.IndexOf(folder) + 1;
-
-                        foreach (var subFolder in subFolders.Reverse())
-                        {
-                            _model.MainModel.Folders.Insert(insertPoint, subFolder);
-                        }
+                        _ = ToggleFolder(folder);
                     }
+
+                    e.Handled = true;
+                    return;
+                }
+
+                if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+                {
+                    folder.IsSelected = !folder.IsSelected;
                 }
                 else
                 {
-                    foreach (var child in folder.Children.Reverse())
+                    if (!isInSelection)
                     {
-                        if (!_model.MainModel.Folders.Contains(child))
-                        {
-                            var insertPoint = _model.MainModel.Folders.IndexOf(folder) + 1;
-
-                            _model.MainModel.Folders.Insert(insertPoint, child);
-                        }
-                        else
-                        {
-                            child.Visible = true;
-                            ExpandVisualTree(child);
-                        }
+                        ServiceLocator.FolderService.ClearSelection();
                     }
+
+                    if (!folder.IsUnavailable)
+                    {
+                        OpenFolder(folder);
+                    }
+
+                    folder.IsSelected = true;
                 }
 
-
-
-                folder.State = FolderState.Expanded;
+                e.Handled = true;
             }
-            else
+            else if (e.ChangedButton == MouseButton.Right)
+            {
+                if (selectedFolders.Contains(folder))
+                {
+                    return;
+                }
+
+                ServiceLocator.FolderService.ClearSelection();
+
+                folder.IsSelected = true;
+            }
+
+        }
+
+        public void ClearResults()
+        {
+            foreach (var image in _model.Images)
+            {
+                image.PropertyChanged -= ImageEntry_OnPropertyChanged;
+                image.Clear();
+            }
+
+            _model.Page = 0;
+            _model.Pages = 0;
+            _model.Results = GetLocalizedText("Search.NoResults");
+
+            ThumbnailListView.ReloadThumbnailsView();
+            ThumbnailListView.ClearSelection();
+        }
+
+        public void OpenPath(string path, bool updateFolderPath = false)
+        {
+            var folder = ServiceLocator.DataStore.GetFolder(path);
+
+            if (folder != null)
+            {
+                OpenFolder(new FolderViewModel()
+                {
+                    Path = path,
+                    Name = Path.GetFileName(path),
+                    Id = folder.Id,
+                    IsArchived = folder.Archived,
+                    IsScanned = true,
+                    IsExcluded = folder.Excluded,
+                    IsUnavailable = !Directory.Exists(path)
+                });
+            }
+
+
+            OpenFolder(new FolderViewModel()
+            {
+                Path = path,
+                Name = Path.GetFileName(path),
+                IsUnavailable = !Directory.Exists(path)
+            });
+        }
+
+
+        public void OpenFolder(FolderViewModel? folder)
+        {
+            try
+            {
+                if (folder.IsUnavailable)
+                {
+                    ClearResults();
+                    return;
+                }
+
+                //if (_model.FolderPath == folder.Path)
+                //    return;
+
+                _model.MainModel.CurrentFolder = folder;
+                _model.MainModel.ActiveView = "Folders";
+
+                SetView("folders");
+
+                _model.FolderPath = folder.Path;
+
+
+                if (folder is { IsHome: false, IsUnavailable: false } && !Directory.Exists(folder.Path))
+                {
+                    folder.IsUnavailable = true;
+                    ServiceLocator.DataStore.SetUnavailable(new[] { folder.Id }, true);
+                }
+
+                SearchImages(null);
+            }
+            catch (Exception e)
+            {
+                _model.IsBusy = false;
+            }
+
+        }
+
+        private async Task ToggleFolder(FolderViewModel folder, FolderState? forceState = null)
+        {
+            var parentIndex = ServiceLocator.MainModel.Folders.IndexOf(folder);
+            var parentDepth = folder.Depth;
+
+            void Collapse()
             {
                 if (folder.Children != null)
                 {
@@ -213,6 +330,76 @@ namespace Diffusion.Toolkit.Pages
                 }
 
                 folder.State = FolderState.Collapsed;
+            }
+
+            async Task Expand()
+            {
+                var subFolders = folder.Children;
+
+                if (subFolders == null)
+                {
+                    folder.IsBusy = true;
+
+                    subFolders = await Task.Run(() =>
+                    {
+                        try
+                        {
+                            return ServiceLocator.FolderService.GetSubFolders(folder);
+                        }
+                        finally
+                        {
+                            Dispatcher.Invoke(() => { folder.IsBusy = false; });
+                        }
+                    });
+
+                    folder.Children = subFolders;
+
+                    if (subFolders.Any())
+                    {
+                        foreach (var subFolder in subFolders)
+                        {
+                            ServiceLocator.FolderService.InsertChild(parentIndex, parentDepth, subFolder);
+                        }
+                    }
+
+                }
+                else
+                {
+                    foreach (var child in folder.Children)
+                    {
+                        if (!ServiceLocator.MainModel.Folders.Contains(child))
+                        {
+                            ServiceLocator.FolderService.InsertChild(parentIndex, parentDepth, child);
+                        }
+                        else
+                        {
+                            child.Visible = true;
+                            ExpandVisualTree(child);
+                        }
+                    }
+                }
+
+                folder.State = FolderState.Expanded;
+            }
+
+
+            switch (forceState)
+            {
+                case FolderState.Collapsed:
+                    Collapse();
+                    return;
+                case FolderState.Expanded:
+                    await Expand();
+                    return;
+            }
+
+            if (folder.State == FolderState.Collapsed)
+            {
+                await Expand();
+            }
+            else
+            {
+                Collapse();
             }
         }
 
@@ -240,50 +427,186 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        public void RefreshFolder(FolderViewModel model)
+        private void NotScanned_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
-            var subFolders = GetSubFolders(model).ToList();
-
-            // TODO: prevent updating of state and MainModel.Folders if no visual update is required
-
-            if (model.HasChildren)
+            if (_model.MainModel.CurrentFolder != null)
             {
-                var addedFolders = subFolders.Except(model.Children);
-                var removedFolders = model.Children.Except(subFolders);
-
-                var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
-
-                foreach (var folder in addedFolders)
-                {
-                    model.Children.Add(folder);
-                    _model.MainModel.Folders.Insert(insertPoint, folder);
-                }
-
-                foreach (var folder in removedFolders)
-                {
-                    model.Children.Remove(folder);
-                    _model.MainModel.Folders.Remove(folder);
-                }
-
-                model.HasChildren = subFolders.Any();
+                _ = ServiceLocator.ScanningService.ScanFolder(_model.MainModel.CurrentFolder, true);
             }
-            else
+        }
+
+        private void Folder_Move(object sender, MouseEventArgs e)
+        {
+            //Point mpos = e.GetPosition(null);
+            //Vector diff = this._start - mpos;
+
+            //if (_dragStarted && e.LeftButton == MouseButtonState.Pressed && (e.OriginalSource is Grid or TextBlock) &&
+            //    (Math.Abs(diff.X) > SystemParameters.MinimumHorizontalDragDistance ||
+            //     Math.Abs(diff.Y) > SystemParameters.MinimumVerticalDragDistance))
+            //{
+            //    var selectedFolders = ServiceLocator.FolderService.SelectedFolders.ToList();
+
+            //    if (!selectedFolders.Any())
+            //    {
+            //        return;
+            //    }
+
+            //    if (selectedFolders.Any(d => d.Parent == null))
+            //    {
+            //        return;
+            //    }
+
+
+            //    DataObject dataObject = new DataObject();
+            //    dataObject.SetData(DataFormats.FileDrop, selectedFolders.Select(t => t.Path).ToArray());
+            //    dataObject.SetData(DragAndDrop.DragFolders, selectedFolders.Select(t => t.Id).ToArray());
+
+            //    DragDrop.DoDragDrop((DependencyObject)sender, dataObject, DragDropEffects.Move | DragDropEffects.Copy);
+            //}
+        }
+
+        private void Folder_Release(object sender, MouseButtonEventArgs e)
+        {
+            _dragStarted = false;
+        }
+
+        private void DropImagesOnFolder(object sender, DragEventArgs e)
+        {
+            var folder = (FolderViewModel)((FrameworkElement)sender).DataContext;
+
+            // (e.Effects & DragDropEffects.Move) != 0
+
+            if (e.Data.GetDataPresent(DragAndDrop.DragFolders))
             {
-                model.HasChildren = subFolders.Any();
-                model.Children = new ObservableCollection<FolderViewModel>(subFolders);
+                int[] folders = (int[])e.Data.GetData(DragAndDrop.DragFolders);
 
-                var insertPoint = _model.MainModel.Folders.IndexOf(model) + 1;
-
-                foreach (var folder in subFolders)
-                {
-                    _model.MainModel.Folders.Insert(insertPoint, folder);
-                }
 
             }
-
-            if (model.HasChildren)
+            else if (e.Data.GetDataPresent(DragAndDrop.DragFiles))
             {
-                model.State = FolderState.Expanded;
+                ImageEntry[] files = (ImageEntry[])e.Data.GetData(DragAndDrop.DragFiles);
+
+                var imagePaths = files.Where(d => d.EntryType == EntryType.File)
+                    .Select(d => new ImagePath() { Id = d.Id, Path = d.Path }).ToList();
+
+                ServiceLocator.FileService.MoveFiles(imagePaths, folder.Path, false).ContinueWith(d =>
+                {
+                    if (d.IsCompletedSuccessfully)
+                    {
+                        if (d.Result)
+                        {
+                            SearchImages(null);
+                        }
+                    }
+                });
+            }
+        }
+
+        private void Folder_OnKeyDown(object sender, KeyEventArgs e)
+        {
+            if (sender is ContentPresenter { DataContext: FolderViewModel folder })
+            {
+                if (e.Key == Key.Enter)
+                {
+                    ServiceLocator.FolderService.ClearSelection();
+                    OpenFolder(folder);
+                    ServiceLocator.MainModel.CurrentFolder = folder;
+                    folder.IsSelected = true;
+                }
+                else if (e.Key == Key.Left)
+                {
+                    _ = ToggleFolder(folder, FolderState.Collapsed);
+                }
+                else if (e.Key == Key.Right)
+                {
+                    _ = ToggleFolder(folder, FolderState.Expanded);
+                }
+                else if (e.Key == Key.PageUp)
+                {
+                    var index = ServiceLocator.MainModel.Folders.IndexOf(folder);
+
+                    index -= 10;
+                    if (index < 0)
+                    {
+                        index = 0;
+                    }
+
+                    var currentFolder = ServiceLocator.MainModel.Folders[index];
+
+                    ServiceLocator.FolderService.ClearSelection();
+                    ServiceLocator.MainModel.CurrentFolder = currentFolder;
+                    currentFolder.IsSelected = true;
+
+                }
+                else if (e.Key == Key.PageDown)
+                {
+                    var index = ServiceLocator.MainModel.Folders.IndexOf(folder);
+
+                    index += 10;
+                    if (index > ServiceLocator.MainModel.Folders.Count - 1)
+                    {
+                        index = ServiceLocator.MainModel.Folders.Count - 1;
+                    }
+
+                    var currentFolder = ServiceLocator.MainModel.Folders[index];
+
+                    ServiceLocator.FolderService.ClearSelection();
+                    ServiceLocator.MainModel.CurrentFolder = currentFolder;
+                    currentFolder.IsSelected = true;
+
+                }
+            }
+
+        }
+
+        private void AddRootFolder_OnClick(object sender, RoutedEventArgs e)
+        {
+            var window = ServiceLocator.WindowService.CurrentWindow;
+
+            using var dialog = new CommonOpenFileDialog();
+            dialog.IsFolderPicker = true;
+
+            if (dialog.ShowDialog(window) == CommonFileDialogResult.Ok)
+            {
+                var path = dialog.FileName;
+
+                if (ServiceLocator.FolderService.RootFolders.Any(d => path.StartsWith(d.Path + "\\", StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show(window,
+                        "The selected folder is already included in the path of one of the existing folders",
+                        "Add folder", MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                    return;
+                }
+                else if (ServiceLocator.FolderService.RootFolders.Any(d => d.Path.Equals(path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return;
+                }
+                else if (ServiceLocator.FolderService.RootFolders.Any(d => d.Path.StartsWith(path, StringComparison.OrdinalIgnoreCase)))
+                {
+                    MessageBox.Show(window,
+                        "One or more of the existing folders is included the path of the selected folder",
+                        "Add folder", MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+
+                var recursiveScan = MessageBox.Show(window,
+                    "Do you want this folder to be scanned recursively?",
+                    "Add folder", MessageBoxButton.YesNo,
+                    MessageBoxImage.Information);
+
+                _ = ServiceLocator.FolderService.ApplyFolderChanges(new[]
+                {
+                    new FolderChange()
+                    {
+                        Path = path,
+                        FolderType = FolderType.Root,
+                        ChangeType = ChangeType.Add,
+                        Watched = false,
+                        Recursive = recursiveScan == MessageBoxResult.Yes,
+                    }
+                }, true);
             }
         }
 

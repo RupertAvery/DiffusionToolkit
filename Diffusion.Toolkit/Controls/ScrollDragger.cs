@@ -25,6 +25,13 @@ public class ScrollDragger
         content.PreviewMouseLeftButtonUp += scrollViewer_PreviewMouseLeftButtonUp;
     }
 
+    public void Close()
+    {
+        _content.MouseLeftButtonDown -= scrollViewer_MouseLeftButtonDown;
+        _content.PreviewMouseMove -= scrollViewer_PreviewMouseMove;
+        _content.PreviewMouseLeftButtonUp -= scrollViewer_PreviewMouseLeftButtonUp;
+    }
+
     private bool IsDraggable => _scrollViewer.ScrollableHeight > 0 || _scrollViewer.ScrollableWidth > 0;
 
     private void scrollViewer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

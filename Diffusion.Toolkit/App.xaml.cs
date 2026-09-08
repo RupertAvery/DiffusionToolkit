@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace Diffusion.Toolkit
 {
@@ -7,9 +8,6 @@ namespace Diffusion.Toolkit
     /// </summary>
     public partial class App : Application
     {
-
-
-
     }
 
 
