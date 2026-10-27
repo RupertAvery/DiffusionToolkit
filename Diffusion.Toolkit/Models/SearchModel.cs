@@ -106,9 +106,6 @@ public class DayEntry : BaseNotify
 
 public class TimelineModel : BaseNotify
 {
-    public string Query { get; set; }
-    public Filter Filter { get; set; }
-
     private ObservableCollection<MonthEntry> _months;
 
     public ObservableCollection<MonthEntry> Months
@@ -132,6 +129,9 @@ public class TimelineModel : BaseNotify
                 }
             }
         }
+
+        StartDay = null;
+        EndDay = null;
     }
 }
 
@@ -157,6 +157,7 @@ public class SearchModel : BaseNotify
     private string _sortDirection;
     private ViewMode _currentViewMode;
     private ObservableCollection<Album> _albums;
+    private TimelineModel _timeline;
 
     public SearchModel()
     {

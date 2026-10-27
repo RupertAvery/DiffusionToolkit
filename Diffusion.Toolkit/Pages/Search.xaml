@@ -50,9 +50,16 @@
             <converters:MultiBoolToVisibilityCollapsedConverter x:Key="MultiBoolToVisibilityCollapsedConverter"></converters:MultiBoolToVisibilityCollapsedConverter>
             <converters:InvertBoolConverter x:Key="InvertBoolConverter"></converters:InvertBoolConverter>
             <converters:UnderlineConverter x:Key="UnderlineConverter"></converters:UnderlineConverter>
+            <converters:TimelineCountConverter x:Key="TimelineCountConverter"></converters:TimelineCountConverter>
+            <converters:TimelineSelectedConverter x:Key="TimelineSelectedConverter"></converters:TimelineSelectedConverter>
+            <converters:TimelineSelectedStrokeConverter x:Key="TimelineSelectedStrokeConverter"></converters:TimelineSelectedStrokeConverter >
         </ResourceDictionary>
     </local:NavigationPage.Resources>
     <Grid x:Name="MainGrid" Background="{DynamicResource {x:Static SystemColors.ControlBrush}}">
+        <!--<Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="190"/>
+        </Grid.RowDefinitions>-->
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition />
@@ -1037,7 +1044,7 @@
 
         </Grid>
 
-        <Grid Grid.Row="1" ColumnSpan="3">
+        <!--<Grid Grid.Row="1" ColumnSpan="3">
             <Border BorderBrush="{DynamicResource SecondaryBrush}" BorderThickness="1">
                 <TabControl Background="{x:Null}" Height="220">
                     <TabItem Header="Timeline">
@@ -1096,7 +1103,7 @@
                     </TabItem>
                 </TabControl>
             </Border>
-        </Grid>
+        </Grid>-->
 
 
         <Popup x:Name="FilterPopup" Placement="Center" Width="800" Height="600"

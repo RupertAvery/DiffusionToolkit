@@ -21,7 +21,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,11 +29,12 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using Diffusion.ComfyUI;
 using WPFLocalizeExtension.Engine;
-using XmpCore.Impl;
 using Metadata = Diffusion.IO.Metadata;
 using Model = Diffusion.Common.Model;
+using Path = System.IO.Path;
 using SearchView = Diffusion.Common.SearchView;
 
 namespace Diffusion.Toolkit.Pages
@@ -875,6 +875,23 @@ namespace Diffusion.Toolkit.Pages
                     QueryOptions.SearchView = SearchView.Deleted;
                 }
 
+                if (_model.Timeline != null && _model.Timeline.StartDay != null)
+                {
+                    QueryOptions.Filter.UseCreationDate = true;
+                    QueryOptions.Filter.Start = new DateTime(_model.Timeline.StartDay.Month.Year,
+                        _model.Timeline.StartDay.Month.Month, _model.Timeline.StartDay.Day, 0, 0, 0);
+                    if (_model.Timeline.EndDay != null)
+                    {
+                        QueryOptions.Filter.End = new DateTime(_model.Timeline.EndDay.Month.Year,
+                            _model.Timeline.EndDay.Month.Month, _model.Timeline.EndDay.Day, 23, 59, 59);
+                    }
+                    else
+                    {
+                        QueryOptions.Filter.End = new DateTime(_model.Timeline.StartDay.Month.Year,
+                            _model.Timeline.StartDay.Month.Month, _model.Timeline.StartDay.Day, 23, 59, 59);
+                    }
+                }
+
                 Task.Run(() =>
                 {
 
@@ -948,6 +965,8 @@ namespace Diffusion.Toolkit.Pages
                     });
 
                     ReloadMatches(new ReloadOptions() { Focus = focus, IsEmpty = count == 0 });
+
+                    GetTimeline();
                 })
                 .ContinueWith(d =>
                 {
@@ -2066,18 +2085,96 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void UIElement_OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        //private void UIElement_OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        //{
+        //    if (!e.Handled)
+        //    {
+        //        e.Handled = true;
+        //        var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+        //        eventArg.RoutedEvent = UIElement.MouseWheelEvent;
+        //        eventArg.Source = sender;
+        //        var parent = NavigationScrollViewer;
+        //        parent.RaiseEvent(eventArg);
+        //    }
+        //}
+
+        private void GetTimeline()
         {
-            if (!e.Handled)
+            Task.Run(() =>
             {
-                e.Handled = true;
-                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-                eventArg.RoutedEvent = UIElement.MouseWheelEvent;
-                eventArg.Source = sender;
-                var parent = NavigationScrollViewer;
-                parent.RaiseEvent(eventArg);
+                GetTimelineInternal();
+            });
+        }
+
+        private void GetTimelineInternal()
+        {
+            IEnumerable<TimeLineEntry>? entries = null;
+
+            //if (_model.Filter.IsActive)
+            //{
+            entries = ServiceLocator.DataStore.GetTimeLine(_model.Filter.AsFilter());
+            //}
+            //else
+            //{
+            //    _model.Timeline.Query = query;
+            //    entries = DataStore.GetTimeLine(query);
+            //}
+
+            if (entries != null)
+            {
+                var months = entries
+                    .Select(d => new { Date = DateTime.Parse(d.Date), Count = d.Count })
+                    .GroupBy(d => new { Year = d.Date.Year, Month = d.Date.Month })
+                    .Select(d =>
+                    {
+                        var availableDays = d
+                            .Select(e => new DayEntry() { Day = e.Date.Day, Count = e.Count })
+                            .OrderBy(p => p.Day)
+                            .ToList();
+
+                        var daysInMonth = DateTime.DaysInMonth(d.Key.Year, d.Key.Month);
+
+                        var month = new MonthEntry()
+                        {
+                            Name = $"{CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(d.Key.Month)} {d.Key.Year}",
+                            Year = d.Key.Year,
+                            Month = d.Key.Month,
+                        };
+
+                        var days = new List<DayEntry>();
+
+                        var j = 0;
+
+                        for (var i = 1; i <= daysInMonth; i++)
+                        {
+                            DayEntry day;
+
+                            if (j < availableDays.Count && availableDays[j].Day == i)
+                            {
+                                day = availableDays[j];
+                                j++;
+                            }
+                            else
+                            {
+                                day = new DayEntry() { Day = i, Count = 0 };
+                            }
+
+                            day.Month = month;
+
+                            days.Add(day);
+                        }
+
+                        month.Days = new ObservableCollection<DayEntry>(days);
+
+                        return month;
+                    })
+                    .OrderBy(d => d.Year)
+                    .ThenBy(d => d.Month);
+
+                Dispatcher.Invoke(() => { _model.Timeline.Months = new ObservableCollection<MonthEntry>(months); });
             }
         }
+
 
         private void TimelineClear_OnMouseDown(object sender, MouseButtonEventArgs e)
         {
