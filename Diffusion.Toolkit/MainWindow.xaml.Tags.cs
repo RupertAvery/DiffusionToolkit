@@ -1,17 +1,9 @@
-using Diffusion.Database;
-using Diffusion.Database.Models;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using SQLite;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace Diffusion.Toolkit
 {
@@ -23,16 +15,13 @@ namespace Diffusion.Toolkit
 
             _model.ImportTagsCommand = new AsyncCommand<object>(async (o) =>
             {
-                using var dialog = new CommonOpenFileDialog();
+                var dialog = ServiceLocator.DialogService;
 
-                dialog.Title = GetLocalizedText("Actions.Tags.ImportTags.Title");
-                dialog.Filters.Add(new CommonFileDialogFilter("Text files", "*.txt"));
-                dialog.Filters.Add(new CommonFileDialogFilter("All files", "*.*"));
-                dialog.DefaultExtension = "txt";
+                var result = await dialog.GetFiles(this, GetLocalizedText("Actions.Tags.ImportTags.Title"), new [] { "Text files|*.txt", "All files|*.*" }, "txt");
 
-                if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+                if (result != null)
                 {
-                    var lines = File.ReadAllLines(dialog.FileName);
+                    var lines = result;
                     var allTags = ServiceLocator.DataStore.GetTags();
 
                     var tagLookup = allTags.Select(d => d.Name).ToHashSet();
@@ -47,18 +36,14 @@ namespace Diffusion.Toolkit
 
             _model.ExportTagsCommand = new AsyncCommand<object>(async (o) =>
             {
-                using var dialog = new CommonSaveFileDialog();
+                var dialog = ServiceLocator.DialogService;
+                var result = await dialog.GetFile(this, GetLocalizedText("Actions.Tags.ExportTags.Title"), new[] { "Text files|*.txt", "All files|*.*" }, "txt");
 
-                dialog.Title = GetLocalizedText("Actions.Tags.ExportTags.Title");
-                dialog.Filters.Add(new CommonFileDialogFilter("Text files", "*.txt"));
-                dialog.Filters.Add(new CommonFileDialogFilter("All files", "*.*"));
-                dialog.DefaultExtension = "txt";
-
-                if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+                if (result != null)
                 {
                     var tags = ServiceLocator.DataStore.GetTags();
 
-                    File.WriteAllLines(dialog.FileName, tags.Select(d => d.Name));
+                    File.WriteAllLines(result, tags.Select(d => d.Name));
                 }
             });
 

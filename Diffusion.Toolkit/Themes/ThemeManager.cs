@@ -14,7 +14,7 @@ namespace Diffusion.Toolkit.Themes
 
         public static void ChangeTheme(string themeName)
         {
-            if (string.IsNullOrEmpty(themeName) || themeName  == "System")
+            if (string.IsNullOrEmpty(themeName) || themeName == "System")
             {
                 themeName = GetWindowsTheme();
             }
@@ -43,15 +43,20 @@ namespace Diffusion.Toolkit.Themes
 
         private static string GetWindowsTheme()
         {
-            using var key = Registry.CurrentUser.OpenSubKey(RegistryKeyPath);
-            var registryValueObject = key?.GetValue(RegistryValueName);
-            if (registryValueObject == null)
-            {
-                return "Light";
-            }
-            var registryValue = (int)registryValueObject;
+            return "Dark";
+//#if WINDOWS
+//            using var key = Registry.CurrentUser.OpenSubKey(RegistryKeyPath);
+//            var registryValueObject = key?.GetValue(RegistryValueName);
+//            if (registryValueObject == null)
+//            {
+//                return "Light";
+//            }
+//            var registryValue = (int)registryValueObject;
 
-            return registryValue > 0 ? "Light" : "Dark";
+//            return registryValue > 0 ? "Light" : "Dark";
+//#else
+//            return "Dark";
+//#endif
         }
 
     }

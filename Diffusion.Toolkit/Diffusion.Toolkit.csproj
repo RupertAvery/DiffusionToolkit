@@ -1,286 +1,293 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="LibreWPF.Sdk/0.1.0-preview.69">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWPF>true</UseWPF>
-	<UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>diffusion-toolkit.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ApplicationIcon>diffusion-toolkit.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<DefineConstants>$(DefineConstants);PROGPU</DefineConstants>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="DiffusionToolkit.log" />
-    <None Remove="Icons\blue-heart-32.png" />
-    <None Remove="Icons\copy-32.png" />
-    <None Remove="Icons\Dark\copy-32.png" />
-    <None Remove="Icons\Dark\favorite-32.png" />
-    <None Remove="Icons\Dark\filter-32.png" />
-    <None Remove="Icons\Dark\hide-24.png" />
-    <None Remove="Icons\Dark\link-32.png" />
-    <None Remove="Icons\Dark\models-32.png" />
-    <None Remove="Icons\Dark\rebuild-32.png" />
-    <None Remove="Icons\Dark\scan-folder-32.png" />
-    <None Remove="Icons\Dark\search-32.png" />
-    <None Remove="Icons\Dark\settings-32.png" />
-    <None Remove="Icons\Dark\trash-32.png" />
-    <None Remove="Icons\Dark\gallery-32.png" />
-    <None Remove="Icons\Dark\trash-solid-32.png" />
-    <None Remove="Icons\Dark\video-24.png" />
-    <None Remove="Icons\error-32.png" />
-    <None Remove="Icons\favorite-32.png" />
-    <None Remove="Icons\filter-32.png" />
-    <None Remove="Icons\grab.cur" />
-    <None Remove="Icons\grab.ico" />
-    <None Remove="Icons\hand.cur" />
-    <None Remove="Icons\hand.ico" />
-    <None Remove="Icons\icons8-blue-heart-48.png" />
-    <None Remove="Icons\Light\copy-32.png" />
-    <None Remove="Icons\Light\favorite-32.png" />
-    <None Remove="Icons\Light\filter-32.png" />
-    <None Remove="Icons\Light\hide-24.png" />
-    <None Remove="Icons\Light\link-32.png" />
-    <None Remove="Icons\Light\models-32.png" />
-    <None Remove="Icons\Light\rebuild-32.png" />
-    <None Remove="Icons\Light\scan-folder-32.png" />
-    <None Remove="Icons\Light\search-32.png" />
-    <None Remove="Icons\Light\settings-32.png" />
-    <None Remove="Icons\Light\trash-32.png" />
-    <None Remove="Icons\Light\gallery-32.png" />
-    <None Remove="Icons\Light\trash-solid-32.png" />
-    <None Remove="Icons\Light\video-24.png" />
-    <None Remove="Icons\link-32.png" />
-    <None Remove="Icons\models-32.png" />
-    <None Remove="Icons\rebuild-32.png" />
-    <None Remove="Icons\scan-folder-32.png" />
-    <None Remove="Icons\search-32.png" />
-    <None Remove="Icons\settings-32.png" />
-    <None Remove="Icons\star-32.png" />
-    <None Remove="Icons\trash-32.png" />
-    <None Remove="Icons\x-mark-16.png" />
-    <None Remove="Icons\x-mark-32.png" />
-    <None Remove="Images\diffusion-toolkit.png" />
-    <None Remove="Images\thumbnail.png" />
-    <None Remove="Localization\de-DE.json" />
-    <None Remove="Localization\default.json" />
-    <None Remove="Localization\es-ES.json" />
-    <None Remove="Localization\fr-FR.json" />
-    <None Remove="Release Notes\What%27s New v1.0.md" />
-    <None Remove="Release Notes\What%27s New v1.1.md" />
-    <None Remove="Release Notes\What%27s New v1.10.0.md" />
-    <None Remove="Release Notes\What%27s New v1.2.md" />
-    <None Remove="Release Notes\What%27s New v1.3.md" />
-    <None Remove="Release Notes\What%27s New v1.4.md" />
-    <None Remove="Release Notes\What%27s New v1.5.1.md" />
-    <None Remove="Release Notes\What%27s New v1.5.md" />
-    <None Remove="Release Notes\What%27s New v1.6.1.md" />
-    <None Remove="Release Notes\What%27s New v1.6.md" />
-    <None Remove="Release Notes\What%27s New v1.7.0.md" />
-    <None Remove="Release Notes\What%27s New v1.8.0.md" />
-    <None Remove="SearchHelp.md" />
-    <None Remove="Tips.md" />
-    <None Remove="Tools\comfy-nodes-2.json" />
-    <None Remove="Tools\comfy-nodes-3.json" />
-    <None Remove="Tools\comfy-nodes.json" />
-    <None Remove="Tools\workflow.json" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="DiffusionToolkit.log" />
+		<None Remove="Icons\blue-heart-32.png" />
+		<None Remove="Icons\copy-32.png" />
+		<None Remove="Icons\Dark\copy-32.png" />
+		<None Remove="Icons\Dark\favorite-32.png" />
+		<None Remove="Icons\Dark\filter-32.png" />
+		<None Remove="Icons\Dark\hide-24.png" />
+		<None Remove="Icons\Dark\link-32.png" />
+		<None Remove="Icons\Dark\models-32.png" />
+		<None Remove="Icons\Dark\rebuild-32.png" />
+		<None Remove="Icons\Dark\scan-folder-32.png" />
+		<None Remove="Icons\Dark\search-32.png" />
+		<None Remove="Icons\Dark\settings-32.png" />
+		<None Remove="Icons\Dark\trash-32.png" />
+		<None Remove="Icons\Dark\gallery-32.png" />
+		<None Remove="Icons\Dark\trash-solid-32.png" />
+		<None Remove="Icons\Dark\video-24.png" />
+		<None Remove="Icons\error-32.png" />
+		<None Remove="Icons\favorite-32.png" />
+		<None Remove="Icons\filter-32.png" />
+		<None Remove="Icons\grab.cur" />
+		<None Remove="Icons\grab.ico" />
+		<None Remove="Icons\hand.cur" />
+		<None Remove="Icons\hand.ico" />
+		<None Remove="Icons\icons8-blue-heart-48.png" />
+		<None Remove="Icons\Light\copy-32.png" />
+		<None Remove="Icons\Light\favorite-32.png" />
+		<None Remove="Icons\Light\filter-32.png" />
+		<None Remove="Icons\Light\hide-24.png" />
+		<None Remove="Icons\Light\link-32.png" />
+		<None Remove="Icons\Light\models-32.png" />
+		<None Remove="Icons\Light\rebuild-32.png" />
+		<None Remove="Icons\Light\scan-folder-32.png" />
+		<None Remove="Icons\Light\search-32.png" />
+		<None Remove="Icons\Light\settings-32.png" />
+		<None Remove="Icons\Light\trash-32.png" />
+		<None Remove="Icons\Light\gallery-32.png" />
+		<None Remove="Icons\Light\trash-solid-32.png" />
+		<None Remove="Icons\Light\video-24.png" />
+		<None Remove="Icons\link-32.png" />
+		<None Remove="Icons\models-32.png" />
+		<None Remove="Icons\rebuild-32.png" />
+		<None Remove="Icons\scan-folder-32.png" />
+		<None Remove="Icons\search-32.png" />
+		<None Remove="Icons\settings-32.png" />
+		<None Remove="Icons\star-32.png" />
+		<None Remove="Icons\trash-32.png" />
+		<None Remove="Icons\x-mark-16.png" />
+		<None Remove="Icons\x-mark-32.png" />
+		<None Remove="Images\diffusion-toolkit.png" />
+		<None Remove="Images\thumbnail.png" />
+		<None Remove="Localization\de-DE.json" />
+		<None Remove="Localization\default.json" />
+		<None Remove="Localization\es-ES.json" />
+		<None Remove="Localization\fr-FR.json" />
+		<None Remove="Release Notes\What%27s New v1.0.md" />
+		<None Remove="Release Notes\What%27s New v1.1.md" />
+		<None Remove="Release Notes\What%27s New v1.10.0.md" />
+		<None Remove="Release Notes\What%27s New v1.2.md" />
+		<None Remove="Release Notes\What%27s New v1.3.md" />
+		<None Remove="Release Notes\What%27s New v1.4.md" />
+		<None Remove="Release Notes\What%27s New v1.5.1.md" />
+		<None Remove="Release Notes\What%27s New v1.5.md" />
+		<None Remove="Release Notes\What%27s New v1.6.1.md" />
+		<None Remove="Release Notes\What%27s New v1.6.md" />
+		<None Remove="Release Notes\What%27s New v1.7.0.md" />
+		<None Remove="Release Notes\What%27s New v1.8.0.md" />
+		<None Remove="SearchHelp.md" />
+		<None Remove="Tips.md" />
+		<None Remove="Tools\comfy-nodes-2.json" />
+		<None Remove="Tools\comfy-nodes-3.json" />
+		<None Remove="Tools\comfy-nodes.json" />
+		<None Remove="Tools\workflow.json" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Include="diffusion-toolkit.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="diffusion-toolkit.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="Icons\Dark\trash-solid-32.png" />
-    <Resource Include="Icons\Dark\video-24.png" />
-    <Resource Include="Icons\error-32.png" />
-    <EmbeddedResource Include="Localization\de-DE.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Localization\es-ES.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Localization\fr-FR.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Localization\default.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.0.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.1.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.10.0.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.2.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.3.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.4.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.5.1.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.5.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.6.1.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.6.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.7.0.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What's New v1.8.0.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What%27s New v1.9.1.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Release Notes\What%27s New v1.9.0.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Silk.NET.Windowing.Sdl" Version="2.23.0" />
+		<PackageReference Include="Silk.NET.Input.Sdl" Version="2.23.0" />
+		<PackageReference Include="SkiaSharp" Version="4.151.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
-    <PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
-    <PackageReference Include="XmpCore" Version="6.1.10.1" />
-  </ItemGroup>
+	<ItemGroup>
+		<Resource Include="Icons\Dark\trash-solid-32.png" />
+		<Resource Include="Icons\Dark\video-24.png" />
+		<Resource Include="Icons\error-32.png" />
+		<EmbeddedResource Include="Localization\de-DE.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Localization\es-ES.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Localization\fr-FR.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Localization\default.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.0.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.1.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.10.0.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.2.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.3.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.4.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.5.1.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.5.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.6.1.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.6.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.7.0.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What's New v1.8.0.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What%27s New v1.9.1.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Release Notes\What%27s New v1.9.0.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Diffusion.Civitai\Diffusion.Civitai.csproj" />
-    <ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
-    <ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
-    <ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
-    <ProjectReference Include="..\Diffusion.Video\Diffusion.Video.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
+		<PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+		<PackageReference Include="WPFLocalizeExtension" Version="3.10.0" />
+		<PackageReference Include="XmpCore" Version="6.1.10.1" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>..\lib\ICSharpCode.AvalonEdit.dll</HintPath>
-    </Reference>
-    <Reference Include="MdXaml">
-      <HintPath>..\lib\MdXaml.dll</HintPath>
-    </Reference>
-    <Reference Include="MdXaml.Plugins">
-      <HintPath>..\lib\MdXaml.Plugins.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Diffusion.Civitai\Diffusion.Civitai.csproj" />
+		<ProjectReference Include="..\Diffusion.Common\Diffusion.Common.csproj" />
+		<ProjectReference Include="..\Diffusion.Database\Diffusion.Database.csproj" />
+		<ProjectReference Include="..\Diffusion.Scanner\Diffusion.IO.csproj" />
+		<ProjectReference Include="..\Diffusion.Video\Diffusion.Video.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Resource Include="Icons\blue-heart-32.png" />
-    <Resource Include="Icons\Dark\copy-32.png" />
-    <Resource Include="Icons\Dark\favorite-32.png" />
-    <Resource Include="Icons\Dark\filter-32.png" />
-    <Resource Include="Icons\Dark\hide-24.png" />
-    <Resource Include="Icons\Dark\link-32.png" />
-    <Resource Include="Icons\Dark\models-32.png" />
-    <Resource Include="Icons\Dark\rebuild-32.png" />
-    <Resource Include="Icons\Dark\scan-folder-32.png" />
-    <Resource Include="Icons\Dark\search-32.png" />
-    <Resource Include="Icons\Dark\settings-32.png" />
-    <Resource Include="Icons\Dark\trash-32.png" />
-    <Resource Include="Icons\Dark\gallery-32.png" />
-    <Resource Include="Icons\grab.cur" />
-    <Resource Include="Icons\hand.cur" />
-    <Resource Include="Icons\icons8-blue-heart-48.png" />
-    <Resource Include="Icons\Light\copy-32.png" />
-    <Resource Include="Icons\Light\favorite-32.png" />
-    <Resource Include="Icons\Light\filter-32.png" />
-    <Resource Include="Icons\Light\hide-24.png" />
-    <Resource Include="Icons\Light\link-32.png" />
-    <Resource Include="Icons\Light\models-32.png" />
-    <Resource Include="Icons\Light\rebuild-32.png" />
-    <Resource Include="Icons\Light\scan-folder-32.png" />
-    <Resource Include="Icons\Light\search-32.png" />
-    <Resource Include="Icons\Light\settings-32.png" />
-    <Resource Include="Icons\Light\trash-32.png" />
-    <Resource Include="Icons\Light\gallery-32.png" />
-    <Resource Include="Icons\Light\trash-solid-32.png" />
-    <Resource Include="Icons\Light\video-24.png" />
-    <Resource Include="Icons\star-32.png" />
-    <Resource Include="Icons\x-mark-16.png" />
-    <Resource Include="Icons\x-mark-32.png" />
-    <Resource Include="Images\thumbnail.png" />
-    <EmbeddedResource Include="SearchHelp.md">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Tips.md">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
+	<ItemGroup>
+		<Reference Include="ICSharpCode.AvalonEdit">
+			<HintPath>..\lib\ICSharpCode.AvalonEdit.dll</HintPath>
+		</Reference>
+		<Reference Include="MdXaml">
+			<HintPath>..\lib\MdXaml.dll</HintPath>
+		</Reference>
+		<Reference Include="MdXaml.Plugins">
+			<HintPath>..\lib\MdXaml.Plugins.dll</HintPath>
+		</Reference>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="AlbumSortWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="ManageAlbumWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="TipsWindow.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="ReleaseNotes.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
+	<ItemGroup>
+		<Resource Include="Icons\blue-heart-32.png" />
+		<Resource Include="Icons\Dark\copy-32.png" />
+		<Resource Include="Icons\Dark\favorite-32.png" />
+		<Resource Include="Icons\Dark\filter-32.png" />
+		<Resource Include="Icons\Dark\hide-24.png" />
+		<Resource Include="Icons\Dark\link-32.png" />
+		<Resource Include="Icons\Dark\models-32.png" />
+		<Resource Include="Icons\Dark\rebuild-32.png" />
+		<Resource Include="Icons\Dark\scan-folder-32.png" />
+		<Resource Include="Icons\Dark\search-32.png" />
+		<Resource Include="Icons\Dark\settings-32.png" />
+		<Resource Include="Icons\Dark\trash-32.png" />
+		<Resource Include="Icons\Dark\gallery-32.png" />
+		<Resource Include="Icons\grab.cur" />
+		<Resource Include="Icons\hand.cur" />
+		<Resource Include="Icons\icons8-blue-heart-48.png" />
+		<Resource Include="Icons\Light\copy-32.png" />
+		<Resource Include="Icons\Light\favorite-32.png" />
+		<Resource Include="Icons\Light\filter-32.png" />
+		<Resource Include="Icons\Light\hide-24.png" />
+		<Resource Include="Icons\Light\link-32.png" />
+		<Resource Include="Icons\Light\models-32.png" />
+		<Resource Include="Icons\Light\rebuild-32.png" />
+		<Resource Include="Icons\Light\scan-folder-32.png" />
+		<Resource Include="Icons\Light\search-32.png" />
+		<Resource Include="Icons\Light\settings-32.png" />
+		<Resource Include="Icons\Light\trash-32.png" />
+		<Resource Include="Icons\Light\gallery-32.png" />
+		<Resource Include="Icons\Light\trash-solid-32.png" />
+		<Resource Include="Icons\Light\video-24.png" />
+		<Resource Include="Icons\star-32.png" />
+		<Resource Include="Icons\x-mark-16.png" />
+		<Resource Include="Icons\x-mark-32.png" />
+		<Resource Include="Images\thumbnail.png" />
+		<EmbeddedResource Include="SearchHelp.md">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Tips.md">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="hints.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Localization\en-US.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Localization\ja-JP.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Localization\languages.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Localization\README.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Localization\update.py">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="samplers.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="version.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Update="AlbumSortWindow.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+		<Compile Update="ManageAlbumWindow.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+		<Compile Update="TipsWindow.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+		<Compile Update="ReleaseNotes.xaml.cs">
+			<SubType>Code</SubType>
+		</Compile>
+	</ItemGroup>
 
-  <ItemGroup>
-    <Page Update="Themes\Common.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Themes\Menu.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="Themes\Window.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Update="TipsWindow.xaml">
-      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
-      <SubType>Designer</SubType>
-    </Page>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="hints.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Localization\en-US.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Localization\ja-JP.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Localization\languages.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Localization\README.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Localization\update.py">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="samplers.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="version.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Page Update="Themes\Common.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Themes\Menu.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="Themes\Window.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+			<SubType>Designer</SubType>
+		</Page>
+		<Page Update="TipsWindow.xaml">
+			<XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+			<SubType>Designer</SubType>
+		</Page>
+	</ItemGroup>
 
 
 

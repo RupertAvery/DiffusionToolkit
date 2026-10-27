@@ -2,7 +2,6 @@
 using Diffusion.ComfyUI;
 using Diffusion.Common;
 using Diffusion.Database;
-using Diffusion.Database.Models;
 using Diffusion.IO;
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Common;
@@ -13,8 +12,6 @@ using Diffusion.Toolkit.Services;
 using Diffusion.Toolkit.Themes;
 using Diffusion.Toolkit.Thumbnails;
 using Microsoft.Win32;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,21 +19,14 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Xml;
 using WPFLocalizeExtension.Engine;
-using Image = System.Windows.Controls.Image;
 using MessageBox = System.Windows.MessageBox;
 using Model = Diffusion.Common.Model;
 using Path = System.IO.Path;
@@ -83,6 +73,8 @@ namespace Diffusion.Toolkit
 
                 //Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
                 //Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("fr-FR");
+                _model = new MainModel();
+                DataContext = _model;
 
                 InitializeComponent();
 
@@ -104,7 +96,6 @@ namespace Diffusion.Toolkit
 
                 ServiceLocator.WindowService.SetWindow(this);
 
-                _model = new MainModel();
                 _model.CurrentProgress = 0;
                 _model.TotalProgress = 100;
 
@@ -155,7 +146,6 @@ namespace Diffusion.Toolkit
                     this.Close();
                 });
 
-                DataContext = _model;
 
 
                 _messagePopupManager = new MessagePopupManager(this, PopupHost, Frame, Dispatcher);
@@ -191,20 +181,7 @@ namespace Diffusion.Toolkit
                     }
                 };
 
-                string menuLanguage= null;
-
-                // TODO: Find a better eay that doesn't get called even when mouseover?
-                // Maybe only when the language has changed?
-                Menu.LayoutUpdated += (sender, args) =>
-                {
-                    if (Thread.CurrentThread.CurrentCulture.Name != menuLanguage)
-                    {
-                        Menu.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-                        MenuWidth = new GridLength(Menu.DesiredSize.Width + 10);
-                        menuLanguage = Thread.CurrentThread.CurrentCulture.Name;
-                    }
-                };
-
+          
                 //Thread.CurrentThread.CurrentCulture = new CultureInfo("pt-PT");
                 //Thread.CurrentThread.CurrentUICulture = new CultureInfo("pt-PT");
                 //FrameworkElement.LanguageProperty.OverrideMetadata(typeof(FrameworkElement), new FrameworkPropertyMetadata(
@@ -494,8 +471,23 @@ namespace Diffusion.Toolkit
             }
         }
 
+        string menuLanguage = null;
+
+
         private async void OnLoaded(object sender, RoutedEventArgs e)
         {
+            // TODO: Find a better eay that doesn't get called even when mouseover?
+            // Maybe only when the language has changed?
+            Menu.LayoutUpdated += (sender, args) =>
+            {
+                if (Thread.CurrentThread.CurrentCulture.Name != menuLanguage)
+                {
+                    Menu.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                    MenuWidth = new GridLength(Menu.DesiredSize.Width + 10);
+                    menuLanguage = Thread.CurrentThread.CurrentCulture.Name;
+                }
+            };
+
             var dataStore = new DataStore(AppInfo.DatabasePath);
             var _showReleaseNotes = false;
 
@@ -713,12 +705,14 @@ namespace Diffusion.Toolkit
 
             _search.MoveFiles = (files) =>
             {
-                using var dialog = new CommonOpenFileDialog();
-                dialog.IsFolderPicker = true;
+                var dialog = ServiceLocator.DialogService;
 
-                if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+                // TODO: Fix this to be async
+                var result = dialog.GetFolder(this).GetAwaiter().GetResult();
+
+                if (result != null)
                 {
-                    var path = dialog.FileName;
+                    var path = result;
 
                     var isInPath = false;
 
@@ -919,7 +913,8 @@ namespace Diffusion.Toolkit
                 }
             }
 
-            RenderOptions.ProcessRenderMode = _settings.RenderMode;
+
+            //RenderOptions.ProcessRenderMode = _settings.RenderMode;
 
             Logger.Log($"Init completed");
 
@@ -1192,54 +1187,4 @@ namespace Diffusion.Toolkit
         public string sha256 { get; set; }
     }
 
-    static class WindowExtensions
-    {
-        [StructLayout(LayoutKind.Sequential)]
-        struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-
-
-        public static double ActualTop(this Window window)
-        {
-            switch (window.WindowState)
-            {
-                case WindowState.Normal:
-                    return window.Top;
-                case WindowState.Minimized:
-                    return window.RestoreBounds.Top;
-                case WindowState.Maximized:
-                    {
-                        RECT rect;
-                        GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
-                        return rect.Top;
-                    }
-            }
-            return 0;
-        }
-        public static double ActualLeft(this Window window)
-        {
-            switch (window.WindowState)
-            {
-                case WindowState.Normal:
-                    return window.Left;
-                case WindowState.Minimized:
-                    return window.RestoreBounds.Left;
-                case WindowState.Maximized:
-                    {
-                        RECT rect;
-                        GetWindowRect((new WindowInteropHelper(window)).Handle, out rect);
-                        return rect.Left;
-                    }
-            }
-            return 0;
-        }
-    }
 }

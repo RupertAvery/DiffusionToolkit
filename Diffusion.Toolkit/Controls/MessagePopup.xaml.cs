@@ -9,6 +9,7 @@ using Diffusion.Toolkit.Classes;
 using System.Windows.Controls.Primitives;
 using System.Globalization;
 using System.Windows.Media;
+using Microsoft.DotNet.PlatformAbstractions;
 
 namespace Diffusion.Toolkit.Controls
 {
@@ -300,9 +301,9 @@ namespace Diffusion.Toolkit.Controls
                 fontSize,
                 Brushes.Black,
                 new NumberSubstitution(),
-                TextFormattingMode.Display,
+                //TextFormattingMode.Display,
+                TextFormattingMode.Ideal,
                 VisualTreeHelper.GetDpi(this.textBlock).PixelsPerDip);
-
             formattedText.MaxTextWidth = maxWidth;
             formattedText.Trimming = TextTrimming.None;
 

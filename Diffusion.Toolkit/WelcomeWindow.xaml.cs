@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Diffusion.Toolkit.Configuration;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
-using Microsoft.WindowsAPICodePack.Dialogs;
 using SQLite;
 
 namespace Diffusion.Toolkit
@@ -185,13 +180,15 @@ namespace Diffusion.Toolkit
         //}
 
 
-        private void AddFolder_OnClick(object sender, RoutedEventArgs e)
+        private async void AddFolder_OnClick(object sender, RoutedEventArgs e)
         {
-            using var dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog(this) == CommonFileDialogResult.Ok)
+            var dialog = ServiceLocator.DialogService;
+
+            var result = await dialog.GetFolder(this);
+
+            if (result != null)
             {
-                if (_model.ImagePaths.Any(d => dialog.FileName.StartsWith(d + "\\")))
+                if (_model.ImagePaths.Any(d => result.StartsWith(d + "\\")))
                 {
                     MessageBox.Show(this,
                         "The selected folder is already on the path of one of the included folders",
@@ -199,7 +196,7 @@ namespace Diffusion.Toolkit
                         MessageBoxImage.Information);
                     return;
                 }
-                else if (_model.ImagePaths.Any(d => d.StartsWith(dialog.FileName)))
+                else if (_model.ImagePaths.Any(d => d.StartsWith(result)))
                 {
                     MessageBox.Show(this,
                         "One of the included folders is on the path of the selected folder! It is recommended that you remove it.",
@@ -207,7 +204,7 @@ namespace Diffusion.Toolkit
                         MessageBoxImage.Warning);
                 }
 
-                _model.ImagePaths.Add(dialog.FileName);
+                _model.ImagePaths.Add(result);
             }
 
         }

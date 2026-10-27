@@ -2,7 +2,7 @@
 using Diffusion.Toolkit.Classes;
 using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Themes;
-using Microsoft.WindowsAPICodePack.Dialogs;
+// using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -178,13 +178,15 @@ namespace Diffusion.Toolkit.Pages
 
         private Window _window;
         
-        private void BrowseModelPath_OnClick(object sender, RoutedEventArgs e)
+        private async void BrowseModelPath_OnClick(object sender, RoutedEventArgs e)
         {
-            using var dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
-            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
+            var dialog = ServiceLocator.DialogService;
+
+            var result = await dialog.GetFolder(_window);
+
+            if (result != null)
             {
-                _model.ModelRootPath = dialog.FileName;
+                _model.ModelRootPath = result;
             }
         }
 
@@ -209,15 +211,13 @@ namespace Diffusion.Toolkit.Pages
                 MessageBoxImage.Information);
         }
 
-        private void Restore_DB(object sender, RoutedEventArgs e)
+        private async void Restore_DB(object sender, RoutedEventArgs e)
         {
-            using var dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("SQLite databases", ".db"));
-            dialog.DefaultDirectory = Path.GetDirectoryName(_dataStore.DatabasePath);
-            dialog.Filters.Add(new CommonFileDialogFilter("All files", ".*"));
-            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
+            var dialog = ServiceLocator.DialogService;
+            var fileResult = await dialog.GetFile(_window, "Select SQLite database", new string[] { "*.db" }, "db");
+            if (fileResult != null)
             {
-                if (dialog.FileName == _dataStore.DatabasePath)
+                if (fileResult == _dataStore.DatabasePath)
                 {
                     MessageBox.Show(this._window,
                     "The selected file is the current database. Please try another file.",
@@ -228,13 +228,13 @@ namespace Diffusion.Toolkit.Pages
                 }
 
                 var result = MessageBox.Show(this._window,
-                    $"Are you sure you want to restore the file {dialog.FileName}? Your current database will be overwritten!",
+                    $"Are you sure you want to restore the file {fileResult}? Your current database will be overwritten!",
                 "Restore Database", MessageBoxButton.YesNo,
                     MessageBoxImage.Exclamation, MessageBoxResult.No);
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    if (!_dataStore.TryRestoreBackup(dialog.FileName))
+                    if (!_dataStore.TryRestoreBackup(fileResult))
                     {
                         MessageBox.Show(this._window,
                             "The database backup is not a Diffusion Toolkit database.",
@@ -251,40 +251,37 @@ namespace Diffusion.Toolkit.Pages
             }
         }
 
-        private void BrowseHashCache_OnClick(object sender, RoutedEventArgs e)
+        private async void BrowseHashCache_OnClick(object sender, RoutedEventArgs e)
         {
-            using var dialog = new CommonOpenFileDialog();
-            dialog.Filters.Add(new CommonFileDialogFilter("A1111 cache", "*.json"));
-            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
+            var dialog = ServiceLocator.DialogService;
+            var result = await dialog.GetFile(_window, "Select A1111 cache", new string[] { "A1111 cache|*.json" }, "json");
+            if (result != null)
             {
-                _model.HashCache = dialog.FileName;
+                _model.HashCache = result;
             }
         }
 
-        private void BrowseCustomViewer_OnClick(object sender, RoutedEventArgs e)
+        private async void BrowseCustomViewer_OnClick(object sender, RoutedEventArgs e)
         {
-            using var dialog = new CommonOpenFileDialog();
-            dialog.DefaultFileName = _model.CustomCommandLine;
-            dialog.Filters.Add(new CommonFileDialogFilter("Executable files", "*.exe;*.bat;*.cmd"));
-            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
+            var dialog = ServiceLocator.DialogService;
+            var result = await dialog.GetFile(_window, "Select Custom Viewer", new string[] { "Executable files|*.exe;*.bat;*.cmd" }, "exe");
+            if (result != null)
             {
-                _model.CustomCommandLine = dialog.FileName;
+                _model.CustomCommandLine = result;
             }
         }
 
-
-        private void BrowseExternalApplicationPath_OnClick(object sender, RoutedEventArgs e)
+        private async void BrowseExternalApplicationPath_OnClick(object sender, RoutedEventArgs e)
         {
             //var button = (Button)sender;
             //var dc = (ExternalApplication)button.DataContext;
             var app = _model.SelectedApplication;
 
-            using var dialog = new CommonOpenFileDialog();
-            dialog.DefaultFileName = app.Path;
-            dialog.Filters.Add(new CommonFileDialogFilter("Executable files", "*.exe;*.bat;*.cmd"));
-            if (dialog.ShowDialog(this._window) == CommonFileDialogResult.Ok)
+            var dialog = ServiceLocator.DialogService;
+            var result = await dialog.GetFile(_window, "Select External Application", new string[] { "Executable files|*.exe;*.bat;*.cmd" }, "exe");
+            if (result != null)
             {
-                app.Path = dialog.FileName;
+                app.Path = result;
             }
         }
 

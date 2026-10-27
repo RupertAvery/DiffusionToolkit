@@ -29,8 +29,6 @@ public class ServiceLocator
     public static Dispatcher Dispatcher { get; set; }
     public static NodePropertyCache NodePropertyCache { get; set; }
 
-
-
     public static void SetDataStore(DataStore dataStore)
     {
         _dataStore = dataStore;
@@ -49,6 +47,11 @@ public class ServiceLocator
     public static PreviewService PreviewService
     {
         get { return field ??= new PreviewService(); }
+    }
+
+    public static DialogService DialogService
+    {
+        get { return field ??= new DialogService(); }
     }
 
     public static ThumbnailNavigationService ThumbnailNavigationService
@@ -83,7 +86,6 @@ public class ServiceLocator
     {
         get { return field ??= new FolderService(); }
     }
-
 
     public static ProgressService ProgressService
     {

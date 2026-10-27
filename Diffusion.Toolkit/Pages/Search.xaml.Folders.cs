@@ -1,22 +1,14 @@
-﻿using Diffusion.Database;
+﻿using Diffusion.Common;
+using Diffusion.Database;
 using Diffusion.Toolkit.Models;
+using Diffusion.Toolkit.Services;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Diffusion.Common;
-using Diffusion.Toolkit.Behaviors;
-using Diffusion.Toolkit.Services;
-using Diffusion.Database.Models;
-using Diffusion.Civitai.Models;
-using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace Diffusion.Toolkit.Pages
 {
@@ -559,16 +551,16 @@ namespace Diffusion.Toolkit.Pages
 
         }
 
-        private void AddRootFolder_OnClick(object sender, RoutedEventArgs e)
+        private async void AddRootFolder_OnClick(object sender, RoutedEventArgs e)
         {
             var window = ServiceLocator.WindowService.CurrentWindow;
+            var dialogService = ServiceLocator.DialogService;
 
-            using var dialog = new CommonOpenFileDialog();
-            dialog.IsFolderPicker = true;
+            var result = await dialogService.GetFolder(window);
 
-            if (dialog.ShowDialog(window) == CommonFileDialogResult.Ok)
+            if (result != null)
             {
-                var path = dialog.FileName;
+                var path = result;
 
                 if (ServiceLocator.FolderService.RootFolders.Any(d => path.StartsWith(d.Path + "\\", StringComparison.OrdinalIgnoreCase)))
                 {
@@ -591,10 +583,10 @@ namespace Diffusion.Toolkit.Pages
                     return;
                 }
 
-                var recursiveScan = MessageBox.Show(window,
+
+                var recursiveScan = dialogService.GetYesNo(window,
                     "Do you want this folder to be scanned recursively?",
-                    "Add folder", MessageBoxButton.YesNo,
-                    MessageBoxImage.Information);
+                    "Add folder");
 
                 _ = ServiceLocator.FolderService.ApplyFolderChanges(new[]
                 {
@@ -604,7 +596,7 @@ namespace Diffusion.Toolkit.Pages
                         FolderType = FolderType.Root,
                         ChangeType = ChangeType.Add,
                         Watched = false,
-                        Recursive = recursiveScan == MessageBoxResult.Yes,
+                        Recursive = recursiveScan == "Yes",
                     }
                 }, true);
             }

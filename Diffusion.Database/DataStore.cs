@@ -55,13 +55,16 @@ public partial class DataStore
 
         db.EnableLoadExtension(true);
 
-        if (!File.Exists("extensions\\path0.dll"))
+        var extName = OperatingSystem.IsWindows() ? "path0.dll" : "path0.so";
+        var extPath = Path.Combine(AppContext.BaseDirectory, "extensions", extName);
+
+        if (!File.Exists(extPath))
         {
-            throw new FileNotFoundException("Failed to load SQLite extensions", "path0.dll");
+            throw new FileNotFoundException("Failed to load SQLite extensions", extPath);
         }
 
-        db.LoadExtension("extensions\\path0.dll");
-        
+        db.LoadExtension(extPath);
+
         var migrations = new Migrations(db);
 
         if (migrations.RequiresMigration(MigrationType.Pre))

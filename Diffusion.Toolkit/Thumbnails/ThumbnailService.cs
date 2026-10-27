@@ -1,7 +1,8 @@
-﻿using Diffusion.Toolkit.Models;
+﻿using Diffusion.Common;
+using Diffusion.Toolkit.Models;
 using Diffusion.Toolkit.Services;
 using Diffusion.Video;
-using Emgu.CV.Cuda;
+using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,12 +10,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Resources;
 using System.Windows.Threading;
-using Diffusion.Common;
 using Stream = System.IO.Stream;
 
 namespace Diffusion.Toolkit.Thumbnails;
@@ -312,36 +309,32 @@ public class ThumbnailService
 
     private static Stream GenerateThumbnail(ImageType type, string path, int width, int height, int size)
     {
-        var bitmap = new BitmapImage();
-
         using var stream = type == ImageType.Video
-            ? FrameExtractor.ExtractFrameToPNG(path) 
+            ? FrameExtractor.ExtractFrameToPNG(path)
             : new FileStream(path, FileMode.Open, FileAccess.Read);
 
-        bitmap.BeginInit();
+        using var managedStream = new SKManagedStream(stream);
+        using var originalBitmap = SKBitmap.Decode(managedStream);
 
-        if (width > height)
-        {
-            bitmap.DecodePixelWidth = size;
-        }
-        else
-        {
-            bitmap.DecodePixelHeight = size;
-        }
+        // Calculate dimensions
+        int newWidth = originalBitmap.Width > originalBitmap.Height ? size : 0;
+        int newHeight = originalBitmap.Width > originalBitmap.Height ? 0 : size;
 
-        bitmap.StreamSource = stream;
-        bitmap.EndInit();
-        bitmap.Freeze();
+        if (newWidth == 0) newWidth = (int)(originalBitmap.Width * ((float)newHeight / originalBitmap.Height));
+        if (newHeight == 0) newHeight = (int)(originalBitmap.Height * ((float)newWidth / originalBitmap.Width));
 
-        var encoder = new JpegBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(bitmap, null, null, null));
+        SKSamplingOptions samplingOptions = new SKSamplingOptions(resampler: SKCubicResampler.Mitchell);
+
+        // Resize
+        using var resizedBitmap = originalBitmap.Resize(new SKImageInfo(newWidth, newHeight), samplingOptions);
+        using var image = SKImage.FromBitmap(resizedBitmap);
 
         var ministream = new MemoryStream();
 
-        encoder.Save(ministream);
+        // Encode to JPEG
+        image.Encode(SKEncodedImageFormat.Jpeg, 100).SaveTo(ministream);
 
         ministream.Seek(0, SeekOrigin.Begin);
-
         return ministream;
 
     }

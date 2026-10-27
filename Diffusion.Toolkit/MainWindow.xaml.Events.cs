@@ -201,9 +201,9 @@ namespace Diffusion.Toolkit
 
         private void ShowReleaseNotes()
         {
-            var window = new ReleaseNotesWindow();
-            window.Owner = this;
-            window.ShowDialog();
+            //var window = new ReleaseNotesWindow();
+            //window.Owner = this;
+            //window.ShowDialog();
         }
 
         private void ShowTips()
